@@ -200,12 +200,16 @@ export async function POST(request: NextRequest) {
     }
     
     const withdrawalCheck = await checkWithdrawalLimit(userId, validatedAmount);
-    if (!withdrawalCheck.allowed) {
+    if (!withdrawalCheck.allowed && !withdrawalCheck.requiresManualVerification) {
       LOG('WITHDRAWAL_LIMIT_EXCEEDED', { usedCents: withdrawalCheck.usedCents, limitCents: withdrawalCheck.limitCents });
       return NextResponse.json(
         { error: `Limite de retrait mensuelle dépassée (utilisé : ${(withdrawalCheck.usedCents / 100).toFixed(2)}€, limite : ${(withdrawalCheck.limitCents! / 100).toFixed(2)}€)` },
         { status: 400 }
       );
+    }
+    const forceManualApproval = !!withdrawalCheck.requiresManualVerification;
+    if (forceManualApproval) {
+      LOG('WITHDRAWAL_LIMIT_MANUAL_VERIFICATION', { usedCents: withdrawalCheck.usedCents, limitCents: withdrawalCheck.limitCents });
     }
 
     LOG('USER_OK', { email: user.email, availableBalance: availableCents });
@@ -301,7 +305,7 @@ export async function POST(request: NextRequest) {
 
       const fees = calculateCardFees(validatedAmount);
       const autoSettings = await getPayoutAutoApproveSettings();
-      const shouldAutoApprove = autoSettings.enabled && validatedAmount <= autoSettings.thresholdCents;
+      const shouldAutoApprove = !forceManualApproval && autoSettings.enabled && validatedAmount <= autoSettings.thresholdCents;
 
       // Créer ou réutiliser le PaymentMethod (sans doublon)
       if (!cardPaymentMethod) {
@@ -654,7 +658,7 @@ export async function POST(request: NextRequest) {
     });
 
     const autoSettingsSepa = await getPayoutAutoApproveSettings();
-    const shouldAutoApproveSepa = autoSettingsSepa.enabled && validatedAmount <= autoSettingsSepa.thresholdCents;
+    const shouldAutoApproveSepa = !forceManualApproval && autoSettingsSepa.enabled && validatedAmount <= autoSettingsSepa.thresholdCents;
 
     if (!shouldAutoApproveSepa) {
       // Au-dessus du seuil : créer le payout en PENDING_APPROVAL

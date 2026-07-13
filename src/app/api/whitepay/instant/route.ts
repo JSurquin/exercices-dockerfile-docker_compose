@@ -3,6 +3,7 @@ import { auth } from '~/lib/auth';
 import { headers } from 'next/headers';
 import { prisma } from '~/prisma/prisma';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
+import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hooks';
 import {
   createInstantWithdrawal,
   calculateWhitepayFees,
@@ -180,12 +181,13 @@ export async function POST(request: NextRequest) {
     }
 
     const withdrawalCheck = await checkWithdrawalLimit(userId, amountCents);
-    if (!withdrawalCheck.allowed) {
+    if (!withdrawalCheck.allowed && !withdrawalCheck.requiresManualVerification) {
       return NextResponse.json(
         { error: `Limite de retrait mensuelle dépassée (utilisé : ${(withdrawalCheck.usedCents / 100).toFixed(2)}€, limite : ${(withdrawalCheck.limitCents! / 100).toFixed(2)}€)` },
         { status: 400 }
       );
     }
+    const forceManualApproval = !!withdrawalCheck.requiresManualVerification;
 
     const orderId = generateOrderId();
     const fees = calculateWhitepayFees(amountCents);
@@ -225,6 +227,75 @@ export async function POST(request: NextRequest) {
           details: { address: walletAddress, network, targetCurrency, memo: memo || null },
           isVerified: true,
         },
+      });
+    }
+
+    if (forceManualApproval) {
+      const payoutPending = await prisma.payout.create({
+        data: {
+          userId,
+          tradeId: tradeId || null,
+          status: 'PENDING_APPROVAL',
+          amountCents,
+          paymentMethodId: paymentMethod.id,
+          whitepayAddress: walletAddress,
+          whitepayNetwork: network.toUpperCase(),
+          whitepayMemo: memo || null,
+          whitepayTargetCurrency: targetCurrency.toUpperCase(),
+          processingFeeCents: fees.processingFeeCents,
+          networkFeeCents: 0,
+        },
+      });
+      try {
+        await PayoutLifecycle.onCreated(userId, payoutPending.id, amountCents);
+      } catch (freezeErr) {
+        await prisma.payout.update({ where: { id: payoutPending.id }, data: { status: 'FAILED', errorMessage: 'freeze_failed' } });
+        if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
+          return NextResponse.json({ error: 'Solde insuffisant' }, { status: 409 });
+        }
+        throw freezeErr;
+      }
+      if (tradeId) {
+        await prisma.trade.update({
+          where: { id: tradeId },
+          data: { status: 'PAYOUT_PENDING' },
+        });
+      }
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'PAYOUT_REQUEST_PENDING_APPROVAL',
+          details: {
+            payoutId: payoutPending.id,
+            amountCents,
+            targetCurrency,
+            network,
+            reason: 'above_withdrawal_limit',
+          },
+        },
+      });
+      await notifyAdminsPayoutPendingApproval(
+        payoutPending.id,
+        userId,
+        amountCents,
+        `${targetCurrency.toUpperCase()} (${network.toUpperCase()})`,
+      );
+      return NextResponse.json({
+        success: true,
+        autoApproved: false,
+        pendingApproval: true,
+        payout: {
+          id: payoutPending.id,
+          status: 'PENDING_APPROVAL',
+          amountCents,
+          fees: {
+            processingCents: fees.processingFeeCents,
+            networkCents: 0,
+            totalCents: fees.processingFeeCents,
+          },
+          netCents: amountCents - fees.processingFeeCents,
+        },
+        message: 'Demande enregistrée. Elle sera traitée sous 24 h.',
       });
     }
 

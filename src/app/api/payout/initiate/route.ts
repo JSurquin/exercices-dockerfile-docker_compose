@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     // Vérifier le plafond mensuel de retrait
     const limitCheck = await checkWithdrawalLimit(userId, trade.netCents);
-    if (!limitCheck.allowed) {
+    if (!limitCheck.allowed && !limitCheck.requiresManualVerification) {
       return NextResponse.json(
         { error: limitCheck.reason || 'Monthly withdrawal limit exceeded', limitExceeded: true },
         { status: 403 }

@@ -317,21 +317,43 @@ export async function getMonthlyWithdrawalLimitCents(userId: string): Promise<nu
   return limit.monthlyLimitCents;
 }
 
+export type WithdrawalLimitCheck = {
+  allowed: boolean;
+  usedCents: number;
+  limitCents: number | null;
+  reason?: string;
+  /** Dépassement de plafond : le payout peut être soumis à validation manuelle admin. */
+  requiresManualVerification?: boolean;
+};
+
 export async function checkWithdrawalLimit(
   userId: string,
   amountCents: number
-): Promise<{ allowed: boolean; usedCents: number; limitCents: number | null; reason?: string }> {
+): Promise<WithdrawalLimitCheck> {
   const limitCents = await getMonthlyWithdrawalLimitCents(userId);
   if (limitCents == null) {
     return { allowed: true, usedCents: 0, limitCents: null };
   }
   const usedCents = await getMonthlyWithdrawalUsedCents(userId);
+
+  // Montant unitaire au-dessus du plafond mensuel → validation manuelle (même logique que SEPA Premium).
+  if (limitCents > 0 && amountCents > limitCents) {
+    return {
+      allowed: false,
+      usedCents,
+      limitCents,
+      requiresManualVerification: true,
+      reason: `Monthly withdrawal limit exceeded (used: ${usedCents / 100}€, limit: ${limitCents / 100}€)`,
+    };
+  }
+
   const afterWithdrawal = usedCents + amountCents;
   if (afterWithdrawal > limitCents) {
     return {
       allowed: false,
       usedCents,
       limitCents,
+      requiresManualVerification: true,
       reason: `Monthly withdrawal limit exceeded (used: ${usedCents / 100}€, limit: ${limitCents / 100}€)`,
     };
   }

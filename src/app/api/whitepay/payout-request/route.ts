@@ -25,6 +25,7 @@ import {
 import { canUserMakePayout } from '@/lib/kycaid';
 import { getPayoutAutoApproveSettings } from '@/lib/payout-settings';
 import { assertTradeOwnership } from '@/lib/trade-ownership';
+import { checkWithdrawalLimit } from '@/lib/balance-service';
 import { validateAmountCents } from '@/lib/amount-validation';
 import crypto from 'crypto';
 import { safeParseJson } from '@/lib/validation/helpers';
@@ -275,6 +276,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const withdrawalCheck = await checkWithdrawalLimit(userId, amountCents);
+    if (!withdrawalCheck.allowed && !withdrawalCheck.requiresManualVerification) {
+      return NextResponse.json(
+        { error: `Limite de retrait mensuelle dépassée (utilisé : ${(withdrawalCheck.usedCents / 100).toFixed(2)}€, limite : ${(withdrawalCheck.limitCents! / 100).toFixed(2)}€)` },
+        { status: 400 }
+      );
+    }
+    const forceManualApproval = !!withdrawalCheck.requiresManualVerification;
+
     let networkFeeCents = estimateNetworkFeeCentsSync(targetCurrencyU, networkU);
     try {
       networkFeeCents = await estimateNetworkFeeCents(targetCurrencyU, networkU);
@@ -319,7 +329,7 @@ export async function POST(request: NextRequest) {
     }
 
     const autoSettings = await getPayoutAutoApproveSettings();
-    const shouldAutoApprove = autoSettings.enabled && amountCents <= autoSettings.thresholdCents;
+    const shouldAutoApprove = !forceManualApproval && autoSettings.enabled && amountCents <= autoSettings.thresholdCents;
 
     if (shouldAutoApprove) {
       const orderId = generateOrderId();

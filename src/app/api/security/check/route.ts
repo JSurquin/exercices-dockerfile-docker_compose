@@ -49,7 +49,8 @@ export async function POST(request: NextRequest) {
     const cooldownStatus = await securityService.getUserCooldownStatus(session.user.id);
 
     return NextResponse.json({
-      allowed: securityCheck.allowed && !cooldownStatus.inCooldown,
+      allowed: (securityCheck.allowed || !!securityCheck.requiresManualVerification) && !cooldownStatus.inCooldown,
+      requiresManualVerification: securityCheck.requiresManualVerification ?? false,
       reason: securityCheck.reason || cooldownStatus.reason,
       cooldownUntil: securityCheck.cooldownUntil || cooldownStatus.endsAt,
       currentUsage: securityCheck.currentUsage,
