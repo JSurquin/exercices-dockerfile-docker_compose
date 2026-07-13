@@ -8,6 +8,7 @@ import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 import { notifyAdminsNewTrade } from '@/lib/admin-notification-hooks';
 import { notifyTradeStatusChange } from '@/lib/partner-api/webhook-service';
 import { logger } from '@/lib/logger';
+import { validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 
 function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
   const statusMap: Record<string, TradeStatus> = {
@@ -64,6 +65,17 @@ export async function createPartnerTrade(
   }
 
   const steamId = user.steamId;
+
+  const tradeUrlCheck = validatePartnerTradeUrl(params.tradeUrl, user.steamId, user.tradeLink);
+  if (!tradeUrlCheck.ok) {
+    return {
+      ok: false,
+      error: tradeUrlCheck.error,
+      code: 'VALIDATION_ERROR',
+      status: 400,
+    };
+  }
+
   const verification = await verifyAndPriceItems(steamId, params.assetIds);
   if (!verification.ok) {
     const status = verification.code === 'ITEMS_NOT_FOUND' ? 400 : 502;

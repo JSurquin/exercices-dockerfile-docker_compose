@@ -11,7 +11,11 @@ export async function withPartnerApi(
   options: { endpoint: string; method: string; scopes?: string[] },
   handler: PartnerHandler
 ): Promise<Response> {
-  const auth = await requireApiKey(request, options);
+  const auth = await requireApiKey(request, {
+    endpoint: options.endpoint,
+    method: options.method,
+    requiredScopes: options.scopes,
+  });
   if (!auth.ok) return auth.response;
 
   try {

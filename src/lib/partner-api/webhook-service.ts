@@ -1,6 +1,6 @@
 import { createHmac } from 'crypto';
 import { prisma } from '~/prisma/prisma';
-import { mapTradeStatus } from '@/lib/partner-api/response';
+import { mapPayoutStatus, mapTradeStatus } from '@/lib/partner-api/response';
 import { logger } from '@/lib/logger';
 
 const MAX_ATTEMPTS = 3;
@@ -226,7 +226,7 @@ export async function notifyPayoutStatusChange(
     payout.status === 'PENDING' ? 'payout.created' : 'payout.status_changed';
 
   await enqueuePartnerWebhook(userId, eventType, payout.id, {
-    statut: payout.status.toLowerCase(),
+    statut: mapPayoutStatus(payout.status),
     brut_centimes: payout.amountCents,
     net_centimes: payout.amountCents,
     reference_paiement: payout.tradeId,

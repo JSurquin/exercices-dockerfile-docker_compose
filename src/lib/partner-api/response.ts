@@ -42,6 +42,31 @@ export function mapTradeStatus(status: string): string {
   return TRADE_STATUS_MAP[status] ?? status.toLowerCase();
 }
 
+const PAYOUT_STATUS_MAP: Record<string, string> = {
+  PENDING: 'en_attente',
+  VERIFICATION_REQUIRED: 'vérification_requise',
+  VERIFIED: 'vérifié',
+  SCHEDULED: 'planifié',
+  PROCESSING: 'exécuté',
+  PAID: 'payé',
+  FAILED: 'échoué',
+  CANCELLED: 'annulé',
+  PENDING_APPROVAL: 'en_attente_validation',
+  FLEXIFY_PENDING: 'en_attente',
+  FLEXIFY_PROCESSING: 'exécuté',
+  FLEXIFY_PAID: 'payé',
+  FLEXIFY_FAILED: 'échoué',
+  WHITEPAY_WAITING_CONFIRMATION: 'en_attente',
+  WHITEPAY_PENDING_WITHDRAWAL: 'planifié',
+  WHITEPAY_PROCESSING_WITHDRAWAL: 'exécuté',
+  WHITEPAY_COMPLETE: 'payé',
+  WHITEPAY_DECLINED: 'échoué',
+};
+
+export function mapPayoutStatus(status: string): string {
+  return PAYOUT_STATUS_MAP[status] ?? status.toLowerCase();
+}
+
 export function formatTradeForPartner(trade: {
   id: string;
   userId: string;

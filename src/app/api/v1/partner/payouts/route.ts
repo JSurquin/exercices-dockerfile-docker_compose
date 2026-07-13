@@ -5,7 +5,7 @@ import { checkWithdrawalLimit } from '@/lib/balance-service';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { notifyPayoutStatusChange } from '@/lib/partner-api/webhook-service';
 import { withPartnerApi } from '@/lib/partner-api/handler';
-import { partnerSuccess, partnerError } from '@/lib/partner-api/response';
+import { partnerSuccess, partnerError, mapPayoutStatus } from '@/lib/partner-api/response';
 import { partnerPayoutSchema } from '@/lib/partner-api/schemas';
 import { safeParseJson } from '@/lib/validation/helpers';
 
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
 
       return partnerSuccess({
         id: payout.id,
-        statut: payout.status.toLowerCase(),
+        statut: mapPayoutStatus(payout.status),
         amount_centimes: payout.amountCents,
         trade_id: trade.id,
         payment_method: {

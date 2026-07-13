@@ -119,6 +119,21 @@ export async function requireApiKey(
           where: { id: client.id },
           data: { lastUsedAt: new Date() },
         }),
+        prisma.auditLog.create({
+          data: {
+            userId: client.userId,
+            action: 'PARTNER_API_CALL',
+            ipAddress: ip,
+            details: {
+              type: 'partner_api_call',
+              apiClientId: client.id,
+              endpoint: options.endpoint,
+              method: options.method,
+              statusCode,
+              durationMs,
+            },
+          },
+        }),
       ]);
     } catch {
       /* non bloquant */
