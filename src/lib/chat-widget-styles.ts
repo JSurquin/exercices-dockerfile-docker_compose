@@ -172,11 +172,11 @@ export function chatWidgetSubcategoryButtonClass(disabled: boolean): string {
 }
 
 export function chatWidgetFabButtonClass(): string {
-  return 'h-14 w-14 rounded-full bg-cta-gradient shadow-lg shadow-[var(--cta-shadow)] border-0 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95';
+  return 'relative h-14 w-14 rounded-full bg-cta-gradient shadow-lg shadow-[var(--cta-shadow)] border-0 flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95';
 }
 
 export function chatWidgetUnreadBadgeClass(): string {
-  return 'absolute -top-2 -left-2 h-6 w-6 rounded-full bg-red-500 hover:bg-red-500 text-white text-xs flex items-center justify-center z-10';
+  return 'pointer-events-none absolute -top-2 -left-2 h-6 w-6 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center z-10 shadow-sm';
 }
 
 /** Animation d’entrée uniquement pour les messages pas encore affichés. */

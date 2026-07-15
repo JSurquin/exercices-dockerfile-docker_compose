@@ -89,9 +89,40 @@ import {
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { CheckIcon } from "@heroicons/react/24/solid";
-import { Headset } from "lucide-react";
 
 const SUPPORT_AVATAR_SRC = MOONSKIN_LOGO_AVATAR_SRC;
+
+const ChatWidgetSupportHeadsetIcon = memo(function ChatWidgetSupportHeadsetIcon({
+  className,
+}: {
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M5 12.25a7 7 0 0 1 14 0"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <rect x="3.25" y="12" width="5.25" height="7.75" rx="2.625" fill="currentColor" />
+      <rect x="15.5" y="12" width="5.25" height="7.75" rx="2.625" fill="currentColor" />
+      <path
+        d="M5.25 19.75v1.25c0 .97-.79 1.75-1.75 1.75"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="3.5" cy="22.75" r="1.15" fill="currentColor" />
+    </svg>
+  );
+});
 
 interface ChatWidgetStaffAvatarsProps {
   members: ChatWidgetSupportStaffMember[];
@@ -1733,23 +1764,20 @@ export function ChatWidget() {
 
       {!isOpen && (
         <div className="pointer-events-auto absolute bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[99999] sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]">
-          <div className="relative">
+          <button
+            type="button"
+            data-testid="chat-fab"
+            aria-label={messages.chatWidget.tooltip}
+            onClick={handleToggleChat}
+            className={chatWidgetFabButtonClass()}
+          >
             {shouldShowWidgetUnreadBadge(unreadCount, isOpen) && (
               <Badge className={chatWidgetUnreadBadgeClass()}>
                 {unreadCount}
               </Badge>
             )}
-
-            <button
-              type="button"
-              data-testid="chat-fab"
-              aria-label={messages.chatWidget.tooltip}
-              onClick={handleToggleChat}
-              className={chatWidgetFabButtonClass()}
-            >
-              <Headset className="h-6 w-6 text-white" strokeWidth={1.75} aria-hidden />
-            </button>
-          </div>
+            <ChatWidgetSupportHeadsetIcon className="h-7 w-7 text-white" />
+          </button>
         </div>
       )}
     </>
