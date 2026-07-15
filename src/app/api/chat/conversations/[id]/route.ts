@@ -26,6 +26,10 @@ import {
   shouldRedactEmailsForViewer,
 } from '@/lib/chat-logic';
 import { createChatMessageRecord } from '@/lib/chat-message-service';
+import {
+  CHAT_ASSIGNED_MODERATOR_SELECT,
+  touchStaffPresenceFromRole,
+} from '@/lib/chat-staff-presence';
 
 // GET /api/chat/conversations/[id] - Récupérer une conversation spécifique
 export async function GET(
@@ -49,7 +53,7 @@ export async function GET(
           },
         },
         assignedModerator: {
-          select: { id: true, name: true, email: true },
+          select: CHAT_ASSIGNED_MODERATOR_SELECT,
         },
         messages: {
           include: {
@@ -112,6 +116,7 @@ export async function GET(
         conversationId: resolvedParams.id,
         role: identity.role,
       });
+      await touchStaffPresenceFromRole(session.user.id, identity.role);
     } else if (!canGuestAccessConversation(conversation.userId)) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }

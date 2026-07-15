@@ -46,6 +46,8 @@ model User {
   banExpires               DateTime?
   lastLoginIp              String?
   lastLoginAt              DateTime?
+  /// Dernière activité staff (modération / chat admin) pour la présence widget
+  lastSeenAt               DateTime?
   contactEmail             String?
   /// Bonus VIP en % sur la valeur brute du trade (ex: 2.0 = +2%)
   bonusRatePercent         Float                   @default(0)

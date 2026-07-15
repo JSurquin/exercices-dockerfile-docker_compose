@@ -32,6 +32,7 @@ export interface ConversationSummary {
     email: string;
     steamUsername?: string | null;
     steamAvatar?: string | null;
+    lastSeenAt?: string | null;
   } | null;
   clientRating?: number | null;
   clientRatedAt?: string | null;

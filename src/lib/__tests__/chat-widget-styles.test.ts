@@ -85,7 +85,7 @@ describe('chatWidgetSenderLabelClass', () => {
 
 describe('resolveWidgetSenderDisplayName', () => {
   const labels = {
-    aiAgentLabel: 'Moony · l\'agent IA',
+    aiAgentLabel: 'Moony IA agent',
     supportLabel: 'MoonSkin Support',
     moderatorLabel: 'Modérateur',
     guestUserLabel: 'Vous',
@@ -99,7 +99,7 @@ describe('resolveWidgetSenderDisplayName', () => {
         isFromViewer: false,
         labels,
       }),
-    ).toBe('Moony · l\'agent IA');
+    ).toBe('Moony IA agent');
   });
 
   it('retourne le support pour BOT', () => {

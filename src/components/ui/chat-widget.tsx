@@ -18,7 +18,7 @@ import { shouldShowBackButton,
   type ChatWidgetSupportStaffMember,
 } from "@/lib/chat-widget-config";
 import { MOONSKIN_LOGO_AVATAR_SRC, resolveStaffAvatarSrc } from "@/lib/team-avatars";
-import { isTerminalConversationStatus, shouldClearAiTypingIndicator, formatConversationListPreview, conversationNeedsRatingNotification, getConversationListNotificationTotal } from "@/lib/chat-logic";
+import { isTerminalConversationStatus, shouldClearAiTypingIndicator, formatConversationListPreview, conversationNeedsRatingNotification, getConversationListNotificationTotal, resolveAgentActivityLabel } from "@/lib/chat-logic";
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
   CHAT_WIDGET_RATING_EMOJIS,
@@ -1323,12 +1323,16 @@ export function ChatWidget() {
   const lastStaffMessage = [...(currentConversation?.messages ?? [])]
     .reverse()
     .find((m) => ['MODERATOR', 'BOT', 'AI'].includes(m.senderType));
-  const agentActivityLabel = lastStaffMessage
-    ? messages.chatWidget.activeRecently.replace(
-        '{time}',
-        formatRelativeTime(lastStaffMessage.createdAt, relativeTimeLabels, dateLocale),
-      )
-    : messages.chatWidget.online;
+  const agentActivityLabel = resolveAgentActivityLabel({
+    assignedModerator: currentConversation?.assignedModerator,
+    lastStaffMessageAt: lastStaffMessage?.createdAt,
+    labels: {
+      online: messages.chatWidget.online,
+      activeRecently: messages.chatWidget.activeRecently,
+    },
+    formatRelativeTime: (date) =>
+      formatRelativeTime(date, relativeTimeLabels, dateLocale),
+  });
 
   const renderHomeTab = () => (
     <div className={chatWidgetHomeBodyClass()}>

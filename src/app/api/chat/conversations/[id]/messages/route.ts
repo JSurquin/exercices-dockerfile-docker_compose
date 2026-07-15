@@ -35,6 +35,10 @@ import {
   redactEmailsInConversationForGuest,
 } from '@/lib/chat-response-redact';
 import { shouldRedactEmailsForViewer } from '@/lib/chat-logic';
+import {
+  CHAT_ASSIGNED_MODERATOR_SELECT,
+  touchStaffPresenceFromRole,
+} from '@/lib/chat-staff-presence';
 
 async function assertConversationAccess(
   request: NextRequest,
@@ -47,13 +51,7 @@ async function assertConversationAccess(
     include: {
       user: true,
       assignedModerator: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          steamUsername: true,
-          steamAvatar: true,
-        },
+        select: CHAT_ASSIGNED_MODERATOR_SELECT,
       },
     },
   });
@@ -157,6 +155,10 @@ export async function GET(
         conversationId: resolvedParams.id,
         role: viewerRole,
       });
+    }
+
+    if (identity?.kind === 'user') {
+      await touchStaffPresenceFromRole(identity.session.user.id, identity.role);
     }
 
     const readAdjusted =

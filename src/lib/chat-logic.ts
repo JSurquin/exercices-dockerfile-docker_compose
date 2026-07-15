@@ -547,3 +547,48 @@ export function shouldRedactEmailsForViewer(params: {
   }
   return 'non-staff-user';
 }
+
+const DEFAULT_STAFF_PRESENCE_ONLINE_THRESHOLD_MS = 5 * 60_000;
+
+/** Libellé de présence dans l'en-tête du widget (Moony toujours en ligne, modérateur via lastSeenAt). */
+export function resolveAgentActivityLabel(params: {
+  assignedModerator?: { lastSeenAt?: Date | string | null } | null;
+  lastStaffMessageAt?: Date | string | null;
+  labels: { online: string; activeRecently: string };
+  formatRelativeTime: (date: Date | string) => string;
+  now?: number;
+  onlineThresholdMs?: number;
+}): string {
+  const {
+    assignedModerator,
+    lastStaffMessageAt,
+    labels,
+    formatRelativeTime,
+    now = Date.now(),
+    onlineThresholdMs = DEFAULT_STAFF_PRESENCE_ONLINE_THRESHOLD_MS,
+  } = params;
+
+  if (!assignedModerator) {
+    return labels.online;
+  }
+
+  if (assignedModerator.lastSeenAt) {
+    const lastSeenMs = new Date(assignedModerator.lastSeenAt).getTime();
+    if (now - lastSeenMs <= onlineThresholdMs) {
+      return labels.online;
+    }
+    return labels.activeRecently.replace(
+      '{time}',
+      formatRelativeTime(assignedModerator.lastSeenAt),
+    );
+  }
+
+  if (lastStaffMessageAt) {
+    return labels.activeRecently.replace(
+      '{time}',
+      formatRelativeTime(lastStaffMessageAt),
+    );
+  }
+
+  return labels.online;
+}

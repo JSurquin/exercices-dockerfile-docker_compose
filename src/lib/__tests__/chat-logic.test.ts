@@ -27,6 +27,7 @@ import {
   shouldInsertTicketTransmittedMessage,
   shouldInsertFollowUpAwaitingAcknowledgment,
   shouldRedactEmailsForViewer,
+  resolveAgentActivityLabel,
   STAFF_SENDER_TYPES_FOR_NOTIFICATION,
 } from '@/lib/chat-logic';
 
@@ -896,6 +897,56 @@ describe('selectInitialConversationId', () => {
         'c-closed',
       ),
     ).toBe('c-active');
+  });
+});
+
+describe('resolveAgentActivityLabel', () => {
+  const labels = { online: 'En ligne', activeRecently: 'Actif il y a {time}' };
+  const formatRelativeTime = (date: Date | string) => `fmt:${String(date)}`;
+  const now = Date.parse('2026-07-15T12:00:00.000Z');
+
+  it('affiche En ligne sans modérateur assigné (Moony / IA)', () => {
+    expect(
+      resolveAgentActivityLabel({
+        labels,
+        formatRelativeTime,
+        now,
+      }),
+    ).toBe('En ligne');
+  });
+
+  it('affiche En ligne quand le modérateur a été actif récemment', () => {
+    expect(
+      resolveAgentActivityLabel({
+        assignedModerator: { lastSeenAt: '2026-07-15T11:58:00.000Z' },
+        labels,
+        formatRelativeTime,
+        now,
+      }),
+    ).toBe('En ligne');
+  });
+
+  it('affiche Actif il y a quand le modérateur est hors ligne', () => {
+    expect(
+      resolveAgentActivityLabel({
+        assignedModerator: { lastSeenAt: '2026-07-15T07:00:00.000Z' },
+        labels,
+        formatRelativeTime,
+        now,
+      }),
+    ).toBe('Actif il y a fmt:2026-07-15T07:00:00.000Z');
+  });
+
+  it('retombe sur le dernier message staff sans lastSeenAt', () => {
+    expect(
+      resolveAgentActivityLabel({
+        assignedModerator: { lastSeenAt: null },
+        lastStaffMessageAt: '2026-07-15T08:00:00.000Z',
+        labels,
+        formatRelativeTime,
+        now,
+      }),
+    ).toBe('Actif il y a fmt:2026-07-15T08:00:00.000Z');
   });
 });
 

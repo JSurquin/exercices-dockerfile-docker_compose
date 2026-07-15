@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { ChatStats, ModeratorStats } from '@/lib/types/chat';
 import { requireAdminOrModeratorSessionWithDbCheck, requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { computeAverageResponseTimeMinutes, computeAverageClientRating } from '@/lib/chat-logic';
+import { touchStaffPresence } from '@/lib/chat-staff-presence';
 
 // GET /api/chat/stats - Récupérer les statistiques du chat
 export async function GET(request: NextRequest) {
@@ -12,6 +13,8 @@ export async function GET(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
+
+    await touchStaffPresence(session.user.id);
 
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || '30'; // Période en jours

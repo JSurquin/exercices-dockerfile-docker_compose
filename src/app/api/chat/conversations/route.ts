@@ -13,6 +13,10 @@ import {
 } from '@/lib/validation/schemas/chat-api';
 import { buildConversationWhereClause, isStaffRole } from '@/lib/chat-logic';
 import { maybeGenerateAiReply } from '@/lib/chat-ai-service';
+import {
+  CHAT_ASSIGNED_MODERATOR_SELECT,
+  touchStaffPresenceFromRole,
+} from '@/lib/chat-staff-presence';
 
 const conversationListInclude = {
   user: {
@@ -25,13 +29,7 @@ const conversationListInclude = {
     },
   },
   assignedModerator: {
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      steamUsername: true,
-      steamAvatar: true,
-    },
+    select: CHAT_ASSIGNED_MODERATOR_SELECT,
   },
   messages: {
     include: {
@@ -139,6 +137,10 @@ export async function GET(request: NextRequest) {
       }),
       prisma.conversation.count({ where: whereClause }),
     ]);
+
+    if (q.scope === 'staff') {
+      await touchStaffPresenceFromRole(session.user.id, role);
+    }
 
     return NextResponse.json({
       conversations,

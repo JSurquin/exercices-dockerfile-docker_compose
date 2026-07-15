@@ -21,6 +21,7 @@ import {
   extractCategoryFromSubcategoryKey,
   resolveConversationRoutingWithMessage,
 } from '@/lib/chat-conversation-router';
+import { touchStaffPresenceFromRole } from '@/lib/chat-staff-presence';
 
 // POST /api/chat/messages — création auto de conversation si conversationId absent
 export async function POST(request: NextRequest) {
@@ -157,6 +158,10 @@ export async function POST(request: NextRequest) {
       content: body.content,
       senderType,
     });
+
+    if (identity.kind === 'user') {
+      await touchStaffPresenceFromRole(identity.session.user.id, identity.role);
+    }
 
     let aiQueueHint = null;
     let shouldRunAi = false;

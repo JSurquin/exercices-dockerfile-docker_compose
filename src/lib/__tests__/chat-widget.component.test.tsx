@@ -105,7 +105,7 @@ const mockMessages = {
     moderatorLabel: 'Modérateur',
     botLabel: 'Bot',
     aiLabel: 'Réponse IA',
-    aiAgentLabel: 'Moony · l\'agent IA',
+    aiAgentLabel: 'Moony IA agent',
     guestUserLabel: 'Vous',
     adminLabel: 'L\'admin',
     aiTypingQueued: 'Plusieurs demandes en cours. Votre réponse arrive dans un instant, merci de patienter.',

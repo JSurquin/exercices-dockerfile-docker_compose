@@ -21,7 +21,7 @@ function DesignPreview() {
       </div>
       <div data-testid="bubble-ai" className={chatWidgetMessageBubbleClass('AI')}>
         <span data-testid="ai-label" className={chatWidgetSenderLabelClass(false)}>
-          Moony · l&apos;agent IA
+          Moony IA agent
         </span>
         Réponse IA
       </div>
