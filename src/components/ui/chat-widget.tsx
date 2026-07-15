@@ -43,6 +43,7 @@ import {
   chatWidgetPanelHeaderSubtitleClass,
   chatWidgetPanelHeaderTitleClass,
   chatWidgetListHeaderClass,
+  chatWidgetContactModeratorButtonClass,
   chatWidgetConversationScrollClass,
   chatWidgetMessagesListBodyClass,
   chatWidgetMessagesListContainerClass,
@@ -716,7 +717,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
                       size="sm"
                       variant="outline"
                       data-testid="chat-contact-moderator-button"
-                      className="h-7 text-[11px] px-2.5"
+                      className={chatWidgetContactModeratorButtonClass()}
                       disabled={escalatingModerator || isLoading}
                       onClick={() => void onContactModerator()}
                     >

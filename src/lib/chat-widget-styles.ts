@@ -330,6 +330,11 @@ export function chatWidgetAiTypingBubbleClass(): string {
   return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-ai`;
 }
 
+/** Bouton d’escalade modérateur dans une bulle claire — survol gris, texte toujours lisible. */
+export function chatWidgetContactModeratorButtonClass(): string {
+  return 'h-7 text-[11px] px-2.5 chat-widget-contact-moderator-btn';
+}
+
 export function chatWidgetInputAreaClass(): string {
   return 'flex-shrink-0 border-t bg-background px-3 py-2.5';
 }

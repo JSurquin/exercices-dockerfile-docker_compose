@@ -1,6 +1,7 @@
 import {
   chatWidgetAiTypingBubbleClass,
   chatWidgetCategoryButtonClass,
+  chatWidgetContactModeratorButtonClass,
   chatWidgetFabButtonClass,
   chatWidgetHeaderClass,
   chatWidgetMessageAlignment,
@@ -222,6 +223,10 @@ describe('layout & interaction classes', () => {
   it('bulle AI typing cohérente avec messages staff', () => {
     expect(chatWidgetAiTypingBubbleClass()).toContain('chat-widget-bubble-ai');
     expect(chatWidgetAiTypingBubbleClass()).toContain('rounded-[22px]');
+  });
+
+  it('bouton contacter modérateur : classe dédiée survol gris', () => {
+    expect(chatWidgetContactModeratorButtonClass()).toContain('chat-widget-contact-moderator-btn');
   });
 
   it('groupe message aligne label et bulle', () => {

@@ -2542,9 +2542,9 @@ body.next-dev-overlay-present #sentry-feedback {
     );
   }
 
-  /* Chat widget — bulles type Empire (gris lisible support, bleu chroma utilisateur) */
+  /* Chat widget — bulles type Empire (blanc-gris doux, contrastes lisibles) */
   .chat-widget-bubble-staff {
-    background: rgb(240 240 240);
+    background: rgb(228 230 235);
     color: rgb(23 23 23);
     border-radius: 22px 22px 22px 8px;
   }
@@ -2554,13 +2554,28 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .chat-widget-bubble-ai {
-    background: color-mix(in srgb, var(--theme-accent) 14%, rgb(240 240 240));
+    background: color-mix(in srgb, var(--theme-accent) 14%, rgb(228 230 235));
     color: rgb(23 23 23);
     border-radius: 22px 22px 22px 8px;
   }
 
   .chat-widget-bubble-ai a {
     color: color-mix(in srgb, var(--theme-accent) 70%, rgb(23 23 23));
+  }
+
+  /* Bouton modérateur — survol gris lisible sur bulles claires (évite blanc sur blanc) */
+  .chat-widget-bubble-ai .chat-widget-contact-moderator-btn,
+  .chat-widget-bubble-staff .chat-widget-contact-moderator-btn {
+    background-color: rgb(210 212 218);
+    color: rgb(23 23 23);
+    border-color: rgb(188 190 196);
+    box-shadow: none;
+  }
+
+  .chat-widget-bubble-ai .chat-widget-contact-moderator-btn:hover:not(:disabled),
+  .chat-widget-bubble-staff .chat-widget-contact-moderator-btn:hover:not(:disabled) {
+    background-color: rgb(190 193 200);
+    color: rgb(23 23 23);
   }
 
   .chat-widget-bubble-user {
