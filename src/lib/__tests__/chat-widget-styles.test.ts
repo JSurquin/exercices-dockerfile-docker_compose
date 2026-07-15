@@ -43,28 +43,29 @@ describe('isWidgetMessageFromViewer', () => {
 });
 
 describe('chatWidgetMessageBubbleClass — design tokens', () => {
-  it('USER : bulle bleu chromé à droite', () => {
+  it('USER : bulle plate accent à droite', () => {
     expect(chatWidgetMessageBubbleClass('USER')).toContain('chat-widget-bubble-user');
-    expect(chatWidgetMessageBubbleClass('USER')).toContain('chat-widget-bubble-chrome');
+    expect(chatWidgetMessageBubbleClass('USER')).not.toContain('border');
+    expect(chatWidgetMessageBubbleClass('USER')).not.toContain('chat-widget-bubble-chrome');
   });
 
-  it('MODERATOR : bleu chromé staff', () => {
+  it('MODERATOR : bulle plate staff', () => {
     expect(chatWidgetMessageBubbleClass('MODERATOR')).toContain('chat-widget-bubble-staff');
   });
 
-  it('AI : bleu chromé highlight', () => {
+  it('AI : bulle plate accent', () => {
     const cls = chatWidgetMessageBubbleClass('AI');
     expect(cls).toContain('chat-widget-bubble-ai');
     expect(cls).not.toContain('bg-neutral-100');
   });
 
-  it('SYSTEM : bandeau chromé atténué', () => {
+  it('SYSTEM : bulle plate atténuée', () => {
     const cls = chatWidgetMessageBubbleClass('SYSTEM');
     expect(cls).toContain('chat-widget-bubble-staff');
     expect(cls).toContain('text-muted-foreground');
   });
 
-  it('BOT : bleu chromé staff', () => {
+  it('BOT : bulle plate staff', () => {
     expect(chatWidgetMessageBubbleClass('BOT')).toContain('chat-widget-bubble-staff');
   });
 
@@ -219,7 +220,7 @@ describe('layout & interaction classes', () => {
 
   it('bulle AI typing cohérente avec messages staff', () => {
     expect(chatWidgetAiTypingBubbleClass()).toContain('chat-widget-bubble-ai');
-    expect(chatWidgetAiTypingBubbleClass()).toContain('rounded-[22px]');
+    expect(chatWidgetAiTypingBubbleClass()).toContain('rounded-2xl');
   });
 
   it('groupe message aligne label et bulle', () => {

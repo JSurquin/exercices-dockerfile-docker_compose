@@ -47,28 +47,28 @@ describe('Chat widget design (rendu DOM)', () => {
     expect(screen.getByTestId('header')).toHaveClass('text-white');
   });
 
-  it('bulle USER : bleu chromé', () => {
+  it('bulle USER : plate accent', () => {
     render(<DesignPreview />);
     const bubble = screen.getByTestId('bubble-user');
     expect(bubble).toHaveClass('chat-widget-bubble-user');
-    expect(bubble).toHaveClass('chat-widget-bubble-chrome');
-    expect(bubble.className).toContain('rounded-[22px]');
+    expect(bubble.className).not.toContain('chat-widget-bubble-chrome');
+    expect(bubble.className).toContain('rounded-2xl');
     expect(screen.getByText('Message user')).toBeInTheDocument();
   });
 
-  it('bulle AI : bleu chromé avec label expéditeur', () => {
+  it('bulle AI : plate avec label expéditeur', () => {
     render(<DesignPreview />);
     const bubble = screen.getByTestId('bubble-ai');
     expect(bubble).toHaveClass('chat-widget-bubble-ai');
     expect(screen.getByTestId('ai-label').className).toContain('text-theme-highlight');
   });
 
-  it('bulle MODERATOR : bleu chromé staff', () => {
+  it('bulle MODERATOR : plate staff', () => {
     render(<DesignPreview />);
     expect(screen.getByTestId('bubble-mod')).toHaveClass('chat-widget-bubble-staff');
   });
 
-  it('bulle SYSTEM : chromé atténué', () => {
+  it('bulle SYSTEM : plate atténuée', () => {
     render(<DesignPreview />);
     expect(screen.getByTestId('bubble-system').className).toContain('chat-widget-bubble-staff');
   });
