@@ -71,6 +71,8 @@ function buildChatMock(overrides: Record<string, unknown> = {}) {
       lastMessageAt: string;
       status: string;
       unread: number;
+      clientRating?: number | null;
+      lastMessage?: { content: string; senderType: string } | null;
       assignedModerator?: {
         steamUsername?: string | null;
         name?: string | null;
@@ -572,8 +574,17 @@ describe('ChatWidget', () => {
           lastMessageAt: '2026-06-12T10:00:00Z',
           status: 'ACTIVE',
           unread: 2,
+          lastMessage: { content: 'On regarde votre trade', senderType: 'MODERATOR' },
         },
-        { id: 'c2', title: 'Paiement SEPA', lastMessageAt: '2026-06-11T10:00:00Z', status: 'CLOSED', unread: 0 },
+        {
+          id: 'c2',
+          title: 'Paiement SEPA',
+          lastMessageAt: '2026-06-11T10:00:00Z',
+          status: 'CLOSED',
+          unread: 0,
+          clientRating: null,
+          lastMessage: { content: 'C’est bon pour nous', senderType: 'MODERATOR' },
+        },
       ],
       conversationId: 'c1',
       currentConversation: {
@@ -587,13 +598,15 @@ describe('ChatWidget', () => {
     fireEvent.click(screen.getByTestId('chat-tab-messages'));
     expect(screen.getByTestId('chat-history-list')).toBeInTheDocument();
     expect(screen.getByText('Trade bloqué')).toBeInTheDocument();
+    expect(screen.getByText('On regarde votre trade')).toBeInTheDocument();
     expect(screen.getByText('Résolus')).toBeInTheDocument();
-    expect(screen.getByTestId('chat-history-list').querySelector('[data-slot="badge"]')).toHaveTextContent('2');
+    expect(screen.getByText('Notez votre conversation')).toBeInTheDocument();
+    expect(screen.getByTestId('chat-ask-question')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Paiement SEPA'));
     expect(mockSetConversationId).toHaveBeenCalledWith('c2');
   });
 
-  it('nouvelle conversation depuis historique', async () => {
+  it('ouvre une nouvelle conversation via Ask a question', async () => {
     authUser = { id: 'u1', username: 'Me' };
     chatMock = buildChatMock({
       conversationListItems: [{ id: 'c1', title: 'Old', lastMessageAt: '2026-06-12T10:00:00Z', status: 'ACTIVE', unread: 0 }],
@@ -603,9 +616,9 @@ describe('ChatWidget', () => {
     renderWidget();
     await openChat();
     fireEvent.click(screen.getByTestId('chat-tab-messages'));
-    fireEvent.click(screen.getByTestId('chat-new-conversation'));
+    fireEvent.click(screen.getByTestId('chat-ask-question'));
     expect(mockStartNewConversation).toHaveBeenCalled();
-    expect(screen.getByText('Problème de trade')).toBeInTheDocument();
+    expect(screen.getByTestId('chat-message-input')).toBeInTheDocument();
   });
 
   it('retour historique → conversation', async () => {
@@ -1176,13 +1189,13 @@ describe('ChatWidget', () => {
     clearTimeoutSpy.mockRestore();
   });
 
-  it('historique vide propose de démarrer une conversation', async () => {
+  it('historique vide propose Ask a question', async () => {
     authUser = { id: 'u1', username: 'Me' };
     renderWidget();
     await openChat();
     fireEvent.click(screen.getByTestId('chat-tab-messages'));
     expect(screen.getByText('Aucune conversation')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Démarrer une conversation'));
+    fireEvent.click(screen.getByTestId('chat-ask-question'));
     expect(screen.getByTestId('chat-message-input')).toBeInTheDocument();
   });
 

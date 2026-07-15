@@ -440,6 +440,36 @@ export function shouldClearAiTypingIndicator(params: {
   );
 }
 
+const CONVERSATION_LIST_PREVIEW_MAX_LENGTH = 72;
+
+/** Aperçu du dernier message dans la liste Messages (style Empire). */
+export function formatConversationListPreview(params: {
+  status: string;
+  clientRating?: number | null;
+  lastMessage?: { content: string; senderType: string } | null;
+  rateConversationLabel: string;
+  resolveContent: (content: string) => string;
+}): string {
+  if (isTerminalConversationStatus(params.status) && params.clientRating == null) {
+    return params.rateConversationLabel;
+  }
+
+  const raw = params.lastMessage?.content?.trim();
+  if (!raw) return '';
+
+  if (raw === CONVERSATION_CLOSED_I18N_KEY || raw === CONVERSATION_AUTO_CLOSED_I18N_KEY) {
+    if (isTerminalConversationStatus(params.status) && params.clientRating == null) {
+      return params.rateConversationLabel;
+    }
+    return '';
+  }
+
+  const resolved = params.resolveContent(raw).replace(/\s+/g, ' ').trim();
+  if (!resolved) return '';
+  if (resolved.length <= CONVERSATION_LIST_PREVIEW_MAX_LENGTH) return resolved;
+  return `${resolved.slice(0, CONVERSATION_LIST_PREVIEW_MAX_LENGTH - 1).trim()}…`;
+}
+
 export function selectInitialConversationId<
   T extends { id: string; status: string; lastMessageAt?: string | Date | null },
 >(conversations: T[], storedId?: string | null): string | null {

@@ -196,7 +196,32 @@ export function chatWidgetConversationScrollClass(extra = ''): string {
 }
 
 export function chatWidgetMessagesListBodyClass(): string {
-  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-2 pb-4 space-y-2';
+  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-1 pb-2';
+}
+
+export function chatWidgetMessagesListContainerClass(): string {
+  return 'flex-1 min-h-0 flex flex-col';
+}
+
+export function chatWidgetMessagesListFooterClass(): string {
+  return 'flex-shrink-0 px-4 pt-2 pb-3 border-t border-border/30 bg-background';
+}
+
+export function chatWidgetAskQuestionButtonClass(): string {
+  return 'w-full flex items-center justify-center gap-2.5 rounded-full bg-neutral-900 text-white dark:bg-neutral-950 py-3 px-5 text-sm font-semibold shadow-md hover:bg-neutral-800 dark:hover:bg-neutral-900 active:scale-[0.98] transition-all duration-150';
+}
+
+export function chatWidgetAskQuestionIconClass(): string {
+  return 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-bold';
+}
+
+export function chatWidgetHistoryItemPreviewClass(solved: boolean): string {
+  const tone = solved ? 'text-muted-foreground/75' : 'text-muted-foreground';
+  return `text-xs ${tone} line-clamp-1 mt-0.5 leading-snug`;
+}
+
+export function chatWidgetHistoryUnreadDotClass(): string {
+  return 'h-2 w-2 shrink-0 rounded-full bg-red-500';
 }
 
 export function chatWidgetHistoryCardClass(): string {
@@ -273,20 +298,20 @@ export function chatWidgetTabIconClass(isActive: boolean): string {
     : `${base} chat-widget-tab-icon-glow-hover`;
 }
 
-/** Ligne d’historique (liste Messages) — style plat type messagerie. */
+/** Ligne d’historique (liste Messages) — style plat type Empire / Intercom. */
 export function chatWidgetHistoryItemClass(params: {
   solved: boolean;
   isSelected: boolean;
 }): string {
   const base =
-    'w-full text-left px-4 py-3 border-b border-border/30 last:border-b-0 transition-all duration-200 ease-out group';
+    'w-full text-left px-4 py-3.5 border-b border-border/25 last:border-b-0 transition-all duration-200 ease-out group';
   if (params.solved) {
-    return `${base} bg-transparent hover:bg-muted/55 dark:hover:bg-muted/35 active:bg-muted/70 dark:active:bg-muted/45`;
+    return `${base} bg-transparent hover:bg-muted/50 dark:hover:bg-muted/30 active:bg-muted/65`;
   }
   const selected = params.isSelected
-    ? 'bg-muted/45 dark:bg-muted/30'
+    ? 'bg-muted/40 dark:bg-muted/25'
     : 'bg-transparent';
-  return `${base} ${selected} hover:bg-muted/55 dark:hover:bg-muted/35 active:bg-muted/70 dark:active:bg-muted/45`;
+  return `${base} ${selected} hover:bg-muted/50 dark:hover:bg-muted/30 active:bg-muted/65`;
 }
 
 export function chatWidgetHistoryItemTitleClass(solved: boolean): string {

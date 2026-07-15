@@ -163,7 +163,7 @@ describe('layout & interaction classes', () => {
 
   it('ligne historique résolue : survol gris clair animé', () => {
     const cls = chatWidgetHistoryItemClass({ solved: true, isSelected: false });
-    expect(cls).toContain('hover:bg-muted/55');
+    expect(cls).toContain('hover:bg-muted/50');
     expect(cls).toContain('transition-all');
     expect(cls).toContain('duration-200');
     expect(cls).not.toContain('opacity-60');
@@ -171,9 +171,9 @@ describe('layout & interaction classes', () => {
 
   it('ligne historique active : sélection neutre + survol gris', () => {
     const selected = chatWidgetHistoryItemClass({ solved: false, isSelected: true });
-    expect(selected).toContain('bg-muted/45');
+    expect(selected).toContain('bg-muted/40');
     const idle = chatWidgetHistoryItemClass({ solved: false, isSelected: false });
-    expect(idle).toContain('hover:bg-muted/55');
+    expect(idle).toContain('hover:bg-muted/50');
   });
 
   it('titre historique résolu s’éclaircit au survol', () => {

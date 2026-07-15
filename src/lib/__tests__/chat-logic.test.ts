@@ -6,6 +6,7 @@ import {
   canClientSubmitFeedback,
   computeAverageClientRating,
   computeAverageResponseTimeMinutes,
+  formatConversationListPreview,
   countStaffMessagesForNotification,
   getUnreadMessageCount,
   getConversationListUnreadTotal,
@@ -852,6 +853,47 @@ describe('shouldRedactEmailsForViewer', () => {
     expect(
       shouldRedactEmailsForViewer({ identityKind: 'user', role: 'MODERATOR' }),
     ).toBe('staff');
+  });
+});
+
+describe('formatConversationListPreview', () => {
+  it('affiche l’invite à noter pour un ticket fermé non noté', () => {
+    expect(
+      formatConversationListPreview({
+        status: 'CLOSED',
+        clientRating: null,
+        lastMessage: { content: 'Merci', senderType: 'MODERATOR' },
+        rateConversationLabel: 'Notez votre conversation',
+        resolveContent: (c) => c,
+      }),
+    ).toBe('Notez votre conversation');
+  });
+
+  it('affiche le dernier message pour un ticket actif', () => {
+    expect(
+      formatConversationListPreview({
+        status: 'ACTIVE',
+        clientRating: null,
+        lastMessage: { content: 'Bonjour, besoin d’aide', senderType: 'USER' },
+        rateConversationLabel: 'Notez votre conversation',
+        resolveContent: (c) => c,
+      }),
+    ).toBe('Bonjour, besoin d’aide');
+  });
+
+  it('remplace le message SYSTEM de clôture par l’invite à noter', () => {
+    expect(
+      formatConversationListPreview({
+        status: 'CLOSED',
+        clientRating: null,
+        lastMessage: {
+          content: '__i18n:moderation.conversation.system.closed__',
+          senderType: 'SYSTEM',
+        },
+        rateConversationLabel: 'Notez votre conversation',
+        resolveContent: () => 'Conversation fermée',
+      }),
+    ).toBe('Notez votre conversation');
   });
 });
 

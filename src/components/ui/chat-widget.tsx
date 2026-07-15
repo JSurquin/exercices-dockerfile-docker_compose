@@ -18,7 +18,7 @@ import { shouldShowBackButton,
   type ChatWidgetSupportStaffMember,
 } from "@/lib/chat-widget-config";
 import { MOONSKIN_LOGO_AVATAR_SRC, resolveStaffAvatarSrc } from "@/lib/team-avatars";
-import { isTerminalConversationStatus, shouldClearAiTypingIndicator } from "@/lib/chat-logic";
+import { isTerminalConversationStatus, shouldClearAiTypingIndicator, formatConversationListPreview } from "@/lib/chat-logic";
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
   CHAT_WIDGET_RATING_EMOJIS,
@@ -45,6 +45,12 @@ import {
   chatWidgetListHeaderClass,
   chatWidgetConversationScrollClass,
   chatWidgetMessagesListBodyClass,
+  chatWidgetMessagesListContainerClass,
+  chatWidgetMessagesListFooterClass,
+  chatWidgetAskQuestionButtonClass,
+  chatWidgetAskQuestionIconClass,
+  chatWidgetHistoryItemPreviewClass,
+  chatWidgetHistoryUnreadDotClass,
   chatWidgetHistoryCardClass,
   chatWidgetHistorySectionTitleClass,
   chatWidgetStaffAvatarStackClass,
@@ -88,9 +94,7 @@ import {
   ArrowPathIcon,
   BanknotesIcon,
   WrenchScrewdriverIcon,
-  CpuChipIcon,
   UserCircleIcon,
-  PlusIcon,
   HomeIcon,
   QuestionMarkCircleIcon,
   MagnifyingGlassIcon,
@@ -913,6 +917,23 @@ export function ChatWidget() {
     }
   }, [currentConversation?.messages, isInConversation, scrollToBottom, localClientRating]);
 
+  useEffect(() => {
+    if (!isInConversation || !currentConversation) return;
+    if (!isTerminalConversationStatus(currentConversation.status)) return;
+    const rating = localClientRating ?? currentConversation.clientRating ?? null;
+    if (rating == null) {
+      setTimeout(scrollToBottom, 150);
+    }
+  }, [
+    conversationId,
+    isInConversation,
+    currentConversation?.status,
+    currentConversation?.clientRating,
+    localClientRating,
+    scrollToBottom,
+    currentConversation,
+  ]);
+
   const handleToggleChat = () => {
     openPopup();
   };
@@ -1056,14 +1077,6 @@ export function ChatWidget() {
   const handleSelectHistoryItem = (id: string) => {
     setConversationId(id);
     setMessagesStep("conversation");
-  };
-
-  const handleNewConversation = () => {
-    startNewConversation();
-    setSelectedCategory(null);
-    setHelpStep("categories");
-    setActiveTab("help");
-    setMessagesStep("list");
   };
 
   const handleSendMessage = useCallback(async (content: string) => {
@@ -1461,28 +1474,16 @@ export function ChatWidget() {
             <ArrowLeftIcon className="h-4 w-4" />
           </button>
         )}
-        <h2 className="text-base font-semibold truncate">{messages.chatWidget.historyTitle}</h2>
+        <h2 className="text-base font-semibold truncate">{messages.chatWidget.tabs.messages}</h2>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
-        <button
-          type="button"
-          data-testid="chat-new-conversation"
-          onClick={handleNewConversation}
-          className="flex items-center gap-1 h-8 px-2.5 rounded-full border border-border text-xs font-medium hover:bg-muted transition-colors"
-          aria-label={messages.chatWidget.newConversation}
-        >
-          <PlusIcon className="h-3.5 w-3.5 shrink-0" />
-          <span className="hidden sm:inline">{messages.chatWidget.newConversation}</span>
-        </button>
-        <button
-          type="button"
-          onClick={closePopup}
-          className="p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
-          aria-label={messages.ui.close}
-        >
-          <XMarkIcon className="h-5 w-5" />
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={closePopup}
+        className="p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
+        aria-label={messages.ui.close}
+      >
+        <XMarkIcon className="h-5 w-5" />
+      </button>
     </div>
   );
 
@@ -1537,38 +1538,77 @@ export function ChatWidget() {
     );
   };
 
-  const renderHistoryItem = (item: (typeof conversationListItems)[number], solved = false) => (
-    <button
-      key={item.id}
-      type="button"
-      onClick={() => handleSelectHistoryItem(item.id)}
-      className={chatWidgetHistoryItemClass({
-        solved,
-        isSelected:
-          messagesStep === "conversation" && !solved && item.id === conversationId,
-      })}
-    >
-      <div className="flex items-start gap-3">
-        <Avatar className={`h-9 w-9 shrink-0 ${solved ? "opacity-70 group-hover:opacity-90 transition-opacity duration-200" : ""}`}>
-          <AvatarImage src={SUPPORT_AVATAR_SRC} />
-          <AvatarFallback className="text-xs">
-            <CpuChipIcon className="h-4 w-4" aria-hidden />
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <p className={chatWidgetHistoryItemTitleClass(solved)}>{item.title}</p>
-            <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="text-[10px] text-muted-foreground tabular-nums">
-                {formatRelativeTime(item.lastMessageAt, relativeTimeLabels, dateLocale)}
-              </span>
-              {!solved && item.unread > 0 && (
-                <Badge className="h-5 min-w-5 px-1 text-[10px]">{item.unread}</Badge>
-              )}
+  const renderHistoryItem = (item: (typeof conversationListItems)[number], solved = false) => {
+    const preview = formatConversationListPreview({
+      status: item.status,
+      clientRating: item.clientRating,
+      lastMessage: item.lastMessage,
+      rateConversationLabel: messages.chatWidget.rateConversation,
+      resolveContent,
+    });
+    const avatarSrc =
+      resolveStaffAvatarSrc(item.assignedModerator) ?? SUPPORT_AVATAR_SRC;
+    const showRatePreview =
+      solved &&
+      isTerminalConversationStatus(item.status) &&
+      item.clientRating == null;
+
+    return (
+      <button
+        key={item.id}
+        type="button"
+        onClick={() => handleSelectHistoryItem(item.id)}
+        className={chatWidgetHistoryItemClass({
+          solved,
+          isSelected:
+            messagesStep === "conversation" && !solved && item.id === conversationId,
+        })}
+      >
+        <div className="flex items-center gap-3">
+          <Avatar className={`h-10 w-10 shrink-0 ${solved ? "opacity-80" : ""}`}>
+            <AvatarImage src={avatarSrc} />
+            <AvatarFallback className="text-xs">
+              <UserCircleIcon className="h-4 w-4" aria-hidden />
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <p className={chatWidgetHistoryItemTitleClass(solved)}>{item.title}</p>
+              <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
+                {!solved && item.unread > 0 && (
+                  <span className={chatWidgetHistoryUnreadDotClass()} aria-hidden />
+                )}
+                <span className="text-[11px] text-muted-foreground tabular-nums">
+                  {formatRelativeTime(item.lastMessageAt, relativeTimeLabels, dateLocale)}
+                </span>
+              </div>
             </div>
+            {preview ? (
+              <p
+                className={`${chatWidgetHistoryItemPreviewClass(solved)} ${
+                  showRatePreview ? "italic" : ""
+                }`}
+              >
+                {preview}
+              </p>
+            ) : null}
           </div>
         </div>
-      </div>
+      </button>
+    );
+  };
+
+  const renderAskQuestionButton = () => (
+    <button
+      type="button"
+      data-testid="chat-ask-question"
+      onClick={handleAskQuestion}
+      className={chatWidgetAskQuestionButtonClass()}
+    >
+      <span className={chatWidgetAskQuestionIconClass()} aria-hidden>
+        ?
+      </span>
+      {messages.chatWidget.home.askQuestion}
     </button>
   );
 
@@ -1580,40 +1620,36 @@ export function ChatWidget() {
   );
 
   const renderMessagesList = () => (
-    <div className={chatWidgetMessagesListBodyClass()} data-testid="chat-history-list">
-      {conversationListItems.length === 0 ? (
-        <div className={`${chatWidgetHomeCardClass()} flex flex-col items-center justify-center py-8 text-center`}>
-          <ChatBubbleBottomCenterTextIcon className="h-10 w-10 text-muted-foreground/40 mb-3" />
-          <p className="text-sm text-muted-foreground">{messages.chatWidget.home.noConversations}</p>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="mt-3"
-            onClick={handleAskQuestion}
-          >
-            {messages.chatWidget.home.startChat}
-          </Button>
-        </div>
-      ) : (
-        <>
-          {activeConversationItems.length > 0 && (
-            <div className={chatWidgetHistoryCardClass()}>
-              {activeConversationItems.map((item) => renderHistoryItem(item))}
-            </div>
-          )}
-          {solvedConversationItems.length > 0 && (
-            <>
-              <p className={chatWidgetHistorySectionTitleClass()}>
-                {messages.chatWidget.solvedSectionTitle}
-              </p>
+    <div className={chatWidgetMessagesListContainerClass()} data-testid="chat-history-list">
+      <div className={chatWidgetMessagesListBodyClass()}>
+        {conversationListItems.length === 0 ? (
+          <div className={`${chatWidgetHomeCardClass()} flex flex-col items-center justify-center py-8 text-center mt-2`}>
+            <ChatBubbleBottomCenterTextIcon className="h-10 w-10 text-muted-foreground/40 mb-3" />
+            <p className="text-sm text-muted-foreground">{messages.chatWidget.home.noConversations}</p>
+          </div>
+        ) : (
+          <>
+            {activeConversationItems.length > 0 && (
               <div className={chatWidgetHistoryCardClass()}>
-                {solvedConversationItems.map((item) => renderHistoryItem(item, true))}
+                {activeConversationItems.map((item) => renderHistoryItem(item))}
               </div>
-            </>
-          )}
-        </>
-      )}
+            )}
+            {solvedConversationItems.length > 0 && (
+              <>
+                <p className={chatWidgetHistorySectionTitleClass()}>
+                  {messages.chatWidget.solvedSectionTitle}
+                </p>
+                <div className={chatWidgetHistoryCardClass()}>
+                  {solvedConversationItems.map((item) => renderHistoryItem(item, true))}
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
+      <div className={chatWidgetMessagesListFooterClass()}>
+        {renderAskQuestionButton()}
+      </div>
     </div>
   );
 
