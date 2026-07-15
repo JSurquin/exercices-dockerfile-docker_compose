@@ -31,27 +31,27 @@ export function resolveWidgetSystemMessageVariant(content: string): WidgetSystem
   return 'default';
 }
 
-/** Classes Tailwind des bulles de message (widget accueil). */
+/** Classes Tailwind des bulles de message (style messagerie type Intercom). */
 export function chatWidgetMessageBubbleClass(senderType: WidgetSenderType): string {
-  const base = 'max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed';
+  const base = 'max-w-[85%] rounded-[22px] px-4 py-2.5 text-sm leading-relaxed';
   switch (senderType) {
     case 'USER':
-      return `${base} bg-neutral-900 text-white dark:bg-neutral-950 rounded-br-md shadow-sm`;
+      return `${base} bg-neutral-900 text-white dark:bg-neutral-950`;
     case 'MODERATOR':
-      return `${base} bg-muted/90 text-foreground border border-border/40 rounded-bl-md`;
+      return `${base} bg-neutral-100 text-foreground dark:bg-neutral-800`;
     case 'AI':
-      return `${base} bg-muted/90 text-foreground border border-border/40 rounded-bl-md`;
+      return `${base} bg-neutral-100 text-foreground dark:bg-neutral-800`;
     case 'SYSTEM':
-      return `${base} bg-muted/70 text-muted-foreground border border-border/30 rounded-xl text-xs`;
+      return `${base} bg-neutral-100/80 text-muted-foreground dark:bg-neutral-800/80 rounded-2xl text-xs`;
     case 'BOT':
-      return `${base} bg-muted/90 text-foreground border border-border/40 rounded-bl-md`;
+      return `${base} bg-neutral-100 text-foreground dark:bg-neutral-800`;
     default:
-      return `${base} bg-muted/90 text-foreground border border-border/40 rounded-bl-md`;
+      return `${base} bg-neutral-100 text-foreground dark:bg-neutral-800`;
   }
 }
 
 export function chatWidgetSystemBannerClass(): string {
-  return 'w-full rounded-2xl bg-muted/80 border border-border/40 px-4 py-3 text-sm text-foreground leading-relaxed';
+  return 'w-full rounded-[22px] bg-neutral-100 dark:bg-neutral-800 px-4 py-3 text-sm text-foreground leading-relaxed';
 }
 
 export function chatWidgetSystemJoinClass(): string {
@@ -59,7 +59,7 @@ export function chatWidgetSystemJoinClass(): string {
 }
 
 export function chatWidgetRatingBoxClass(): string {
-  return 'mx-auto max-w-[280px] rounded-xl border border-border/60 bg-card px-4 py-4 text-center shadow-sm';
+  return 'mx-auto w-full max-w-[300px] rounded-2xl border border-border/50 bg-background px-5 py-5 text-center';
 }
 
 export function chatWidgetRatingEmojiClass(isSelected: boolean, isHovered: boolean): string {
@@ -82,9 +82,13 @@ export function chatWidgetSenderLabelClass(_senderType: WidgetSenderType): strin
   return null;
 }
 
-export function chatWidgetTimestampClass(senderType: WidgetSenderType): string {
-  if (senderType === 'USER') return 'text-white/60';
-  return 'text-muted-foreground/80';
+export function chatWidgetTimestampClass(_senderType: WidgetSenderType): string {
+  return 'text-muted-foreground/70';
+}
+
+/** Horodatage affiché dans les bulles du widget (style Intercom : masqué). */
+export function shouldShowWidgetMessageTimestamp(): boolean {
+  return false;
 }
 
 /** Durée de fermeture du popup (alignée sur transition CSS + démontage React). */
@@ -187,7 +191,7 @@ export function chatWidgetHelpSubcategoryRowClass(disabled: boolean): string {
 
 export function chatWidgetConversationScrollClass(extra = ''): string {
   return chatWidgetScrollAreaClass(
-    `bg-neutral-100 dark:bg-neutral-950 px-4 py-3 space-y-3 ${extra}`.trim(),
+    `bg-background px-4 py-4 space-y-2.5 ${extra}`.trim(),
   );
 }
 
@@ -239,7 +243,7 @@ export function chatWidgetMessageEnterClass(isNew: boolean): string {
 }
 
 export function chatWidgetAiTypingBubbleClass(): string {
-  return 'bg-muted/90 border border-border/40 rounded-2xl rounded-bl-md px-4 py-2.5';
+  return 'bg-neutral-100 dark:bg-neutral-800 rounded-[22px] px-4 py-2.5';
 }
 
 export function chatWidgetInputAreaClass(): string {

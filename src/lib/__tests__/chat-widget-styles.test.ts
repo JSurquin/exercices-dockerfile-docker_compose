@@ -47,27 +47,27 @@ describe('chatWidgetMessageBubbleClass — design tokens', () => {
   });
 
   it('MODERATOR : gris clair', () => {
-    expect(chatWidgetMessageBubbleClass('MODERATOR')).toContain('bg-muted/90');
+    expect(chatWidgetMessageBubbleClass('MODERATOR')).toContain('bg-neutral-100');
   });
 
   it('AI : même style que staff (gris clair)', () => {
     const cls = chatWidgetMessageBubbleClass('AI');
-    expect(cls).toContain('bg-muted/90');
-    expect(cls).toContain('border-border/40');
+    expect(cls).toContain('bg-neutral-100');
+    expect(cls).not.toContain('border-border');
   });
 
-  it('SYSTEM : bandeau muted', () => {
+  it('SYSTEM : bandeau gris atténué', () => {
     const cls = chatWidgetMessageBubbleClass('SYSTEM');
-    expect(cls).toContain('bg-muted/70');
+    expect(cls).toContain('bg-neutral-100/80');
     expect(cls).toContain('text-muted-foreground');
   });
 
   it('BOT : gris clair neutre', () => {
-    expect(chatWidgetMessageBubbleClass('BOT')).toContain('bg-muted/90');
+    expect(chatWidgetMessageBubbleClass('BOT')).toContain('bg-neutral-100');
   });
 
   it('fallback pour type inconnu', () => {
-    expect(chatWidgetMessageBubbleClass('UNKNOWN')).toContain('bg-muted/90');
+    expect(chatWidgetMessageBubbleClass('UNKNOWN')).toContain('bg-neutral-100');
   });
 });
 
@@ -81,8 +81,8 @@ describe('chatWidgetSenderLabelClass', () => {
 });
 
 describe('chatWidgetTimestampClass', () => {
-  it('adapte la couleur au type d’expéditeur', () => {
-    expect(chatWidgetTimestampClass('USER')).toContain('text-white/60');
+  it('utilise une couleur atténuée uniforme', () => {
+    expect(chatWidgetTimestampClass('USER')).toContain('text-muted-foreground');
     expect(chatWidgetTimestampClass('SYSTEM')).toContain('text-muted-foreground');
     expect(chatWidgetTimestampClass('AI')).toContain('text-muted-foreground');
     expect(chatWidgetTimestampClass('BOT')).toContain('text-muted-foreground');
@@ -150,7 +150,8 @@ describe('layout & interaction classes', () => {
   });
 
   it('bulle AI typing cohérente avec messages staff', () => {
-    expect(chatWidgetAiTypingBubbleClass()).toContain('border-border/40');
+    expect(chatWidgetAiTypingBubbleClass()).toContain('bg-neutral-100');
+    expect(chatWidgetAiTypingBubbleClass()).toContain('rounded-[22px]');
   });
 
   it('barre d’onglets en ligne avec boutons de taille égale', () => {

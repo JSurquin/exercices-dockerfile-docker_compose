@@ -69,8 +69,8 @@ describe('chatMessageBubbleClass', () => {
 });
 
 describe('cohérence design widget vs modération', () => {
-  it('AI utilise violet côté widget et theme-highlight côté admin', () => {
-    expect(chatWidgetMessageBubbleClass('AI')).toContain('violet');
+  it('widget Intercom : staff gris clair, admin conserve theme-highlight pour AI', () => {
+    expect(chatWidgetMessageBubbleClass('AI')).toContain('bg-neutral-100');
     expect(chatMessageBubbleClass('AI')).toContain('theme-highlight');
   });
 });

@@ -48,29 +48,30 @@ describe('Chat widget design (rendu DOM)', () => {
     expect(screen.getByTestId('header')).toHaveClass('text-white');
   });
 
-  it('bulle USER : gradient à droite', () => {
+  it('bulle USER : sombre à droite (style Intercom)', () => {
     render(<DesignPreview />);
     const bubble = screen.getByTestId('bubble-user');
-    expect(bubble).toHaveClass('bg-cta-gradient');
-    expect(bubble).toHaveClass('rounded-tr-sm');
+    expect(bubble).toHaveClass('bg-neutral-900');
+    expect(bubble).toHaveClass('text-white');
+    expect(bubble.className).toContain('rounded-[22px]');
     expect(screen.getByText('Message user')).toBeInTheDocument();
   });
 
-  it('bulle AI : violet + label distinct', () => {
+  it('bulle AI : gris clair sans label expéditeur', () => {
     render(<DesignPreview />);
     const bubble = screen.getByTestId('bubble-ai');
-    expect(bubble.className).toMatch(/violet/);
-    expect(screen.getByTestId('ai-label').className).toContain('text-violet-600');
+    expect(bubble).toHaveClass('bg-neutral-100');
+    expect(chatWidgetSenderLabelClass('AI')).toBeNull();
   });
 
-  it('bulle MODERATOR : bleu', () => {
+  it('bulle MODERATOR : gris clair', () => {
     render(<DesignPreview />);
-    expect(screen.getByTestId('bubble-mod')).toHaveClass('bg-blue-500');
+    expect(screen.getByTestId('bubble-mod')).toHaveClass('bg-neutral-100');
   });
 
-  it('bulle SYSTEM : emerald', () => {
+  it('bulle SYSTEM : gris atténué', () => {
     render(<DesignPreview />);
-    expect(screen.getByTestId('bubble-system').className).toMatch(/emerald/);
+    expect(screen.getByTestId('bubble-system').className).toContain('bg-neutral-100/80');
   });
 
   it('FAB rond CTA avec hover scale', () => {

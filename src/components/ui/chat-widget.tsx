@@ -71,6 +71,7 @@ import {
   resolveWidgetSystemMessageVariant,
   shouldShowWidgetAiTyping,
   shouldShowWidgetUnreadBadge,
+  shouldShowWidgetMessageTimestamp,
   type WidgetSenderType,
 } from "@/lib/chat-widget-styles";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -88,7 +89,6 @@ import {
   BanknotesIcon,
   WrenchScrewdriverIcon,
   CpuChipIcon,
-  SparklesIcon,
   UserCircleIcon,
   PlusIcon,
   HomeIcon,
@@ -96,8 +96,6 @@ import {
   MagnifyingGlassIcon,
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
-import { CheckIcon } from "@heroicons/react/24/solid";
-
 const SUPPORT_AVATAR_SRC = MOONSKIN_LOGO_AVATAR_SRC;
 
 const ChatWidgetSupportHeadsetIcon = memo(function ChatWidgetSupportHeadsetIcon({
@@ -577,7 +575,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
       )}
       {messages.length === 0 && (
         <div className="flex justify-start">
-          <div className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-2.5 bg-muted border text-sm">
+          <div className={chatWidgetMessageBubbleClass('BOT')}>
             {welcomeMessage}
           </div>
         </div>
@@ -652,7 +650,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
                 <ChatMarkdownContent content={resolveContent(msg.content)} />
               )}
               {isAi && aiEnabled && (
-                <div className="mt-2 pt-2 border-t border-border/40">
+                <div className="mt-2 pt-2 border-t border-border/30">
                   <Button
                     type="button"
                     size="sm"
@@ -666,17 +664,13 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
                   </Button>
                 </div>
               )}
-              <div
-                className={`flex items-center justify-end mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
-              >
-                <span className="text-[10px]">{formatMessageTime(msg.createdAt, dateLocale)}</span>
-                {isUser && (
-                  <div className="flex text-white/50">
-                    <CheckIcon className="h-3 w-3" />
-                    <CheckIcon className="h-3 w-3 -ml-1" />
-                  </div>
-                )}
-              </div>
+              {shouldShowWidgetMessageTimestamp() && (
+                <div
+                  className={`flex items-center justify-end mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
+                >
+                  <span className="text-[10px]">{formatMessageTime(msg.createdAt, dateLocale)}</span>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -700,7 +694,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
 
       {isLoading && !showAiTyping && (
         <div className="flex justify-start">
-          <div className="bg-muted border rounded-2xl rounded-tl-sm px-4 py-3">
+          <div className={chatWidgetAiTypingBubbleClass()}>
             <div className="flex space-x-1.5">
               <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
               <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
@@ -715,14 +709,10 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
           <div className={chatWidgetAiTypingBubbleClass()}>
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/40 rounded-full px-2 py-0.5">
-                  <SparklesIcon className="h-3 w-3 shrink-0" aria-hidden />
-                  {aiLabel}
-                </span>
                 <div className="flex gap-1">
-                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
-                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full ai-typing-dot" />
+                  <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full ai-typing-dot" />
+                  <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full ai-typing-dot" />
+                  <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full ai-typing-dot" />
                 </div>
               </div>
               {aiTypingQueuedHint && (
@@ -1840,7 +1830,7 @@ export function ChatWidget() {
           )}
         </div>
 
-        {renderTabBar()}
+        {isInConversation ? null : renderTabBar()}
       </div>
       )}
 
