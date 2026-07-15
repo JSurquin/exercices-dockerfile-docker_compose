@@ -56,6 +56,7 @@ import {
   chatWidgetSystemJoinClass,
   chatWidgetTabBarClass,
   chatWidgetTabButtonClass,
+  chatWidgetTabIconClass,
   chatWidgetTextareaClass,
   chatWidgetTimestampClass,
   chatWidgetUnreadBadgeClass,
@@ -1325,9 +1326,17 @@ export function ChatWidget() {
   const renderHomeHeader = () => (
     <div className={chatWidgetHomeHeaderClass()} data-testid="chat-home-header">
       <div
-        className="pointer-events-none absolute inset-0 chat-widget-home-header-bg"
+        className="pointer-events-none absolute inset-0 flex items-end justify-center overflow-hidden"
         aria-hidden
-      />
+      >
+        <Image
+          src="/images/logo.webp"
+          alt=""
+          width={220}
+          height={220}
+          className="opacity-[0.08] translate-y-6 scale-125 select-none"
+        />
+      </div>
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-10 chat-widget-home-header-fade"
         aria-hidden
@@ -1614,7 +1623,7 @@ export function ChatWidget() {
         className={chatWidgetTabButtonClass(activeTab === "home")}
         aria-label={messages.chatWidget.tabs.home}
       >
-        <HomeIcon className={`h-5 w-5 shrink-0 ${activeTab === "home" ? "text-theme-accent" : ""}`} />
+        <HomeIcon className={chatWidgetTabIconClass(activeTab === "home")} />
         <span className="text-[10px] leading-none truncate max-w-full">{messages.chatWidget.tabs.home}</span>
       </button>
       <button
@@ -1628,7 +1637,7 @@ export function ChatWidget() {
         className={chatWidgetTabButtonClass(activeTab === "help")}
         aria-label={messages.chatWidget.tabs.help}
       >
-        <QuestionMarkCircleIcon className={`h-5 w-5 shrink-0 ${activeTab === "help" ? "text-theme-accent" : ""}`} />
+        <QuestionMarkCircleIcon className={chatWidgetTabIconClass(activeTab === "help")} />
         <span className="text-[10px] leading-none truncate max-w-full">{messages.chatWidget.tabs.help}</span>
       </button>
       <button
@@ -1643,7 +1652,7 @@ export function ChatWidget() {
       >
         <span className="relative inline-flex h-5 w-5 items-center justify-center shrink-0">
           <ChatBubbleBottomCenterTextIcon
-            className={`h-5 w-5 ${activeTab === "messages" ? "text-theme-accent" : ""}`}
+            className={chatWidgetTabIconClass(activeTab === "messages")}
           />
           {totalListUnread > 0 && (
             <span className="absolute -top-1.5 -right-2 h-4 min-w-4 px-0.5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-medium">

@@ -2507,19 +2507,17 @@ body.next-dev-overlay-present #sentry-feedback {
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  /* Chat widget — en-tête accueil : lueurs CSS (pas d’image qui se décale au scroll) */
-  .chat-widget-home-header-bg {
-    background:
-      radial-gradient(ellipse 90% 70% at 50% 120%, rgba(126, 179, 232, 0.14) 0%, transparent 58%),
-      radial-gradient(ellipse 45% 40% at 88% 18%, rgba(160, 170, 190, 0.1) 0%, transparent 52%),
-      radial-gradient(ellipse 38% 32% at 12% 28%, rgba(110, 120, 145, 0.08) 0%, transparent 48%);
+  /* Chat widget — onglets : lueur légère sur l’icône active / au survol */
+  .chat-widget-tab-icon-glow-active {
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--theme-accent) 55%, transparent));
   }
 
-  .cs2 .chat-widget-home-header-bg {
-    background:
-      radial-gradient(ellipse 90% 70% at 50% 120%, rgba(249, 115, 22, 0.16) 0%, transparent 58%),
-      radial-gradient(ellipse 45% 40% at 88% 18%, rgba(220, 38, 38, 0.1) 0%, transparent 52%),
-      radial-gradient(ellipse 38% 32% at 12% 28%, rgba(180, 90, 40, 0.07) 0%, transparent 48%);
+  .chat-widget-tab-icon-glow-hover {
+    transition: filter 150ms ease;
+  }
+
+  .group:hover .chat-widget-tab-icon-glow-hover {
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-accent) 35%, transparent));
   }
 
   .chat-widget-home-header-fade {

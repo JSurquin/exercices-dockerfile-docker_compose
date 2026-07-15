@@ -134,7 +134,7 @@ export function chatWidgetHomeBodyClass(): string {
 }
 
 export function chatWidgetHomeCardClass(): string {
-  return 'w-full rounded-2xl border border-transparent bg-white dark:bg-neutral-900/80 shadow-sm p-4 text-left cursor-pointer transition-all duration-150 hover:shadow-md hover:bg-neutral-50 dark:hover:bg-neutral-900 dark:hover:border-white/10';
+  return 'w-full rounded-2xl border-0 bg-white dark:bg-neutral-900/80 shadow-sm p-4 text-left';
 }
 
 export function chatWidgetHomeCardInnerButtonClass(): string {
@@ -206,10 +206,17 @@ export function chatWidgetTabBarClass(): string {
 
 export function chatWidgetTabButtonClass(isActive: boolean): string {
   const base =
-    'flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[48px] rounded-lg transition-all duration-150 relative cursor-pointer';
+    'group flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[48px] rounded-lg transition-colors duration-150 relative cursor-pointer';
   return isActive
-    ? `${base} text-foreground font-medium bg-muted/40 dark:bg-white/10`
-    : `${base} text-muted-foreground hover:text-foreground hover:bg-muted/35 dark:hover:bg-white/5`;
+    ? `${base} text-foreground font-medium`
+    : `${base} text-muted-foreground hover:text-foreground`;
+}
+
+export function chatWidgetTabIconClass(isActive: boolean): string {
+  const base = 'h-5 w-5 shrink-0 transition-[filter,color] duration-150';
+  return isActive
+    ? `${base} text-theme-accent chat-widget-tab-icon-glow-active`
+    : `${base} chat-widget-tab-icon-glow-hover`;
 }
 
 /** Ligne d’historique (liste Messages) — style plat type messagerie. */
