@@ -168,9 +168,9 @@ describe('layout & interaction classes', () => {
     expect(cls).not.toContain('opacity-60');
   });
 
-  it('ligne historique active : sélection accent + survol gris', () => {
+  it('ligne historique active : sélection neutre + survol gris', () => {
     const selected = chatWidgetHistoryItemClass({ solved: false, isSelected: true });
-    expect(selected).toContain('bg-theme-accent/5');
+    expect(selected).toContain('bg-muted/45');
     const idle = chatWidgetHistoryItemClass({ solved: false, isSelected: false });
     expect(idle).toContain('hover:bg-muted/55');
   });

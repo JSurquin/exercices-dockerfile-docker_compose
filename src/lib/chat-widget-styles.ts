@@ -130,7 +130,7 @@ export function chatWidgetHomeHeaderClass(): string {
 }
 
 export function chatWidgetHomeBodyClass(): string {
-  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain bg-neutral-100 dark:bg-neutral-950 px-4 py-4 space-y-3';
+  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-2 pb-4 space-y-3';
 }
 
 export function chatWidgetHomeCardClass(): string {
@@ -153,9 +153,14 @@ export function chatWidgetHomeSearchHeaderClass(): string {
   return 'flex items-center justify-between pb-3 mb-1 border-b border-border/40 rounded-lg px-2 -mx-2 transition-all duration-150 hover:bg-muted/55 dark:hover:bg-white/10 active:bg-muted/70 dark:active:bg-white/15 cursor-pointer';
 }
 
-/** En-tête compact pour onglets Aide / Messages (aligné sur l’accueil). */
+/** En-tête compact pour onglet Aide. */
 export function chatWidgetPanelHeaderClass(): string {
-  return 'relative flex-shrink-0 overflow-hidden bg-neutral-950 text-white px-4 pt-4 pb-5';
+  return 'relative flex-shrink-0 overflow-hidden bg-neutral-950 text-white px-4 py-3';
+}
+
+/** En-tête léger pour la liste Messages (sans bandeau sombre). */
+export function chatWidgetListHeaderClass(): string {
+  return 'flex items-center justify-between gap-2 px-4 py-3 border-b border-border/40 bg-background flex-shrink-0';
 }
 
 export function chatWidgetPanelHeaderTitleClass(): string {
@@ -187,7 +192,7 @@ export function chatWidgetConversationScrollClass(extra = ''): string {
 }
 
 export function chatWidgetMessagesListBodyClass(): string {
-  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain bg-neutral-100 dark:bg-neutral-950 px-4 py-4 space-y-3';
+  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-2 pb-4 space-y-2';
 }
 
 export function chatWidgetHistoryCardClass(): string {
@@ -275,7 +280,7 @@ export function chatWidgetHistoryItemClass(params: {
     return `${base} bg-transparent hover:bg-muted/55 dark:hover:bg-muted/35 active:bg-muted/70 dark:active:bg-muted/45`;
   }
   const selected = params.isSelected
-    ? 'bg-theme-accent/5 dark:bg-theme-accent/10'
+    ? 'bg-muted/45 dark:bg-muted/30'
     : 'bg-transparent';
   return `${base} ${selected} hover:bg-muted/55 dark:hover:bg-muted/35 active:bg-muted/70 dark:active:bg-muted/45`;
 }

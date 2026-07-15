@@ -42,6 +42,7 @@ import {
   chatWidgetPanelHeaderClass,
   chatWidgetPanelHeaderSubtitleClass,
   chatWidgetPanelHeaderTitleClass,
+  chatWidgetListHeaderClass,
   chatWidgetConversationScrollClass,
   chatWidgetMessagesListBodyClass,
   chatWidgetHistoryCardClass,
@@ -1400,13 +1401,13 @@ export function ChatWidget() {
         <Image
           src="/images/logo.webp"
           alt=""
-          width={180}
-          height={180}
-          className="opacity-[0.06] translate-y-4 scale-125 select-none"
+          width={140}
+          height={140}
+          className="opacity-[0.04] translate-y-2 scale-110 select-none"
         />
       </div>
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-8 chat-widget-home-header-fade"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-4 chat-widget-home-header-fade"
         aria-hidden
       />
 
@@ -1457,23 +1458,43 @@ export function ChatWidget() {
     });
   };
 
-  const renderMessagesHeader = () =>
-    renderPanelHeader({
-      title: messages.chatWidget.historyTitle,
-      testId: "chat-messages-header",
-      trailingAction: (
+  const renderMessagesHeader = () => (
+    <div className={chatWidgetListHeaderClass()} data-testid="chat-messages-header">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        {showBack && (
+          <button
+            type="button"
+            onClick={handleBack}
+            className="p-1 rounded-full hover:bg-muted transition-colors shrink-0"
+            aria-label={messages.chatWidget.tabs.messages}
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+          </button>
+        )}
+        <h2 className="text-base font-semibold truncate">{messages.chatWidget.historyTitle}</h2>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
         <button
           type="button"
           data-testid="chat-new-conversation"
           onClick={handleNewConversation}
-          className="flex items-center gap-1 h-8 px-2.5 rounded-full border border-white/25 text-xs font-medium text-white hover:bg-white/10 transition-colors"
+          className="flex items-center gap-1 h-8 px-2.5 rounded-full border border-border text-xs font-medium hover:bg-muted transition-colors"
           aria-label={messages.chatWidget.newConversation}
         >
           <PlusIcon className="h-3.5 w-3.5 shrink-0" />
           <span className="hidden sm:inline">{messages.chatWidget.newConversation}</span>
         </button>
-      ),
-    });
+        <button
+          type="button"
+          onClick={closePopup}
+          className="p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
+          aria-label={messages.ui.close}
+        >
+          <XMarkIcon className="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  );
 
   const renderHelpTab = () => {
     if (helpStep === "subcategories" && selectedCategory) {
@@ -1533,7 +1554,8 @@ export function ChatWidget() {
       onClick={() => handleSelectHistoryItem(item.id)}
       className={chatWidgetHistoryItemClass({
         solved,
-        isSelected: !solved && item.id === conversationId,
+        isSelected:
+          messagesStep === "conversation" && !solved && item.id === conversationId,
       })}
     >
       <div className="flex items-start gap-3">
