@@ -88,10 +88,8 @@ import {
   MagnifyingGlassIcon,
   EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
-import {
-  ChatBubbleBottomCenterTextIcon as ChatBubbleBottomCenterTextIconSolid,
-  CheckIcon,
-} from "@heroicons/react/24/solid";
+import { CheckIcon } from "@heroicons/react/24/solid";
+import { Headset } from "lucide-react";
 
 const SUPPORT_AVATAR_SRC = MOONSKIN_LOGO_AVATAR_SRC;
 
@@ -1749,10 +1747,8 @@ export function ChatWidget() {
               onClick={handleToggleChat}
               className={chatWidgetFabButtonClass()}
             >
-              <ChatBubbleBottomCenterTextIconSolid className="h-6 w-6 text-white" />
+              <Headset className="h-6 w-6 text-white" strokeWidth={1.75} aria-hidden />
             </button>
-
-            <div className="absolute inset-0 rounded-full bg-cta-gradient chat-pulse-ring opacity-20 pointer-events-none" />
           </div>
         </div>
       )}
