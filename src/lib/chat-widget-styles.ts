@@ -32,22 +32,22 @@ export function resolveWidgetSystemMessageVariant(content: string): WidgetSystem
 }
 
 const CHAT_WIDGET_BUBBLE_BASE =
-  'w-full rounded-2xl px-4 py-2.5 text-sm leading-relaxed';
+  'w-full rounded-[22px] px-4 py-2.5 text-sm leading-relaxed';
 
-/** Classes Tailwind des bulles de message — style plat type Empire, couleurs MoonSkin. */
+/** Classes Tailwind des bulles de message — style Empire (arrondi, contrastes lisibles). */
 export function chatWidgetMessageBubbleClass(senderType: WidgetSenderType): string {
   switch (senderType) {
     case 'USER':
-      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-user text-foreground`;
+      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-user`;
     case 'AI':
-      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-ai text-foreground`;
+      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-ai`;
     case 'MODERATOR':
     case 'BOT':
-      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-staff text-foreground`;
+      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-staff`;
     case 'SYSTEM':
-      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-staff text-muted-foreground text-xs`;
+      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-staff text-xs opacity-90`;
     default:
-      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-staff text-foreground`;
+      return `${CHAT_WIDGET_BUBBLE_BASE} chat-widget-bubble-staff`;
   }
 }
 

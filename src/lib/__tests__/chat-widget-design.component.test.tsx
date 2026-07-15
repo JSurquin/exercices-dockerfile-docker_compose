@@ -52,7 +52,7 @@ describe('Chat widget design (rendu DOM)', () => {
     const bubble = screen.getByTestId('bubble-user');
     expect(bubble).toHaveClass('chat-widget-bubble-user');
     expect(bubble.className).not.toContain('chat-widget-bubble-chrome');
-    expect(bubble.className).toContain('rounded-2xl');
+    expect(bubble.className).toContain('rounded-[22px]');
     expect(screen.getByText('Message user')).toBeInTheDocument();
   });
 

@@ -62,7 +62,8 @@ describe('chatWidgetMessageBubbleClass — design tokens', () => {
   it('SYSTEM : bulle plate atténuée', () => {
     const cls = chatWidgetMessageBubbleClass('SYSTEM');
     expect(cls).toContain('chat-widget-bubble-staff');
-    expect(cls).toContain('text-muted-foreground');
+    expect(cls).toContain('text-xs');
+    expect(cls).toContain('opacity-90');
   });
 
   it('BOT : bulle plate staff', () => {
@@ -220,7 +221,7 @@ describe('layout & interaction classes', () => {
 
   it('bulle AI typing cohérente avec messages staff', () => {
     expect(chatWidgetAiTypingBubbleClass()).toContain('chat-widget-bubble-ai');
-    expect(chatWidgetAiTypingBubbleClass()).toContain('rounded-2xl');
+    expect(chatWidgetAiTypingBubbleClass()).toContain('rounded-[22px]');
   });
 
   it('groupe message aligne label et bulle', () => {
