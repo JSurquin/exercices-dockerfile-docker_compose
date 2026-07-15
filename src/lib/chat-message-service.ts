@@ -10,6 +10,7 @@ type MessageUserSelect = {
   email: true;
   steamUsername: true;
   steamAvatar: true;
+  role: true;
 };
 
 const messageUserSelect = {
@@ -18,6 +19,7 @@ const messageUserSelect = {
   email: true,
   steamUsername: true,
   steamAvatar: true,
+  role: true,
 } satisfies MessageUserSelect;
 
 export async function touchConversationAfterMessage(

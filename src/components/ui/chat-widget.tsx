@@ -59,6 +59,7 @@ import {
   chatWidgetInputAreaClass,
   chatWidgetMessageAlignment,
   chatWidgetMessageBubbleClass,
+  chatWidgetMessageGroupClass,
   chatWidgetPopupContainerClass,
   chatWidgetRatingBoxClass,
   chatWidgetRatingEmojiClass,
@@ -74,6 +75,7 @@ import {
   chatWidgetUnreadBadgeClass,
   chatWidgetMessageEnterClass,
   isWidgetMessageFromViewer,
+  resolveWidgetSenderDisplayName,
   resolveWidgetSystemMessageVariant,
   shouldShowWidgetAiTyping,
   shouldShowWidgetUnreadBadge,
@@ -217,6 +219,11 @@ type WidgetMessage = {
   senderType: string;
   createdAt: string | Date;
   userId?: string | null;
+  user?: {
+    name?: string | null;
+    steamUsername?: string | null;
+    role?: string | null;
+  } | null;
 };
 
 interface ChatWidgetInputProps {
@@ -490,10 +497,19 @@ interface ChatWidgetMessageListProps {
   conversationId: string | null;
   messages: WidgetMessage[];
   viewerUserId?: string;
+  viewerUsername?: string;
   welcomeMessage: string;
   moderatorLabel: string;
   botLabel: string;
   aiLabel: string;
+  aiAgentLabel: string;
+  supportLabel: string;
+  guestUserLabel: string;
+  adminLabel: string;
+  assignedModerator?: {
+    name?: string | null;
+    steamUsername?: string | null;
+  } | null;
   contactModeratorLabel: string;
   escalatingModeratorLabel: string;
   aiEnabled: boolean;
@@ -526,10 +542,16 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
   conversationId,
   messages,
   viewerUserId,
+  viewerUsername,
   welcomeMessage,
   moderatorLabel,
   botLabel,
   aiLabel,
+  aiAgentLabel,
+  supportLabel,
+  guestUserLabel,
+  adminLabel,
+  assignedModerator,
   contactModeratorLabel,
   escalatingModeratorLabel,
   aiEnabled,
@@ -560,6 +582,30 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
   const seenMessageIdsRef = useRef<Set<string>>(new Set());
   const seenConversationRef = useRef<string | null>(null);
 
+  const senderLabels = useMemo(
+    () => ({
+      aiAgentLabel,
+      supportLabel,
+      moderatorLabel,
+      guestUserLabel,
+      adminLabel,
+    }),
+    [aiAgentLabel, supportLabel, moderatorLabel, guestUserLabel, adminLabel],
+  );
+
+  const resolveSenderName = useCallback(
+    (senderType: WidgetSenderType, isFromViewer: boolean, messageUser?: WidgetMessage['user']) =>
+      resolveWidgetSenderDisplayName({
+        senderType,
+        isFromViewer,
+        messageUser,
+        assignedModerator,
+        viewerUsername,
+        labels: senderLabels,
+      }),
+    [assignedModerator, viewerUsername, senderLabels],
+  );
+
   if (conversationId !== seenConversationRef.current) {
     seenMessageIdsRef.current = new Set();
     seenConversationRef.current = conversationId;
@@ -578,9 +624,14 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
         </div>
       )}
       {messages.length === 0 && (
-        <div className="flex justify-start">
-          <div className={chatWidgetMessageBubbleClass('BOT')}>
-            {welcomeMessage}
+        <div className={`flex ${chatWidgetMessageAlignment(false)}`}>
+          <div className={chatWidgetMessageGroupClass(false)}>
+            <span className={chatWidgetSenderLabelClass(false)}>
+              {resolveSenderName('BOT', false)}
+            </span>
+            <div className={chatWidgetMessageBubbleClass('BOT')}>
+              {welcomeMessage}
+            </div>
           </div>
         </div>
       )}
@@ -593,6 +644,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
         if (systemVariant === 'closed') return null;
 
         const bubbleSender: WidgetSenderType = isUser ? "USER" : (msg.senderType as WidgetSenderType);
+        const senderName = resolveSenderName(bubbleSender, isUser, msg.user);
         const isNewMessage = !seenMessageIdsRef.current.has(msg.id);
         if (isNewMessage) {
           seenMessageIdsRef.current.add(msg.id);
@@ -647,34 +699,39 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
             key={msg.id}
             className={`flex ${chatWidgetMessageAlignment(isUser)} ${chatWidgetMessageEnterClass(isNewMessage)}`}
           >
-            <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
-              {isUser ? (
-                <p className="whitespace-pre-wrap">{resolveContent(msg.content)}</p>
-              ) : (
-                <ChatMarkdownContent content={resolveContent(msg.content)} />
-              )}
-              {isAi && aiEnabled && (
-                <div className="mt-2 pt-2 border-t border-border/30">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    data-testid="chat-contact-moderator-button"
-                    className="h-7 text-[11px] px-2.5"
-                    disabled={escalatingModerator || isLoading}
-                    onClick={() => void onContactModerator()}
+            <div className={chatWidgetMessageGroupClass(isUser)}>
+              {senderName ? (
+                <span className={chatWidgetSenderLabelClass(isUser)}>{senderName}</span>
+              ) : null}
+              <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
+                {isUser ? (
+                  <p className="whitespace-pre-wrap">{resolveContent(msg.content)}</p>
+                ) : (
+                  <ChatMarkdownContent content={resolveContent(msg.content)} />
+                )}
+                {isAi && aiEnabled && (
+                  <div className="mt-2 pt-2 border-t border-theme-accent/20">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      data-testid="chat-contact-moderator-button"
+                      className="h-7 text-[11px] px-2.5"
+                      disabled={escalatingModerator || isLoading}
+                      onClick={() => void onContactModerator()}
+                    >
+                      {escalatingModerator ? escalatingModeratorLabel : contactModeratorLabel}
+                    </Button>
+                  </div>
+                )}
+                {shouldShowWidgetMessageTimestamp() && (
+                  <div
+                    className={`flex items-center justify-end mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
                   >
-                    {escalatingModerator ? escalatingModeratorLabel : contactModeratorLabel}
-                  </Button>
-                </div>
-              )}
-              {shouldShowWidgetMessageTimestamp() && (
-                <div
-                  className={`flex items-center justify-end mt-1 gap-2 ${chatWidgetTimestampClass(bubbleSender)}`}
-                >
-                  <span className="text-[10px]">{formatMessageTime(msg.createdAt, dateLocale)}</span>
-                </div>
-              )}
+                    <span className="text-[10px]">{formatMessageTime(msg.createdAt, dateLocale)}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -697,33 +754,43 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
       )}
 
       {isLoading && !showAiTyping && (
-        <div className="flex justify-start">
-          <div className={chatWidgetAiTypingBubbleClass()}>
-            <div className="flex space-x-1.5">
-              <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
-              <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
-              <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
+        <div className={`flex ${chatWidgetMessageAlignment(false)}`}>
+          <div className={chatWidgetMessageGroupClass(false)}>
+            <span className={chatWidgetSenderLabelClass(false)}>
+              {resolveSenderName('AI', false)}
+            </span>
+            <div className={chatWidgetAiTypingBubbleClass()}>
+              <div className="flex space-x-1.5">
+                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
+                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
+                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full typing-dot" />
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {showAiTyping && (
-        <div className="flex justify-start ai-typing-bubble">
-          <div className={chatWidgetAiTypingBubbleClass()}>
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1">
-                  <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full ai-typing-dot" />
-                  <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full ai-typing-dot" />
-                  <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full ai-typing-dot" />
+        <div className={`flex ${chatWidgetMessageAlignment(false)} ai-typing-bubble`}>
+          <div className={chatWidgetMessageGroupClass(false)}>
+            <span className={chatWidgetSenderLabelClass(false)}>
+              {resolveSenderName('AI', false)}
+            </span>
+            <div className={chatWidgetAiTypingBubbleClass()}>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full ai-typing-dot" />
+                    <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full ai-typing-dot" />
+                    <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full ai-typing-dot" />
+                  </div>
                 </div>
+                {aiTypingQueuedHint && (
+                  <p className="text-[11px] leading-snug text-muted-foreground max-w-[240px]">
+                    {aiTypingQueuedHint}
+                  </p>
+                )}
               </div>
-              {aiTypingQueuedHint && (
-                <p className="text-[11px] leading-snug text-muted-foreground max-w-[240px]">
-                  {aiTypingQueuedHint}
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -1675,10 +1742,16 @@ export function ChatWidget() {
         conversationId={conversationId}
         messages={currentConversation?.messages ?? []}
         viewerUserId={user?.id}
+        viewerUsername={user?.username}
         welcomeMessage={messages.chatWidget.responses.welcomeMessage}
         moderatorLabel={messages.chatWidget.moderatorLabel}
         botLabel={messages.chatWidget.botLabel}
         aiLabel={messages.chatWidget.aiLabel}
+        aiAgentLabel={messages.chatWidget.aiAgentLabel}
+        supportLabel={messages.chatWidget.support}
+        guestUserLabel={messages.chatWidget.guestUserLabel}
+        adminLabel={messages.chatWidget.adminLabel}
+        assignedModerator={assignedModerator}
         contactModeratorLabel={messages.chatWidget.contactModerator}
         escalatingModeratorLabel={messages.chatWidget.escalatingModerator}
         aiEnabled={currentConversation?.aiEnabled ?? true}

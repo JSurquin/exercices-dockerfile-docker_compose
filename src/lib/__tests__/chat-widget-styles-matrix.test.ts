@@ -41,8 +41,9 @@ describe('chatWidgetMessageAlignment — viewer vs staff', () => {
 });
 
 describe('chatWidgetSenderLabelClass — tous les types', () => {
-  it.each(SENDER_TYPES)('gère %s', (type) => {
-    expect(chatWidgetSenderLabelClass(type)).toBeNull();
+  it('retourne des classes pour viewer et staff', () => {
+    expect(chatWidgetSenderLabelClass(true)).toContain('text-right');
+    expect(chatWidgetSenderLabelClass(false)).toContain('text-left');
   });
 });
 

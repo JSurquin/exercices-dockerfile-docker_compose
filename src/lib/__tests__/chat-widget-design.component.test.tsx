@@ -20,8 +20,8 @@ function DesignPreview() {
         Message user
       </div>
       <div data-testid="bubble-ai" className={chatWidgetMessageBubbleClass('AI')}>
-        <span data-testid="ai-label" className={chatWidgetSenderLabelClass('AI') ?? ''}>
-          IA
+        <span data-testid="ai-label" className={chatWidgetSenderLabelClass(false)}>
+          Moony · l&apos;agent IA
         </span>
         Réponse IA
       </div>
@@ -48,30 +48,30 @@ describe('Chat widget design (rendu DOM)', () => {
     expect(screen.getByTestId('header')).toHaveClass('text-white');
   });
 
-  it('bulle USER : sombre à droite (style Intercom)', () => {
+  it('bulle USER : bleu chromé', () => {
     render(<DesignPreview />);
     const bubble = screen.getByTestId('bubble-user');
-    expect(bubble).toHaveClass('bg-neutral-900');
-    expect(bubble).toHaveClass('text-white');
+    expect(bubble).toHaveClass('chat-widget-bubble-user');
+    expect(bubble).toHaveClass('chat-widget-bubble-chrome');
     expect(bubble.className).toContain('rounded-[22px]');
     expect(screen.getByText('Message user')).toBeInTheDocument();
   });
 
-  it('bulle AI : gris clair sans label expéditeur', () => {
+  it('bulle AI : bleu chromé avec label expéditeur', () => {
     render(<DesignPreview />);
     const bubble = screen.getByTestId('bubble-ai');
-    expect(bubble).toHaveClass('bg-neutral-100');
-    expect(chatWidgetSenderLabelClass('AI')).toBeNull();
+    expect(bubble).toHaveClass('chat-widget-bubble-ai');
+    expect(screen.getByTestId('ai-label').className).toContain('text-theme-highlight');
   });
 
-  it('bulle MODERATOR : gris clair', () => {
+  it('bulle MODERATOR : bleu chromé staff', () => {
     render(<DesignPreview />);
-    expect(screen.getByTestId('bubble-mod')).toHaveClass('bg-neutral-100');
+    expect(screen.getByTestId('bubble-mod')).toHaveClass('chat-widget-bubble-staff');
   });
 
-  it('bulle SYSTEM : gris atténué', () => {
+  it('bulle SYSTEM : chromé atténué', () => {
     render(<DesignPreview />);
-    expect(screen.getByTestId('bubble-system').className).toContain('bg-neutral-100/80');
+    expect(screen.getByTestId('bubble-system').className).toContain('chat-widget-bubble-staff');
   });
 
   it('FAB rond CTA avec hover scale', () => {

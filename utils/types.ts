@@ -3942,6 +3942,9 @@ export interface Messages {
     moderatorLabel: string;
     botLabel: string;
     aiLabel: string;
+    aiAgentLabel: string;
+    guestUserLabel: string;
+    adminLabel: string;
     contactModerator: string;
     escalatingModerator: string;
     escalateError: string;

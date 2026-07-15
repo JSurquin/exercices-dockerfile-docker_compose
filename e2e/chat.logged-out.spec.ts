@@ -29,7 +29,7 @@ test.describe('Chat widget — invité (page d\'accueil)', () => {
 
     const messages = page.getByTestId('chat-messages');
     await expect(messages).toBeVisible({ timeout: 20_000 });
-    await expect(messages.getByText(CHAT_LABELS.botLabel)).toBeVisible({ timeout: 20_000 });
+    await expect(messages.getByText(CHAT_LABELS.support)).toBeVisible({ timeout: 20_000 });
     await expect(messages.locator('text=/Steam Guard|Moonskin/i').first()).toBeVisible();
   });
 
@@ -65,16 +65,16 @@ test.describe('Chat widget — invité (page d\'accueil)', () => {
     );
   });
 
-  test('design — bulles AI/BOT utilisent les classes violet/muted', async ({ page }) => {
+  test('design — bulles avec noms expéditeur au-dessus', async ({ page }) => {
     await openChatWidget(page);
     await page.getByRole('button', { name: CHAT_LABELS.supportCategory }).click();
     await page.getByRole('button', { name: CHAT_LABELS.supportOther }).click();
 
     await expect(page.getByTestId('chat-messages')).toBeVisible({ timeout: 20_000 });
 
-    const botBadge = page.getByText(CHAT_LABELS.botLabel).first();
-    await expect(botBadge).toBeVisible();
-    await expect(botBadge).toHaveClass(/rounded-full/);
+    const supportLabel = page.getByText(CHAT_LABELS.support).first();
+    await expect(supportLabel).toBeVisible();
+    await expect(supportLabel).toHaveClass(/text-theme-highlight/);
   });
 
   test('API health IA signale disabled sans CHAT_AI_ENABLED', async ({ request }) => {

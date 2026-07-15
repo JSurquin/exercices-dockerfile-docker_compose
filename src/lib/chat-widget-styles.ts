@@ -31,23 +31,29 @@ export function resolveWidgetSystemMessageVariant(content: string): WidgetSystem
   return 'default';
 }
 
-/** Classes Tailwind des bulles de message (style messagerie type Intercom). */
+const CHAT_WIDGET_BUBBLE_CHROME_BASE =
+  'w-full rounded-[22px] px-4 py-2.5 text-sm leading-relaxed border chat-widget-bubble-chrome';
+
+/** Classes Tailwind des bulles de message — bleu chromé (lisible sur fond sombre). */
 export function chatWidgetMessageBubbleClass(senderType: WidgetSenderType): string {
-  const base = 'max-w-[85%] rounded-[22px] px-4 py-2.5 text-sm leading-relaxed';
   switch (senderType) {
     case 'USER':
-      return `${base} bg-neutral-900 text-white dark:bg-neutral-950`;
-    case 'MODERATOR':
-      return `${base} bg-neutral-100 text-foreground dark:bg-neutral-800`;
+      return `${CHAT_WIDGET_BUBBLE_CHROME_BASE} chat-widget-bubble-user text-foreground`;
     case 'AI':
-      return `${base} bg-neutral-100 text-foreground dark:bg-neutral-800`;
-    case 'SYSTEM':
-      return `${base} bg-neutral-100/80 text-muted-foreground dark:bg-neutral-800/80 rounded-2xl text-xs`;
+      return `${CHAT_WIDGET_BUBBLE_CHROME_BASE} chat-widget-bubble-ai text-foreground`;
+    case 'MODERATOR':
     case 'BOT':
-      return `${base} bg-neutral-100 text-foreground dark:bg-neutral-800`;
+      return `${CHAT_WIDGET_BUBBLE_CHROME_BASE} chat-widget-bubble-staff text-foreground`;
+    case 'SYSTEM':
+      return `${CHAT_WIDGET_BUBBLE_CHROME_BASE} chat-widget-bubble-staff text-muted-foreground rounded-2xl text-xs`;
     default:
-      return `${base} bg-neutral-100 text-foreground dark:bg-neutral-800`;
+      return `${CHAT_WIDGET_BUBBLE_CHROME_BASE} chat-widget-bubble-staff text-foreground`;
   }
+}
+
+export function chatWidgetMessageGroupClass(isFromViewer: boolean): string {
+  const align = isFromViewer ? 'items-end' : 'items-start';
+  return `flex flex-col max-w-[85%] ${align}`;
 }
 
 export function chatWidgetSystemBannerClass(): string {
@@ -78,8 +84,60 @@ export function chatWidgetConversationHeaderClass(): string {
   return 'flex items-center justify-between p-3 border-b bg-background flex-shrink-0';
 }
 
-export function chatWidgetSenderLabelClass(_senderType: WidgetSenderType): string | null {
-  return null;
+export function chatWidgetSenderLabelClass(isFromViewer: boolean): string {
+  const align = isFromViewer ? 'text-right' : 'text-left';
+  return `text-[11px] font-semibold mb-1 px-0.5 text-theme-highlight/90 ${align}`;
+}
+
+export interface WidgetSenderNameLabels {
+  aiAgentLabel: string;
+  supportLabel: string;
+  moderatorLabel: string;
+  guestUserLabel: string;
+  adminLabel: string;
+}
+
+export interface WidgetSenderNameContext {
+  senderType: WidgetSenderType;
+  isFromViewer: boolean;
+  messageUser?: {
+    name?: string | null;
+    steamUsername?: string | null;
+    role?: string | null;
+  } | null;
+  assignedModerator?: {
+    name?: string | null;
+    steamUsername?: string | null;
+  } | null;
+  viewerUsername?: string;
+  labels: WidgetSenderNameLabels;
+}
+
+/** Nom affiché au-dessus de chaque bulle (Moony, modérateur, utilisateur, etc.). */
+export function resolveWidgetSenderDisplayName(ctx: WidgetSenderNameContext): string | null {
+  const { senderType, isFromViewer, messageUser, assignedModerator, viewerUsername, labels } = ctx;
+
+  switch (senderType) {
+    case 'AI':
+      return labels.aiAgentLabel;
+    case 'BOT':
+      return labels.supportLabel;
+    case 'MODERATOR': {
+      if (messageUser?.role === 'ADMIN') return labels.adminLabel;
+      return (
+        messageUser?.steamUsername ??
+        messageUser?.name ??
+        assignedModerator?.steamUsername ??
+        assignedModerator?.name ??
+        labels.moderatorLabel
+      );
+    }
+    case 'USER':
+      if (isFromViewer) return viewerUsername ?? labels.guestUserLabel;
+      return messageUser?.steamUsername ?? messageUser?.name ?? labels.guestUserLabel;
+    default:
+      return null;
+  }
 }
 
 export function chatWidgetTimestampClass(_senderType: WidgetSenderType): string {
@@ -268,7 +326,7 @@ export function chatWidgetMessageEnterClass(isNew: boolean): string {
 }
 
 export function chatWidgetAiTypingBubbleClass(): string {
-  return 'bg-neutral-100 dark:bg-neutral-800 rounded-[22px] px-4 py-2.5';
+  return `${CHAT_WIDGET_BUBBLE_CHROME_BASE} chat-widget-bubble-ai`;
 }
 
 export function chatWidgetInputAreaClass(): string {

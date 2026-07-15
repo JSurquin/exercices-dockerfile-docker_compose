@@ -69,8 +69,8 @@ describe('chatMessageBubbleClass', () => {
 });
 
 describe('cohérence design widget vs modération', () => {
-  it('widget Intercom : staff gris clair, admin conserve theme-highlight pour AI', () => {
-    expect(chatWidgetMessageBubbleClass('AI')).toContain('bg-neutral-100');
+  it('widget : bulles bleu chromé, admin conserve theme-highlight pour AI', () => {
+    expect(chatWidgetMessageBubbleClass('AI')).toContain('chat-widget-bubble-ai');
     expect(chatMessageBubbleClass('AI')).toContain('theme-highlight');
   });
 });

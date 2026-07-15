@@ -6,6 +6,7 @@ import {
   chatWidgetMessageAlignment,
   chatWidgetMessageBubbleClass,
   chatWidgetMessageEnterClass,
+  chatWidgetMessageGroupClass,
   chatWidgetPopupContainerClass,
   chatWidgetSendButtonClass,
   chatWidgetSenderLabelClass,
@@ -21,6 +22,7 @@ import {
   chatWidgetHistoryListClass,
   isWidgetMessageFromViewer,
   preserveChatLineBreaks,
+  resolveWidgetSenderDisplayName,
   shouldShowWidgetAiTyping,
   shouldShowWidgetUnreadBadge,
 } from '@/lib/chat-widget-styles';
@@ -41,42 +43,108 @@ describe('isWidgetMessageFromViewer', () => {
 });
 
 describe('chatWidgetMessageBubbleClass — design tokens', () => {
-  it('USER : bulle sombre à droite', () => {
-    expect(chatWidgetMessageBubbleClass('USER')).toContain('bg-neutral-900');
-    expect(chatWidgetMessageBubbleClass('USER')).toContain('text-white');
+  it('USER : bulle bleu chromé à droite', () => {
+    expect(chatWidgetMessageBubbleClass('USER')).toContain('chat-widget-bubble-user');
+    expect(chatWidgetMessageBubbleClass('USER')).toContain('chat-widget-bubble-chrome');
   });
 
-  it('MODERATOR : gris clair', () => {
-    expect(chatWidgetMessageBubbleClass('MODERATOR')).toContain('bg-neutral-100');
+  it('MODERATOR : bleu chromé staff', () => {
+    expect(chatWidgetMessageBubbleClass('MODERATOR')).toContain('chat-widget-bubble-staff');
   });
 
-  it('AI : même style que staff (gris clair)', () => {
+  it('AI : bleu chromé highlight', () => {
     const cls = chatWidgetMessageBubbleClass('AI');
-    expect(cls).toContain('bg-neutral-100');
-    expect(cls).not.toContain('border-border');
+    expect(cls).toContain('chat-widget-bubble-ai');
+    expect(cls).not.toContain('bg-neutral-100');
   });
 
-  it('SYSTEM : bandeau gris atténué', () => {
+  it('SYSTEM : bandeau chromé atténué', () => {
     const cls = chatWidgetMessageBubbleClass('SYSTEM');
-    expect(cls).toContain('bg-neutral-100/80');
+    expect(cls).toContain('chat-widget-bubble-staff');
     expect(cls).toContain('text-muted-foreground');
   });
 
-  it('BOT : gris clair neutre', () => {
-    expect(chatWidgetMessageBubbleClass('BOT')).toContain('bg-neutral-100');
+  it('BOT : bleu chromé staff', () => {
+    expect(chatWidgetMessageBubbleClass('BOT')).toContain('chat-widget-bubble-staff');
   });
 
   it('fallback pour type inconnu', () => {
-    expect(chatWidgetMessageBubbleClass('UNKNOWN')).toContain('bg-neutral-100');
+    expect(chatWidgetMessageBubbleClass('UNKNOWN')).toContain('chat-widget-bubble-staff');
   });
 });
 
 describe('chatWidgetSenderLabelClass', () => {
-  it('n’affiche plus de badges expéditeur (style Intercom)', () => {
-    expect(chatWidgetSenderLabelClass('MODERATOR')).toBeNull();
-    expect(chatWidgetSenderLabelClass('BOT')).toBeNull();
-    expect(chatWidgetSenderLabelClass('AI')).toBeNull();
-    expect(chatWidgetSenderLabelClass('USER')).toBeNull();
+  it('aligne le label selon le viewer', () => {
+    expect(chatWidgetSenderLabelClass(true)).toContain('text-right');
+    expect(chatWidgetSenderLabelClass(false)).toContain('text-left');
+    expect(chatWidgetSenderLabelClass(false)).toContain('text-theme-highlight');
+  });
+});
+
+describe('resolveWidgetSenderDisplayName', () => {
+  const labels = {
+    aiAgentLabel: 'Moony · l\'agent IA',
+    supportLabel: 'MoonSkin Support',
+    moderatorLabel: 'Modérateur',
+    guestUserLabel: 'Vous',
+    adminLabel: 'L\'admin',
+  };
+
+  it('retourne Moony pour l\'IA', () => {
+    expect(
+      resolveWidgetSenderDisplayName({
+        senderType: 'AI',
+        isFromViewer: false,
+        labels,
+      }),
+    ).toBe('Moony · l\'agent IA');
+  });
+
+  it('retourne le support pour BOT', () => {
+    expect(
+      resolveWidgetSenderDisplayName({
+        senderType: 'BOT',
+        isFromViewer: false,
+        labels,
+      }),
+    ).toBe('MoonSkin Support');
+  });
+
+  it('retourne le nom du modérateur ou L\'admin', () => {
+    expect(
+      resolveWidgetSenderDisplayName({
+        senderType: 'MODERATOR',
+        isFromViewer: false,
+        messageUser: { steamUsername: 'Nyouz', role: 'MODERATOR' },
+        labels,
+      }),
+    ).toBe('Nyouz');
+    expect(
+      resolveWidgetSenderDisplayName({
+        senderType: 'MODERATOR',
+        isFromViewer: false,
+        messageUser: { name: 'Admin', role: 'ADMIN' },
+        labels,
+      }),
+    ).toBe('L\'admin');
+  });
+
+  it('retourne le pseudo utilisateur ou Vous', () => {
+    expect(
+      resolveWidgetSenderDisplayName({
+        senderType: 'USER',
+        isFromViewer: true,
+        viewerUsername: 'Player42',
+        labels,
+      }),
+    ).toBe('Player42');
+    expect(
+      resolveWidgetSenderDisplayName({
+        senderType: 'USER',
+        isFromViewer: true,
+        labels,
+      }),
+    ).toBe('Vous');
   });
 });
 
@@ -150,8 +218,13 @@ describe('layout & interaction classes', () => {
   });
 
   it('bulle AI typing cohérente avec messages staff', () => {
-    expect(chatWidgetAiTypingBubbleClass()).toContain('bg-neutral-100');
+    expect(chatWidgetAiTypingBubbleClass()).toContain('chat-widget-bubble-ai');
     expect(chatWidgetAiTypingBubbleClass()).toContain('rounded-[22px]');
+  });
+
+  it('groupe message aligne label et bulle', () => {
+    expect(chatWidgetMessageGroupClass(true)).toContain('items-end');
+    expect(chatWidgetMessageGroupClass(false)).toContain('items-start');
   });
 
   it('barre d’onglets en ligne avec boutons de taille égale', () => {

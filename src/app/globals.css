@@ -2542,6 +2542,29 @@ body.next-dev-overlay-present #sentry-feedback {
     );
   }
 
+  /* Chat widget — bulles bleu chromé (lisibles sur fond sombre) */
+  .chat-widget-bubble-chrome {
+    backdrop-filter: blur(6px);
+  }
+
+  .chat-widget-bubble-staff {
+    background: color-mix(in srgb, var(--theme-accent) 14%, transparent);
+    border-color: color-mix(in srgb, var(--theme-accent) 30%, transparent);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--theme-accent) 14%, transparent);
+  }
+
+  .chat-widget-bubble-ai {
+    background: color-mix(in srgb, var(--theme-highlight) 16%, transparent);
+    border-color: color-mix(in srgb, var(--theme-highlight) 34%, transparent);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--theme-highlight) 16%, transparent);
+  }
+
+  .chat-widget-bubble-user {
+    background: color-mix(in srgb, var(--theme-accent) 24%, transparent);
+    border-color: color-mix(in srgb, var(--theme-accent) 42%, transparent);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--theme-accent) 18%, transparent);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .message-slide-in,
     .ai-typing-bubble,
