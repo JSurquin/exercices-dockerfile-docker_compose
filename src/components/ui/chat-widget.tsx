@@ -43,6 +43,10 @@ import {
   chatWidgetPanelHeaderSubtitleClass,
   chatWidgetPanelHeaderTitleClass,
   chatWidgetListHeaderClass,
+  chatWidgetListHeaderRowClass,
+  chatWidgetListHeaderSideSlotClass,
+  chatWidgetListHeaderSideSlotEndClass,
+  chatWidgetListHeaderTitleClass,
   chatWidgetContactModeratorButtonClass,
   chatWidgetConversationScrollClass,
   chatWidgetMessagesListBodyClass,
@@ -1564,27 +1568,31 @@ export function ChatWidget() {
 
   const renderMessagesHeader = () => (
     <div className={chatWidgetListHeaderClass()} data-testid="chat-messages-header">
-      <div className="flex items-center gap-2 min-w-0 flex-1">
-        {showBack && (
+      <div className={chatWidgetListHeaderRowClass()}>
+        <div className={chatWidgetListHeaderSideSlotClass()}>
+          {showBack && (
+            <button
+              type="button"
+              onClick={handleBack}
+              className="p-1 rounded-full hover:bg-muted transition-colors shrink-0"
+              aria-label={messages.chatWidget.tabs.messages}
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        <h2 className={chatWidgetListHeaderTitleClass()}>{messages.chatWidget.tabs.messages}</h2>
+        <div className={chatWidgetListHeaderSideSlotEndClass()}>
           <button
             type="button"
-            onClick={handleBack}
-            className="p-1 rounded-full hover:bg-muted transition-colors shrink-0"
-            aria-label={messages.chatWidget.tabs.messages}
+            onClick={closePopup}
+            className="p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
+            aria-label={messages.ui.close}
           >
-            <ArrowLeftIcon className="h-4 w-4" />
+            <XMarkIcon className="h-5 w-5" />
           </button>
-        )}
-        <h2 className="text-base font-semibold truncate">{messages.chatWidget.tabs.messages}</h2>
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={closePopup}
-        className="p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
-        aria-label={messages.ui.close}
-      >
-        <XMarkIcon className="h-5 w-5" />
-      </button>
     </div>
   );
 
@@ -1680,9 +1688,9 @@ export function ChatWidget() {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center justify-between gap-2">
               <p className={chatWidgetHistoryItemTitleClass(solved)}>{item.title}</p>
-              <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 {!solved && item.unread > 0 && (
                   <span className={chatWidgetHistoryUnreadDotClass()} aria-hidden />
                 )}

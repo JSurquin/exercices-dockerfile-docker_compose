@@ -21,6 +21,10 @@ import {
   chatWidgetHistoryItemClass,
   chatWidgetHistoryItemTitleClass,
   chatWidgetHistoryListClass,
+  chatWidgetHistorySectionTitleClass,
+  chatWidgetListHeaderSideSlotClass,
+  chatWidgetListHeaderSideSlotEndClass,
+  chatWidgetListHeaderTitleClass,
   isWidgetMessageFromViewer,
   preserveChatLineBreaks,
   resolveWidgetSenderDisplayName,
@@ -264,6 +268,17 @@ describe('layout & interaction classes', () => {
   it('liste historique plate avec séparateurs', () => {
     expect(chatWidgetHistoryListClass()).toContain('divide-y');
     expect(chatWidgetHistoryListClass()).toContain('overflow-y-auto');
+  });
+
+  it('en-tête Messages : titre centré avec emplacements latéraux symétriques', () => {
+    expect(chatWidgetListHeaderTitleClass()).toContain('text-center');
+    expect(chatWidgetListHeaderTitleClass()).toContain('flex-1');
+    expect(chatWidgetListHeaderSideSlotClass()).toContain('w-9');
+    expect(chatWidgetListHeaderSideSlotEndClass()).toContain('justify-end');
+  });
+
+  it('section Résolus : titre centré', () => {
+    expect(chatWidgetHistorySectionTitleClass()).toContain('text-center');
   });
 });
 

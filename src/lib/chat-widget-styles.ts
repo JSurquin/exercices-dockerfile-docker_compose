@@ -222,7 +222,25 @@ export function chatWidgetPanelHeaderClass(): string {
 
 /** En-tête léger pour la liste Messages (sans bandeau sombre). */
 export function chatWidgetListHeaderClass(): string {
-  return 'flex items-center justify-between gap-2 px-4 py-3 border-b border-border/40 bg-background flex-shrink-0';
+  return 'px-4 py-3 border-b border-border/40 bg-background flex-shrink-0';
+}
+
+/** Rangée interne de l’en-tête Messages — titre centré, actions latérales symétriques. */
+export function chatWidgetListHeaderRowClass(): string {
+  return 'flex items-center justify-between gap-2 w-full';
+}
+
+/** Emplacement gauche/droite (retour, fermer) pour équilibrer le titre centré. */
+export function chatWidgetListHeaderSideSlotClass(): string {
+  return 'flex items-center shrink-0 w-9';
+}
+
+export function chatWidgetListHeaderSideSlotEndClass(): string {
+  return `${chatWidgetListHeaderSideSlotClass()} justify-end`;
+}
+
+export function chatWidgetListHeaderTitleClass(): string {
+  return 'text-base font-semibold truncate text-center flex-1 min-w-0 px-1';
 }
 
 export function chatWidgetPanelHeaderTitleClass(): string {
@@ -288,7 +306,7 @@ export function chatWidgetHistoryCardClass(): string {
 }
 
 export function chatWidgetHistorySectionTitleClass(): string {
-  return 'text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1 pt-1 pb-0.5';
+  return 'text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1 pt-1 pb-0.5 text-center';
 }
 
 export function chatWidgetStaffAvatarStackClass(): string {
