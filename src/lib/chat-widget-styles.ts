@@ -153,6 +153,51 @@ export function chatWidgetHomeSearchHeaderClass(): string {
   return 'flex items-center justify-between pb-3 mb-1 border-b border-border/40 rounded-lg px-2 -mx-2 transition-all duration-150 hover:bg-muted/55 dark:hover:bg-white/10 active:bg-muted/70 dark:active:bg-white/15 cursor-pointer';
 }
 
+/** En-tête compact pour onglets Aide / Messages (aligné sur l’accueil). */
+export function chatWidgetPanelHeaderClass(): string {
+  return 'relative flex-shrink-0 overflow-hidden bg-neutral-950 text-white px-4 pt-4 pb-5';
+}
+
+export function chatWidgetPanelHeaderTitleClass(): string {
+  return 'text-lg font-bold leading-tight';
+}
+
+export function chatWidgetPanelHeaderSubtitleClass(): string {
+  return 'text-sm text-white/75 mt-0.5';
+}
+
+/** Icône catégorie Aide avec lueur bleue theme-accent. */
+export function chatWidgetHelpCategoryIconClass(): string {
+  return 'h-5 w-5 shrink-0 text-theme-accent chat-widget-help-icon-glow';
+}
+
+export function chatWidgetHelpCategoryRowClass(): string {
+  return 'w-full flex items-center justify-between gap-3 py-3 px-2 -mx-2 rounded-lg text-left transition-all duration-150 hover:bg-muted/55 dark:hover:bg-white/10 active:bg-muted/70 dark:active:bg-white/15 cursor-pointer group border-b border-border/40 last:border-b-0';
+}
+
+export function chatWidgetHelpSubcategoryRowClass(disabled: boolean): string {
+  const base = chatWidgetHelpCategoryRowClass();
+  return disabled ? `${base} disabled:opacity-60 cursor-not-allowed` : base;
+}
+
+export function chatWidgetConversationScrollClass(extra = ''): string {
+  return chatWidgetScrollAreaClass(
+    `bg-neutral-100 dark:bg-neutral-950 px-4 py-3 space-y-3 ${extra}`.trim(),
+  );
+}
+
+export function chatWidgetMessagesListBodyClass(): string {
+  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain bg-neutral-100 dark:bg-neutral-950 px-4 py-4 space-y-3';
+}
+
+export function chatWidgetHistoryCardClass(): string {
+  return `${chatWidgetHomeCardClass()} overflow-hidden p-0`;
+}
+
+export function chatWidgetHistorySectionTitleClass(): string {
+  return 'text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1 pt-1 pb-0.5';
+}
+
 export function chatWidgetStaffAvatarStackClass(): string {
   return 'flex items-center -space-x-2.5';
 }
@@ -225,7 +270,7 @@ export function chatWidgetHistoryItemClass(params: {
   isSelected: boolean;
 }): string {
   const base =
-    'w-full text-left px-3 py-3 border-b border-border/30 last:border-b-0 transition-all duration-200 ease-out group';
+    'w-full text-left px-4 py-3 border-b border-border/30 last:border-b-0 transition-all duration-200 ease-out group';
   if (params.solved) {
     return `${base} bg-transparent hover:bg-muted/55 dark:hover:bg-muted/35 active:bg-muted/70 dark:active:bg-muted/45`;
   }

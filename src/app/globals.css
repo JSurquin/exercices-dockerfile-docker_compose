@@ -2512,6 +2512,10 @@ body.next-dev-overlay-present #sentry-feedback {
     filter: drop-shadow(0 0 6px color-mix(in srgb, var(--theme-accent) 55%, transparent));
   }
 
+  .chat-widget-help-icon-glow {
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--theme-accent) 45%, transparent));
+  }
+
   .chat-widget-tab-icon-glow-hover {
     transition: filter 150ms ease;
   }

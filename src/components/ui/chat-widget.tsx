@@ -24,14 +24,11 @@ import {
   CHAT_WIDGET_RATING_EMOJIS,
   setChatWidgetBodyScrollLock,
   chatWidgetAiTypingBubbleClass,
-  chatWidgetCategoryButtonClass,
   chatWidgetConversationEndedClass,
   chatWidgetConversationHeaderClass,
   chatWidgetFabButtonClass,
-  chatWidgetHeaderClass,
   chatWidgetHistoryItemClass,
   chatWidgetHistoryItemTitleClass,
-  chatWidgetHistoryListClass,
   chatWidgetHomeCardClass,
   chatWidgetHomeCardInnerButtonClass,
   chatWidgetHomeHeaderClass,
@@ -39,6 +36,16 @@ import {
   chatWidgetHomeCardSectionTitleClass,
   chatWidgetHomeHelpLinkClass,
   chatWidgetHomeSearchHeaderClass,
+  chatWidgetHelpCategoryIconClass,
+  chatWidgetHelpCategoryRowClass,
+  chatWidgetHelpSubcategoryRowClass,
+  chatWidgetPanelHeaderClass,
+  chatWidgetPanelHeaderSubtitleClass,
+  chatWidgetPanelHeaderTitleClass,
+  chatWidgetConversationScrollClass,
+  chatWidgetMessagesListBodyClass,
+  chatWidgetHistoryCardClass,
+  chatWidgetHistorySectionTitleClass,
   chatWidgetStaffAvatarStackClass,
   chatWidgetStaffAvatarClass,
   chatWidgetStaffAvatarLargeClass,
@@ -48,10 +55,8 @@ import {
   chatWidgetPopupContainerClass,
   chatWidgetRatingBoxClass,
   chatWidgetRatingEmojiClass,
-  chatWidgetScrollAreaClass,
   chatWidgetSendButtonClass,
   chatWidgetSenderLabelClass,
-  chatWidgetSubcategoryButtonClass,
   chatWidgetSystemBannerClass,
   chatWidgetSystemJoinClass,
   chatWidgetTabBarClass,
@@ -562,7 +567,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
       ref={containerRef}
       data-testid="chat-messages"
       onScroll={onScroll}
-      className={chatWidgetScrollAreaClass("px-4 py-3 space-y-3")}
+      className={chatWidgetConversationScrollClass()}
     >
       {isLoadingOlderMessages && (
         <div className="flex justify-center py-2">
@@ -1376,56 +1381,147 @@ export function ChatWidget() {
     </div>
   );
 
+  const renderPanelHeader = ({
+    title,
+    subtitle,
+    testId,
+    trailingAction,
+  }: {
+    title: string;
+    subtitle?: string;
+    testId?: string;
+    trailingAction?: React.ReactNode;
+  }) => (
+    <div className={chatWidgetPanelHeaderClass()} data-testid={testId}>
+      <div
+        className="pointer-events-none absolute inset-0 flex items-end justify-center overflow-hidden"
+        aria-hidden
+      >
+        <Image
+          src="/images/logo.webp"
+          alt=""
+          width={180}
+          height={180}
+          className="opacity-[0.06] translate-y-4 scale-125 select-none"
+        />
+      </div>
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-8 chat-widget-home-header-fade"
+        aria-hidden
+      />
+
+      <div className="relative z-10 flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          {showBack && (
+            <button
+              type="button"
+              onClick={handleBack}
+              className="mb-2 p-1 -ml-1 rounded-full hover:bg-white/10 transition-colors"
+              aria-label={messages.chatWidget.tabs.messages}
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+            </button>
+          )}
+          <h2 className={chatWidgetPanelHeaderTitleClass()}>{title}</h2>
+          {subtitle ? (
+            <p className={chatWidgetPanelHeaderSubtitleClass()}>{subtitle}</p>
+          ) : null}
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          {trailingAction}
+          <button
+            type="button"
+            onClick={closePopup}
+            className="p-1.5 rounded-full hover:bg-white/10 transition-colors shrink-0"
+            aria-label={messages.ui.close}
+          >
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderHelpHeader = () => {
+    if (helpStep === "subcategories" && selectedCategory) {
+      return renderPanelHeader({
+        title: selectedCategory.label,
+        subtitle: messages.chatWidget.problemQuestion,
+        testId: "chat-help-header",
+      });
+    }
+    return renderPanelHeader({
+      title: messages.chatWidget.tabs.help,
+      subtitle: `${messages.chatWidget.greeting}${user ? ` ${user.username}` : ""}${messages.chatWidget.greetingSuffix}`,
+      testId: "chat-help-header",
+    });
+  };
+
+  const renderMessagesHeader = () =>
+    renderPanelHeader({
+      title: messages.chatWidget.historyTitle,
+      testId: "chat-messages-header",
+      trailingAction: (
+        <button
+          type="button"
+          data-testid="chat-new-conversation"
+          onClick={handleNewConversation}
+          className="flex items-center gap-1 h-8 px-2.5 rounded-full border border-white/25 text-xs font-medium text-white hover:bg-white/10 transition-colors"
+          aria-label={messages.chatWidget.newConversation}
+        >
+          <PlusIcon className="h-3.5 w-3.5 shrink-0" />
+          <span className="hidden sm:inline">{messages.chatWidget.newConversation}</span>
+        </button>
+      ),
+    });
+
   const renderHelpTab = () => {
     if (helpStep === "subcategories" && selectedCategory) {
       return (
-        <div className={chatWidgetScrollAreaClass("p-4 space-y-2")}>
-          <p className="text-sm text-muted-foreground pb-1 flex items-center gap-1.5">
-            <selectedCategory.icon className="h-4 w-4 text-theme-accent shrink-0" aria-hidden />
-            <span>
-              <strong>{selectedCategory.label}</strong>, {messages.chatWidget.problemQuestion}
-            </span>
-          </p>
-          {selectedCategory.subcategories.map((sub) => (
-            <button
-              key={sub.key}
-              onClick={() => handleSubcategorySelect(sub)}
-              disabled={isSendingBotMsg}
-              className={chatWidgetSubcategoryButtonClass(isSendingBotMsg)}
-            >
-              <span className="text-sm font-medium">{sub.label}</span>
-              {isSendingBotMsg ? (
-                <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors" />
-              )}
-            </button>
-          ))}
+        <div className={chatWidgetHomeBodyClass()}>
+          <div className={chatWidgetHomeCardClass()}>
+            {selectedCategory.subcategories.map((sub) => (
+              <button
+                key={sub.key}
+                type="button"
+                onClick={() => handleSubcategorySelect(sub)}
+                disabled={isSendingBotMsg}
+                className={chatWidgetHelpSubcategoryRowClass(isSendingBotMsg)}
+              >
+                <span className="text-sm font-medium">{sub.label}</span>
+                {isSendingBotMsg ? (
+                  <div className="h-4 w-4 border-2 border-theme-accent border-t-transparent rounded-full animate-spin shrink-0" />
+                ) : (
+                  <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors shrink-0" />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       );
     }
 
     return (
-      <div className={chatWidgetScrollAreaClass("p-4 space-y-3")}>
-        <p className="text-sm text-muted-foreground text-center pb-1">
-          {messages.chatWidget.greeting}{user ? ` ${user.username}` : ""}{messages.chatWidget.greetingSuffix}
-        </p>
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.key}
-            onClick={() => handleCategorySelect(cat)}
-            className={chatWidgetCategoryButtonClass()}
-          >
-            <div className="flex items-center gap-3">
-              <cat.icon className="h-6 w-6 text-theme-accent shrink-0" aria-hidden />
-              <div>
-                <p className="font-semibold text-sm">{cat.label}</p>
-                <p className="text-xs text-muted-foreground">{cat.description}</p>
+      <div className={chatWidgetHomeBodyClass()}>
+        <div className={chatWidgetHomeCardClass()}>
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.key}
+              type="button"
+              onClick={() => handleCategorySelect(cat)}
+              className={chatWidgetHelpCategoryRowClass()}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <cat.icon className={chatWidgetHelpCategoryIconClass()} aria-hidden />
+                <div className="min-w-0 text-left">
+                  <p className="font-semibold text-sm">{cat.label}</p>
+                  <p className="text-xs text-muted-foreground">{cat.description}</p>
+                </div>
               </div>
-            </div>
-            <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors flex-shrink-0" />
-          </button>
-        ))}
+              <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-hover:text-theme-accent transition-colors flex-shrink-0" />
+            </button>
+          ))}
+        </div>
       </div>
     );
   };
@@ -1472,50 +1568,40 @@ export function ChatWidget() {
   );
 
   const renderMessagesList = () => (
-    <div className="flex-1 min-h-0 flex flex-col">
-      <div className="p-3 border-b flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold">{messages.chatWidget.historyTitle}</p>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          data-testid="chat-new-conversation"
-          className="h-8 gap-1"
-          onClick={handleNewConversation}
-        >
-          <PlusIcon className="h-3.5 w-3.5" />
-          {messages.chatWidget.newConversation}
-        </Button>
-      </div>
-      <div className={chatWidgetHistoryListClass()} data-testid="chat-history-list">
-        {conversationListItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-            <ChatBubbleBottomCenterTextIcon className="h-10 w-10 text-muted-foreground/40 mb-3" />
-            <p className="text-sm text-muted-foreground">{messages.chatWidget.home.noConversations}</p>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="mt-3"
-              onClick={handleAskQuestion}
-            >
-              {messages.chatWidget.home.startChat}
-            </Button>
-          </div>
-        ) : (
-          <>
-            {activeConversationItems.map((item) => renderHistoryItem(item))}
-            {solvedConversationItems.length > 0 && (
-              <div className="pt-2">
-                <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/80 border-b border-border/30">
-                  {messages.chatWidget.solvedSectionTitle}
-                </p>
+    <div className={chatWidgetMessagesListBodyClass()} data-testid="chat-history-list">
+      {conversationListItems.length === 0 ? (
+        <div className={`${chatWidgetHomeCardClass()} flex flex-col items-center justify-center py-8 text-center`}>
+          <ChatBubbleBottomCenterTextIcon className="h-10 w-10 text-muted-foreground/40 mb-3" />
+          <p className="text-sm text-muted-foreground">{messages.chatWidget.home.noConversations}</p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="mt-3"
+            onClick={handleAskQuestion}
+          >
+            {messages.chatWidget.home.startChat}
+          </Button>
+        </div>
+      ) : (
+        <>
+          {activeConversationItems.length > 0 && (
+            <div className={chatWidgetHistoryCardClass()}>
+              {activeConversationItems.map((item) => renderHistoryItem(item))}
+            </div>
+          )}
+          {solvedConversationItems.length > 0 && (
+            <>
+              <p className={chatWidgetHistorySectionTitleClass()}>
+                {messages.chatWidget.solvedSectionTitle}
+              </p>
+              <div className={chatWidgetHistoryCardClass()}>
                 {solvedConversationItems.map((item) => renderHistoryItem(item, true))}
               </div>
-            )}
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 
@@ -1718,43 +1804,11 @@ export function ChatWidget() {
           </div>
         ) : activeTab === "home" ? (
           renderHomeHeader()
-        ) : (
-        <div className={chatWidgetHeaderClass()}>
-          <div className="flex items-center space-x-3">
-            {showBack && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="p-1 rounded-full hover:bg-white/20 transition-colors"
-              >
-                <ArrowLeftIcon className="h-4 w-4" />
-              </button>
-            )}
-            <div className="relative">
-              <Avatar className="h-8 w-8 border-2 border-white/20">
-                <AvatarImage src={SUPPORT_AVATAR_SRC} />
-                <AvatarFallback className="bg-white/20 text-white text-sm">
-                  <CpuChipIcon className="h-4 w-4" aria-hidden />
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-400 rounded-full border-2 border-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm">{messages.chatWidget.support}</h3>
-              <p className="text-xs text-white/80">
-                {messages.chatWidget.online} · {messages.chatWidget.responseTime}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={closePopup}
-            className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-        </div>
-        )}
+        ) : activeTab === "help" ? (
+          renderHelpHeader()
+        ) : activeTab === "messages" && messagesStep === "list" ? (
+          renderMessagesHeader()
+        ) : null}
 
         <div className="flex-1 min-h-0 flex flex-col">
           {activeTab === "home" && renderHomeTab()}
