@@ -167,7 +167,7 @@ describe('chatWidgetPopupContainerClass', () => {
     expect(open).toContain('sm:w-[390px]');
     expect(open).toContain('top-[env(safe-area-inset-top,0px)]');
     expect(open).toContain('bottom-0');
-    expect(open).toContain('sm:h-[clamp(480px,75dvh,640px)]');
+    expect(open).toContain('sm:h-[clamp(540px,82dvh,700px)]');
   });
 
   it('fermé : invisible + pointer-events-none + marge FAB mobile', () => {

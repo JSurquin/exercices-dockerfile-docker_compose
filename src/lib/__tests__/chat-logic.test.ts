@@ -10,6 +10,8 @@ import {
   countStaffMessagesForNotification,
   getUnreadMessageCount,
   getConversationListUnreadTotal,
+  getConversationListNotificationTotal,
+  conversationNeedsRatingNotification,
   markStaffMessagesReadForClientViewer,
   patchConversationListPreviewAsReadForClient,
   resolveConversationUnreadForClient,
@@ -644,6 +646,69 @@ describe('getConversationListUnreadTotal', () => {
         true,
       ),
     ).toBe(1);
+  });
+});
+
+describe('conversationNeedsRatingNotification', () => {
+  it('signale une conversation clôturée sans note', () => {
+    expect(
+      conversationNeedsRatingNotification({
+        status: 'CLOSED',
+        clientRating: null,
+      }),
+    ).toBe(true);
+  });
+
+  it('ignore si déjà notée ou non terminée', () => {
+    expect(
+      conversationNeedsRatingNotification({
+        status: 'CLOSED',
+        clientRating: 4,
+      }),
+    ).toBe(false);
+    expect(
+      conversationNeedsRatingNotification({
+        status: 'ACTIVE',
+        clientRating: null,
+      }),
+    ).toBe(false);
+    expect(
+      conversationNeedsRatingNotification({
+        status: 'CLOSED',
+        clientRating: null,
+        dismissed: true,
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('getConversationListNotificationTotal', () => {
+  it('additionne non-lus et notes en attente', () => {
+    expect(
+      getConversationListNotificationTotal(
+        [
+          { id: 'c1', unread: 2, status: 'ACTIVE', clientRating: null },
+          { id: 'c2', unread: 0, status: 'CLOSED', clientRating: null },
+        ],
+        null,
+        false,
+        new Set(),
+      ),
+    ).toBe(3);
+  });
+
+  it('ignore la conversation consultée et les notifs masquées', () => {
+    expect(
+      getConversationListNotificationTotal(
+        [
+          { id: 'c1', unread: 1, status: 'ACTIVE', clientRating: null },
+          { id: 'c2', unread: 0, status: 'CLOSED', clientRating: null },
+        ],
+        'c1',
+        true,
+        new Set(['c2']),
+      ),
+    ).toBe(0);
   });
 });
 

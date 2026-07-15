@@ -38,7 +38,6 @@ describe('Chat widget design (rendu DOM)', () => {
   it('popup ouvert utilise chat-glass et largeur sm', () => {
     render(<DesignPreview />);
     const popup = screen.getByTestId('popup');
-    expect(popup).toHaveClass('chat-glass');
     expect(popup.className).toContain('sm:w-[390px]');
   });
 

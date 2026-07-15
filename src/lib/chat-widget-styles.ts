@@ -171,7 +171,7 @@ export function chatWidgetPopupContainerClass(isOpen: boolean): string {
   const base = `
     fixed top-[env(safe-area-inset-top,0px)] ${mobileBottom} ${desktopBottom} left-0 right-0
     max-sm:h-[calc(100dvh-env(safe-area-inset-top,0px))]
-    sm:top-auto sm:left-auto sm:right-6 sm:w-[390px] sm:h-[clamp(480px,75dvh,640px)]
+    sm:top-auto sm:left-auto sm:right-6 sm:w-[390px] sm:h-[clamp(540px,82dvh,700px)]
     chat-glass rounded-none sm:rounded-2xl shadow-2xl z-[9999]
     flex flex-col overflow-hidden overscroll-contain
     transition-opacity duration-150 ease-out
@@ -188,15 +188,15 @@ export function chatWidgetHeaderClass(): string {
 
 /** En-tête sombre de l’onglet Accueil (style Intercom / CSGO Empire). */
 export function chatWidgetHomeHeaderClass(): string {
-  return 'relative flex-shrink-0 overflow-hidden bg-neutral-950 text-white px-4 pt-4 pb-6';
+  return 'relative flex-shrink-0 overflow-hidden bg-neutral-950 text-white px-4 pt-3.5 pb-4';
 }
 
 export function chatWidgetHomeBodyClass(): string {
-  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-2 pb-4 space-y-3';
+  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-1.5 pb-3 space-y-2';
 }
 
 export function chatWidgetHomeCardClass(): string {
-  return 'w-full rounded-2xl border-0 bg-white dark:bg-neutral-900/80 shadow-sm p-4 text-left';
+  return 'w-full rounded-2xl border-0 bg-white dark:bg-neutral-900/80 shadow-sm p-3 text-left';
 }
 
 export function chatWidgetHomeCardInnerButtonClass(): string {
@@ -204,11 +204,11 @@ export function chatWidgetHomeCardInnerButtonClass(): string {
 }
 
 export function chatWidgetHomeCardSectionTitleClass(): string {
-  return 'text-xs font-semibold text-foreground mb-3';
+  return 'text-xs font-semibold text-foreground mb-2';
 }
 
 export function chatWidgetHomeHelpLinkClass(): string {
-  return 'w-full flex items-center justify-between py-2.5 px-2 -mx-2 rounded-lg text-left text-sm text-foreground/90 hover:text-foreground hover:bg-muted/55 dark:hover:bg-white/10 active:bg-muted/70 dark:active:bg-white/15 transition-all duration-150 cursor-pointer group border-b border-border/40 last:border-b-0';
+  return 'w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg text-left text-sm text-foreground/90 hover:text-foreground hover:bg-muted/55 dark:hover:bg-white/10 active:bg-muted/70 dark:active:bg-white/15 transition-all duration-150 cursor-pointer group border-b border-border/40 last:border-b-0';
 }
 
 export function chatWidgetHomeSearchHeaderClass(): string {
@@ -254,23 +254,24 @@ export function chatWidgetConversationScrollClass(extra = ''): string {
 }
 
 export function chatWidgetMessagesListBodyClass(): string {
-  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-1 pb-2';
+  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-1 pb-14';
 }
 
 export function chatWidgetMessagesListContainerClass(): string {
-  return 'flex-1 min-h-0 flex flex-col';
+  return 'relative flex-1 min-h-0 flex flex-col';
 }
 
-export function chatWidgetMessagesListFooterClass(): string {
-  return 'flex-shrink-0 px-4 pt-2 pb-3 border-t border-border/30 bg-background';
+/** Overlay flottant pour « Poser une question » au-dessus de la liste. */
+export function chatWidgetMessagesListAskQuestionOverlayClass(): string {
+  return 'pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4 pb-2.5 pt-10 bg-gradient-to-t from-background from-55% via-background/95 to-transparent';
 }
 
 export function chatWidgetAskQuestionButtonClass(): string {
-  return 'w-full flex items-center justify-center gap-2.5 rounded-full bg-neutral-900 text-white dark:bg-neutral-950 py-3 px-5 text-sm font-semibold shadow-md hover:bg-neutral-800 dark:hover:bg-neutral-900 active:scale-[0.98] transition-all duration-150';
+  return 'pointer-events-auto inline-flex items-center justify-center gap-2 rounded-full bg-neutral-900 text-white dark:bg-neutral-950 py-2 px-4 text-sm font-semibold shadow-lg hover:bg-neutral-800 dark:hover:bg-neutral-900 active:scale-[0.98] transition-all duration-150';
 }
 
 export function chatWidgetAskQuestionIconClass(): string {
-  return 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-bold';
+  return 'flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15 text-xs font-bold';
 }
 
 export function chatWidgetHistoryItemPreviewClass(solved: boolean): string {

@@ -399,6 +399,46 @@ export function getConversationListUnreadTotal(
   }, 0);
 }
 
+/** Conversation résolue sans note client — affiche une pastille dans la liste Messages. */
+export function conversationNeedsRatingNotification(params: {
+  status: string;
+  clientRating?: number | null;
+  dismissed?: boolean;
+}): boolean {
+  return (
+    isTerminalConversationStatus(params.status) &&
+    params.clientRating == null &&
+    !params.dismissed
+  );
+}
+
+export function getConversationListNotificationTotal(
+  items: Array<{
+    id: string;
+    unread: number;
+    status: string;
+    clientRating?: number | null;
+  }>,
+  activeConversationId: string | null,
+  isViewingConversation: boolean,
+  dismissedRatingIds: ReadonlySet<string>,
+): number {
+  return items.reduce((acc, item) => {
+    if (isViewingConversation && item.id === activeConversationId) return acc;
+    let count = item.unread;
+    if (
+      conversationNeedsRatingNotification({
+        status: item.status,
+        clientRating: item.clientRating,
+        dismissed: dismissedRatingIds.has(item.id),
+      })
+    ) {
+      count += 1;
+    }
+    return acc + count;
+  }, 0);
+}
+
 /** Met à jour le cache liste après lecture côté client (aperçu dernier message). */
 export function patchConversationListPreviewAsReadForClient<
   T extends { id: string; messages?: Array<{ isRead: boolean; senderType: string }> },

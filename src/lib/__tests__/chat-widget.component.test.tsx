@@ -283,7 +283,9 @@ describe('ChatWidget', () => {
 
   it('affiche le badge unread quand fermé', async () => {
     chatMock = buildChatMock({
-      getListUnreadTotal: jest.fn(() => 3),
+      conversationListItems: [
+        { id: 'c1', title: 'Unread', lastMessageAt: '2026-06-12T10:00:00Z', status: 'ACTIVE', unread: 3 },
+      ],
     });
     renderWidget();
     expect(screen.getByTestId('chat-fab')).toBeInTheDocument();
@@ -604,9 +606,11 @@ describe('ChatWidget', () => {
     expect(screen.getByText('On regarde votre trade')).toBeInTheDocument();
     expect(screen.getByText('Résolus')).toBeInTheDocument();
     expect(screen.getByText('Notez votre conversation')).toBeInTheDocument();
+    expect(screen.getByTestId('chat-rating-notification-dot')).toBeInTheDocument();
     expect(screen.getByTestId('chat-ask-question')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Paiement SEPA'));
     expect(mockSetConversationId).toHaveBeenCalledWith('c2');
+    expect(screen.queryByTestId('chat-rating-notification-dot')).not.toBeInTheDocument();
   });
 
   it('ouvre une nouvelle conversation via Ask a question', async () => {

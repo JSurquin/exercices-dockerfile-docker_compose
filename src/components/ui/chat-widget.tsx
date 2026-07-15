@@ -18,7 +18,7 @@ import { shouldShowBackButton,
   type ChatWidgetSupportStaffMember,
 } from "@/lib/chat-widget-config";
 import { MOONSKIN_LOGO_AVATAR_SRC, resolveStaffAvatarSrc } from "@/lib/team-avatars";
-import { isTerminalConversationStatus, shouldClearAiTypingIndicator, formatConversationListPreview } from "@/lib/chat-logic";
+import { isTerminalConversationStatus, shouldClearAiTypingIndicator, formatConversationListPreview, conversationNeedsRatingNotification, getConversationListNotificationTotal } from "@/lib/chat-logic";
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
   CHAT_WIDGET_RATING_EMOJIS,
@@ -46,7 +46,7 @@ import {
   chatWidgetConversationScrollClass,
   chatWidgetMessagesListBodyClass,
   chatWidgetMessagesListContainerClass,
-  chatWidgetMessagesListFooterClass,
+  chatWidgetMessagesListAskQuestionOverlayClass,
   chatWidgetAskQuestionButtonClass,
   chatWidgetAskQuestionIconClass,
   chatWidgetHistoryItemPreviewClass,
@@ -869,7 +869,6 @@ export function ChatWidget() {
     loadOlderMessages,
     hasOlderMessages,
     isLoadingOlderMessages,
-    getListUnreadTotal,
     isLoading,
     isSending,
   } = useChat(isOpen, isInConversation, !user);
@@ -886,6 +885,9 @@ export function ChatWidget() {
   const [localClientRating, setLocalClientRating] = useState<number | null>(null);
   const [ratingFlowActive, setRatingFlowActive] = useState(false);
   const [ratingSubmittedThisSession, setRatingSubmittedThisSession] = useState(false);
+  const [dismissedRatingNotificationIds, setDismissedRatingNotificationIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const wasOpenBeforeMobileMenuRef = useRef(false);
@@ -910,6 +912,7 @@ export function ChatWidget() {
     setLocalClientRating(null);
     setRatingFlowActive(false);
     setRatingSubmittedThisSession(false);
+    setDismissedRatingNotificationIds(new Set());
     if (aiTypingTimeoutRef.current) {
       clearTimeout(aiTypingTimeoutRef.current);
       aiTypingTimeoutRef.current = null;
@@ -938,7 +941,14 @@ export function ChatWidget() {
 
 
   const recentConversation = conversationListItems[0] ?? null;
-  const totalListUnread = isInConversation ? 0 : getListUnreadTotal();
+  const totalListUnread = isInConversation
+    ? 0
+    : getConversationListNotificationTotal(
+        conversationListItems,
+        conversationId,
+        isInConversation,
+        dismissedRatingNotificationIds,
+      );
 
   const effectiveIsAiTyping =
     isAiTyping &&
@@ -1142,6 +1152,12 @@ export function ChatWidget() {
   };
 
   const handleSelectHistoryItem = (id: string) => {
+    setDismissedRatingNotificationIds((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
     setConversationId(id);
     setMessagesStep("conversation");
   };
@@ -1283,7 +1299,14 @@ export function ChatWidget() {
     }
   }, [effectiveIsAiTyping, isAiTyping]);
 
-  const unreadCount = isInConversation ? 0 : getListUnreadTotal();
+  const unreadCount = isInConversation
+    ? 0
+    : getConversationListNotificationTotal(
+        conversationListItems,
+        conversationId,
+        isInConversation,
+        dismissedRatingNotificationIds,
+      );
 
   if (isHiddenByMobileMenu) {
     return null;
@@ -1317,6 +1340,12 @@ export function ChatWidget() {
           <button
             type="button"
             onClick={() => {
+              setDismissedRatingNotificationIds((prev) => {
+                if (prev.has(recentConversation.id)) return prev;
+                const next = new Set(prev);
+                next.add(recentConversation.id);
+                return next;
+              });
               setConversationId(recentConversation.id);
               goToConversation();
             }}
@@ -1384,12 +1413,12 @@ export function ChatWidget() {
       <button
         type="button"
         onClick={handleAskQuestion}
-        className={chatWidgetHomeCardClass()}
+        className={`${chatWidgetHomeCardClass()} py-2.5`}
       >
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm font-semibold">{messages.chatWidget.home.askQuestion}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
               {messages.chatWidget.home.askQuestionDesc}
             </p>
           </div>
@@ -1418,7 +1447,7 @@ export function ChatWidget() {
         aria-hidden
       />
 
-      <div className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-5">
+      <div className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <Image
             src="/images/logo.webp"
@@ -1443,7 +1472,7 @@ export function ChatWidget() {
       </div>
 
       <div className="relative z-10">
-        <p className="text-2xl font-bold leading-tight">
+        <p className="text-xl font-bold leading-tight">
           {messages.chatWidget.greeting}
           {user ? ` ${user.username}` : ""} 👋
         </p>
@@ -1619,6 +1648,13 @@ export function ChatWidget() {
       solved &&
       isTerminalConversationStatus(item.status) &&
       item.clientRating == null;
+    const showRatingNotification =
+      solved &&
+      conversationNeedsRatingNotification({
+        status: item.status,
+        clientRating: item.clientRating,
+        dismissed: dismissedRatingNotificationIds.has(item.id),
+      });
 
     return (
       <button
@@ -1644,6 +1680,13 @@ export function ChatWidget() {
               <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
                 {!solved && item.unread > 0 && (
                   <span className={chatWidgetHistoryUnreadDotClass()} aria-hidden />
+                )}
+                {showRatingNotification && (
+                  <span
+                    className={chatWidgetHistoryUnreadDotClass()}
+                    data-testid="chat-rating-notification-dot"
+                    aria-label={messages.chatWidget.rateConversation}
+                  />
                 )}
                 <span className="text-[11px] text-muted-foreground tabular-nums">
                   {formatRelativeTime(item.lastMessageAt, relativeTimeLabels, dateLocale)}
@@ -1714,7 +1757,7 @@ export function ChatWidget() {
           </>
         )}
       </div>
-      <div className={chatWidgetMessagesListFooterClass()}>
+      <div className={chatWidgetMessagesListAskQuestionOverlayClass()}>
         {renderAskQuestionButton()}
       </div>
     </div>
@@ -1774,6 +1817,12 @@ export function ChatWidget() {
         onRatingFlowStart={() => setRatingFlowActive(true)}
         onRatingSaved={() => {
           if (conversationId) {
+            setDismissedRatingNotificationIds((prev) => {
+              if (prev.has(conversationId)) return prev;
+              const next = new Set(prev);
+              next.add(conversationId);
+              return next;
+            });
             queryClient.invalidateQueries({
               queryKey: queryKeys.conversationMessages(conversationId),
             });
@@ -1785,6 +1834,12 @@ export function ChatWidget() {
           setRatingFlowActive(false);
           setRatingSubmittedThisSession(true);
           if (conversationId) {
+            setDismissedRatingNotificationIds((prev) => {
+              if (prev.has(conversationId)) return prev;
+              const next = new Set(prev);
+              next.add(conversationId);
+              return next;
+            });
             queryClient.invalidateQueries({
               queryKey: queryKeys.conversationMessages(conversationId),
             });
