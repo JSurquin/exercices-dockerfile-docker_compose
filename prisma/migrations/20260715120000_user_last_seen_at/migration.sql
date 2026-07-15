@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "User" ADD COLUMN "lastSeenAt" TIMESTAMP(3);
+ALTER TABLE "user" ADD COLUMN "lastSeenAt" TIMESTAMP(3);
