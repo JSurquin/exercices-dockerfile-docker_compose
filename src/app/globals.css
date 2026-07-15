@@ -2507,6 +2507,39 @@ body.next-dev-overlay-present #sentry-feedback {
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Chat widget — en-tête accueil : lueurs CSS (pas d’image qui se décale au scroll) */
+  .chat-widget-home-header-bg {
+    background:
+      radial-gradient(ellipse 90% 70% at 50% 120%, rgba(126, 179, 232, 0.14) 0%, transparent 58%),
+      radial-gradient(ellipse 45% 40% at 88% 18%, rgba(160, 170, 190, 0.1) 0%, transparent 52%),
+      radial-gradient(ellipse 38% 32% at 12% 28%, rgba(110, 120, 145, 0.08) 0%, transparent 48%);
+  }
+
+  .cs2 .chat-widget-home-header-bg {
+    background:
+      radial-gradient(ellipse 90% 70% at 50% 120%, rgba(249, 115, 22, 0.16) 0%, transparent 58%),
+      radial-gradient(ellipse 45% 40% at 88% 18%, rgba(220, 38, 38, 0.1) 0%, transparent 52%),
+      radial-gradient(ellipse 38% 32% at 12% 28%, rgba(180, 90, 40, 0.07) 0%, transparent 48%);
+  }
+
+  .chat-widget-home-header-fade {
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(10, 10, 10, 0.35) 55%,
+      rgb(10 10 10) 100%
+    );
+  }
+
+  .light .chat-widget-home-header-fade {
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(245, 245, 245, 0.5) 55%,
+      rgb(245 245 245) 100%
+    );
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .message-slide-in,
     .ai-typing-bubble,

@@ -130,11 +130,15 @@ export function chatWidgetHomeHeaderClass(): string {
 }
 
 export function chatWidgetHomeBodyClass(): string {
-  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain bg-neutral-100 dark:bg-neutral-900/40 px-4 py-4 space-y-3';
+  return 'flex-1 min-h-0 overflow-y-auto overscroll-y-contain bg-neutral-100 dark:bg-neutral-950 px-4 py-4 space-y-3';
 }
 
 export function chatWidgetHomeCardClass(): string {
-  return 'w-full rounded-2xl border-0 bg-white dark:bg-card shadow-sm p-4 text-left transition-shadow hover:shadow-md';
+  return 'w-full rounded-2xl border border-transparent bg-white dark:bg-neutral-900/80 shadow-sm p-4 text-left cursor-pointer transition-all duration-150 hover:shadow-md hover:bg-neutral-50 dark:hover:bg-neutral-900 dark:hover:border-white/10';
+}
+
+export function chatWidgetHomeCardInnerButtonClass(): string {
+  return 'w-full text-left rounded-xl transition-colors duration-150 hover:bg-muted/50 dark:hover:bg-white/5 px-1 -mx-1 py-0.5';
 }
 
 export function chatWidgetHomeCardSectionTitleClass(): string {
@@ -142,11 +146,11 @@ export function chatWidgetHomeCardSectionTitleClass(): string {
 }
 
 export function chatWidgetHomeHelpLinkClass(): string {
-  return 'w-full flex items-center justify-between py-2.5 text-left text-sm text-foreground/90 hover:text-foreground transition-colors group border-b border-border/40 last:border-b-0';
+  return 'w-full flex items-center justify-between py-2.5 px-2 -mx-2 rounded-lg text-left text-sm text-foreground/90 hover:text-foreground hover:bg-muted/55 dark:hover:bg-white/10 active:bg-muted/70 dark:active:bg-white/15 transition-all duration-150 cursor-pointer group border-b border-border/40 last:border-b-0';
 }
 
 export function chatWidgetHomeSearchHeaderClass(): string {
-  return 'flex items-center justify-between pb-3 mb-1 border-b border-border/40';
+  return 'flex items-center justify-between pb-3 mb-1 border-b border-border/40 rounded-lg px-2 -mx-2 transition-all duration-150 hover:bg-muted/55 dark:hover:bg-white/10 active:bg-muted/70 dark:active:bg-white/15 cursor-pointer';
 }
 
 export function chatWidgetStaffAvatarStackClass(): string {
@@ -202,10 +206,10 @@ export function chatWidgetTabBarClass(): string {
 
 export function chatWidgetTabButtonClass(isActive: boolean): string {
   const base =
-    'flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[48px] rounded-lg transition-colors relative';
+    'flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1.5 min-h-[48px] rounded-lg transition-all duration-150 relative cursor-pointer';
   return isActive
-    ? `${base} text-foreground font-medium`
-    : `${base} text-muted-foreground hover:text-foreground`;
+    ? `${base} text-foreground font-medium bg-muted/40 dark:bg-white/10`
+    : `${base} text-muted-foreground hover:text-foreground hover:bg-muted/35 dark:hover:bg-white/5`;
 }
 
 /** Ligne d’historique (liste Messages) — style plat type messagerie. */

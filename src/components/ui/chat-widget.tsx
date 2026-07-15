@@ -33,6 +33,7 @@ import {
   chatWidgetHistoryItemTitleClass,
   chatWidgetHistoryListClass,
   chatWidgetHomeCardClass,
+  chatWidgetHomeCardInnerButtonClass,
   chatWidgetHomeHeaderClass,
   chatWidgetHomeBodyClass,
   chatWidgetHomeCardSectionTitleClass,
@@ -1242,7 +1243,7 @@ export function ChatWidget() {
               setConversationId(recentConversation.id);
               goToConversation();
             }}
-            className="w-full text-left"
+            className={chatWidgetHomeCardInnerButtonClass()}
           >
             <div className="flex items-start gap-3">
               <Avatar className="h-10 w-10 shrink-0">
@@ -1282,7 +1283,7 @@ export function ChatWidget() {
         <button
           type="button"
           onClick={handleOpenHelpTab}
-          className={`${chatWidgetHomeSearchHeaderClass()} w-full cursor-pointer hover:opacity-90 transition-opacity`}
+          className={`${chatWidgetHomeSearchHeaderClass()} w-full`}
           data-testid="chat-search-help"
         >
           <p className="text-sm font-semibold">{messages.chatWidget.home.searchHelp}</p>
@@ -1324,17 +1325,13 @@ export function ChatWidget() {
   const renderHomeHeader = () => (
     <div className={chatWidgetHomeHeaderClass()} data-testid="chat-home-header">
       <div
-        className="pointer-events-none absolute inset-0 flex items-end justify-center overflow-hidden"
+        className="pointer-events-none absolute inset-0 chat-widget-home-header-bg"
         aria-hidden
-      >
-        <Image
-          src="/images/logo.webp"
-          alt=""
-          width={220}
-          height={220}
-          className="opacity-[0.08] translate-y-6 scale-125 select-none"
-        />
-      </div>
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-10 chat-widget-home-header-fade"
+        aria-hidden
+      />
 
       <div className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-5">
         <div className="flex items-center gap-2 min-w-0">
