@@ -25,6 +25,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useMemo, useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
+import { useQuery } from "@tanstack/react-query";
 
 function normalizeSearch(s: string) {
   return s
@@ -42,9 +43,25 @@ function matchesQuery(query: string, title: string, body: string) {
 
 export default function HelpPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
 
   const t = messages.helpPage;
+
+  const { data: cmsArticles = [] } = useQuery({
+    queryKey: ["help-articles", locale],
+    queryFn: async () => {
+      const response = await fetch(`/api/help-articles?lang=${locale}`);
+      if (!response.ok) return [];
+      const data = await response.json();
+      return (data.articles ?? []) as Array<{
+        slug: string;
+        title: string;
+        subtitle?: string;
+        category?: string;
+      }>;
+    },
+    staleTime: 10 * 60 * 1000,
+  });
 
   const categories = useMemo(
     () => [
@@ -290,6 +307,41 @@ export default function HelpPage() {
             />
           </div>
         </motion.div>
+
+        {cmsArticles.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.08 }}
+            className="mb-8 sm:mb-12"
+          >
+            <h2 className="text-2xl font-semibold mb-6">{t.cmsArticlesTitle}</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              {cmsArticles.map((article) => (
+                <Card key={article.slug} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        {article.category ? (
+                          <Badge variant="outline" className="mb-2">
+                            {article.category}
+                          </Badge>
+                        ) : null}
+                        <h3 className="font-semibold mb-1">{article.title}</h3>
+                        {article.subtitle ? (
+                          <p className="text-sm text-muted-foreground line-clamp-2">{article.subtitle}</p>
+                        ) : null}
+                      </div>
+                      <Button variant="ghost" size="sm" asChild className="shrink-0">
+                        <Link href={`/help/${article.slug}`}>→</Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

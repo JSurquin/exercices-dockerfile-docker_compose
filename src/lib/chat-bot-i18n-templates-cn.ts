@@ -10,7 +10,7 @@ export const chatBotTemplatesCn: ChatBotTemplateTree = {
 • 头像
 • 用户名
 
-如果其中任何一项不一致，您可能遭遇了 API 骗局（请参阅 FAQ 指南）。
+如果其中任何一项不一致，您可能遭遇了 API 骗局（[请参阅 FAQ 指南](/help/scam)）。
 
 如果问题仍然存在，请在下方描述您的情况。
 我们的团队成员会尽快回复。
@@ -88,7 +88,7 @@ export const chatBotTemplatesCn: ChatBotTemplateTree = {
 
 1️⃣ 检查交易状态
 如果交易立即被拒绝，您可能遭遇了 API 骗局。
-👉 请参阅 FAQ 指南
+👉 [请参阅 FAQ 指南](/help/scam)
 
 2️⃣ Steam 守卫确认
 请确保您已在手机上通过 Steam 守卫确认交易。

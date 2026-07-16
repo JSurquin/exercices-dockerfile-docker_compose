@@ -20,11 +20,19 @@ export const CHAT_MARKDOWN_COMPONENTS = {
   h1: ({ children }: { children?: ReactNode }) => <p className="font-semibold text-sm mb-1">{children}</p>,
   h2: ({ children }: { children?: ReactNode }) => <p className="font-semibold text-sm mb-1">{children}</p>,
   h3: ({ children }: { children?: ReactNode }) => <p className="font-medium text-sm mb-0.5">{children}</p>,
-  a: ({ href, children }: { href?: string; children?: ReactNode }) => (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-80">
-      {children}
-    </a>
-  ),
+  a: ({ href, children }: { href?: string; children?: ReactNode }) => {
+    const isInternal = href?.startsWith('/');
+    return (
+      <a
+        href={href}
+        target={isInternal ? undefined : '_blank'}
+        rel={isInternal ? undefined : 'noopener noreferrer'}
+        className="underline underline-offset-2 hover:opacity-80 text-theme-accent"
+      >
+        {children}
+      </a>
+    );
+  },
   br: () => <br />,
 };
 

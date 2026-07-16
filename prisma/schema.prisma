@@ -905,6 +905,57 @@ model LegalPageHistory {
   @@map("legal_page_history")
 }
 
+model HelpArticle {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  titleFr     String
+  titleEn     String
+  titleCn     String?
+  subtitleFr  String?
+  subtitleEn  String?
+  subtitleCn  String?
+  contentFr   String
+  contentEn   String
+  contentCn   String?
+  category    String?
+  isPublished Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+
+  @@index([slug])
+  @@index([isPublished])
+  @@map("help_article")
+}
+
+model PressArticle {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  titleFr     String
+  titleEn     String
+  titleCn     String?
+  summaryFr   String?
+  summaryEn   String?
+  summaryCn   String?
+  contentFr   String
+  contentEn   String
+  contentCn   String?
+  sourceName  String?
+  externalUrl String?
+  publishedAt DateTime @default(now())
+  isPublished Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([publishedAt])
+  @@map("press_article")
+}
+
 model SiteSettings {
   id          String   @id @default(cuid())
   key         String   @unique

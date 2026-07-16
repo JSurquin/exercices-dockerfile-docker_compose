@@ -57,6 +57,13 @@ describe('Templates BOT — résolution i18n par locale', () => {
 });
 
 describe('Templates BOT — contenu métier par catégorie', () => {
+  it('trade.pending mentionne le guide API scam avec lien /help/scam dans les 3 langues', () => {
+    for (const locale of LOCALES) {
+      const resolved = resolveKey('trade.pending', locale.username, locale.tree);
+      expect(resolved).toMatch(/\/help\/scam/);
+    }
+  });
+
   it.each([
     ['trade.pending', /15|15 minutes|15 分钟/i],
     ['trade.blocked', /Steam Guard|steam guard|Steam 守卫/i],

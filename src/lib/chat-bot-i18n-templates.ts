@@ -37,7 +37,7 @@ En attendant, vérifiez attentivement que les informations du bot correspondent 
 • Photo de profil
 • Pseudo
 
-Si une de ces informations ne correspond pas, vous pourriez être victime d'un API scam (voir notre guide dans la FAQ).
+Si une de ces informations ne correspond pas, vous pourriez être victime d'un API scam ([voir notre guide](/help/scam)).
 
 Si votre problème persiste, décrivez votre situation ci-dessous.
 Un membre de notre équipe vous répondra rapidement.
@@ -115,7 +115,7 @@ Merci d'utiliser Moonskin 🤝`,
 
 1️⃣ Vérifiez le statut du trade
 Si votre trade est immédiatement décliné, il est possible que vous soyez victime d'un API scam.
-👉 Consultez notre guide dans la FAQ
+👉 Consultez notre [guide API scam](/help/scam)
 
 2️⃣ Validation Steam Guard
 Assurez-vous d'avoir bien confirmé le trade sur votre téléphone via Steam Guard.
@@ -314,7 +314,7 @@ In the meantime, carefully verify that the bot's details match:
 • Profile picture
 • Username
 
-If any of these do not match, you may be a victim of an API scam (see our FAQ guide).
+If any of these do not match, you may be a victim of an API scam ([see our FAQ guide](/help/scam)).
 
 If your issue persists, describe your situation below.
 A member of our team will respond shortly.
@@ -392,7 +392,7 @@ Thank you for using Moonskin 🤝`,
 
 1️⃣ Check the trade status
 If your trade is immediately declined, you may be a victim of an API scam.
-👉 See our FAQ guide
+👉 [See our FAQ guide](/help/scam)
 
 2️⃣ Steam Guard confirmation
 Make sure you confirmed the trade on your phone via Steam Guard.

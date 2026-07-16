@@ -3355,6 +3355,14 @@ export interface Messages {
         translateError: string;
       };
     };
+    helpArticles: {
+      title: string;
+      subtitle: string;
+    };
+    pressArticles: {
+      title: string;
+      subtitle: string;
+    };
   };
   kycPage: {
     title: string;
@@ -5307,6 +5315,7 @@ export interface Messages {
     statsTitle: string;
     pressReleases: string;
     readRelease: string;
+    readOriginal: string;
     noPressReleasesTitle: string;
     noPressReleasesBody: string;
     aboutTitle: string;
@@ -6031,6 +6040,7 @@ export interface Messages {
     };
     helpPage: {
       browseByCategory: string;
+      cmsArticlesTitle: string;
       searchNoResults: string;
       supportOptions: {
         liveChat: {
@@ -6247,6 +6257,8 @@ export interface Messages {
         notifications: string;
         chatSupport: string;
         partners: string;
+        helpArticles: string;
+        pressArticles: string;
         legalPages: string;
         audit: string;
         blockedIps: string;

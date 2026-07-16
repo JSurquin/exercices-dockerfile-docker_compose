@@ -154,6 +154,8 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
       title: t.groups.content,
       items: [
         { title: t.items.partners, href: '/admin/partners', icon: Heart },
+        { title: t.items.helpArticles, href: '/admin/help-articles', icon: FileText },
+        { title: t.items.pressArticles, href: '/admin/press-articles', icon: FileText },
         { title: t.items.legalPages, href: '/admin/legal-pages', icon: FileText },
       ],
     },

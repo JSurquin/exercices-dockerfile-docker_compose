@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,9 +14,11 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   ClockIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats } from "@/hooks/use-public-stats";
+import { useQuery } from "@tanstack/react-query";
 
 const PRESS_EMAIL = process.env.NEXT_PUBLIC_PRESS_EMAIL ?? "contact@moonskin.fun";
 
@@ -64,6 +67,23 @@ const getStats = (
 export default function PressPage() {
   const { messages, locale } = useLocale();
   const { data: publicStats } = usePublicStats();
+  const { data: pressArticles = [] } = useQuery({
+    queryKey: ['press-articles', locale],
+    queryFn: async () => {
+      const response = await fetch(`/api/press-articles?lang=${locale}`);
+      if (!response.ok) return [];
+      const data = await response.json();
+      return (data.articles ?? []) as Array<{
+        slug: string;
+        title: string;
+        summary?: string;
+        sourceName?: string;
+        publishedAt: string;
+        externalUrl?: string;
+      }>;
+    },
+    staleTime: 10 * 60 * 1000,
+  });
   const stats = getStats(
     messages,
     publicStats?.totalUsers ?? 0,
@@ -132,6 +152,38 @@ export default function PressPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <h2 className="text-2xl font-semibold mb-6">{messages.press.pressReleases}</h2>
+              {pressArticles.length > 0 ? (
+                <div className="space-y-4">
+                  {pressArticles.map((article) => (
+                    <Card key={article.slug} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {new Intl.DateTimeFormat(localeTag, {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              }).format(new Date(article.publishedAt))}
+                              {article.sourceName ? ` • ${article.sourceName}` : ""}
+                            </p>
+                            <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
+                            {article.summary ? (
+                              <p className="text-sm text-muted-foreground leading-relaxed">{article.summary}</p>
+                            ) : null}
+                          </div>
+                          <Button variant="outline" className="shrink-0" asChild>
+                            <Link href={`/press/${article.slug}`}>
+                              {messages.press.readRelease}
+                              <ChevronRightIcon className="w-4 h-4 ml-1" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
               <Card className="border-dashed">
                 <CardContent className="p-8">
                   <h3 className="text-lg font-semibold mb-2">{messages.press.noPressReleasesTitle}</h3>
@@ -156,6 +208,7 @@ export default function PressPage() {
                   </Button>
                 </CardContent>
               </Card>
+              )}
             </motion.div>
 
             <motion.div

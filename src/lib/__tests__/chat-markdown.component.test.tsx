@@ -46,12 +46,20 @@ describe('CHAT_MARKDOWN_COMPONENTS', () => {
     },
   );
 
-  it('lien ouvre dans un nouvel onglet', () => {
+  it('lien externe ouvre dans un nouvel onglet', () => {
     const Link = CHAT_MARKDOWN_COMPONENTS.a;
     const { container } = render(<Link href="https://moonskin.fun">Site</Link>);
     const anchor = container.querySelector('a');
     expect(anchor?.getAttribute('target')).toBe('_blank');
     expect(anchor?.getAttribute('rel')).toContain('noopener');
+  });
+
+  it('lien interne reste dans le même onglet', () => {
+    const Link = CHAT_MARKDOWN_COMPONENTS.a;
+    const { container } = render(<Link href="/help/scam">Guide</Link>);
+    const anchor = container.querySelector('a');
+    expect(anchor?.getAttribute('href')).toBe('/help/scam');
+    expect(anchor?.getAttribute('target')).toBeNull();
   });
 });
 

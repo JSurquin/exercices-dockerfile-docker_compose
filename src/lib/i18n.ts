@@ -2874,6 +2874,14 @@ export const messages: Record<Locale, Messages> = {
           translateError: "Erreur lors de la traduction",
         },
       },
+      helpArticles: {
+        title: "Articles d'aide",
+        subtitle: "Créez et publiez des guides sur /help/nom-de-l-article (ex. /help/scam)",
+      },
+      pressArticles: {
+        title: "Articles presse",
+        subtitle: "Publiez vos communiqués et retombées presse visibles sur la page Presse",
+      },
       settings: {
         title: "Paramètres Administrateur",
         subtitle: "Gérez vos informations personnelles et préférences d'administration",
@@ -5818,6 +5826,7 @@ export const messages: Record<Locale, Messages> = {
       statsTitle: "MoonSkin en chiffres",
       pressReleases: "Communiqués de presse",
       readRelease: "Lire le communiqué",
+      readOriginal: "Lire l'article original",
       noPressReleasesTitle: "Aucun communiqué pour le moment",
       noPressReleasesBody:
         "Notre équipe presse prépare les prochaines annonces. En attendant, écrivez-nous pour toute demande média ou interview.",
@@ -6541,6 +6550,7 @@ export const messages: Record<Locale, Messages> = {
       },
       helpPage: {
         browseByCategory: "Parcourir par catégorie",
+        cmsArticlesTitle: "Guides et articles",
         searchNoResults:
           "Aucun article ne correspond à votre recherche. Essayez d'autres mots-clés ou contactez le support.",
         supportOptions: {
@@ -6775,6 +6785,8 @@ export const messages: Record<Locale, Messages> = {
         notifications: "Notifications",
         chatSupport: "Support chat",
         partners: "Partenaires",
+        helpArticles: "Articles d'aide",
+        pressArticles: "Articles presse",
         legalPages: "Pages légales",
         audit: "Audit & Sécurité",
         blockedIps: "IP bloquées",
@@ -9516,6 +9528,14 @@ export const messages: Record<Locale, Messages> = {
           translateSuccess: "Translation to {{lang}} completed",
           translateError: "Translation error",
         },
+      },
+      helpArticles: {
+        title: "Help articles",
+        subtitle: "Create and publish guides at /help/article-slug (e.g. /help/scam)",
+      },
+      pressArticles: {
+        title: "Press articles",
+        subtitle: "Publish press releases and media coverage shown on the Press page",
       },
       settings: {
         title: "Administrator Settings",
@@ -13654,6 +13674,7 @@ export const messages: Record<Locale, Messages> = {
       statsTitle: "MoonSkin in numbers",
       pressReleases: "Press releases",
       readRelease: "Read release",
+      readOriginal: "Read original article",
       noPressReleasesTitle: "No press releases yet",
       noPressReleasesBody:
         "Our press team is preparing upcoming announcements. In the meantime, email us for any media request or interview.",
@@ -14377,6 +14398,7 @@ export const messages: Record<Locale, Messages> = {
       },
       helpPage: {
         browseByCategory: "Browse by category",
+        cmsArticlesTitle: "Guides and articles",
         searchNoResults:
           "No articles match your search. Try different keywords or contact support.",
         supportOptions: {
@@ -14611,6 +14633,8 @@ export const messages: Record<Locale, Messages> = {
         notifications: "Notifications",
         chatSupport: "Chat Support",
         partners: "Partners",
+        helpArticles: "Help articles",
+        pressArticles: "Press articles",
         legalPages: "Legal Pages",
         audit: "Audit & Security",
         blockedIps: "Blocked IPs",
@@ -17247,6 +17271,14 @@ export const messages: Record<Locale, Messages> = {
           translateSuccess: "已翻译为 {{lang}}",
           translateError: "翻译时出错",
         },
+      },
+      helpArticles: {
+        title: "帮助文章",
+        subtitle: "在 /help/文章名称 创建和发布指南（例如 /help/scam）",
+      },
+      pressArticles: {
+        title: "媒体文章",
+        subtitle: "发布在媒体页面显示的新闻稿和媒体报道",
       },
       settings: {
         title: "管理员设置",
@@ -21172,6 +21204,7 @@ export const messages: Record<Locale, Messages> = {
       statsTitle: "MoonSkin 数据",
       pressReleases: "新闻稿",
       readRelease: "阅读新闻稿",
+      readOriginal: "阅读原文",
       noPressReleasesTitle: "暂无新闻稿",
       noPressReleasesBody: "新闻团队正在准备后续公告。如有媒体报道或采访需求，欢迎发邮件与我们联系。",
       aboutTitle: "关于 MoonSkin",
@@ -21893,6 +21926,7 @@ export const messages: Record<Locale, Messages> = {
       },
       helpPage: {
         browseByCategory: "按类别浏览",
+        cmsArticlesTitle: "指南与文章",
         searchNoResults: "没有符合您搜索的文章。请尝试其他关键词或联系客服。",
         supportOptions: {
           liveChat: {
@@ -22126,6 +22160,8 @@ export const messages: Record<Locale, Messages> = {
         notifications: "通知",
         chatSupport: "客服聊天",
         partners: "合作伙伴",
+        helpArticles: "帮助文章",
+        pressArticles: "媒体文章",
         legalPages: "法律页面",
         audit: "审计与安全",
         blockedIps: "封禁IP",
