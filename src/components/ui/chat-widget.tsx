@@ -22,7 +22,6 @@ import { isTerminalConversationStatus, shouldClearAiTypingIndicator, formatConve
 import {
   CHAT_WIDGET_POPUP_CLOSE_MS,
   CHAT_WIDGET_RATING_EMOJIS,
-  setChatWidgetBodyScrollLock,
   chatWidgetAiTypingBubbleClass,
   chatWidgetConversationEndedClass,
   chatWidgetConversationHeaderClass,
@@ -1054,11 +1053,6 @@ export function ChatWidget() {
     window.dispatchEvent(
       new CustomEvent("chat-widget-open-change", { detail: { open: isOpen } })
     );
-  }, [isOpen]);
-
-  useEffect(() => {
-    setChatWidgetBodyScrollLock(isOpen);
-    return () => setChatWidgetBodyScrollLock(false);
   }, [isOpen]);
 
   useEffect(() => {

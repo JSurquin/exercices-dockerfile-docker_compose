@@ -739,11 +739,11 @@ describe('ChatWidget', () => {
     expect(screen.getByTestId('chat-fab')).toBeInTheDocument();
   });
 
-  it('bloque le scroll du body quand le chat est ouvert', async () => {
+  it('ne bloque plus le scroll du body quand le chat est ouvert', async () => {
     renderWidget();
     expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
     await openChat();
-    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(true);
+    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
     closeChatViaHeader();
     expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
   });
@@ -759,7 +759,7 @@ describe('ChatWidget', () => {
   it('retire le verrouillage body si menu mobile ouvre pendant chat', async () => {
     renderWidget();
     await openChat();
-    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(true);
+    expect(document.body.classList.contains(CHAT_WIDGET_BODY_SCROLL_LOCK_CLASS)).toBe(false);
     act(() => {
       window.dispatchEvent(new CustomEvent('mobile-menu-open-change', { detail: { open: true } }));
     });

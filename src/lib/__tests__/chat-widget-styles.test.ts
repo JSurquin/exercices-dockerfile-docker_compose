@@ -165,16 +165,16 @@ describe('chatWidgetTimestampClass', () => {
 });
 
 describe('chatWidgetPopupContainerClass', () => {
-  it('ouvert : visible + chat-glass + pleine hauteur mobile', () => {
+  it('ouvert : visible + chat-glass + panneau flottant mobile', () => {
     const open = chatWidgetPopupContainerClass(true);
     expect(open).toContain('fixed');
     expect(open).not.toContain('absolute');
     expect(open).toContain('chat-glass');
     expect(open).toContain('opacity-100');
     expect(open).toContain('sm:w-[390px]');
-    expect(open).toContain('top-[env(safe-area-inset-top,0px)]');
-    expect(open).toContain('bottom-0');
-    expect(open).toContain('sm:h-[clamp(540px,82dvh,700px)]');
+    expect(open).toContain('top-auto');
+    expect(open).toContain('max-sm:h-[min(82dvh,700px)]');
+    expect(open).not.toContain('100dvh-env');
   });
 
   it('fermé : invisible + pointer-events-none + marge FAB mobile', () => {
