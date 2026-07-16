@@ -68,7 +68,7 @@ export function resolveChatMessagesPollIntervalMs(params: {
 
 export function useChat(isOpen = false, isViewingConversation = false, isGuest = false) {
   const queryClient = useQueryClient();
-  const { messages: t } = useLocale();
+  const { messages: t, locale } = useLocale();
   const chatT = t.hooks.chat;
 
   const storedId = useSyncExternalStore(
@@ -373,6 +373,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
             category: params.category,
             forceNew: forceNew || undefined,
             skipAi: params.skipAi || undefined,
+            locale,
           }),
         });
 

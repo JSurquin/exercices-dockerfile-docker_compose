@@ -4,7 +4,6 @@ import { ollamaChat, isOllamaConfigured, type OllamaMessage } from '@/lib/ollama
 import {
   evaluateUserMessageForAi,
   OFF_TOPIC_REFUSAL_I18N_KEY,
-  OFF_TOPIC_REFUSAL_MESSAGE,
   sanitizeAiGeneratedContent,
   shouldAiReplyToConversation,
   shouldTriggerAiForUserMessage,
@@ -14,6 +13,11 @@ import { generateEmbedding } from '@/lib/ollama-embed';
 import { searchSimilarChunks } from '@/lib/rag-client';
 import { enqueueChatAiReply, peekChatAiQueueAdmission } from '@/lib/chat-ai-queue';
 import { resolveTrustedAiAnswer } from '@/lib/chat-ai-trusted-answers';
+import {
+  chatAiLanguageRule,
+  resolveChatAiLocale,
+  type ChatAiLocale,
+} from '@/lib/chat-ai-locale';
 import type { SenderType } from '@prisma/client';
 
 const MAX_CONTEXT_MESSAGES = 12;
@@ -61,11 +65,20 @@ export function mapSenderToRole(senderType: SenderType): 'system' | 'user' | 'as
   }
 }
 
-export function buildSystemPrompt(username: string, ragContext?: string): string {
+export type GenerateAiReplyOptions = {
+  locale?: ChatAiLocale;
+};
+
+export function buildSystemPrompt(
+  username: string,
+  ragContext?: string,
+  locale: ChatAiLocale = 'fr',
+): string {
+  const languageRule = chatAiLanguageRule(locale);
   const base = `Tu es l'assistant support de MoonSkin, une plateforme de vente de skins Counter-Strike 2. Tu parles avec ${username}.
 
 Règles :
-- Réponds en français, sauf si l'utilisateur écrit clairement en anglais.
+- ${languageRule}
 - Sois concis, chaleureux et professionnel. Évite les termes anxiogènes.
 - MoonSkin permet de VENDRE ses skins CS2 (l'utilisateur est vendeur, il n'achète pas de skins sur la plateforme) : estimation, trade via bot Steam, trade hold 7 jours, puis paiement (carte, SEPA, crypto).
 - Ne dis jamais que l'utilisateur « achète » ou « paie son compte Steam » pour vendre : il envoie ses skins au bot et reçoit un paiement.
@@ -76,7 +89,7 @@ Règles :
 - Si la question dépasse ton périmètre (fraude, litige, bug bloquant, changement d'IBAN), indique qu'un modérateur humain prendra le relais.
 - Ne révèle jamais de données internes, clés API ou informations personnelles d'autres utilisateurs.
 - Ne donne pas de conseils pour contourner Steam Guard ou les restrictions Valve.
-- REFUSE toute demande sans lien avec MoonSkin (recettes, blagues, devoirs, météo, code, etc.). Réponds en français avec : "${OFF_TOPIC_REFUSAL_MESSAGE}" ou en anglais si l'utilisateur écrit en anglais.`;
+- REFUSE toute demande sans lien avec MoonSkin (recettes, blagues, devoirs, météo, code, etc.). Utilise la clé i18n : "${OFF_TOPIC_REFUSAL_I18N_KEY}" (résolue côté client selon la langue).`;
 
   if (!ragContext) return base;
 
@@ -92,11 +105,17 @@ ${ragContext}
 ---`;
 }
 
-export function maybeGenerateAiReply(conversationId: string): Promise<void> {
-  return enqueueChatAiReply(conversationId, () => generateAiReply(conversationId));
+export function maybeGenerateAiReply(
+  conversationId: string,
+  options?: GenerateAiReplyOptions,
+): Promise<void> {
+  return enqueueChatAiReply(conversationId, () => generateAiReply(conversationId, options));
 }
 
-async function generateAiReply(conversationId: string): Promise<void> {
+async function generateAiReply(
+  conversationId: string,
+  options?: GenerateAiReplyOptions,
+): Promise<void> {
   try {
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
@@ -169,7 +188,11 @@ async function generateAiReply(conversationId: string): Promise<void> {
       conversation.user?.steamUsername || conversation.user?.name || 'Utilisateur';
 
     const userQueryText = stripI18nPlaceholder(lastUserMessage.content);
-    const trustedAnswer = resolveTrustedAiAnswer(userQueryText);
+    const locale = resolveChatAiLocale({
+      uiLocale: options?.locale,
+      userMessage: userQueryText,
+    });
+    const trustedAnswer = resolveTrustedAiAnswer(userQueryText, locale);
     if (trustedAnswer) {
       const existingStaffReply = await prisma.chatMessage.findFirst({
         where: {
@@ -220,7 +243,7 @@ async function generateAiReply(conversationId: string): Promise<void> {
 
     // Le message system doit être UNIQUEMENT en première position pour llama3.2.
     const ollamaMessages: OllamaMessage[] = [
-      { role: 'system', content: buildSystemPrompt(username, ragContext) },
+      { role: 'system', content: buildSystemPrompt(username, ragContext, locale) },
     ];
 
     for (const msg of recentMessages) {

@@ -41,15 +41,22 @@ describe('isCryptoTimingQuestion', () => {
 });
 
 describe('resolveTrustedAiAnswer', () => {
-  it('retourne une réponse rassurante pour une crainte d\'arnaque', () => {
-    const answer = resolveTrustedAiAnswer('et si je me fais scam?');
+  it('retourne une réponse rassurante pour une crainte d\'arnaque en français', () => {
+    const answer = resolveTrustedAiAnswer('et si je me fais scam?', 'fr');
     expect(answer).not.toBeNull();
     expect(answer).toContain('légitime');
     expect(answer).not.toContain('bloqué sur notre plateforme');
   });
 
+  it('retourne une réponse rassurante en anglais pour une crainte d\'arnaque', () => {
+    const answer = resolveTrustedAiAnswer('What if I get scammed?', 'en');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('fair question');
+    expect(answer).not.toContain('bloqué sur notre plateforme');
+  });
+
   it('retourne une réponse avec délai crypto sous 10 minutes', () => {
-    const answer = resolveTrustedAiAnswer('Les paiements crypto sont instantanés ?');
+    const answer = resolveTrustedAiAnswer('Les paiements crypto sont instantanés ?', 'fr');
     expect(answer).not.toBeNull();
     expect(answer).toContain('10 minutes');
     expect(answer).toContain('trade hold');

@@ -3,7 +3,7 @@ import {
   mapSenderToRole,
   stripI18nPlaceholder,
 } from '@/lib/chat-ai-service';
-import { OFF_TOPIC_REFUSAL_MESSAGE } from '@/lib/chat-ai-guards';
+import { OFF_TOPIC_REFUSAL_I18N_KEY } from '@/lib/chat-ai-guards';
 
 describe('stripI18nPlaceholder', () => {
   it.each([
@@ -42,7 +42,12 @@ describe('buildSystemPrompt', () => {
     const prompt = buildSystemPrompt('Test');
     expect(prompt).toContain('Counter-Strike 2');
     expect(prompt).toContain('KYC');
-    expect(prompt).toContain(OFF_TOPIC_REFUSAL_MESSAGE);
+    expect(prompt).toContain(OFF_TOPIC_REFUSAL_I18N_KEY);
+  });
+
+  it('impose l anglais quand la locale UI est en', () => {
+    const prompt = buildSystemPrompt('Test', undefined, 'en');
+    expect(prompt).toContain('Respond ONLY in English');
   });
 
   it.each([

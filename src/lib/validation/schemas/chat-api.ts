@@ -35,6 +35,7 @@ export const createChatMessageSchema = z
     forceNew: z.boolean().optional(),
     skipAi: z.boolean().optional(),
     replyContext: z.enum(['widget', 'moderation']).optional(),
+    locale: z.enum(['fr', 'en', 'cn']).optional(),
   })
   .strip();
 

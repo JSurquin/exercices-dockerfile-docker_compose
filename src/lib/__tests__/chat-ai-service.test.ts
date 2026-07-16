@@ -5,7 +5,7 @@ import {
   maybeGenerateAiReply,
   stripI18nPlaceholder,
 } from '@/lib/chat-ai-service';
-import { OFF_TOPIC_REFUSAL_I18N_KEY, OFF_TOPIC_REFUSAL_MESSAGE } from '@/lib/chat-ai-guards';
+import { OFF_TOPIC_REFUSAL_I18N_KEY } from '@/lib/chat-ai-guards';
 
 jest.mock('~/prisma/prisma', () => ({
   prisma: {
@@ -88,7 +88,7 @@ describe('buildSystemPrompt', () => {
   it('inclut le pseudo et le message de refus hors sujet', () => {
     const prompt = buildSystemPrompt('Player1');
     expect(prompt).toContain('Player1');
-    expect(prompt).toContain(OFF_TOPIC_REFUSAL_MESSAGE);
+    expect(prompt).toContain(OFF_TOPIC_REFUSAL_I18N_KEY);
   });
 
   it('injecte le contexte RAG quand fourni', () => {
@@ -216,7 +216,7 @@ describe('maybeGenerateAiReply', () => {
       ],
     });
 
-    await maybeGenerateAiReply('conv-1');
+    await maybeGenerateAiReply('conv-1', { locale: 'fr' });
 
     expect(mockOllamaChat).not.toHaveBeenCalled();
     expect(mockCreate).toHaveBeenCalledWith(
@@ -275,6 +275,25 @@ describe('maybeGenerateAiReply', () => {
       }),
     );
     expect(mockUpdate).toHaveBeenCalled();
+  });
+
+  it('impose l anglais dans le prompt quand la locale UI est en', async () => {
+    mockFindUnique.mockResolvedValue({
+      ...baseConversation,
+      messages: [
+        { content: 'hey how moonskin work', senderType: 'USER', createdAt: new Date() },
+      ],
+    });
+    mockOllamaChat.mockResolvedValue({
+      content: 'MoonSkin lets you sell CS2 skins.',
+      model: 'llama3.2',
+      done: true,
+    });
+
+    await maybeGenerateAiReply('conv-1', { locale: 'en' });
+
+    const ollamaCall = mockOllamaChat.mock.calls[0][0];
+    expect(ollamaCall.messages[0].content).toContain('Respond ONLY in English');
   });
 
   it('continue sans RAG si l’embedding échoue', async () => {

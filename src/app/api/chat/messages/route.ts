@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (senderType === 'USER' && shouldRunAi) {
-      after(() => maybeGenerateAiReply(conversationId));
+      after(() => maybeGenerateAiReply(conversationId, { locale: body.locale }));
     }
 
     return NextResponse.json(
