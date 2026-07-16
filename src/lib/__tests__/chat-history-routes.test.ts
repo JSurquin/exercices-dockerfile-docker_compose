@@ -34,6 +34,10 @@ jest.mock('@/lib/logger', () => ({
   logger: { info: jest.fn(), error: jest.fn() },
 }));
 
+jest.mock('@/lib/chat-assignment', () => ({
+  autoAssignModeratorOnReplyIfUnassigned: jest.fn().mockResolvedValue(false),
+}));
+
 jest.mock('@/lib/chat-message-service', () => ({
   createChatMessageRecord: jest.fn(),
   fetchConversationMessagesPage: jest.fn(),

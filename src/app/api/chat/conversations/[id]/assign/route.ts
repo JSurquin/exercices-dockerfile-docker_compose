@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
-import { logger, logAudit } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { requireAdminOrModeratorSessionWithDbCheck } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { assignConversationPostSchema } from '@/lib/validation/schemas/chat-api';
 import { isValidModeratorRole } from '@/lib/chat-logic';
+import { assignConversationToModerator } from '@/lib/chat-assignment';
 
 // POST /api/chat/conversations/[id]/assign
 export async function POST(
@@ -52,13 +53,15 @@ export async function POST(
       return NextResponse.json({ error: 'L\'utilisateur n\'est pas un modérateur' }, { status: 400 });
     }
 
-    // Assigner la conversation
-    const updatedConversation = await prisma.conversation.update({
+    await assignConversationToModerator({
+      conversationId: resolvedParams.id,
+      moderatorId: body.moderatorId,
+      assignedBy: session.user.id,
+      previousAssignedTo: conversation.assignedTo,
+    });
+
+    const updatedConversation = await prisma.conversation.findUnique({
       where: { id: resolvedParams.id },
-      data: {
-        assignedTo: body.moderatorId,
-        updatedAt: new Date(),
-      },
       include: {
         user: {
           select: {
@@ -77,25 +80,6 @@ export async function POST(
           },
         },
       },
-    });
-
-    // Créer un message système pour notifier l'assignation
-    await prisma.chatMessage.create({
-      data: {
-        conversationId: resolvedParams.id,
-        userId: null,
-        content: `__i18n:moderation.conversation.system.assigned|${moderator.name || moderator.email}__`,
-        senderType: 'SYSTEM',
-        isRead: false,
-      },
-    });
-
-    // Log de l'audit
-    await logger.info(session.user.id, 'CONVERSATION_ASSIGNED', {
-      conversationId: resolvedParams.id,
-      assignedTo: body.moderatorId,
-      assignedBy: session.user.id,
-      previousAssignedTo: conversation.assignedTo,
     });
 
     return NextResponse.json(updatedConversation);

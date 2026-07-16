@@ -28,6 +28,7 @@ import {
   prepareModeratorMessageMetadata,
   resolveConversationClientLocale,
 } from '@/lib/chat-support-translation';
+import { autoAssignModeratorOnReplyIfUnassigned } from '@/lib/chat-assignment';
 
 // POST /api/chat/messages — création auto de conversation si conversationId absent
 export async function POST(request: NextRequest) {
@@ -183,6 +184,14 @@ export async function POST(request: NextRequest) {
         content: body.content,
         uiLocale: body.locale,
         clientLocale,
+      });
+    }
+
+    if (senderType === 'MODERATOR' && identity.kind === 'user') {
+      await autoAssignModeratorOnReplyIfUnassigned({
+        conversationId,
+        moderatorId: identity.session.user.id,
+        assignedTo: conversation.assignedTo,
       });
     }
 

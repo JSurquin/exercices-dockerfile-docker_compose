@@ -502,6 +502,9 @@ describe('POST/DELETE /api/chat/conversations/[id]/assign', () => {
       email: 'mod@test.com',
     });
     (prisma.conversation.update as jest.Mock).mockResolvedValue({ id: 'c1', assignedTo: 'mod-1' });
+    (prisma.conversation.findUnique as jest.Mock)
+      .mockResolvedValueOnce({ id: 'c1', assignedTo: null })
+      .mockResolvedValueOnce({ id: 'c1', assignedTo: 'mod-1' });
 
     const res = await postAssign(
       makeRequest('http://localhost/api/chat/conversations/c1/assign', {
@@ -673,6 +676,54 @@ describe('POST /api/chat/messages — modération', () => {
     expect(res.status).toBe(201);
     const createArg = (prisma.chatMessage.create as jest.Mock).mock.calls[0][0];
     expect(createArg.data.senderType).toBe('MODERATOR');
+  });
+
+  it('auto-assigne le modérateur qui répond sur un ticket non assigné', async () => {
+    mockResolveChatIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'MODERATOR',
+      session: { user: { id: 'mod-1' } },
+    });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      userId: 'u1',
+      status: 'ACTIVE',
+      assignedTo: null,
+      lastMessageAt: new Date(),
+      category: 'trade',
+      user: null,
+    });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: 'mod-1',
+      role: 'MODERATOR',
+      name: 'Mod Test',
+      email: 'mod@test.com',
+    });
+    (prisma.chatMessage.create as jest.Mock).mockResolvedValue({
+      id: 'm-mod',
+      senderType: 'MODERATOR',
+    });
+    (prisma.conversation.update as jest.Mock).mockResolvedValue({});
+    (prisma.chatMessage.findMany as jest.Mock).mockResolvedValue([]);
+
+    const res = await postMessage(
+      makeRequest('http://localhost/api/chat/messages', {
+        method: 'POST',
+        body: {
+          conversationId: 'c1',
+          content: 'Bonjour, je prends en charge votre demande',
+          replyContext: 'moderation',
+        },
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(prisma.conversation.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'c1' },
+        data: expect.objectContaining({ assignedTo: 'mod-1' }),
+      }),
+    );
   });
 
   it('message modérateur visible côté client avec senderType MODERATOR', async () => {

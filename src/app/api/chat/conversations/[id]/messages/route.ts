@@ -47,6 +47,7 @@ import {
   resolveConversationClientLocale,
 } from '@/lib/chat-support-translation';
 import { isValidChatAiLocale } from '@/lib/chat-ai-locale';
+import { autoAssignModeratorOnReplyIfUnassigned } from '@/lib/chat-assignment';
 
 async function assertConversationAccess(
   request: NextRequest,
@@ -351,6 +352,14 @@ export async function POST(
         content: body.content,
         uiLocale: body.locale,
         clientLocale,
+      });
+    }
+
+    if (senderType === 'MODERATOR' && identity.kind === 'user') {
+      await autoAssignModeratorOnReplyIfUnassigned({
+        conversationId: conversation.id,
+        moderatorId: identity.session.user.id,
+        assignedTo: conversation.assignedTo,
       });
     }
 
