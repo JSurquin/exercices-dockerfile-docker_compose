@@ -1,5 +1,6 @@
 import {
   isCryptoTimingQuestion,
+  isHowToSellQuestion,
   isScamVictimConcern,
   resolveTrustedAiAnswer,
 } from '@/lib/chat-ai-trusted-answers';
@@ -40,6 +41,26 @@ describe('isCryptoTimingQuestion', () => {
   });
 });
 
+describe('isHowToSellQuestion', () => {
+  it.each([
+    'how to sell my skins?',
+    'How do I sell my CS2 skins?',
+    'Comment vendre mes skins CS2 ?',
+    'comment vendre mes skins',
+    '如何出售我的CS2皮肤？',
+  ])('détecte une question vente : %s', (message) => {
+    expect(isHowToSellQuestion(message)).toBe(true);
+  });
+
+  it.each([
+    'Je ne peux pas vendre mes skins',
+    'I cannot sell my skins, error',
+    'Mon trade est bloqué pour vendre',
+  ])('ignore un problème de vente : %s', (message) => {
+    expect(isHowToSellQuestion(message)).toBe(false);
+  });
+});
+
 describe('resolveTrustedAiAnswer', () => {
   it('retourne une réponse rassurante pour une crainte d\'arnaque en français', () => {
     const answer = resolveTrustedAiAnswer('et si je me fais scam?', 'fr');
@@ -60,6 +81,23 @@ describe('resolveTrustedAiAnswer', () => {
     expect(answer).not.toBeNull();
     expect(answer).toContain('10 minutes');
     expect(answer).toContain('trade hold');
+  });
+
+  it('retourne le guide de vente en anglais pour how to sell my skins', () => {
+    const answer = resolveTrustedAiAnswer('how to sell my skins?', 'en');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('Sell page');
+    expect(answer).toContain('Create sale');
+    expect(answer).not.toContain('publish your offer');
+    expect(answer).not.toContain('wait for offers');
+  });
+
+  it('retourne le guide de vente en français', () => {
+    const answer = resolveTrustedAiAnswer('Comment vendre mes skins ?', 'fr');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('page Vendre');
+    expect(answer).toContain('Créer la vente');
+    expect(answer).toContain('Steam ou Discord');
   });
 
   it('retourne null pour une question générique', () => {

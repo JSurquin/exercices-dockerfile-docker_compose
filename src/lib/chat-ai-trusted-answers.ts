@@ -53,6 +53,33 @@ MoonSkin will never ask for skins outside the platform. Your skins are handled b
 
 If you think you sent your skins to the wrong account, describe your situation below — a moderator can help.`;
 
+const HOW_TO_SELL_ANSWER_FR = `Voici comment vendre vos skins CS2 sur MoonSkin :
+
+1. **Connectez-vous** sur MoonSkin avec votre compte **Steam ou Discord** — pas de création de compte séparée.
+2. Rendez-vous sur la [page Vendre](/sell) : votre inventaire CS2 s'affiche automatiquement (Trade Link Steam requis si vous utilisez Discord).
+3. **Sélectionnez les skins** à vendre : MoonSkin calcule automatiquement leur valeur via notre système de pricing analytique. Le montant affiché est ce que vous recevrez (frais déduits). Pas de prix à fixer, pas d'attente d'acheteur — la vente est instantanée côté plateforme.
+4. Cliquez sur **Créer la vente** pour lancer le processus.
+5. **Acceptez l'offre d'échange** envoyée par notre bot Steam et vérifiez le Steam ID, le pseudo et la photo du bot affichés sur le site, pour vous assurer d'envoyer vos skins au bon compte.
+6. Après le **trade hold Steam de 7 jours**, récupérez votre argent via l'une de nos [options de retrait](/payout) (carte, SEPA, crypto, etc.). Un KYC validé est requis avant le premier payout.`;
+
+const HOW_TO_SELL_ANSWER_EN = `Here is how to sell your CS2 skins on MoonSkin:
+
+1. **Sign in** to MoonSkin with your **Steam or Discord** account — no separate account creation.
+2. Go to the [Sell page](/sell): your CS2 inventory loads automatically (Steam Trade Link required if you use Discord).
+3. **Select the skins** you want to sell: MoonSkin automatically prices them using our analytics pricing system. The amount shown is what you will receive (fees deducted). No manual pricing, no waiting for a buyer — the sale is instant on our platform.
+4. Click **Create sale** to start the process.
+5. **Accept the trade offer** sent by our Steam bot and verify the Steam ID, username and avatar shown on the site, to make sure you send your skins to the right account.
+6. After Steam's **7-day trade hold**, withdraw your money via one of our [cashout options](/payout) (card, SEPA, crypto, etc.). Validated KYC is required before your first payout.`;
+
+const HOW_TO_SELL_ANSWER_CN = `在 MoonSkin 上出售 CS2 饰品的步骤如下：
+
+1. 使用 **Steam 或 Discord** 账号**登录** MoonSkin — 无需单独注册账号。
+2. 前往[出售页面](/sell)：CS2 库存会自动加载（若使用 Discord，需填写 Steam 交易链接）。
+3. **选择要出售的饰品**：MoonSkin 通过分析定价系统自动估算价值。显示金额为扣除费用后您将收到的净额。无需手动定价，无需等待买家 — 平台侧出售即时完成。
+4. 点击 **创建出售** 启动流程。
+5. **接受**我们的 Steam 机器人发送的交易报价，并核对网站上显示的 Steam ID、昵称和头像，确保饰品发送到正确账号。
+6. **Steam 7 天交易冷却**结束后，通过我们的[提现选项](/payout)（银行卡、SEPA、加密货币等）领取款项。首次提现前需完成 KYC 验证。`;
+
 const SCAM_VICTIM_ANSWER_CN = `这是一个合理的问题 — 您担心的是是否会被骗，而不是如何骗人。
 
 在 MoonSkin 上，以下是保护自己的方法：
@@ -102,6 +129,32 @@ export function isScamVictimConcern(message: string): boolean {
   );
 }
 
+/** Question « comment vendre mes skins » (flux MoonSkin, pas marketplace P2P). */
+export function isHowToSellQuestion(message: string): boolean {
+  const m = normalizeForMatch(message);
+
+  if (
+    /\b(pas\s+pu|ne\s+(peux|peut|pouvons|pouvez)\s+pas|cannot|can't|cant|unable|impossible|erreur|error|bug|bloque|blocked|restriction|lock|probleme|problem|marche\s+pas|doesn'?t\s+work)\b/.test(
+      m,
+    )
+  ) {
+    return false;
+  }
+
+  if (/[\u4e00-\u9fff]/.test(message)) {
+    return /(如何|怎么|怎样).*(出售|卖|售出)/.test(message) || /(出售|卖).*(皮肤|饰品|cs2)/.test(message);
+  }
+
+  return (
+    /\b(how\s+to\s+sell|how\s+do\s+i\s+sell|how\s+can\s+i\s+sell)\b/.test(m) ||
+    /\b(comment|how)\b.*\b(vendre|sell|selling)\b.*\b(skin|skins|cs2|csgo|counter[\s-]?strike)\b/.test(
+      m,
+    ) ||
+    /\b(vendre|sell)\b.*\b(mes|my)\b.*\b(skin|skins)\b/.test(m) ||
+    /\bcomment\s+vendre\b/.test(m)
+  );
+}
+
 /** Question sur la rapidité des paiements crypto (souvent confondue avec SEPA ou trade hold). */
 export function isCryptoTimingQuestion(message: string): boolean {
   const m = normalizeForMatch(message);
@@ -131,6 +184,14 @@ export function resolveTrustedAiAnswer(
       fr: SCAM_VICTIM_ANSWER_FR,
       en: SCAM_VICTIM_ANSWER_EN,
       cn: SCAM_VICTIM_ANSWER_CN,
+    });
+  }
+
+  if (isHowToSellQuestion(trimmed)) {
+    return pickLocalizedAnswer(locale, {
+      fr: HOW_TO_SELL_ANSWER_FR,
+      en: HOW_TO_SELL_ANSWER_EN,
+      cn: HOW_TO_SELL_ANSWER_CN,
     });
   }
 
