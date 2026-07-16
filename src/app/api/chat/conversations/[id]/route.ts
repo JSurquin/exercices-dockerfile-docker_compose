@@ -30,6 +30,8 @@ import {
   CHAT_ASSIGNED_MODERATOR_SELECT,
   touchStaffPresenceFromRole,
 } from '@/lib/chat-staff-presence';
+import { localizeChatMessagesForViewer } from '@/lib/chat-support-translation';
+import { isValidChatAiLocale } from '@/lib/chat-ai-locale';
 
 // GET /api/chat/conversations/[id] - Récupérer une conversation spécifique
 export async function GET(
@@ -141,6 +143,24 @@ export async function GET(
         ),
       };
     }
+
+    if (Array.isArray(payload.messages)) {
+      const viewerLocale =
+        scope === 'staff' && isValidChatAiLocale(parsedScope.data.locale)
+          ? parsedScope.data.locale
+          : null;
+      payload = {
+        ...payload,
+        messages: await localizeChatMessagesForViewer(
+          payload.messages as import('@/lib/chat-support-translation').LocalizedChatMessage[],
+          {
+            scope,
+            viewerLocale,
+          },
+        ),
+      };
+    }
+
     return NextResponse.json(payload);
   } catch (error) {
     logger.error('Erreur lors de la récupération de la conversation:', error);

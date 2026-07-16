@@ -10,6 +10,9 @@ jest.mock('~/prisma/prisma', () => ({
       findMany: jest.fn(),
       updateMany: jest.fn(),
     },
+    user: {
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
   },
 }));
 
@@ -37,6 +40,17 @@ jest.mock('@/lib/chat-message-service', () => ({
   markConversationMessagesAsReadForViewer: jest.fn(),
   applyReadStateToMessagesForViewer: jest.fn((messages: unknown[]) => messages),
 }));
+
+jest.mock('@/lib/chat-support-translation', () => {
+  const actual = jest.requireActual<typeof import('@/lib/chat-support-translation')>(
+    '@/lib/chat-support-translation',
+  );
+  return {
+    ...actual,
+    localizeChatMessagesForViewer: jest.fn(async (messages: unknown[]) => messages),
+    prepareModeratorMessageMetadata: jest.fn(async () => ({ staffLocale: 'fr' as const })),
+  };
+});
 
 import { prisma } from '~/prisma/prisma';
 import { resolveChatIdentity } from '@/lib/require-admin';

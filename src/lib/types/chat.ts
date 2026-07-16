@@ -55,6 +55,7 @@ export interface ChatMessageWithUser {
   isRead: boolean;
   createdAt: Date;
   updatedAt: Date;
+  translationFooter?: string;
   metadata?: Record<string, unknown> | null;
   user?: {
     id: string;

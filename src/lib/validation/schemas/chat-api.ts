@@ -42,6 +42,8 @@ export const createChatMessageSchema = z
 export const conversationMessagesQuerySchema = z
   .object({
     scope: z.enum(['widget', 'staff']).optional().default('widget'),
+    /** Langue de l’interface du lecteur (traduction staff ↔ client). */
+    locale: z.enum(['fr', 'en', 'cn']).optional(),
     cursor: z.string().max(128).optional(),
     /** true uniquement quand le client consulte activement le fil (évite de marquer lu en polling). */
     markRead: z
@@ -99,6 +101,8 @@ export const chatAccessScopeQuerySchema = z
   .object({
     /** widget = fil client (défaut) ; staff = backoffice modération */
     scope: z.enum(['widget', 'staff']).optional().default('widget'),
+    /** Langue de l’interface du lecteur (traduction staff ↔ client). */
+    locale: z.enum(['fr', 'en', 'cn']).optional(),
   })
   .strip();
 

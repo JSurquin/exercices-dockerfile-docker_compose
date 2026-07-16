@@ -104,7 +104,7 @@ export default function ModerationPage() {
     await queryClient.prefetchQuery({
       queryKey: queryKeys.moderationConversation(conversationId),
       queryFn: async () => {
-        const response = await fetch(`/api/chat/conversations/${conversationId}?scope=staff`);
+        const response = await fetch(`/api/chat/conversations/${conversationId}?scope=staff&locale=${locale}`);
         if (!response.ok) throw new Error(messages.moderation.errors.loadError);
         return response.json();
       },

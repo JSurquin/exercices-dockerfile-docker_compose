@@ -83,7 +83,7 @@ export default function ConversationPage() {
   const { data: conversation, isLoading: loading, refetch: refetchConversation } = useQuery({
     queryKey: queryKeys.moderationConversation(routeConversationId),
     queryFn: async () => {
-      const response = await fetch(`/api/chat/conversations/${routeConversationId}?scope=staff`);
+      const response = await fetch(`/api/chat/conversations/${routeConversationId}?scope=staff&locale=${locale}`);
       if (!response.ok) {
         if (response.status === 404) {
           toast.error(messages.moderation.conversation.notFound.title);
@@ -129,6 +129,7 @@ export default function ConversationPage() {
           conversationId: targetConversationId,
           content: message.trim(),
           replyContext: 'moderation',
+          locale,
         }),
       });
 
@@ -421,6 +422,11 @@ export default function ConversationPage() {
                         ) : (
                           <ChatMarkdownContent content={resolveI18nContent(msg.content, messages)} />
                         )}
+                        {msg.translationFooter ? (
+                          <p className="mt-2 pt-2 border-t border-border/40 text-[10px] text-muted-foreground italic">
+                            {msg.translationFooter}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   </div>

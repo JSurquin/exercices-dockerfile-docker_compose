@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { resolveChatIdentity } from '@/lib/require-admin';
@@ -22,6 +23,11 @@ import {
   resolveConversationRoutingWithMessage,
 } from '@/lib/chat-conversation-router';
 import { touchStaffPresenceFromRole } from '@/lib/chat-staff-presence';
+import {
+  buildOutgoingMessageLocaleMetadata,
+  prepareModeratorMessageMetadata,
+  resolveConversationClientLocale,
+} from '@/lib/chat-support-translation';
 
 // POST /api/chat/messages — création auto de conversation si conversationId absent
 export async function POST(request: NextRequest) {
@@ -63,7 +69,7 @@ export async function POST(request: NextRequest) {
       const priorUserMessages = await prisma.chatMessage.findMany({
         where: { conversationId, senderType: 'USER' },
         orderBy: { createdAt: 'asc' },
-        select: { content: true },
+        select: { content: true, metadata: true, senderType: true },
         take: 10,
       });
 
@@ -152,11 +158,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Conversation fermée' }, { status: 400 });
     }
 
+    let messageMetadata: Prisma.InputJsonValue | undefined;
+    if (senderType === 'USER') {
+      messageMetadata = buildOutgoingMessageLocaleMetadata({
+        senderType,
+        content: body.content,
+        uiLocale: body.locale,
+      });
+    } else if (senderType === 'MODERATOR') {
+      const priorUserMessages = await prisma.chatMessage.findMany({
+        where: { conversationId, senderType: 'USER' },
+        orderBy: { createdAt: 'asc' },
+        select: { content: true, metadata: true, senderType: true },
+        take: 10,
+      });
+      const clientLocale = resolveConversationClientLocale(
+        priorUserMessages.map((m) => ({
+          senderType: m.senderType,
+          content: m.content,
+          metadata: m.metadata,
+        })),
+      );
+      messageMetadata = await prepareModeratorMessageMetadata({
+        content: body.content,
+        uiLocale: body.locale,
+        clientLocale,
+      });
+    }
+
     const message = await createChatMessageRecord({
       conversationId,
       userId: identity.kind === 'user' ? identity.session.user.id : null,
       content: body.content,
       senderType,
+      metadata: messageMetadata,
     });
 
     if (identity.kind === 'user') {

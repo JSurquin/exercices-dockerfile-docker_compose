@@ -5,6 +5,8 @@ export interface ChatMessage {
   createdAt: string;
   userId?: string | null;
   isRead: boolean;
+  /** Présent quand le contenu affiché a été traduit pour le lecteur. */
+  translationFooter?: string;
   metadata?: Record<string, unknown> | null;
   user?: {
     id: string;

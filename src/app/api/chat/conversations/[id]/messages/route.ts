@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import { resolveChatIdentity } from '@/lib/require-admin';
@@ -39,6 +40,13 @@ import {
   CHAT_ASSIGNED_MODERATOR_SELECT,
   touchStaffPresenceFromRole,
 } from '@/lib/chat-staff-presence';
+import {
+  buildOutgoingMessageLocaleMetadata,
+  localizeChatMessagesForViewer,
+  prepareModeratorMessageMetadata,
+  resolveConversationClientLocale,
+} from '@/lib/chat-support-translation';
+import { isValidChatAiLocale } from '@/lib/chat-ai-locale';
 
 async function assertConversationAccess(
   request: NextRequest,
@@ -170,8 +178,21 @@ export async function GET(
       redactMessagePayload(m as unknown as Record<string, unknown>, identity),
     );
 
+    const viewerLocale =
+      parsedQ.data.scope === 'staff' && isValidChatAiLocale(parsedQ.data.locale)
+        ? parsedQ.data.locale
+        : null;
+
+    const localizedMessages = await localizeChatMessagesForViewer(
+      messages as import('@/lib/chat-support-translation').LocalizedChatMessage[],
+      {
+        scope: parsedQ.data.scope,
+        viewerLocale,
+      },
+    );
+
     return NextResponse.json({
-      messages,
+      messages: localizedMessages,
       nextCursor: page.nextCursor,
       hasMore: page.hasMore,
       status: conversation.status,
@@ -224,7 +245,7 @@ export async function POST(
     const priorUserMessages = await prisma.chatMessage.findMany({
       where: { conversationId: conversation.id, senderType: 'USER' },
       orderBy: { createdAt: 'asc' },
-      select: { content: true },
+      select: { content: true, metadata: true, senderType: true },
       take: 10,
     });
 
@@ -311,11 +332,34 @@ export async function POST(
       return NextResponse.json({ error: 'Conversation fermée' }, { status: 400 });
     }
 
+    let messageMetadata: Prisma.InputJsonValue | undefined;
+    if (senderType === 'USER') {
+      messageMetadata = buildOutgoingMessageLocaleMetadata({
+        senderType,
+        content: body.content,
+        uiLocale: body.locale,
+      });
+    } else if (senderType === 'MODERATOR') {
+      const clientLocale = resolveConversationClientLocale(
+        priorUserMessages.map((m) => ({
+          senderType: m.senderType,
+          content: m.content,
+          metadata: m.metadata,
+        })),
+      );
+      messageMetadata = await prepareModeratorMessageMetadata({
+        content: body.content,
+        uiLocale: body.locale,
+        clientLocale,
+      });
+    }
+
     const message = await createChatMessageRecord({
       conversationId: conversation.id,
       userId: identity.kind === 'user' ? identity.session.user.id : null,
       content: body.content,
       senderType,
+      metadata: messageMetadata,
     });
 
     let aiQueueHint = null;

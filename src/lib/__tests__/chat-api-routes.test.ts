@@ -17,6 +17,7 @@ jest.mock('~/prisma/prisma', () => ({
     },
     user: {
       findUnique: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
   },
 }));
@@ -60,6 +61,26 @@ jest.mock('@/lib/logger', () => ({
   logger: { info: jest.fn(), error: jest.fn() },
   logAudit: jest.fn(),
 }));
+
+jest.mock('@/lib/chat-support-translation', () => {
+  const actual = jest.requireActual<typeof import('@/lib/chat-support-translation')>(
+    '@/lib/chat-support-translation',
+  );
+  return {
+    ...actual,
+    localizeChatMessagesForViewer: jest.fn(async (messages: unknown[]) => messages),
+    prepareModeratorMessageMetadata: jest.fn(async (params: {
+      content: string;
+      uiLocale?: string | null;
+      clientLocale: 'fr' | 'en' | 'cn';
+    }) => {
+      if (params.uiLocale === params.clientLocale || (!params.uiLocale && params.clientLocale === 'fr')) {
+        return { staffLocale: (params.uiLocale ?? params.clientLocale) as 'fr' | 'en' | 'cn' };
+      }
+      return actual.prepareModeratorMessageMetadata(params);
+    }),
+  };
+});
 
 import { prisma } from '~/prisma/prisma';
 import { auth } from '~/lib/auth';
@@ -264,7 +285,7 @@ describe('POST /api/chat/messages', () => {
     );
 
     expect(res.status).toBe(201);
-    expect(mockMaybeAi).toHaveBeenCalledWith('c1');
+    expect(mockMaybeAi).toHaveBeenCalledWith('c1', { locale: undefined });
     expect(prisma.chatMessage.create).toHaveBeenCalledTimes(2);
   });
 

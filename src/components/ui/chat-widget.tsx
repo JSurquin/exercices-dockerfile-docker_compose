@@ -224,6 +224,7 @@ type WidgetMessage = {
   senderType: string;
   createdAt: string | Date;
   userId?: string | null;
+  translationFooter?: string;
   user?: {
     name?: string | null;
     steamUsername?: string | null;
@@ -714,6 +715,11 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
                 ) : (
                   <ChatMarkdownContent content={resolveContent(msg.content)} />
                 )}
+                {msg.translationFooter ? (
+                  <p className="mt-2 pt-2 border-t border-theme-accent/20 text-[10px] text-muted-foreground italic">
+                    {msg.translationFooter}
+                  </p>
+                ) : null}
                 {isAi && aiEnabled && (
                   <div className="mt-2 pt-2 border-t border-theme-accent/20">
                     <Button
