@@ -110,6 +110,7 @@ async function main() {
   // Stats initiales pour articles populaires (si absentes)
   const seedStats: Array<{ slug: string; viewCount: number; helpfulYes: number; helpfulNo: number }> = [
     { slug: 'how-to-sell', viewCount: 5200, helpfulYes: 4992, helpfulNo: 208 },
+    { slug: 'sell-multiple-steam-accounts', viewCount: 1800, helpfulYes: 1710, helpfulNo: 90 },
     { slug: 'kyc-step-by-step', viewCount: 4100, helpfulYes: 3854, helpfulNo: 246 },
     { slug: 'fees', viewCount: 3800, helpfulYes: 3458, helpfulNo: 342 },
     { slug: 'scam', viewCount: 2100, helpfulYes: 1995, helpfulNo: 105 },

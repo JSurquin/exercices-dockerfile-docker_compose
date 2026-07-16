@@ -7,6 +7,10 @@ import { preserveChatLineBreaks } from '@/lib/chat-widget-styles';
 
 export const CHAT_REMARK_PLUGINS = [remarkGfm];
 
+/** Liens dans les bulles chat — alignés sur l’identité MoonSkin (accent + survol highlight). */
+export const CHAT_MARKDOWN_LINK_CLASS =
+  'chat-markdown-link font-medium underline decoration-theme-accent/45 underline-offset-[3px] transition-colors duration-150 hover:text-theme-highlight hover:decoration-theme-highlight/70';
+
 export const CHAT_MARKDOWN_COMPONENTS = {
   p: ({ children }: { children?: ReactNode }) => <p className="mb-1 last:mb-0">{children}</p>,
   ul: ({ children }: { children?: ReactNode }) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
@@ -27,7 +31,7 @@ export const CHAT_MARKDOWN_COMPONENTS = {
         href={href}
         target={isInternal ? undefined : '_blank'}
         rel={isInternal ? undefined : 'noopener noreferrer'}
-        className="underline underline-offset-2 hover:opacity-80 text-theme-accent"
+        className={CHAT_MARKDOWN_LINK_CLASS}
       >
         {children}
       </a>

@@ -98,6 +98,86 @@ Prices depend on rarity, wear (Factory New, Minimal Wear…) and market demand. 
 [Start selling on MoonSkin](/sell)`,
   },
   {
+    slug: 'vendre-skins-plusieurs-comptes-steam',
+    category: 'guides',
+    readTimeMinutes: 5,
+    isFeatured: false,
+    sortOrder: 2,
+    publishedAt: '2026-07-16T10:00:00Z',
+    titleFr: 'Comment vendre les skins de plusieurs comptes Steam en même temps',
+    titleEn: 'How to sell skins from multiple Steam accounts at the same time',
+    titleCn: '如何同时出售多个 Steam 账号的饰品',
+    summaryFr:
+      'Vendez les skins de vos smurfs ou comptes clients depuis un seul compte MoonSkin : changez le Trade Link sur la page Vendre.',
+    summaryEn:
+      'Sell skins from smurf or client Steam accounts from one MoonSkin account: change the Trade Link on the Sell page.',
+    summaryCn: '通过一个 MoonSkin 主账号出售小号或客户 Steam 账号的饰品：在出售页面更换 Trade Link 即可。',
+    contentFr: `# Comment vendre les skins de plusieurs comptes Steam en même temps
+
+Vous avez plusieurs comptes Steam (smurf, compte secondaire, inventaire client) et vous voulez centraliser vos ventes sur MoonSkin ? C'est possible **sans créer plusieurs comptes MoonSkin**.
+
+## Le principe
+
+MoonSkin vous permet de **changer de Trade Link** sur la [page Vendre](/sell) pour charger l'inventaire d'un autre compte Steam, tout en restant connecté sur **votre compte principal MoonSkin**.
+
+Les paiements (SEPA, carte, crypto) arrivent toujours sur ce compte principal.
+
+## Étapes
+
+1. Connectez-vous sur MoonSkin avec votre compte principal.
+2. Ouvrez la [page Vendre](/sell).
+3. Dans le **panneau de droite**, cliquez sur **Modifier** à côté du Trade Link.
+4. Collez le Trade Link du compte Steam cible (Paramètres Steam → Confidentialité → Offres d'échange).
+5. L'inventaire CS2 se charge — sélectionnez les skins et finalisez la vente.
+6. Répétez l'opération pour chaque compte Steam supplémentaire.
+
+## Pour qui ?
+
+- **Joueurs avec smurfs** : vendez tous vos skins sans multiplier les comptes MoonSkin.
+- **Revendeurs / traders** : encaissez pour vos clients sur un seul compte (KYC, IBAN, historique).
+- **Familles / multi-comptes** : centralisez les revenus au même endroit.
+
+## Points de vigilance
+
+- Le compte Steam source doit avoir un inventaire **public** et **Steam Guard** activé.
+- Vérifiez toujours le Steam ID du bot avant d'accepter un trade.
+- Un KYC validé est requis avant le premier retrait.
+
+[Consulter l'article d'aide détaillé](/help/sell-multiple-steam-accounts) · [Commencer à vendre](/sell)`,
+    contentEn: `# How to sell skins from multiple Steam accounts at the same time
+
+Do you have several Steam accounts (smurfs, alt accounts, client inventories) and want to centralize sales on MoonSkin? You can do it **without creating multiple MoonSkin accounts**.
+
+## How it works
+
+MoonSkin lets you **change your Trade Link** on the [Sell page](/sell) to load another Steam account's inventory while staying signed in to **your main MoonSkin account**.
+
+Payouts (SEPA, card, crypto) always go to that main account.
+
+## Steps
+
+1. Sign in to MoonSkin with your main account.
+2. Open the [Sell page](/sell).
+3. In the **right-hand panel**, click **Edit** next to the Trade Link.
+4. Paste the target Steam account's Trade Link (Steam Settings → Privacy → Trade offers).
+5. The CS2 inventory loads — select skins and complete the sale.
+6. Repeat for each additional Steam account.
+
+## Who is this for?
+
+- **Smurf players**: sell all your skins without multiple MoonSkin accounts.
+- **Resellers / traders**: cash out for clients on one account (KYC, IBAN, history).
+- **Families / multi-account users**: centralize earnings in one place.
+
+## Important notes
+
+- The source Steam account must have a **public** inventory and **Steam Guard** enabled.
+- Always verify the bot Steam ID before accepting a trade.
+- Validated KYC is required before your first withdrawal.
+
+[Read the detailed help article](/help/sell-multiple-steam-accounts) · [Start selling](/sell)`,
+  },
+  {
     slug: 'meilleures-caisses-cs2',
     category: 'guides',
     readTimeMinutes: 6,

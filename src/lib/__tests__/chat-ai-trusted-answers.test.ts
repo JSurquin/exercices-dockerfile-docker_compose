@@ -2,6 +2,7 @@ import {
   isCryptoTimingQuestion,
   isHowToSellQuestion,
   isScamVictimConcern,
+  isSellFromOtherAccountQuestion,
   resolveTrustedAiAnswer,
 } from '@/lib/chat-ai-trusted-answers';
 
@@ -102,5 +103,36 @@ describe('resolveTrustedAiAnswer', () => {
 
   it('retourne null pour une question générique', () => {
     expect(resolveTrustedAiAnswer('Bonjour')).toBeNull();
+  });
+
+  it('retourne le guide multi-compte en anglais', () => {
+    const answer = resolveTrustedAiAnswer('and if i want to sell from an other account ?', 'en');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('Trade Link');
+    expect(answer).toContain('right-hand panel');
+    expect(answer).toContain('/help/sell-multiple-steam-accounts');
+  });
+
+  it('retourne le guide multi-compte en français', () => {
+    const answer = resolveTrustedAiAnswer('Je veux vendre depuis un autre compte Steam', 'fr');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('panneau de droite');
+    expect(answer).toContain('smurfs');
+  });
+});
+
+describe('isSellFromOtherAccountQuestion', () => {
+  it.each([
+    'and if i want to sell from an other account ?',
+    'Can I sell from another Steam account?',
+    'Je veux vendre depuis un autre compte',
+    'Comment vendre avec plusieurs comptes steam ?',
+    'sell skins from my smurf account',
+  ])('détecte une question multi-compte : %s', (message) => {
+    expect(isSellFromOtherAccountQuestion(message)).toBe(true);
+  });
+
+  it('ignore une question sans lien multi-compte', () => {
+    expect(isSellFromOtherAccountQuestion('Comment vendre mes skins ?')).toBe(false);
   });
 });

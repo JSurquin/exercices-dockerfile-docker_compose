@@ -173,6 +173,26 @@ Un API scam est une arnaque où un site malveillant a obtenu ta clé API Steam.
 2. Génère un nouveau lien de trade
 3. Vérifie que ton profil n'est pas « Privé »
 4. Vérifie l'absence de restriction de trade active`,
+
+  'sell-multiple-steam-accounts': `## Changer de Trade Link sur la page Vendre
+
+1. Connecte-toi sur MoonSkin avec ton compte principal (Steam ou Discord).
+2. Va sur la page **Vendre** — le panneau de droite affiche ton compte Steam connecté et ton Trade Link actuel.
+3. Clique sur **Modifier** à côté du Trade Link et colle le lien du compte Steam cible.
+4. L'inventaire CS2 de ce compte se charge automatiquement — sélectionne les skins et finalise la vente.
+5. Les paiements (SEPA, carte, crypto) arrivent sur **ton compte MoonSkin principal**, pas sur le compte Steam source.
+
+## Cas d'usage
+
+- Vendre les skins d'un **smurf** ou d'un second compte Steam
+- Vendre pour un **client** sans créer un compte MoonSkin séparé
+- Centraliser tous tes revenus sur un seul compte (KYC, IBAN, historique)
+
+## Points importants
+
+- Tu restes connecté sur ton compte MoonSkin principal pendant toute l'opération.
+- Le Trade Link doit appartenir au compte dont tu veux vendre l'inventaire.
+- Le compte Steam source doit avoir un inventaire **public** et Steam Guard activé.`,
 };
 
 export const HELP_ARTICLE_RAG_ENRICHMENT_EN: Record<string, string> = {
@@ -344,6 +364,26 @@ An API scam is a fraud where a malicious site has obtained your Steam API key.
 2. Generate a new trade link
 3. Make sure your profile is not "Private"
 4. Check that you have no active trade restriction`,
+
+  'sell-multiple-steam-accounts': `## Change Trade Link on the Sell page
+
+1. Sign in to MoonSkin with your main account (Steam or Discord).
+2. Go to the **Sell** page — the right-hand panel shows your connected Steam account and current Trade Link.
+3. Click **Edit** next to the Trade Link and paste the target Steam account's link.
+4. That account's CS2 inventory loads automatically — select skins and complete the sale.
+5. Payouts (SEPA, card, crypto) go to **your main MoonSkin account**, not the source Steam account.
+
+## Use cases
+
+- Sell skins from a **smurf** or secondary Steam account
+- Sell for a **client** without creating a separate MoonSkin account
+- Centralize all earnings on one account (KYC, IBAN, history)
+
+## Important notes
+
+- You stay signed in to your main MoonSkin account throughout.
+- The Trade Link must belong to the account whose inventory you want to sell.
+- The source Steam account must have a **public** inventory and Steam Guard enabled.`,
 };
 
 export const HELP_ARTICLE_RAG_ENRICHMENT_CN: Record<string, string> = {
@@ -515,6 +555,26 @@ API 骗局是指恶意网站获取了您的 Steam API 密钥。
 2. 生成新的交易链接
 3. 确认个人资料未设为「私密」
 4. 确认没有交易限制`,
+
+  'sell-multiple-steam-accounts': `## 在出售页面更换 Trade Link
+
+1. 使用主账号（Steam 或 Discord）登录 MoonSkin。
+2. 进入**出售页面** — 右侧面板显示已连接的 Steam 账号和当前 Trade Link。
+3. 点击 Trade Link 旁的**修改**，粘贴目标 Steam 账号的链接。
+4. 该账号的 CS2 库存自动加载 — 选择饰品并完成出售。
+5. 付款（SEPA、银行卡、加密货币）进入**您的主 MoonSkin 账号**，而非来源 Steam 账号。
+
+## 适用场景
+
+- 出售**小号**或第二个 Steam 账号的饰品
+- 为**客户**代售，无需创建单独的 MoonSkin 账号
+- 将所有收入集中在一个账号（KYC、IBAN、历史记录）
+
+## 重要提示
+
+- 整个过程中您保持主 MoonSkin 账号登录。
+- Trade Link 必须属于您要出售库存的 Steam 账号。
+- 来源 Steam 账号库存须为**公开**，且已启用 Steam 令牌。`,
 };
 
 export function getHelpArticleRagEnrichment(slug: string, locale: Locale): string | undefined {
@@ -544,6 +604,13 @@ const SCAM_INTRO_EN =
   'MoonSkin will never ask for your skins outside the platform. Always verify the bot Steam ID before accepting a trade.';
 const SCAM_INTRO_CN = 'MoonSkin 绝不会在平台外索要您的饰品。接受交易前请务必核对机器人的 Steam ID。';
 
+const SELL_MULTI_INTRO_FR =
+  'Sur MoonSkin, vendez les skins de plusieurs comptes Steam depuis un seul compte principal : changez simplement le Trade Link sur la page Vendre.';
+const SELL_MULTI_INTRO_EN =
+  'On MoonSkin, sell skins from multiple Steam accounts using one main account: just change the Trade Link on the Sell page.';
+const SELL_MULTI_INTRO_CN =
+  '在 MoonSkin 上，通过一个主账号出售多个 Steam 账号的饰品：只需在出售页面更换 Trade Link。';
+
 /** Article supplémentaire absent des articles statiques i18n */
 export const EXTRA_HELP_ARTICLES = [
   {
@@ -556,6 +623,17 @@ export const EXTRA_HELP_ARTICLES = [
     contentFr: SCAM_INTRO_FR,
     contentEn: SCAM_INTRO_EN,
     contentCn: SCAM_INTRO_CN,
+  },
+  {
+    slug: 'sell-multiple-steam-accounts',
+    categoryKey: 'trading' as const,
+    sortOrder: 14,
+    titleFr: 'Comment vendre les skins de plusieurs comptes Steam en même temps ?',
+    titleEn: 'How to sell skins from multiple Steam accounts at once?',
+    titleCn: '如何同时出售多个 Steam 账号的饰品？',
+    contentFr: SELL_MULTI_INTRO_FR,
+    contentEn: SELL_MULTI_INTRO_EN,
+    contentCn: SELL_MULTI_INTRO_CN,
   },
 ];
 

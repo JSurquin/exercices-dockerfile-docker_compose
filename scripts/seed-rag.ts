@@ -300,6 +300,26 @@ Si un skin vendu n'est pas confirmé après 15 minutes :
 - Contacte le support si le problème persiste`,
     metadata: { category: 'vente', tags: ['inventaire', 'skin', 'detection'] },
   },
+  {
+    source: 'faq/vendre-autre-compte-steam',
+    content: `Comment vendre les skins d'un autre compte Steam sur MoonSkin ? Vendre depuis un smurf, un second compte ou pour un client.
+
+Sur MoonSkin, tu peux vendre les skins d'un autre compte Steam tout en restant connecté sur ton compte principal MoonSkin :
+
+1. Va sur la page Vendre (/sell).
+2. Dans le panneau de droite, modifie ton Trade Link pour celui du compte Steam cible.
+3. L'inventaire CS2 de ce compte se charge automatiquement.
+4. Sélectionne les skins et finalise la vente comme d'habitude.
+5. Les paiements (SEPA, carte, crypto) arrivent sur ton compte MoonSkin principal — pas besoin de créer un second compte MoonSkin.
+
+Cas d'usage : smurfs, comptes alternatifs, vente pour des clients, centraliser tous les revenus sur un seul compte (KYC, IBAN, historique).
+
+Conditions : le Trade Link doit appartenir au compte source, inventaire Steam public, Steam Guard activé.
+
+Article d'aide : /help/sell-multiple-steam-accounts
+Guide blog : /blog/vendre-skins-plusieurs-comptes-steam`,
+    metadata: { category: 'vente', tags: ['trade-link', 'smurf', 'multi-compte', 'autre-compte'] },
+  },
 ];
 
 /* ─── Seed ─────────────────────────────────────────────────────────────────── */

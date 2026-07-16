@@ -2549,18 +2549,21 @@ body.next-dev-overlay-present #sentry-feedback {
     border-radius: 22px 22px 22px 8px;
   }
 
-  .chat-widget-bubble-staff a {
-    color: color-mix(in srgb, var(--theme-accent) 70%, rgb(23 23 23));
-  }
-
   .chat-widget-bubble-ai {
     background: color-mix(in srgb, var(--theme-accent) 14%, rgb(228 230 235));
     color: rgb(23 23 23);
     border-radius: 22px 22px 22px 8px;
   }
 
-  .chat-widget-bubble-ai a {
-    color: color-mix(in srgb, var(--theme-accent) 70%, rgb(23 23 23));
+  .chat-widget-bubble-ai .chat-markdown-link,
+  .chat-widget-bubble-staff .chat-markdown-link {
+    color: var(--theme-accent);
+    text-decoration-thickness: 1px;
+  }
+
+  .chat-widget-bubble-ai .chat-markdown-link:hover,
+  .chat-widget-bubble-staff .chat-markdown-link:hover {
+    color: var(--theme-highlight);
   }
 
   /* Bouton modérateur — survol gris lisible sur bulles claires (évite blanc sur blanc) */
@@ -2584,8 +2587,15 @@ body.next-dev-overlay-present #sentry-feedback {
     border-radius: 22px 22px 8px 22px;
   }
 
-  .chat-widget-bubble-user a {
+  .chat-widget-bubble-user .chat-markdown-link {
     color: #ffffff;
+    text-decoration-color: rgba(255, 255, 255, 0.55);
+    text-decoration-thickness: 1px;
+  }
+
+  .chat-widget-bubble-user .chat-markdown-link:hover {
+    color: #ffffff;
+    text-decoration-color: rgba(255, 255, 255, 0.92);
   }
 
   @media (prefers-reduced-motion: reduce) {

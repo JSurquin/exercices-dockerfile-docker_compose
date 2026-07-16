@@ -92,6 +92,36 @@ MoonSkin 绝不会在平台外索要皮肤。您的皮肤由我们的安全机�
 
 如果您认为将皮肤发送到了错误的账户，请在下方描述您的情况 — 客服人员可以为您提供帮助。`;
 
+const SELL_OTHER_ACCOUNT_ANSWER_FR = `Rien de plus simple ! Sur MoonSkin, vous pouvez vendre les skins d'un **autre compte Steam** tout en restant connecté sur votre compte principal MoonSkin :
+
+1. Rendez-vous sur la [page Vendre](/sell).
+2. Dans le **panneau de droite**, modifiez votre **Trade Link** pour celui du compte Steam cible — l'inventaire de ce compte se charge automatiquement.
+3. Sélectionnez les skins et finalisez la vente comme d'habitude : les paiements arrivent sur **votre compte MoonSkin principal** (KYC, IBAN, retraits).
+
+C'est idéal pour vendre les skins de vos smurfs ou de vos clients sans éparpiller votre argent sur plusieurs comptes.
+
+Pour aller plus loin : consultez notre [article d'aide](/help/sell-multiple-steam-accounts) ou le [guide blog](/blog/vendre-skins-plusieurs-comptes-steam).`;
+
+const SELL_OTHER_ACCOUNT_ANSWER_EN = `It's straightforward! On MoonSkin, you can sell skins from **another Steam account** while staying signed in to your main MoonSkin account:
+
+1. Go to the [Sell page](/sell).
+2. In the **right-hand panel**, update your **Trade Link** to the target Steam account — that account's inventory loads automatically.
+3. Select the skins and complete the sale as usual: payouts go to **your main MoonSkin account** (KYC, IBAN, withdrawals).
+
+This is perfect for selling skins from smurf accounts or client accounts without splitting your earnings across multiple MoonSkin profiles.
+
+Learn more in our [help article](/help/sell-multiple-steam-accounts) or this [blog guide](/blog/vendre-skins-plusieurs-comptes-steam).`;
+
+const SELL_OTHER_ACCOUNT_ANSWER_CN = `非常简单！在 MoonSkin 上，您可以**保持主 MoonSkin 账号登录**的同时，出售**另一个 Steam 账号**的饰品：
+
+1. 前往[出售页面](/sell)。
+2. 在**右侧面板**中，将 **Trade Link** 更换为目标 Steam 账号的链接 — 该账号的库存会自动加载。
+3. 选择饰品并完成出售：款项会进入**您的主 MoonSkin 账号**（KYC、IBAN、提现）。
+
+非常适合出售小号或客户账号的饰品，而无需把资金分散在多个 MoonSkin 账号上。
+
+延伸阅读：[帮助文章](/help/sell-multiple-steam-accounts) 或 [博客指南](/blog/vendre-skins-plusieurs-comptes-steam)。`;
+
 function pickLocalizedAnswer<T extends ChatAiLocale>(
   locale: T,
   answers: Record<ChatAiLocale, string>,
@@ -172,6 +202,37 @@ export function isCryptoTimingQuestion(message: string): boolean {
   return mentionsCrypto && (asksTiming || /\binstantan/.test(m));
 }
 
+/** Vendre depuis un autre compte Steam (smurf, client, trade link alternatif). */
+export function isSellFromOtherAccountQuestion(message: string): boolean {
+  const m = normalizeForMatch(message);
+
+  if (/[\u4e00-\u9fff]/.test(message)) {
+    return (
+      /(其他|别的|另一个|多个).*(steam|账号|账户).*(出售|卖|售出)/.test(message) ||
+      /(出售|卖).*(其他|别的|另一个|多个).*(steam|账号|账户)/.test(message)
+    );
+  }
+
+  return (
+    /\b(sell|selling|vendre|vend)\b.*\b(other|another|different|second|alt)\b.*\b(account|compte|steam)\b/.test(
+      m,
+    ) ||
+    /\b(other|another|different|second)\b.*\b(account|compte|steam)\b.*\b(sell|selling|vendre|vend)\b/.test(
+      m,
+    ) ||
+    /\b(from|via|depuis|avec)\b.*\b(other|another|autre|different)\b.*\b(account|compte|steam)\b/.test(
+      m,
+    ) ||
+    /\b(multiple|several|plusieurs)\b.*\b(steam\s*)?(account|accounts|compte|comptes)\b/.test(m) ||
+    /\b(smurf|smurfs|alt\s+account|alt\s+accounts)\b.*\b(sell|selling|vendre|vend|skin|skins)\b/.test(
+      m,
+    ) ||
+    /\b(sell|selling|vendre|vend)\b.*\b(smurf|smurfs|alt\s+account|alt\s+accounts)\b/.test(m) ||
+    /\bchange\b.*\btrade\s*link\b.*\b(other|another|different|autre)\b/.test(m) ||
+    /\b(other|another|autre)\b.*\btrade\s*link\b/.test(m)
+  );
+}
+
 export function resolveTrustedAiAnswer(
   message: string,
   locale: ChatAiLocale = 'fr',
@@ -200,6 +261,14 @@ export function resolveTrustedAiAnswer(
       fr: CRYPTO_TIMING_ANSWER_FR,
       en: CRYPTO_TIMING_ANSWER_EN,
       cn: CRYPTO_TIMING_ANSWER_CN,
+    });
+  }
+
+  if (isSellFromOtherAccountQuestion(trimmed)) {
+    return pickLocalizedAnswer(locale, {
+      fr: SELL_OTHER_ACCOUNT_ANSWER_FR,
+      en: SELL_OTHER_ACCOUNT_ANSWER_EN,
+      cn: SELL_OTHER_ACCOUNT_ANSWER_CN,
     });
   }
 

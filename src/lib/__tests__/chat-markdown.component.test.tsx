@@ -18,6 +18,7 @@ jest.mock('remark-gfm', () => ({
 import { render, screen } from '@testing-library/react';
 import {
   CHAT_MARKDOWN_COMPONENTS,
+  CHAT_MARKDOWN_LINK_CLASS,
   CHAT_REMARK_PLUGINS,
   ChatMarkdownContent,
   shouldRenderChatMarkdown,
@@ -60,6 +61,14 @@ describe('CHAT_MARKDOWN_COMPONENTS', () => {
     const anchor = container.querySelector('a');
     expect(anchor?.getAttribute('href')).toBe('/help/scam');
     expect(anchor?.getAttribute('target')).toBeNull();
+  });
+
+  it('applique le style MoonSkin aux liens', () => {
+    const Link = CHAT_MARKDOWN_COMPONENTS.a;
+    const { container } = render(<Link href="/sell">Vendre</Link>);
+    const anchor = container.querySelector('a');
+    expect(anchor?.className).toContain('chat-markdown-link');
+    expect(anchor?.className).toContain(CHAT_MARKDOWN_LINK_CLASS.split(' ')[0]);
   });
 });
 
