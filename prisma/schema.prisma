@@ -929,6 +929,16 @@ model HelpArticle {
   @@map("help_article")
 }
 
+model HelpArticleStat {
+  slug       String   @id
+  viewCount  Int      @default(0)
+  helpfulYes Int      @default(0)
+  helpfulNo  Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@map("help_article_stat")
+}
+
 model PressArticle {
   id          String   @id @default(cuid())
   slug        String   @unique

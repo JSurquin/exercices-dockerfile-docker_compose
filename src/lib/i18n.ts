@@ -6680,6 +6680,14 @@ export const messages: Record<Locale, Messages> = {
           kycGuide: "KYC : Pourquoi et comment valider son identité ?",
           feesGuide: "Comprendre les frais et délais de paiement",
         },
+        feedback: {
+          question: "Cet article vous a-t-il été utile ?",
+          yes: "Oui, utile",
+          no: "Non, pas utile",
+          thankYou: "Merci pour votre retour !",
+          error: "Impossible d'enregistrer votre avis. Réessayez plus tard.",
+        },
+        readArticle: "Lire l'article",
       },
       contactPage: {
         sendMessage: "Envoyer un message",
@@ -14538,6 +14546,14 @@ export const messages: Record<Locale, Messages> = {
           kycGuide: "KYC: Why and how to validate your identity?",
           feesGuide: "Understanding fees and payment delays",
         },
+        feedback: {
+          question: "Was this article helpful?",
+          yes: "Yes, helpful",
+          no: "No, not helpful",
+          thankYou: "Thank you for your feedback!",
+          error: "Unable to save your feedback. Please try again later.",
+        },
+        readArticle: "Read article",
       },
       contactPage: {
         sendMessage: "Send a message",
@@ -22075,6 +22091,14 @@ export const messages: Record<Locale, Messages> = {
           kycGuide: "KYC：为什么以及如何验证您的身份？",
           feesGuide: "了解费用和支付延迟",
         },
+        feedback: {
+          question: "这篇文章对您有帮助吗？",
+          yes: "有帮助",
+          no: "没有帮助",
+          thankYou: "感谢您的反馈！",
+          error: "无法保存您的反馈，请稍后再试。",
+        },
+        readArticle: "阅读文章",
       },
       contactPage: {
         sendMessage: "发送消息",

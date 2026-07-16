@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '~/prisma/prisma';
-import { pickLocalizedField, pickLocalizedOptionalField, resolveCmsLocale } from '@/lib/cms-localized';
+import { resolveCmsLocale } from '@/lib/cms-localized';
+import { getHelpArticleBySlug } from '@/lib/help-articles-server';
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -8,7 +8,7 @@ interface RouteParams {
 
 /**
  * GET /api/help-articles/[slug]
- * Récupère un article d'aide public par slug
+ * Récupère un article d'aide public par slug (statique ou CMS)
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
@@ -16,46 +16,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { searchParams } = new URL(request.url);
     const lang = resolveCmsLocale(request, searchParams.get('lang'));
 
-    const article = await prisma.helpArticle.findFirst({
-      where: { slug, isPublished: true },
-      select: {
-        id: true,
-        slug: true,
-        titleFr: true,
-        titleEn: true,
-        titleCn: true,
-        subtitleFr: true,
-        subtitleEn: true,
-        subtitleCn: true,
-        contentFr: true,
-        contentEn: true,
-        contentCn: true,
-        category: true,
-        updatedAt: true,
-      },
-    });
+    const article = await getHelpArticleBySlug(slug, lang);
 
     if (!article) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
 
-    return NextResponse.json({
-      article: {
-        id: article.id,
-        slug: article.slug,
-        title: pickLocalizedField(lang, article.titleFr, article.titleEn, article.titleCn),
-        subtitle: pickLocalizedOptionalField(
-          lang,
-          article.subtitleFr,
-          article.subtitleEn,
-          article.subtitleCn,
-        ),
-        content: pickLocalizedField(lang, article.contentFr, article.contentEn, article.contentCn),
-        category: article.category,
-        updatedAt: article.updatedAt,
-        lang,
-      },
-    });
+    return NextResponse.json({ article: { ...article, lang } });
   } catch (error) {
     console.error('Error fetching help article:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

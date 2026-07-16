@@ -7,12 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   QuestionMarkCircleIcon,
   MagnifyingGlassIcon,
   ChatBubbleLeftRightIcon,
@@ -22,10 +16,28 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
+  EyeIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { useMemo, useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useQuery } from "@tanstack/react-query";
+import {
+  HELP_CATEGORY_KEYS,
+  formatViewCount,
+  type HelpCategoryKey,
+} from "@/lib/help-articles-config";
+
+interface HelpArticleListItem {
+  slug: string;
+  title: string;
+  subtitle?: string;
+  excerpt: string;
+  category: string;
+  categoryKey: HelpCategoryKey;
+  viewCount: number;
+  helpfulPercent: number | null;
+}
 
 function normalizeSearch(s: string) {
   return s
@@ -34,222 +46,73 @@ function normalizeSearch(s: string) {
     .replace(/\p{M}/gu, "");
 }
 
-function matchesQuery(query: string, title: string, body: string) {
+function matchesQuery(query: string, article: HelpArticleListItem) {
   const q = query.trim();
   if (!q) return true;
   const n = normalizeSearch(q);
-  return normalizeSearch(title).includes(n) || normalizeSearch(body).includes(n);
+  return (
+    normalizeSearch(article.title).includes(n) ||
+    normalizeSearch(article.excerpt).includes(n) ||
+    normalizeSearch(article.category).includes(n) ||
+    (article.subtitle ? normalizeSearch(article.subtitle).includes(n) : false)
+  );
 }
+
+const CATEGORY_ICONS: Record<HelpCategoryKey, React.ComponentType<{ className?: string }>> = {
+  gettingStarted: CheckCircleIcon,
+  trading: CurrencyEuroIcon,
+  payments: ShieldCheckIcon,
+  security: ExclamationTriangleIcon,
+  technical: DocumentTextIcon,
+};
+
+const CATEGORY_COLORS: Record<HelpCategoryKey, string> = {
+  gettingStarted: "text-green-600",
+  trading: "text-theme-accent",
+  payments: "text-blue-600",
+  security: "text-red-600",
+  technical: "text-purple-600",
+};
 
 export default function HelpPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { messages, locale } = useLocale();
-
   const t = messages.helpPage;
 
-  const { data: cmsArticles = [] } = useQuery({
+  const { data: allArticles = [] } = useQuery({
     queryKey: ["help-articles", locale],
     queryFn: async () => {
       const response = await fetch(`/api/help-articles?lang=${locale}`);
       if (!response.ok) return [];
       const data = await response.json();
-      return (data.articles ?? []) as Array<{
-        slug: string;
-        title: string;
-        subtitle?: string;
-        category?: string;
-      }>;
+      return (data.articles ?? []) as HelpArticleListItem[];
     },
     staleTime: 10 * 60 * 1000,
   });
 
-  const categories = useMemo(
-    () => [
-      {
-        title: messages.help.categories.gettingStarted,
-        icon: CheckCircleIcon,
-        color: "text-green-600",
-        articles: [
-          {
-            id: "gs-createAccount",
-            title: t.articles.gettingStarted.createAccount,
-            body: t.articleBodies.gettingStarted.createAccount,
-          },
-          {
-            id: "gs-steamConnection",
-            title: t.articles.gettingStarted.steamConnection,
-            body: t.articleBodies.gettingStarted.steamConnection,
-          },
-          {
-            id: "gs-kycStepByStep",
-            title: t.articles.gettingStarted.kycStepByStep,
-            body: t.articleBodies.gettingStarted.kycStepByStep,
-          },
-          {
-            id: "gs-firstTrade",
-            title: t.articles.gettingStarted.firstTrade,
-            body: t.articleBodies.gettingStarted.firstTrade,
-          },
-        ],
-      },
-      {
-        title: messages.help.categories.trading,
-        icon: CurrencyEuroIcon,
-        color: "text-theme-accent",
-        articles: [
-          {
-            id: "tr-howToSell",
-            title: t.articles.trading.howToSell,
-            body: t.articleBodies.trading.howToSell,
-          },
-          {
-            id: "tr-priceEstimation",
-            title: t.articles.trading.priceEstimation,
-            body: t.articleBodies.trading.priceEstimation,
-          },
-          {
-            id: "tr-tradeHold",
-            title: t.articles.trading.tradeHold,
-            body: t.articleBodies.trading.tradeHold,
-          },
-          {
-            id: "tr-fees",
-            title: t.articles.trading.fees,
-            body: t.articleBodies.trading.fees,
-          },
-        ],
-      },
-      {
-        title: messages.help.categories.payments,
-        icon: ShieldCheckIcon,
-        color: "text-blue-600",
-        articles: [
-          {
-            id: "pay-methods",
-            title: t.articles.payments.methods,
-            body: t.articleBodies.payments.methods,
-          },
-          {
-            id: "pay-delays",
-            title: t.articles.payments.delays,
-            body: t.articleBodies.payments.delays,
-          },
-          {
-            id: "pay-ibanVerification",
-            title: t.articles.payments.ibanVerification,
-            body: t.articleBodies.payments.ibanVerification,
-          },
-          {
-            id: "pay-paymentIssue",
-            title: t.articles.payments.paymentIssue,
-            body: t.articleBodies.payments.paymentIssue,
-          },
-        ],
-      },
-      {
-        title: messages.help.categories.security,
-        icon: ExclamationTriangleIcon,
-        color: "text-red-600",
-        articles: [
-          {
-            id: "sec-secureAccount",
-            title: t.articles.security.secureAccount,
-            body: t.articleBodies.security.secureAccount,
-          },
-          {
-            id: "sec-accountSuspended",
-            title: t.articles.security.accountSuspended,
-            body: t.articleBodies.security.accountSuspended,
-          },
-          {
-            id: "sec-reportSuspicious",
-            title: t.articles.security.reportSuspicious,
-            body: t.articleBodies.security.reportSuspicious,
-          },
-          {
-            id: "sec-accountRecovery",
-            title: t.articles.security.accountRecovery,
-            body: t.articleBodies.security.accountRecovery,
-          },
-        ],
-      },
-      {
-        title: messages.help.categories.technical,
-        icon: DocumentTextIcon,
-        color: "text-purple-600",
-        articles: [
-          {
-            id: "tec-siteNotLoading",
-            title: t.articles.technical.siteNotLoading,
-            body: t.articleBodies.technical.siteNotLoading,
-          },
-          {
-            id: "tec-steamTradeError",
-            title: t.articles.technical.steamTradeError,
-            body: t.articleBodies.technical.steamTradeError,
-          },
-          {
-            id: "tec-steamConnectionIssue",
-            title: t.articles.technical.steamConnectionIssue,
-            body: t.articleBodies.technical.steamConnectionIssue,
-          },
-          {
-            id: "tec-buggyInterface",
-            title: t.articles.technical.buggyInterface,
-            body: t.articleBodies.technical.buggyInterface,
-          },
-        ],
-      },
-    ],
-    [messages.help.categories, t]
+  const filteredArticles = useMemo(
+    () => allArticles.filter((a) => matchesQuery(searchQuery, a)),
+    [allArticles, searchQuery],
   );
 
-  const filteredCategories = useMemo(() => {
-    return categories
-      .map((cat) => ({
-        ...cat,
-        articles: cat.articles.filter((a) =>
-          matchesQuery(searchQuery, a.title, a.body)
-        ),
-      }))
-      .filter((cat) => cat.articles.length > 0);
-  }, [categories, searchQuery]);
-
-  const popularItems = useMemo(
-    () => [
-      {
-        id: "pop-sell",
-        headline: t.popularArticles.sellGuide,
-        categoryLabel: messages.help.categories.trading,
-        readTime: "5 min",
-        views: "5.2k",
-        helpful: 96,
-        title: t.articles.trading.howToSell,
-        body: t.articleBodies.trading.howToSell,
-      },
-      {
-        id: "pop-kyc",
-        headline: t.popularArticles.kycGuide,
-        categoryLabel: messages.help.categories.gettingStarted,
-        readTime: "3 min",
-        views: "4.1k",
-        helpful: 94,
-        title: t.articles.gettingStarted.kycStepByStep,
-        body: t.articleBodies.gettingStarted.kycStepByStep,
-      },
-      {
-        id: "pop-fees",
-        headline: t.popularArticles.feesGuide,
-        categoryLabel: messages.help.categories.payments,
-        readTime: "4 min",
-        views: "3.8k",
-        helpful: 91,
-        title: t.articles.trading.fees,
-        body: t.articleBodies.trading.fees,
-      },
-    ],
-    [messages.help.categories, t]
+  const popularArticles = useMemo(
+    () =>
+      [...allArticles]
+        .sort((a, b) => b.viewCount - a.viewCount)
+        .slice(0, 3),
+    [allArticles],
   );
+
+  const categories = useMemo(() => {
+    const categoryLabels = messages.help.categories;
+    return HELP_CATEGORY_KEYS.map((key) => ({
+      key,
+      title: categoryLabels[key],
+      icon: CATEGORY_ICONS[key],
+      color: CATEGORY_COLORS[key],
+      articles: filteredArticles.filter((a) => a.categoryKey === key),
+    })).filter((cat) => cat.articles.length > 0);
+  }, [filteredArticles, messages.help.categories]);
 
   const getSupportOptions = () => [
     {
@@ -308,36 +171,40 @@ export default function HelpPage() {
           </div>
         </motion.div>
 
-        {cmsArticles.length > 0 && (
+        {!searchQuery && popularArticles.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.08 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-8 sm:mb-12"
           >
-            <h2 className="text-2xl font-semibold mb-6">{t.cmsArticlesTitle}</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {cmsArticles.map((article) => (
-                <Card key={article.slug} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        {article.category ? (
-                          <Badge variant="outline" className="mb-2">
-                            {article.category}
-                          </Badge>
-                        ) : null}
-                        <h3 className="font-semibold mb-1">{article.title}</h3>
-                        {article.subtitle ? (
-                          <p className="text-sm text-muted-foreground line-clamp-2">{article.subtitle}</p>
-                        ) : null}
+            <h2 className="text-2xl font-semibold mb-6">{messages.help.popularArticles}</h2>
+            <div className="grid md:grid-cols-3 gap-4">
+              {popularArticles.map((article) => (
+                <Link key={article.slug} href={`/help/${article.slug}`}>
+                  <Card className="hover:shadow-md transition-shadow h-full">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <Badge variant="outline">{article.category}</Badge>
                       </div>
-                      <Button variant="ghost" size="sm" asChild className="shrink-0">
-                        <Link href={`/help/${article.slug}`}>→</Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                      <h3 className="font-semibold mb-3 line-clamp-2">{article.title}</h3>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <EyeIcon className="w-4 h-4" />
+                          {formatViewCount(article.viewCount)} {messages.help.views}
+                        </span>
+                        {article.helpfulPercent !== null && (
+                          <div className="flex items-center space-x-1">
+                            <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                            <span>
+                              {article.helpfulPercent}% {messages.help.helpful}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </motion.div>
@@ -346,80 +213,41 @@ export default function HelpPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-8 sm:mb-12"
-        >
-          <h2 className="text-2xl font-semibold mb-6">{messages.help.popularArticles}</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            {popularItems.map((item) => (
-              <Card key={item.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-0">
-                  <div className="p-6 pb-2">
-                    <div className="flex items-center justify-between mb-3">
-                      <Badge variant="outline">{item.categoryLabel}</Badge>
-                      <span className="text-xs text-muted-foreground">{item.readTime}</span>
-                    </div>
-                    <h3 className="font-semibold mb-3 line-clamp-2">{item.headline}</h3>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                      <span>
-                        {item.views} {messages.help.views}
-                      </span>
-                      <div className="flex items-center space-x-1">
-                        <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                        <span>
-                          {item.helpful}% {messages.help.helpful}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <Accordion type="single" collapsible className="w-full px-6 pb-4">
-                    <AccordionItem value={item.id} className="border-0">
-                      <AccordionTrigger className="py-2 text-theme-accent hover:text-theme-accent hover:no-underline text-sm font-medium">
-                        {item.title}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <p className="text-sm text-muted-foreground leading-relaxed pt-1">{item.body}</p>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-8 sm:mb-12"
         >
           <h2 className="text-2xl font-semibold mb-6">{t.browseByCategory}</h2>
-          {filteredCategories.length === 0 ? (
+          {categories.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">{t.searchNoResults}</p>
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
-              {filteredCategories.map((category) => (
-                <Card key={category.title} className="hover:shadow-md transition-shadow">
+              {categories.map((category) => (
+                <Card key={category.key} className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-3">
                       <category.icon className={`w-6 h-6 ${category.color}`} />
                       <span>{category.title}</span>
+                      <Badge variant="secondary" className="ml-auto text-xs">
+                        {category.articles.length}
+                      </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Accordion type="multiple" className="w-full">
+                    <ul className="space-y-1">
                       {category.articles.map((article) => (
-                        <AccordionItem key={article.id} value={article.id}>
-                          <AccordionTrigger className="text-left text-sm font-medium hover:no-underline">
-                            {article.title}
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <p className="text-sm text-muted-foreground leading-relaxed pr-2">{article.body}</p>
-                          </AccordionContent>
-                        </AccordionItem>
+                        <li key={article.slug}>
+                          <Link
+                            href={`/help/${article.slug}`}
+                            className="flex items-center justify-between gap-2 py-2 px-2 -mx-2 rounded-md text-sm hover:bg-muted/60 transition-colors group"
+                          >
+                            <span className="font-medium group-hover:text-theme-accent transition-colors line-clamp-1">
+                              {article.title}
+                            </span>
+                            <ArrowRightIcon className="w-4 h-4 shrink-0 text-muted-foreground group-hover:text-theme-accent transition-colors" />
+                          </Link>
+                        </li>
                       ))}
-                    </Accordion>
+                    </ul>
                   </CardContent>
                 </Card>
               ))}

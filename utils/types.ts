@@ -6149,6 +6149,14 @@ export interface Messages {
         kycGuide: string;
         feesGuide: string;
       };
+      feedback: {
+        question: string;
+        yes: string;
+        no: string;
+        thankYou: string;
+        error: string;
+      };
+      readArticle: string;
     };
     contactPage: {
       sendMessage: string;
