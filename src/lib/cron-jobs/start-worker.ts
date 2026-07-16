@@ -5,6 +5,7 @@ import { runGiveawayDrawJob } from '@/lib/cron-jobs/giveaway-draw';
 import { runUpdateTradesStatusJob } from '@/lib/cron-jobs/update-trades-status';
 import { runSecurityMaintenanceJob } from '@/lib/cron-jobs/security-maintenance';
 import { runAutoCloseInactiveConversationsJob } from '@/lib/cron-jobs/auto-close-inactive-conversations';
+import { runAutoUnassignInactiveConversationsJob } from '@/lib/cron-jobs/auto-unassign-inactive-conversations';
 
 type JobRunner = {
   name: string;
@@ -37,6 +38,11 @@ const jobs: JobRunner[] = [
     name: 'auto-close-inactive-conversations',
     schedule: CRON_SCHEDULES.autoCloseInactiveConversations,
     run: runAutoCloseInactiveConversationsJob,
+  },
+  {
+    name: 'auto-unassign-inactive-conversations',
+    schedule: CRON_SCHEDULES.autoUnassignInactiveConversations,
+    run: runAutoUnassignInactiveConversationsJob,
   },
 ];
 

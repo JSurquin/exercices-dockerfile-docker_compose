@@ -15,6 +15,7 @@ import {
   shouldPlayClientNotificationSound,
 } from '@/lib/chat-notification-logic';
 import {
+  conversationHasModeratorReply,
   getConversationListUnreadTotal,
   getUnreadMessageCount,
   isTerminalConversationStatus,
@@ -284,6 +285,13 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       setAwaitingStaffReply(false);
     }
   }, [loadedConversationStatus, conversationId]);
+
+  useEffect(() => {
+    if (!conversationId || messagesLoading || allMessages.length === 0) return;
+    if (conversationHasModeratorReply(allMessages)) {
+      setAwaitingStaffReply(false);
+    }
+  }, [conversationId, allMessages, messagesLoading]);
 
   useEffect(() => {
     if (!awaitingStaffReply || allMessages.length === 0) return;

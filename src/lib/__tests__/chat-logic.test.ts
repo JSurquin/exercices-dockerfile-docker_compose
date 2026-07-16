@@ -366,6 +366,23 @@ describe('shouldInsertFollowUpAwaitingAcknowledgment', () => {
     ).toBe(false);
   });
 
+  it('ignore si le modérateur a déjà répondu avant une relance utilisateur', () => {
+    expect(
+      shouldInsertFollowUpAwaitingAcknowledgment(
+        [
+          { id: '1', senderType: 'USER' },
+          { id: '2', senderType: 'BOT' },
+          { id: '3', senderType: 'SYSTEM' },
+          { id: '4', senderType: 'MODERATOR' },
+          { id: '5', senderType: 'USER' },
+        ],
+        '6',
+        'USER',
+        'mod-123',
+      ),
+    ).toBe(false);
+  });
+
   it('ne déclenche pas tant que l’IA gère encore la conversation', () => {
     expect(
       shouldInsertFollowUpAwaitingAcknowledgment(

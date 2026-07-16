@@ -94,6 +94,18 @@ export function detectSubjectShift(
   return priorBucket !== 'general' && newBucket !== 'general' && priorBucket !== newBucket;
 }
 
+/** Fil d'aide : sous-catégorie + réponse BOT, puis premier message utilisateur réel. */
+export function isContinuingHelpSubcategoryThread(params: {
+  priorUserMessages: string[];
+  existingMessages?: Array<{ senderType: string }>;
+}): boolean {
+  if (!params.existingMessages?.length) return false;
+  if (params.priorUserMessages.length !== 1) return false;
+  const userCount = params.existingMessages.filter((m) => m.senderType === 'USER').length;
+  if (userCount !== 1) return false;
+  return params.existingMessages.some((m) => m.senderType === 'BOT');
+}
+
 export function resolveConversationRoutingWithMessage(params: {
   lastMessageAt: Date | null | undefined;
   currentCategory: string | null | undefined;
@@ -107,6 +119,14 @@ export function resolveConversationRoutingWithMessage(params: {
   if (
     params.existingMessages &&
     isConversationAwaitingStaffReply(params.existingMessages)
+  ) {
+    return 'same';
+  }
+  if (
+    isContinuingHelpSubcategoryThread({
+      priorUserMessages: params.priorUserMessages,
+      existingMessages: params.existingMessages,
+    })
   ) {
     return 'same';
   }

@@ -76,6 +76,9 @@ export const CONVERSATION_AUTO_CLOSED_I18N_KEY =
 /** Délai d'inactivité avant fermeture automatique d'un ticket support (6 h). */
 export const CONVERSATION_AUTO_CLOSE_INACTIVITY_MS = 6 * 60 * 60 * 1000;
 
+/** Délai sans message avant désassignation modérateur et reprise par l'agent (1 h). */
+export const CONVERSATION_AUTO_UNASSIGN_INACTIVITY_MS = 60 * 60 * 1000;
+
 export const AWAITING_STAFF_REPLY_CLEAR_SENDER_TYPES = ['AI', 'BOT', 'MODERATOR'] as const;
 
 /** True quand un message staff clôt l'attente de réponse (ignore SYSTEM ticket transmis). */
@@ -232,6 +235,10 @@ export function shouldInsertFollowUpAwaitingAcknowledgment(
 
   const messagesBeforeNew = messages.filter((m) => m.id !== newMessageId);
 
+  if (conversationHasModeratorReply(messagesBeforeNew)) {
+    return false;
+  }
+
   if (assignedTo) {
     return isConversationAwaitingModeratorReply(messagesBeforeNew);
   }
@@ -243,10 +250,17 @@ export function shouldInsertFollowUpAwaitingAcknowledgment(
   return isConversationAwaitingModeratorReply(messagesBeforeNew);
 }
 
+export function conversationHasModeratorReply(
+  messages: Array<{ senderType: string }>,
+): boolean {
+  return messages.some((m) => m.senderType === 'MODERATOR');
+}
+
 /** True quand un modérateur humain doit encore répondre (assignation active, pas de message MODERATOR après le dernier USER). */
 export function isConversationAwaitingModeratorReply(
   messages: Array<{ senderType: string }>,
 ): boolean {
+  if (conversationHasModeratorReply(messages)) return false;
   let lastUserIdx = -1;
   for (let i = messages.length - 1; i >= 0; i--) {
     if (messages[i].senderType === 'USER') {

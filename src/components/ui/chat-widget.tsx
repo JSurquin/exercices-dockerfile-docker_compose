@@ -1191,7 +1191,12 @@ export function ChatWidget() {
     try {
       const data = await sendMessage(
         normalized,
-        askFlow ? { category: "support", forceNew: true } : undefined,
+        askFlow
+          ? {
+              category: "support",
+              ...(conversationId ? {} : { forceNew: true }),
+            }
+          : undefined,
       );
       setInputPrefill(undefined);
       if (askFlow) {

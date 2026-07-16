@@ -195,6 +195,22 @@ describe('resolveConversationRoutingWithMessage', () => {
       }),
     ).toBe('same');
   });
+
+  it('reste sur le même fil après une sous-catégorie aide et la réponse bot', () => {
+    expect(
+      resolveConversationRoutingWithMessage({
+        lastMessageAt: new Date(),
+        currentCategory: 'support',
+        newCategory: null,
+        priorUserMessages: ['Bug'],
+        newMessage: 'Mon trade ne fonctionne pas',
+        existingMessages: [
+          { senderType: 'USER' },
+          { senderType: 'BOT' },
+        ],
+      }),
+    ).toBe('same');
+  });
 });
 
 describe('hasTopicChanged', () => {

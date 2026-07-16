@@ -10,6 +10,8 @@ export const CRON_SCHEDULES = {
   securityMaintenance: '0 3 * * *',
   /** Fermeture automatique des tickets support inactifs depuis 6 h */
   autoCloseInactiveConversations: '*/15 * * * *',
+  /** Désassignation modérateur et reprise agent après 1 h sans message */
+  autoUnassignInactiveConversations: '*/15 * * * *',
 } as const;
 
 export type CronJobName = keyof typeof CRON_SCHEDULES;
