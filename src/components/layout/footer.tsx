@@ -85,6 +85,7 @@ export function Footer({ publicStats: publicStatsProp }: { publicStats?: PublicS
     company: [
       { name: messages.footer.links.about, href: "/about" },
       { name: messages.footer.links.press, href: "/press" },
+      { name: messages.footer.links.blog, href: "/blog" },
     ],
     support: [
       { name: messages.footer.links.helpCenter, href: "/help" },

@@ -83,6 +83,7 @@ export const queryKeys = {
   adminLegalPages: ['admin', 'legal-pages'] as const,
   adminHelpArticles: ['admin', 'help-articles'] as const,
   adminPressArticles: ['admin', 'press-articles'] as const,
+  adminBlogArticles: ['admin', 'blog-articles'] as const,
 
   // Admin - homepage partners
   adminPartnerVideos: ['admin', 'partners', 'videos'] as const,

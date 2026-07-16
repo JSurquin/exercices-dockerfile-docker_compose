@@ -966,6 +966,35 @@ model PressArticle {
   @@map("press_article")
 }
 
+model BlogArticle {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  titleFr         String
+  titleEn         String
+  titleCn         String?
+  summaryFr       String?
+  summaryEn       String?
+  summaryCn       String?
+  contentFr       String
+  contentEn       String
+  contentCn       String?
+  category        String?
+  readTimeMinutes Int      @default(5)
+  isFeatured      Boolean  @default(false)
+  publishedAt     DateTime @default(now())
+  isPublished     Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  updatedBy       String?
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([publishedAt])
+  @@index([category])
+  @@map("blog_article")
+}
+
 model SiteSettings {
   id          String   @id @default(cuid())
   key         String   @unique

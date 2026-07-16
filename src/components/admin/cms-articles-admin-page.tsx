@@ -31,6 +31,9 @@ import {
   formatViewCount,
   type HelpCategoryKey,
 } from '@/lib/help-articles-config';
+import {
+  BLOG_CATEGORY_KEYS,
+} from '@/lib/blog-articles-config';
 
 export interface CmsArticleRecord {
   id: string;
@@ -53,6 +56,8 @@ export interface CmsArticleRecord {
   publishedAt?: string;
   isPublished: boolean;
   sortOrder?: number;
+  readTimeMinutes?: number;
+  isFeatured?: boolean;
   updatedAt: string;
   source?: 'static' | 'cms';
   categoryKey?: HelpCategoryKey;
@@ -82,12 +87,14 @@ interface CmsArticleForm {
   publishedAt: string;
   isPublished: boolean;
   sortOrder: number;
+  readTimeMinutes: number;
+  isFeatured: boolean;
 }
 
 type PressArticleType = 'release' | 'coverage';
 
 interface CmsArticlesAdminPageProps {
-  kind: 'help' | 'press';
+  kind: 'help' | 'press' | 'blog';
   apiBase: string;
   queryKey: readonly string[];
   publicPathPrefix: string;
@@ -116,6 +123,8 @@ const emptyForm: CmsArticleForm = {
   publishedAt: new Date().toISOString().slice(0, 10),
   isPublished: true,
   sortOrder: 0,
+  readTimeMinutes: 5,
+  isFeatured: false,
 };
 
 export function CmsArticlesAdminPage({
@@ -131,6 +140,7 @@ export function CmsArticlesAdminPage({
   const t = messages.admin.legalPages;
   const helpT = messages.admin.helpArticles;
   const pressT = messages.admin.pressArticles;
+  const blogT = messages.admin.blogArticles;
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState<'create' | 'edit'>('create');
@@ -157,6 +167,15 @@ export function CmsArticlesAdminPage({
           articles: articles.filter(
             (a) => (a.categoryKey ?? a.category) === categoryKey,
           ),
+        })).filter((g) => g.articles.length > 0)
+      : [];
+
+  const groupedBlogArticles =
+    kind === 'blog'
+      ? BLOG_CATEGORY_KEYS.map((categoryKey) => ({
+          categoryKey,
+          label: messages.blogPage.categories[categoryKey],
+          articles: articles.filter((a) => a.category === categoryKey),
         })).filter((g) => g.articles.length > 0)
       : [];
 
@@ -192,6 +211,9 @@ export function CmsArticlesAdminPage({
           ) : null}
           {kind === 'press' && isPressCoverageArticle(article.externalUrl) ? (
             <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/50">{pressT.formTypeCoverage}</Badge>
+          ) : null}
+          {kind === 'blog' && article.isFeatured ? (
+            <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/50">{blogT.featured}</Badge>
           ) : null}
         </div>
         <p className="text-sm text-slate-400 truncate">{article.titleEn}</p>
@@ -309,6 +331,8 @@ export function CmsArticlesAdminPage({
           : new Date().toISOString().slice(0, 10),
         isPublished: article.isPublished,
         sortOrder: article.sortOrder ?? 0,
+        readTimeMinutes: article.readTimeMinutes ?? 5,
+        isFeatured: article.isFeatured ?? false,
       });
     } else {
       setEditMode('create');
@@ -416,7 +440,9 @@ export function CmsArticlesAdminPage({
             </Button>
             <Button size="sm" onClick={() => openEditDialog()} className="bg-cta-gradient hover:brightness-110">
               <PlusIcon className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">{kind === 'press' ? pressT.newArticle : t.newPage}</span>
+              <span className="hidden sm:inline">
+                {kind === 'press' ? pressT.newArticle : kind === 'blog' ? blogT.newArticle : t.newPage}
+              </span>
               <span className="sm:hidden">{t.create}</span>
             </Button>
           </div>
@@ -459,6 +485,24 @@ export function CmsArticlesAdminPage({
                   <div className="space-y-3">{group.articles.map(renderArticleRow)}</div>
                 </div>
               ))}
+            </div>
+          ) : kind === 'blog' ? (
+            <div className="space-y-6">
+              {groupedBlogArticles.length > 0 ? (
+                groupedBlogArticles.map((group) => (
+                  <div key={group.categoryKey}>
+                    <h3 className="text-sm font-semibold text-theme-highlight uppercase tracking-wide mb-3">
+                      {group.label}
+                      <span className="ml-2 text-slate-500 font-normal normal-case">
+                        ({group.articles.length})
+                      </span>
+                    </h3>
+                    <div className="space-y-3">{group.articles.map(renderArticleRow)}</div>
+                  </div>
+                ))
+              ) : (
+                <div className="space-y-3">{articles.map(renderArticleRow)}</div>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -569,6 +613,23 @@ export function CmsArticlesAdminPage({
                     ))}
                   </select>
                 </div>
+              ) : kind === 'blog' ? (
+                <div>
+                  <Label htmlFor="category">Catégorie</Label>
+                  <select
+                    id="category"
+                    value={form.category}
+                    onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
+                    className="flex h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white"
+                  >
+                    <option value="">{blogT.categoryPlaceholder}</option>
+                    {BLOG_CATEGORY_KEYS.map((key) => (
+                      <option key={key} value={key}>
+                        {messages.blogPage.categories[key]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               ) : (
                 <div>
                   <Label htmlFor="publishedAt">Date de publication</Label>
@@ -582,6 +643,38 @@ export function CmsArticlesAdminPage({
                 </div>
               )}
             </div>
+
+            {kind === 'blog' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="publishedAt">Date de publication</Label>
+                  <Input
+                    id="publishedAt"
+                    type="date"
+                    value={form.publishedAt}
+                    onChange={(e) => setForm((prev) => ({ ...prev, publishedAt: e.target.value }))}
+                    className="bg-slate-800 border-slate-600"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="readTimeMinutes">{blogT.readTimeMinutes}</Label>
+                  <Input
+                    id="readTimeMinutes"
+                    type="number"
+                    min={1}
+                    max={60}
+                    value={form.readTimeMinutes}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        readTimeMinutes: Number(e.target.value) || 5,
+                      }))
+                    }
+                    className="bg-slate-800 border-slate-600"
+                  />
+                </div>
+              </div>
+            )}
 
             {kind === 'press' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -634,17 +727,17 @@ export function CmsArticlesAdminPage({
                     />
                   </div>
                   <div>
-                    <Label>{kind === 'press' ? 'Résumé' : 'Sous-titre'} ({lang.toUpperCase()})</Label>
+                    <Label>{kind === 'press' || kind === 'blog' ? 'Résumé' : 'Sous-titre'} ({lang.toUpperCase()})</Label>
                     <Input
                       value={
-                        kind === 'press'
+                        kind === 'press' || kind === 'blog'
                           ? form[`summary${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]
                           : form[`subtitle${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]
                       }
                       onChange={(e) =>
                         setForm((prev) => ({
                           ...prev,
-                          [kind === 'press'
+                          [kind === 'press' || kind === 'blog'
                             ? `summary${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`
                             : `subtitle${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]: e.target.value,
                         }))
@@ -673,13 +766,25 @@ export function CmsArticlesAdminPage({
               ))}
             </Tabs>
 
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="isPublished"
-                checked={form.isPublished}
-                onCheckedChange={(checked) => setForm((prev) => ({ ...prev, isPublished: checked }))}
-              />
-              <Label htmlFor="isPublished">{t.list.published}</Label>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="isPublished"
+                  checked={form.isPublished}
+                  onCheckedChange={(checked) => setForm((prev) => ({ ...prev, isPublished: checked }))}
+                />
+                <Label htmlFor="isPublished">{t.list.published}</Label>
+              </div>
+              {kind === 'blog' ? (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="isFeatured"
+                    checked={form.isFeatured}
+                    onCheckedChange={(checked) => setForm((prev) => ({ ...prev, isFeatured: checked }))}
+                  />
+                  <Label htmlFor="isFeatured">{blogT.featured}</Label>
+                </div>
+              ) : null}
             </div>
           </div>
 

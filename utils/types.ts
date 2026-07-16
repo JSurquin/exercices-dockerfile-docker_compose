@@ -3376,6 +3376,14 @@ export interface Messages {
       contentOptional: string;
       missingCoverageFields: string;
     };
+    blogArticles: {
+      title: string;
+      subtitle: string;
+      newArticle: string;
+      featured: string;
+      categoryPlaceholder: string;
+      readTimeMinutes: string;
+    };
   };
   kycPage: {
     title: string;
@@ -5321,6 +5329,29 @@ export interface Messages {
       business: string;
     };
   };
+  blogPage: {
+    title: string;
+    subtitle: string;
+    featured: string;
+    featuredPosts: string;
+    allPosts: string;
+    readMore: string;
+    readTime: string;
+    categoriesTitle: string;
+    allCategories: string;
+    noArticles: string;
+    popularGuides: string;
+    popularGuideLinks: Array<{ slug: string; label: string }>;
+    ctaTitle: string;
+    ctaSubtitle: string;
+    ctaButton: string;
+    categories: {
+      guides: string;
+      trading: string;
+      skins: string;
+      news: string;
+    };
+  };
   press: {
     title: string;
     subtitle: string;
@@ -6284,6 +6315,7 @@ export interface Messages {
         partners: string;
         helpArticles: string;
         pressArticles: string;
+        blogArticles: string;
         legalPages: string;
         audit: string;
         blockedIps: string;
