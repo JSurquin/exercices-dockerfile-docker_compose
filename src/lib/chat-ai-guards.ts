@@ -7,7 +7,7 @@ export const OFF_TOPIC_REFUSAL_MESSAGE =
   "Je suis l'assistant MoonSkin et je ne peux répondre qu'aux questions liées à la plateforme : vente de skins CS2, trades Steam, paiements, KYC ou support. Pour toute autre demande, merci de contacter un modérateur humain.";
 
 const MOONSKIN_KEYWORDS =
-  /\b(moonskin|moon\s*skin|skin(?:s)?|cs2|csgo|counter[\s-]?strike|steam|trade(?:\s*link|\s*hold|\s*offer)?|payout|paiement|pay(?:er|ement)?|sepa|crypto|bitcoin|ethereum|usdt|kyc|iban|cashout|retrait|estimation|giveaway|ticket|xp|mod[ée]rateur|bot|inventaire|skinplace|vendre|vente|frais|commission|affiliation|fragment|trade\s*link|steam\s*guard|carte|visa|mastercard|flexify|whitepay|trade\s*offer|offre\s*steam|d[ée]lai|remboursement|litige|bug|probl[èe]me|aide|support|compte|connexion|login|d[ée]p[ôo]t|retrait|wallet|portefeuille)\b/i;
+  /\b(moonskin|moon\s*skin|skin(?:s)?|cs2|csgo|counter[\s-]?strike|steam|trade(?:\s*link|\s*hold|\s*offer)?|payout|paiement|pay(?:er|ement)?|sepa|crypto|bitcoin|ethereum|usdt|kyc|iban|cashout|retrait|estimation|giveaway|ticket|xp|mod[ée]rateur|bot|inventaire|skinplace|vendre|vente|frais|commission|affiliation|fragment|trade\s*link|steam\s*guard|carte|visa|mastercard|flexify|whitepay|trade\s*offer|offre\s*steam|d[ée]lai|remboursement|litige|bug|probl[èe]me|aide|support|compte|connexion|login|d[ée]p[ôo]t|retrait|wallet|portefeuille|scam|arnaqu|arnaq|fraude|api\s*scam)\b/i;
 
 const OFF_TOPIC_PATTERNS: RegExp[] = [
   /\b(recette|tarte|cuisine|cuire|p[âa]tisserie|gateau|g[âa]teau|repas|restaurant|manger|boire)\b/i,

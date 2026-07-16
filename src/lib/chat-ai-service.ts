@@ -13,6 +13,7 @@ import { AI_UNAVAILABLE_I18N_KEY } from '@/lib/chat-logic';
 import { generateEmbedding } from '@/lib/ollama-embed';
 import { searchSimilarChunks } from '@/lib/rag-client';
 import { enqueueChatAiReply, peekChatAiQueueAdmission } from '@/lib/chat-ai-queue';
+import { resolveTrustedAiAnswer } from '@/lib/chat-ai-trusted-answers';
 import type { SenderType } from '@prisma/client';
 
 const MAX_CONTEXT_MESSAGES = 12;
@@ -68,6 +69,8 @@ Règles :
 - Sois concis, chaleureux et professionnel. Évite les termes anxiogènes.
 - MoonSkin permet de VENDRE ses skins CS2 (l'utilisateur est vendeur, il n'achète pas de skins sur la plateforme) : estimation, trade via bot Steam, trade hold 7 jours, puis paiement (carte, SEPA, crypto).
 - Ne dis jamais que l'utilisateur « achète » ou « paie son compte Steam » pour vendre : il envoie ses skins au bot et reçoit un paiement.
+- DÉLAIS — ne pas confondre : (A) trade hold Steam = 7 jours obligatoires AVANT tout paiement ; (B) une fois le paiement déclenché, crypto = quasi-instantané (souvent sous 10 min), carte = minutes à 24h, SEPA France = jour même/lendemain, SEPA Europe = 1 à 3 jours ouvrés. Ne jamais dire 1 à 5 jours pour la crypto.
+- ARNAQUES — si l'utilisateur dit « me faire scam/arnaquer », il craint d'être VICTIME, pas qu'il veut frauder : rassure-le sur les protections MoonSkin (bot officiel, vérification Steam ID) et l'API scam externe.
 - KYC obligatoire avant tout payout.
 - Ne promets jamais un délai exact ni un remboursement sans validation humaine.
 - Si la question dépasse ton périmètre (fraude, litige, bug bloquant, changement d'IBAN), indique qu'un modérateur humain prendra le relais.
@@ -164,6 +167,37 @@ async function generateAiReply(conversationId: string): Promise<void> {
 
     const username =
       conversation.user?.steamUsername || conversation.user?.name || 'Utilisateur';
+
+    const userQueryText = stripI18nPlaceholder(lastUserMessage.content);
+    const trustedAnswer = resolveTrustedAiAnswer(userQueryText);
+    if (trustedAnswer) {
+      const existingStaffReply = await prisma.chatMessage.findFirst({
+        where: {
+          conversationId,
+          createdAt: { gt: lastUserMessage.createdAt },
+          senderType: { in: ['AI', 'MODERATOR'] },
+        },
+        select: { id: true },
+      });
+      if (existingStaffReply) return;
+
+      await prisma.chatMessage.create({
+        data: {
+          conversationId,
+          userId: null,
+          content: trustedAnswer,
+          senderType: 'AI',
+          isRead: false,
+          metadata: { source: 'trusted-answer' },
+        },
+      });
+      await prisma.conversation.update({
+        where: { id: conversationId },
+        data: { updatedAt: new Date(), lastMessageAt: new Date() },
+      });
+      logger.info('[chat-ai] Réponse trusted-answer', { conversationId });
+      return;
+    }
 
     // RAG : récupérer les chunks pertinents pour enrichir le prompt
     let ragContext: string | undefined;

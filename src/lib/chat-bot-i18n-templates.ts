@@ -246,11 +246,13 @@ Merci d'utiliser Moonskin 🤝`,
 
 Les paiements sont déclenchés après validation de 7 jours du trade côté Steam.
 
-Les paiements sont envoyés rapidement après validation.
+Une fois ce délai passé et votre paiement déclenché, l'envoi crypto est très rapide.
 
-👉 Délais :
-• quasi instantané
-• dépend du temps de validation de la blockchain (variable selon le réseau)
+👉 Délais après déclenchement du paiement :
+• quasi instantané — en général sous 10 minutes
+• quelques minutes selon le réseau blockchain (USDT, ETH, BTC…)
+
+⚠️ Ne confondez pas : les 7 jours de trade hold Steam s'appliquent à toutes les méthodes. Ce n'est pas un délai crypto.
 
 Si vous rencontrez un problème, décrivez votre situation ci-dessous.
 Un membre de notre équipe vous répondra rapidement.
@@ -521,11 +523,13 @@ Thank you for using Moonskin 🤝`,
 
 Payments are triggered after the 7-day Steam trade validation.
 
-Payments are sent quickly after validation.
+Once that hold ends and your payout is triggered, crypto transfers are very fast.
 
-👉 Timelines:
-• nearly instant
-• depends on blockchain confirmation time (varies by network)
+👉 Timelines after payout is triggered:
+• nearly instant — usually within 10 minutes
+• a few minutes depending on the blockchain network (USDT, ETH, BTC…)
+
+⚠️ Do not confuse: the 7-day Steam trade hold applies to all methods. It is not a crypto delay.
 
 If you encounter an issue, describe your situation below.
 A member of our team will respond shortly.

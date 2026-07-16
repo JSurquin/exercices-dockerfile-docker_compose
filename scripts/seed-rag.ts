@@ -124,21 +124,45 @@ Cooldown de 7 jours après changement d'IBAN (sauf si micro-vérification valid�
   },
   {
     source: 'faq/paiement-crypto',
-    content: `Comment fonctionne le paiement en cryptomonnaie sur MoonSkin ?
+    content: `Comment fonctionne le paiement en cryptomonnaie sur MoonSkin ? Quel délai pour recevoir ma crypto ?
 
 MoonSkin supporte plusieurs cryptomonnaies via Whitepay : USDT, ETH, BTC, et d'autres.
+
+⚠️ DEUX DÉLAIS DISTINCTS — NE PAS LES CONFONDRE :
+1. Trade hold Steam (7 jours) : obligatoire AVANT que MoonSkin puisse déclencher tout paiement (carte, SEPA ou crypto). Ce délai est imposé par Valve.
+2. Envoi du paiement crypto : une fois le trade hold terminé et le paiement déclenché, le virement crypto est QUASI-INSTANTANÉ — en général sous 10 minutes, parfois quelques minutes selon le réseau blockchain.
+
+Les délais de 1 à 5 jours concernent uniquement les virements SEPA Europe, PAS les cryptomonnaies.
 
 Étapes :
 1. Sélectionne "Cryptomonnaie" comme méthode de paiement
 2. Choisis ta crypto
-3. Tu reçois une adresse de wallet et un montant exact
+3. Après le trade hold, le paiement est envoyé vers ton wallet
 4. Nous vérifions les confirmations blockchain
-5. Le paiement est marqué comme reçu après N confirmations
 
 ⚠️ Attention : envoie toujours sur la bonne adresse ET le bon réseau blockchain.
-Une erreur de réseau peut entraîner une perte définitive des fonds.
-MoonSkin ne peut pas être tenu responsable des erreurs d'envoi.`,
-    metadata: { category: 'paiement', tags: ['crypto', 'usdt', 'bitcoin', 'whitepay'] },
+Une erreur de réseau peut entraîner une perte définitive des fonds.`,
+    metadata: { category: 'paiement', tags: ['crypto', 'usdt', 'bitcoin', 'whitepay', 'delai', 'instantane'] },
+  },
+  {
+    source: 'faq/securite-victime-arnaque',
+    content: `Est-ce que je risque de me faire arnaquer sur MoonSkin ? Comment me protéger ?
+
+Si tu te demandes « et si je me fais scam ? » ou « est-ce que je vais me faire arnaquer ? », tu crains d'être VICTIME d'une arnaque — c'est une question légitime.
+
+Protections MoonSkin :
+- Tu vends tes skins uniquement via notre plateforme et notre bot officiel Steam
+- Le Steam ID, pseudo et photo du bot sont affichés sur le site : vérifie-les avant chaque trade
+- MoonSkin ne te demandera jamais de skins hors de la plateforme
+- Paiement automatique après le trade hold de 7 jours
+
+Risque principal hors MoonSkin — l'API scam :
+- Un site tiers malveillant peut annuler ton offre légitime et te faire accepter une fausse offre vers un compte frauduleux
+- Signes : trade annulé puis nouvelle offre, Steam ID différent de celui affiché sur MoonSkin
+- Si victime : reverse trade, change ton mot de passe Steam, révoque les autorisations API
+
+MoonSkin a une politique de tolérance zéro contre la fraude, mais cela vise les fraudeurs — pas les utilisateurs légitimes qui ont des inquiétudes.`,
+    metadata: { category: 'securite', tags: ['scam', 'arnaque', 'victime', 'protection', 'securite', 'api-scam'] },
   },
 
   // ── KYC ────────────────────────────────────────────────────────────────────

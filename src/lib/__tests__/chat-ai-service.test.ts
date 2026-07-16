@@ -208,6 +208,52 @@ describe('maybeGenerateAiReply', () => {
     );
   });
 
+  it('répond via trusted-answer sans appeler Ollama pour une crainte d\'arnaque', async () => {
+    mockFindUnique.mockResolvedValue({
+      ...baseConversation,
+      messages: [
+        { content: 'et si je me fais scam?', senderType: 'USER', createdAt: new Date() },
+      ],
+    });
+
+    await maybeGenerateAiReply('conv-1');
+
+    expect(mockOllamaChat).not.toHaveBeenCalled();
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          senderType: 'AI',
+          content: expect.stringContaining('légitime'),
+          metadata: expect.objectContaining({ source: 'trusted-answer' }),
+        }),
+      }),
+    );
+  });
+
+  it('répond via trusted-answer pour une question délai crypto', async () => {
+    mockFindUnique.mockResolvedValue({
+      ...baseConversation,
+      messages: [
+        {
+          content: 'Les virements crypto sont instantanés ?',
+          senderType: 'USER',
+          createdAt: new Date(),
+        },
+      ],
+    });
+
+    await maybeGenerateAiReply('conv-1');
+
+    expect(mockOllamaChat).not.toHaveBeenCalled();
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          content: expect.stringContaining('10 minutes'),
+        }),
+      }),
+    );
+  });
+
   it('appelle Ollama et stocke la réponse IA', async () => {
     mockFindUnique.mockResolvedValue({
       ...baseConversation,

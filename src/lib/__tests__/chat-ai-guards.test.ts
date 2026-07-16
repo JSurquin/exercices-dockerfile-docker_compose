@@ -119,6 +119,13 @@ describe('shouldAiReplyToConversation', () => {
 });
 
 describe('evaluateUserMessageForAi', () => {
+  it('accepte une question sur le risque d\'arnaque', () => {
+    const result = evaluateUserMessageForAi({
+      message: 'et si je me fais scam?',
+    });
+    expect(result.allowed).toBe(true);
+  });
+
   it('refuse une demande de recette hors sujet', () => {
     const result = evaluateUserMessageForAi({
       message: 'Fais-moi une recette de tarte à la pomme',
