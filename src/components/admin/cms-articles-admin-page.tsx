@@ -25,6 +25,7 @@ import {
   EyeIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { isPressCoverageArticle } from '@/lib/press-article-content';
 
 export interface CmsArticleRecord {
   id: string;
@@ -72,6 +73,8 @@ interface CmsArticleForm {
   sortOrder: number;
 }
 
+type PressArticleType = 'release' | 'coverage';
+
 interface CmsArticlesAdminPageProps {
   kind: 'help' | 'press';
   apiBase: string;
@@ -115,11 +118,13 @@ export function CmsArticlesAdminPage({
 }: CmsArticlesAdminPageProps) {
   const { messages } = useLocale();
   const t = messages.admin.legalPages;
+  const pressT = messages.admin.pressArticles;
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [editMode, setEditMode] = useState<'create' | 'edit'>('create');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('fr');
+  const [articleType, setArticleType] = useState<PressArticleType>('release');
   const [form, setForm] = useState<CmsArticleForm>(emptyForm);
 
   const { data: articles = [], isLoading: loading } = useQuery({
@@ -135,6 +140,7 @@ export function CmsArticlesAdminPage({
   const openEditDialog = (article?: CmsArticleRecord) => {
     if (article) {
       setEditMode('edit');
+      setArticleType(isPressCoverageArticle(article.externalUrl) ? 'coverage' : 'release');
       setForm({
         slug: article.slug,
         titleFr: article.titleFr,
@@ -160,16 +166,32 @@ export function CmsArticlesAdminPage({
       });
     } else {
       setEditMode('create');
+      setArticleType('release');
       setForm(emptyForm);
     }
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
-    if (!form.slug || !form.titleFr || !form.titleEn || !form.contentFr || !form.contentEn) {
+    if (!form.slug || !form.titleFr || !form.titleEn) {
       toast.error(t.toasts.missingFields);
       return;
     }
+
+    if (kind === 'press' && articleType === 'coverage') {
+      if (!form.sourceName.trim() || !form.externalUrl.trim()) {
+        toast.error(pressT.missingCoverageFields);
+        return;
+      }
+    } else if (!form.contentFr || !form.contentEn) {
+      toast.error(t.toasts.missingFields);
+      return;
+    }
+
+    const payload =
+      kind === 'press' && articleType === 'coverage'
+        ? { ...form, contentFr: form.contentFr || form.summaryFr, contentEn: form.contentEn || form.summaryEn }
+        : form;
 
     try {
       setSaving(true);
@@ -179,7 +201,7 @@ export function CmsArticlesAdminPage({
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -248,7 +270,7 @@ export function CmsArticlesAdminPage({
             </Button>
             <Button size="sm" onClick={() => openEditDialog()} className="bg-cta-gradient hover:brightness-110">
               <PlusIcon className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t.newPage}</span>
+              <span className="hidden sm:inline">{kind === 'press' ? pressT.newArticle : t.newPage}</span>
               <span className="sm:hidden">{t.create}</span>
             </Button>
           </div>
@@ -296,6 +318,9 @@ export function CmsArticlesAdminPage({
                       ) : (
                         <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">{t.list.draft}</Badge>
                       )}
+                      {kind === 'press' && isPressCoverageArticle(article.externalUrl) ? (
+                        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/50">{pressT.formTypeCoverage}</Badge>
+                      ) : null}
                     </div>
                     <p className="text-sm text-slate-400 truncate">{article.titleEn}</p>
                     <div className="flex items-center space-x-4 mt-2 text-xs text-slate-500">
@@ -390,6 +415,35 @@ export function CmsArticlesAdminPage({
           </DialogHeader>
 
           <div className="space-y-4">
+            {kind === 'press' && (
+              <div className="space-y-2">
+                <Label>Type d&apos;article</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={articleType === 'release' ? 'default' : 'outline'}
+                    className={articleType === 'release' ? 'bg-cta-gradient' : 'border-slate-600'}
+                    onClick={() => setArticleType('release')}
+                  >
+                    {pressT.formTypeRelease}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={articleType === 'coverage' ? 'default' : 'outline'}
+                    className={articleType === 'coverage' ? 'bg-cta-gradient' : 'border-slate-600'}
+                    onClick={() => setArticleType('coverage')}
+                  >
+                    {pressT.formTypeCoverage}
+                  </Button>
+                </div>
+                {articleType === 'coverage' ? (
+                  <p className="text-xs text-slate-400">{pressT.formTypeCoverageHint}</p>
+                ) : null}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="slug">Slug (URL)</Label>
@@ -433,7 +487,9 @@ export function CmsArticlesAdminPage({
             {kind === 'press' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="sourceName">Source / média</Label>
+                  <Label htmlFor="sourceName">
+                    Source / média {articleType === 'coverage' ? '*' : ''}
+                  </Label>
                   <Input
                     id="sourceName"
                     value={form.sourceName}
@@ -442,7 +498,9 @@ export function CmsArticlesAdminPage({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="externalUrl">Lien article original</Label>
+                  <Label htmlFor="externalUrl">
+                    Lien article original {articleType === 'coverage' ? '*' : ''}
+                  </Label>
                   <Input
                     id="externalUrl"
                     value={form.externalUrl}
@@ -496,7 +554,10 @@ export function CmsArticlesAdminPage({
                     />
                   </div>
                   <div>
-                    <Label>Contenu Markdown ({lang.toUpperCase()})</Label>
+                    <Label>
+                      Contenu Markdown ({lang.toUpperCase()})
+                      {kind === 'press' && articleType === 'coverage' ? ` — ${pressT.contentOptional}` : ''}
+                    </Label>
                     <Textarea
                       value={form[`content${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]}
                       onChange={(e) =>

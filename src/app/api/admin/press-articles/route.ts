@@ -6,6 +6,10 @@ import {
 } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { adminLegalPagePostSchema } from '@/lib/validation/schemas/admin-bodies';
+import {
+  normalizePressArticleContent,
+  validatePressArticlePayload,
+} from '@/lib/press-article-content';
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,12 +61,28 @@ export async function POST(request: NextRequest) {
       publishedAt,
     } = d;
 
-    if (!slug || !titleFr || !titleEn || !contentFr || !contentEn) {
-      return NextResponse.json(
-        { error: 'Champs obligatoires manquants: slug, titleFr, titleEn, contentFr, contentEn' },
-        { status: 400 },
-      );
+    const validationError = validatePressArticlePayload({
+      slug: slug != null ? String(slug) : undefined,
+      titleFr: titleFr != null ? String(titleFr) : undefined,
+      titleEn: titleEn != null ? String(titleEn) : undefined,
+      contentFr: contentFr != null ? String(contentFr) : undefined,
+      contentEn: contentEn != null ? String(contentEn) : undefined,
+      externalUrl: externalUrl != null ? String(externalUrl) : undefined,
+      sourceName: sourceName != null ? String(sourceName) : undefined,
+    });
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
     }
+
+    const normalizedContent = normalizePressArticleContent({
+      contentFr: contentFr != null ? String(contentFr) : undefined,
+      contentEn: contentEn != null ? String(contentEn) : undefined,
+      contentCn: contentCn != null ? String(contentCn) : undefined,
+      summaryFr: summaryFr != null ? String(summaryFr) : undefined,
+      summaryEn: summaryEn != null ? String(summaryEn) : undefined,
+      summaryCn: summaryCn != null ? String(summaryCn) : undefined,
+      externalUrl: externalUrl != null ? String(externalUrl) : undefined,
+    });
 
     const existing = await prisma.pressArticle.findUnique({ where: { slug: String(slug) } });
     if (existing) {
@@ -78,9 +98,9 @@ export async function POST(request: NextRequest) {
         summaryFr: summaryFr != null ? String(summaryFr) : null,
         summaryEn: summaryEn != null ? String(summaryEn) : null,
         summaryCn: summaryCn != null ? String(summaryCn) : null,
-        contentFr: String(contentFr),
-        contentEn: String(contentEn),
-        contentCn: contentCn != null ? String(contentCn) : null,
+        contentFr: normalizedContent.contentFr,
+        contentEn: normalizedContent.contentEn,
+        contentCn: normalizedContent.contentCn,
         sourceName: sourceName != null ? String(sourceName) : null,
         externalUrl: externalUrl != null ? String(externalUrl) : null,
         publishedAt: publishedAt ? new Date(String(publishedAt)) : new Date(),

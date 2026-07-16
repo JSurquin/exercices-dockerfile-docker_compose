@@ -6,6 +6,7 @@ import {
 } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { adminLegalPagePatchSchema } from '@/lib/validation/schemas/admin-bodies';
+import { normalizePressArticleContent } from '@/lib/press-article-content';
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -51,6 +52,22 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Article non trouvé' }, { status: 404 });
     }
 
+    const externalUrl =
+      body.externalUrl !== undefined ? (body.externalUrl as string | null) : existing.externalUrl;
+    const normalizedContent = normalizePressArticleContent({
+      contentFr: (body.contentFr as string | undefined) ?? existing.contentFr,
+      contentEn: (body.contentEn as string | undefined) ?? existing.contentEn,
+      contentCn:
+        body.contentCn !== undefined ? (body.contentCn as string | null) : existing.contentCn,
+      summaryFr:
+        body.summaryFr !== undefined ? (body.summaryFr as string | null) : existing.summaryFr,
+      summaryEn:
+        body.summaryEn !== undefined ? (body.summaryEn as string | null) : existing.summaryEn,
+      summaryCn:
+        body.summaryCn !== undefined ? (body.summaryCn as string | null) : existing.summaryCn,
+      externalUrl,
+    });
+
     const updated = await prisma.pressArticle.update({
       where: { slug },
       data: {
@@ -60,11 +77,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         summaryFr: body.summaryFr !== undefined ? (body.summaryFr as string | null) : existing.summaryFr,
         summaryEn: body.summaryEn !== undefined ? (body.summaryEn as string | null) : existing.summaryEn,
         summaryCn: body.summaryCn !== undefined ? (body.summaryCn as string | null) : existing.summaryCn,
-        contentFr: (body.contentFr as string | undefined) ?? existing.contentFr,
-        contentEn: (body.contentEn as string | undefined) ?? existing.contentEn,
-        contentCn: body.contentCn !== undefined ? (body.contentCn as string | null) : existing.contentCn,
+        contentFr: normalizedContent.contentFr,
+        contentEn: normalizedContent.contentEn,
+        contentCn: normalizedContent.contentCn,
         sourceName: body.sourceName !== undefined ? (body.sourceName as string | null) : existing.sourceName,
-        externalUrl: body.externalUrl !== undefined ? (body.externalUrl as string | null) : existing.externalUrl,
+        externalUrl,
         publishedAt: body.publishedAt ? new Date(String(body.publishedAt)) : existing.publishedAt,
         sortOrder: body.sortOrder !== undefined ? Number(body.sortOrder) : existing.sortOrder,
         isPublished: (body.isPublished as boolean | undefined) ?? existing.isPublished,

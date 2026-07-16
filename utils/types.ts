@@ -3362,6 +3362,12 @@ export interface Messages {
     pressArticles: {
       title: string;
       subtitle: string;
+      newArticle: string;
+      formTypeRelease: string;
+      formTypeCoverage: string;
+      formTypeCoverageHint: string;
+      contentOptional: string;
+      missingCoverageFields: string;
     };
   };
   kycPage: {
@@ -5314,6 +5320,10 @@ export interface Messages {
     lastUpdate: string;
     statsTitle: string;
     pressReleases: string;
+    inTheNews: string;
+    readArticle: string;
+    noInTheNewsTitle: string;
+    noInTheNewsBody: string;
     readRelease: string;
     readOriginal: string;
     noPressReleasesTitle: string;

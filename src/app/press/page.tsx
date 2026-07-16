@@ -19,8 +19,18 @@ import {
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats } from "@/hooks/use-public-stats";
 import { useQuery } from "@tanstack/react-query";
+import { isPressCoverageArticle } from "@/lib/press-article-content";
 
 const PRESS_EMAIL = process.env.NEXT_PUBLIC_PRESS_EMAIL ?? "contact@moonskin.fun";
+
+type PressArticleItem = {
+  slug: string;
+  title: string;
+  summary?: string;
+  sourceName?: string;
+  publishedAt: string;
+  externalUrl?: string;
+};
 
 const getMediaKit = (messages: { press: { mediaKitItems: {
   logos: { title: string; description: string };
@@ -73,17 +83,12 @@ export default function PressPage() {
       const response = await fetch(`/api/press-articles?lang=${locale}`);
       if (!response.ok) return [];
       const data = await response.json();
-      return (data.articles ?? []) as Array<{
-        slug: string;
-        title: string;
-        summary?: string;
-        sourceName?: string;
-        publishedAt: string;
-        externalUrl?: string;
-      }>;
+      return (data.articles ?? []) as PressArticleItem[];
     },
     staleTime: 10 * 60 * 1000,
   });
+  const pressReleases = pressArticles.filter((article) => !isPressCoverageArticle(article.externalUrl));
+  const mediaCoverage = pressArticles.filter((article) => isPressCoverageArticle(article.externalUrl));
   const stats = getStats(
     messages,
     publicStats?.totalUsers ?? 0,
@@ -98,6 +103,48 @@ export default function PressPage() {
     month: "long",
     year: "numeric",
   }).format(new Date());
+
+  const formatArticleDate = (publishedAt: string) =>
+    new Intl.DateTimeFormat(localeTag, {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(publishedAt));
+
+  const renderArticleCard = (
+    article: PressArticleItem,
+    options: { external?: boolean },
+  ) => (
+    <Card key={article.slug} className="hover:shadow-md transition-shadow">
+      <CardContent className="p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground mb-2">
+              {formatArticleDate(article.publishedAt)}
+              {article.sourceName ? ` • ${article.sourceName}` : ""}
+            </p>
+            <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
+            {article.summary ? (
+              <p className="text-sm text-muted-foreground leading-relaxed">{article.summary}</p>
+            ) : null}
+          </div>
+          <Button variant="outline" className="shrink-0" asChild>
+            {options.external && article.externalUrl ? (
+              <a href={article.externalUrl} target="_blank" rel="noopener noreferrer">
+                {messages.press.readArticle}
+                <ChevronRightIcon className="w-4 h-4 ml-1" />
+              </a>
+            ) : (
+              <Link href={`/press/${article.slug}`}>
+                {messages.press.readRelease}
+                <ChevronRightIcon className="w-4 h-4 ml-1" />
+              </Link>
+            )}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -152,36 +199,9 @@ export default function PressPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <h2 className="text-2xl font-semibold mb-6">{messages.press.pressReleases}</h2>
-              {pressArticles.length > 0 ? (
+              {pressReleases.length > 0 ? (
                 <div className="space-y-4">
-                  {pressArticles.map((article) => (
-                    <Card key={article.slug} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs text-muted-foreground mb-2">
-                              {new Intl.DateTimeFormat(localeTag, {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                              }).format(new Date(article.publishedAt))}
-                              {article.sourceName ? ` • ${article.sourceName}` : ""}
-                            </p>
-                            <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
-                            {article.summary ? (
-                              <p className="text-sm text-muted-foreground leading-relaxed">{article.summary}</p>
-                            ) : null}
-                          </div>
-                          <Button variant="outline" className="shrink-0" asChild>
-                            <Link href={`/press/${article.slug}`}>
-                              {messages.press.readRelease}
-                              <ChevronRightIcon className="w-4 h-4 ml-1" />
-                            </Link>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  {pressReleases.map((article) => renderArticleCard(article, { external: false }))}
                 </div>
               ) : (
               <Card className="border-dashed">
@@ -208,6 +228,26 @@ export default function PressPage() {
                   </Button>
                 </CardContent>
               </Card>
+              )}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+            >
+              <h2 className="text-2xl font-semibold mb-6">{messages.press.inTheNews}</h2>
+              {mediaCoverage.length > 0 ? (
+                <div className="space-y-4">
+                  {mediaCoverage.map((article) => renderArticleCard(article, { external: true }))}
+                </div>
+              ) : (
+                <Card className="border-dashed">
+                  <CardContent className="p-8">
+                    <h3 className="text-lg font-semibold mb-2">{messages.press.noInTheNewsTitle}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{messages.press.noInTheNewsBody}</p>
+                  </CardContent>
+                </Card>
               )}
             </motion.div>
 
