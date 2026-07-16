@@ -1,7 +1,7 @@
 import type { APIRequestContext, Page } from '@playwright/test';
 
 export const CHAT_LABELS = {
-  support: 'MoonSkin Support',
+  support: 'Moony',
   tradeCategory: 'Problème de trade',
   paymentCategory: 'Paiement',
   supportCategory: 'Support général',

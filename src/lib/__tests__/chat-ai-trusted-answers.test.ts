@@ -1,5 +1,6 @@
 import {
   isCryptoTimingQuestion,
+  isHowToGetMoneyQuestion,
   isHowToSellQuestion,
   isScamVictimConcern,
   isSellFromOtherAccountQuestion,
@@ -63,6 +64,23 @@ describe('isHowToSellQuestion', () => {
   });
 });
 
+describe('isHowToGetMoneyQuestion', () => {
+  it.each([
+    'and how i can get the money?',
+    'How can I get my money?',
+    'How do I withdraw my payout?',
+    'Comment recevoir mon argent ?',
+    'Comment retirer mon solde ?',
+    '如何领取我的款项？',
+  ])('détecte une question retrait : %s', (message) => {
+    expect(isHowToGetMoneyQuestion(message)).toBe(true);
+  });
+
+  it('ignore une question vente', () => {
+    expect(isHowToGetMoneyQuestion('how to sell my skins?')).toBe(false);
+  });
+});
+
 describe('resolveTrustedAiAnswer', () => {
   it('retourne une réponse rassurante pour une crainte d\'arnaque en français', () => {
     const answer = resolveTrustedAiAnswer('et si je me fais scam?', 'fr');
@@ -110,6 +128,25 @@ describe('resolveTrustedAiAnswer', () => {
     expect(answer).toContain('page Vendre');
     expect(answer).toContain('Créer la vente');
     expect(answer).toContain('Steam ou Discord');
+  });
+
+  it('retourne le guide retrait en anglais', () => {
+    const answer = resolveTrustedAiAnswer('and how i can get the money?', 'en');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('Cashout page');
+    expect(answer).toContain('/payout');
+    expect(answer).toContain('SEPA Premium');
+    expect(answer).toContain('instant');
+    expect(answer).not.toContain('SEPA France');
+    expect(answer).not.toContain('SEPA Europe');
+  });
+
+  it('retourne le guide retrait en français', () => {
+    const answer = resolveTrustedAiAnswer('Comment recevoir mon argent ?', 'fr');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('page Retrait');
+    expect(answer).toContain('SEPA Premium');
+    expect(answer).toContain('instantané');
   });
 
   it('retourne null pour une question générique', () => {

@@ -96,7 +96,7 @@ function buildChatMock(overrides: Record<string, unknown> = {}) {
 const mockMessages = {
   ui: { close: 'Fermer' },
   chatWidget: {
-    support: 'MoonSkin Support',
+    support: 'Moony',
     online: 'En ligne',
     responseTime: 'Répond en 5min',
     greeting: 'Bonjour',
@@ -140,7 +140,7 @@ const mockMessages = {
       days: '{n}d',
     },
     responses: {
-      welcomeMessage: 'Bienvenue sur le support MoonSkin',
+      welcomeMessage: 'Salut ! Je suis Moonny, l\'assistant MoonSkin. Comment puis-je vous aider aujourd\'hui ?',
       thankYouMessage: 'Merci pour votre message ! Un membre de notre équipe vous répondra rapidement.',
     },
     categories: {

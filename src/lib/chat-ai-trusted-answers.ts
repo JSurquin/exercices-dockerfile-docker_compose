@@ -11,7 +11,7 @@ const CRYPTO_TIMING_ANSWER_FR = `Bonne question ! Il y a deux délais distincts 
 
 2. **Envoi du paiement crypto** — une fois le trade hold terminé et votre paiement déclenché, les virements crypto via Whitepay sont **quasi-instantanés** : en général sous 10 minutes, parfois quelques minutes selon le réseau blockchain (USDT, ETH, BTC…).
 
-Les délais de 1 à 5 jours concernent uniquement les virements SEPA Europe, **pas** les cryptomonnaies.`;
+Les délais de 1 à 5 jours concernent uniquement les virements SEPA standard (hors SEPA Premium), **pas** les cryptomonnaies.`;
 
 const CRYPTO_TIMING_ANSWER_EN = `Good question! There are two separate timelines you shouldn't mix up:
 
@@ -19,7 +19,7 @@ const CRYPTO_TIMING_ANSWER_EN = `Good question! There are two separate timelines
 
 2. **Crypto payout delivery** — once the trade hold ends and your payout is triggered, crypto transfers via Whitepay are **near-instant**: usually under 10 minutes, sometimes a few minutes depending on the blockchain network (USDT, ETH, BTC…).
 
-The 1 to 5 day delays apply only to SEPA Europe transfers, **not** cryptocurrencies.`;
+The 1 to 5 day delays apply only to standard SEPA transfers (not SEPA Premium), **not** cryptocurrencies.`;
 
 const CRYPTO_TIMING_ANSWER_CN = `好问题！有两个不同的时间线，请不要混淆：
 
@@ -27,7 +27,46 @@ const CRYPTO_TIMING_ANSWER_CN = `好问题！有两个不同的时间线，请�
 
 2. **加密货币付款发送** — 交易冷却结束且付款触发后，通过 Whitepay 的加密货币转账**几乎即时**：通常 10 分钟内，有时根据区块链网络（USDT、ETH、BTC…）只需几分钟。
 
-1 到 5 天的延迟仅适用于欧洲 SEPA 转账，**不适用于**加密货币。`;
+1 到 5 天的延迟仅适用于标准 SEPA 转账（非 SEPA Premium），**不适用于**加密货币。`;
+
+const HOW_TO_GET_MONEY_ANSWER_FR = `Voici comment recevoir votre argent sur MoonSkin :
+
+1. **Attendez le trade hold Steam (7 jours)** — imposé par Valve après la vente. MoonSkin ne peut déclencher votre paiement qu'une fois ce délai terminé.
+2. **Rendez-vous sur la [page Retrait](/payout)** — choisissez votre méthode (carte, crypto, SEPA Premium, SEPA standard…).
+3. **Validez votre KYC** — obligatoire avant le premier retrait (carte d'identité, selfie, etc.).
+4. **Soumettez votre demande** — cliquez sur « Demander un retrait », vérifiez le montant et les coordonnées, puis confirmez.
+
+Une fois le paiement déclenché :
+• **Crypto** : quasi-instantané (souvent sous 10 minutes)
+• **Carte** : de quelques minutes à 24 h
+• **SEPA Premium** (IBAN français) : virement **instantané** une fois émis
+• **SEPA standard** (IBAN hors FR) : 1 à 3 jours ouvrés selon votre banque`;
+
+const HOW_TO_GET_MONEY_ANSWER_EN = `To receive your payout from MoonSkin:
+
+1. **Complete the 7-day trade hold** — required by Valve after your sale. MoonSkin can only trigger your payout once this period ends.
+2. **Go to the [Cashout page](/payout)** — choose your method (card, crypto, SEPA Premium, standard SEPA…).
+3. **Complete KYC** — required before your first payout (ID, selfie, etc.).
+4. **Submit your payout request** — click "Request Payout", verify the amount and recipient details, then confirm.
+
+Once your payout is triggered:
+• **Crypto**: near-instant (usually under 10 minutes)
+• **Card**: a few minutes to 24 hours
+• **SEPA Premium** (French IBAN): **instant** transfer once sent
+• **Standard SEPA** (non-FR IBAN): 1 to 3 business days depending on your bank`;
+
+const HOW_TO_GET_MONEY_ANSWER_CN = `在 MoonSkin 上领取款项的步骤如下：
+
+1. **等待 Steam 交易冷却（7 天）** — Valve 在出售后强制要求。MoonSkin 必须在此期限结束后才能触发付款。
+2. **前往[提现页面](/payout)** — 选择方式（银行卡、加密货币、SEPA Premium、标准 SEPA…）。
+3. **完成 KYC** — 首次提现前必须完成（身份证、自拍等）。
+4. **提交提现请求** — 点击「Request Payout」，核对金额和收款信息，然后确认。
+
+付款触发后：
+• **加密货币**：几乎即时（通常 10 分钟内）
+• **银行卡**：几分钟到 24 小时
+• **SEPA Premium**（法国 IBAN）：发出后**即时**到账
+• **标准 SEPA**（非法国 IBAN）：1 到 3 个工作日，取决于银行`;
 
 const SCAM_VICTIM_ANSWER_FR = `C'est une question légitime — vous vous demandez si vous risquez de vous faire arnaquer, pas si vous pouvez arnaquer quelqu'un.
 
@@ -186,6 +225,32 @@ export function isHowToSellQuestion(message: string): boolean {
   );
 }
 
+/** Question « comment recevoir / retirer mon argent » (cashout après trade hold). */
+export function isHowToGetMoneyQuestion(message: string): boolean {
+  const m = normalizeForMatch(message);
+
+  if (isHowToSellQuestion(message)) return false;
+
+  if (/[\u4e00-\u9fff]/.test(message)) {
+    return (
+      /(如何|怎么|怎样).*(收到|领取|提现|取|拿).*(钱|款|支付|款项)/.test(message) ||
+      /(收到|领取|提现|取|拿).*(钱|款|支付|款项)/.test(message)
+    );
+  }
+
+  return (
+    /\b(how\s+(can|do|to)\s+i|how\s+i\s+can)\b.*\b(get|receive|withdraw|cash\s*out)\b.*\b(money|paid|payout|funds|cash|payment)\b/.test(
+      m,
+    ) ||
+    /\b(how\s+(can|do|to)\s+i|how\s+i\s+can)\b.*\b(my\s+)?(money|payout|payment|funds)\b/.test(m) ||
+    /\b(get|receive|withdraw)\b.*\b(my\s+)?(money|payout|payment|funds|cash)\b/.test(m) ||
+    /\b(comment|pour)\b.*\b(recevoir|retirer|récupérer|obtenir)\b.*\b(argent|paiement|fonds|solde)\b/.test(
+      m,
+    ) ||
+    /\b(comment|pour)\b.*\b(retirer|récupérer)\b.*\b(mon|mes|ma)\b.*\b(solde|gain|gains)\b/.test(m)
+  );
+}
+
 /** Question sur la rapidité des paiements crypto (souvent confondue avec SEPA ou trade hold). */
 export function isCryptoTimingQuestion(message: string): boolean {
   const m = normalizeForMatch(message);
@@ -254,6 +319,14 @@ export function resolveTrustedAiAnswer(
       fr: HOW_TO_SELL_ANSWER_FR,
       en: HOW_TO_SELL_ANSWER_EN,
       cn: HOW_TO_SELL_ANSWER_CN,
+    });
+  }
+
+  if (isHowToGetMoneyQuestion(trimmed)) {
+    return pickLocalizedAnswer(locale, {
+      fr: HOW_TO_GET_MONEY_ANSWER_FR,
+      en: HOW_TO_GET_MONEY_ANSWER_EN,
+      cn: HOW_TO_GET_MONEY_ANSWER_CN,
     });
   }
 

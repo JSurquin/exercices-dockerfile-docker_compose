@@ -938,7 +938,7 @@ export const messages: Record<Locale, Messages> = {
       },
     },
     chatWidget: {
-      support: "MoonSkin Support",
+      support: "Moony",
       online: "En ligne",
       responseTime: "Répond généralement en moins de 5min",
       greeting: "Bonjour",
@@ -1004,7 +1004,7 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "Quel est le statut de ma vérification KYC ?",
       },
       responses: {
-        welcomeMessage: "Salut ! Je suis Alex de l'équipe MoonSkin. Comment puis-je vous aider aujourd'hui ?",
+        welcomeMessage: "Salut ! Je suis Moonny, l'assistant MoonSkin. Comment puis-je vous aider aujourd'hui ?",
         expertResponse: "Merci pour votre message ! Un de nos experts va vous répondre dans quelques instants.",
         thankYouMessage: "Merci pour votre message ! Un membre de notre équipe vous répondra rapidement. En attendant, vous pouvez consulter notre FAQ ou nos guides.",
         ticketTransmitted: "Votre demande a bien été transmise à notre équipe. Un modérateur vous répondra rapidement. Merci de votre patience",
@@ -12184,7 +12184,7 @@ export const messages: Record<Locale, Messages> = {
       walletPrefix: 'Wallet',
     },
     chatWidget: {
-      support: "MoonSkin Support",
+      support: "Moony",
       online: "Online",
       responseTime: "Usually responds in less than 5min",
       greeting: "Hello",
@@ -12250,7 +12250,7 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "What is the status of my KYC verification?",
       },
       responses: {
-        welcomeMessage: "Hi! I'm Alex from the MoonSkin team. How can I help you today?",
+        welcomeMessage: "Hi! I'm Moonny, MoonSkin's assistant. How can I help you today?",
         expertResponse: "Thank you for your message! One of our experts will respond in a few moments.",
         thankYouMessage: "Thank you for your message! A member of our team will respond quickly. In the meantime, you can check our FAQ or guides.",
         ticketTransmitted: "Your request has been forwarded to our team. A moderator will respond shortly. Thank you for your patience.",
@@ -19837,7 +19837,7 @@ export const messages: Record<Locale, Messages> = {
       walletPrefix: '钱包',
     },
     chatWidget: {
-      support: "MoonSkin客服",
+      support: "Moony",
       online: "在线",
       responseTime: "通常5分钟内回复",
       greeting: "你好",
@@ -19902,7 +19902,7 @@ export const messages: Record<Locale, Messages> = {
         kycStatusCheck: "我的KYC验证状态如何？",
       },
       responses: {
-        welcomeMessage: "你好！我是MoonSkin团队的Alex。今天我能为您做些什么？",
+        welcomeMessage: "你好！我是 MoonSkin 助手 Moonny。今天我能为您做些什么？",
         expertResponse: "感谢您的消息！我们的专家将在几分钟内回复您。",
         thankYouMessage: "感谢您的消息！我们的团队成员将快速回复您。同时，您可以查看我们的FAQ或指南。",
         ticketTransmitted: "您的请求已转交给我们的团队。客服人员将尽快回复。感谢您的耐心。",

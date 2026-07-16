@@ -91,7 +91,7 @@ describe('chatWidgetSenderLabelClass', () => {
 describe('resolveWidgetSenderDisplayName', () => {
   const labels = {
     aiAgentLabel: 'Moony IA agent',
-    supportLabel: 'MoonSkin Support',
+    supportLabel: 'Moony',
     moderatorLabel: 'Modérateur',
     guestUserLabel: 'Vous',
     adminLabel: 'L\'admin',
@@ -114,7 +114,7 @@ describe('resolveWidgetSenderDisplayName', () => {
         isFromViewer: false,
         labels,
       }),
-    ).toBe('MoonSkin Support');
+    ).toBe('Moony');
   });
 
   it('retourne le nom du modérateur ou L\'admin', () => {
