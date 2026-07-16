@@ -7,19 +7,15 @@ import { PrismaClient } from '@prisma/client';
 import { STATIC_HELP_ARTICLES } from '../src/lib/help-articles-config';
 import { getMessages } from '../src/lib/i18n';
 import {
-  HELP_ARTICLE_RAG_ENRICHMENT_FR,
   EXTRA_HELP_ARTICLES,
+  buildHelpArticleContent,
+  getExtraHelpArticleContent,
 } from '../src/lib/help-articles-rag-enrichment';
 
 const prisma = new PrismaClient();
 
 type ArticleBodies = Record<string, Record<string, string>>;
 type ArticleTitles = Record<string, Record<string, string>>;
-
-function buildContent(baseBody: string, ragExtra?: string): string {
-  if (!ragExtra) return baseBody;
-  return `${baseBody.trim()}\n\n${ragExtra.trim()}`;
-}
 
 function getTexts(
   locale: 'fr' | 'en' | 'cn',
@@ -62,10 +58,15 @@ async function main() {
       cn = getTexts('cn', def.categoryKey, def.titleKey, def.bodyKey);
     }
 
-    const ragFr = HELP_ARTICLE_RAG_ENRICHMENT_FR[def.slug];
-    const contentFr = buildContent(fr.body, ragFr);
-    const contentEn = en.body;
-    const contentCn = cn.body || null;
+    const contentFr = def.extra
+      ? getExtraHelpArticleContent(def.slug, 'fr') ?? fr.body
+      : buildHelpArticleContent(fr.body, def.slug, 'fr');
+    const contentEn = def.extra
+      ? getExtraHelpArticleContent(def.slug, 'en') ?? en.body
+      : buildHelpArticleContent(en.body, def.slug, 'en');
+    const contentCn = def.extra
+      ? getExtraHelpArticleContent(def.slug, 'cn') ?? cn.body
+      : buildHelpArticleContent(cn.body, def.slug, 'cn');
 
     const existing = await prisma.helpArticle.findUnique({ where: { slug: def.slug } });
 
@@ -78,7 +79,7 @@ async function main() {
           titleCn: cn.title,
           contentFr,
           contentEn,
-          contentCn,
+          contentCn: contentCn || null,
           category: def.categoryKey,
           sortOrder: def.sortOrder,
           isPublished: true,
@@ -95,7 +96,7 @@ async function main() {
           titleCn: cn.title,
           contentFr,
           contentEn,
-          contentCn,
+          contentCn: contentCn || null,
           category: def.categoryKey,
           sortOrder: def.sortOrder,
           isPublished: true,

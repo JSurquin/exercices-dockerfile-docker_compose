@@ -180,31 +180,49 @@ export default function HelpPage() {
           >
             <h2 className="text-2xl font-semibold mb-6">{messages.help.popularArticles}</h2>
             <div className="grid md:grid-cols-3 gap-4">
-              {popularArticles.map((article) => (
-                <Link key={article.slug} href={`/help/${article.slug}`}>
-                  <Card className="hover:shadow-md transition-shadow h-full">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge variant="outline">{article.category}</Badge>
-                      </div>
-                      <h3 className="font-semibold mb-3 line-clamp-2">{article.title}</h3>
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <EyeIcon className="w-4 h-4" />
-                          {formatViewCount(article.viewCount)} {messages.help.views}
-                        </span>
-                        {article.helpfulPercent !== null && (
-                          <div className="flex items-center space-x-1">
-                            <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                            <span>
-                              {article.helpfulPercent}% {messages.help.helpful}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+              {popularArticles.map((article, index) => (
+                <motion.div
+                  key={article.slug}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.15 + index * 0.08 }}
+                >
+                  <Link href={`/help/${article.slug}`} className="group block h-full">
+                    <Card className="h-full border-border/60 transition-all duration-300 group-hover:border-theme-accent/60 group-hover:shadow-lg group-hover:shadow-theme-accent/10 group-hover:-translate-y-1 group-hover:bg-theme-accent/[0.03]">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-3">
+                          <Badge
+                            variant="outline"
+                            className="transition-colors duration-300 group-hover:border-theme-accent/50 group-hover:text-theme-accent"
+                          >
+                            {article.category}
+                          </Badge>
+                        </div>
+                        <h3 className="font-semibold mb-3 line-clamp-2 transition-colors duration-300 group-hover:text-theme-accent">
+                          {article.title}
+                        </h3>
+                        <div className="flex items-center justify-between text-sm text-muted-foreground transition-colors duration-300 group-hover:text-foreground/80">
+                          <span className="flex items-center gap-1">
+                            <EyeIcon className="w-4 h-4 transition-colors duration-300 group-hover:text-theme-accent" />
+                            {formatViewCount(article.viewCount)} {messages.help.views}
+                          </span>
+                          {article.helpfulPercent !== null && (
+                            <div className="flex items-center space-x-1">
+                              <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                              <span>
+                                {article.helpfulPercent}% {messages.help.helpful}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="mt-4 flex items-center gap-1 text-sm font-medium text-theme-accent opacity-0 translate-y-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+                          <span>{messages.helpPage.readArticle}</span>
+                          <ArrowRightIcon className="w-4 h-4" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           </motion.div>

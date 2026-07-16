@@ -7,7 +7,12 @@ import {
   helpfulPercent,
   type HelpCategoryKey,
 } from '@/lib/help-articles-config';
-import { EXTRA_HELP_ARTICLES } from '@/lib/help-articles-rag-enrichment';
+import {
+  EXTRA_HELP_ARTICLES,
+  applyRagEnrichmentIfNeeded,
+  buildHelpArticleContent,
+  getExtraHelpArticleContent,
+} from '@/lib/help-articles-rag-enrichment';
 
 export interface HelpArticleListItem {
   slug: string;
@@ -137,8 +142,7 @@ export async function listHelpArticles(locale: Locale): Promise<HelpArticleListI
     if (extra) {
       const title =
         locale === 'cn' ? extra.titleCn : locale === 'en' ? extra.titleEn : extra.titleFr;
-      const body =
-        locale === 'cn' ? extra.contentCn : locale === 'en' ? extra.contentEn : extra.contentFr;
+      const body = getExtraHelpArticleContent(def.slug, locale) ?? extra.contentFr;
       const category = getMessages(locale).help.categories[extra.categoryKey];
       return buildListItem(
         def.slug,
@@ -153,11 +157,12 @@ export async function listHelpArticles(locale: Locale): Promise<HelpArticleListI
       );
     }
     const texts = getStaticTexts(locale, def);
+    const enrichedBody = applyRagEnrichmentIfNeeded(def.slug, locale, texts.body);
     return buildListItem(
       def.slug,
       texts.title,
       undefined,
-      texts.body.slice(0, 200),
+      enrichedBody.slice(0, 200),
       texts.category,
       def.categoryKey,
       def.sortOrder,
@@ -173,7 +178,11 @@ export async function listHelpArticles(locale: Locale): Promise<HelpArticleListI
       article.subtitleEn ?? '',
       article.subtitleCn,
     ) || undefined;
-    const content = pickField(article.contentFr, article.contentEn, article.contentCn);
+    const content = applyRagEnrichmentIfNeeded(
+      article.slug,
+      locale,
+      pickField(article.contentFr, article.contentEn, article.contentCn),
+    );
     const categoryKey = resolveCategoryKey(article.category);
     const category =
       getMessages(locale).help.categories[categoryKey] ?? article.category ?? categoryKey;
@@ -235,7 +244,11 @@ export async function getHelpArticleBySlug(
       subtitle:
         pickField(cmsArticle.subtitleFr ?? '', cmsArticle.subtitleEn ?? '', cmsArticle.subtitleCn) ||
         undefined,
-      content: pickField(cmsArticle.contentFr, cmsArticle.contentEn, cmsArticle.contentCn),
+      content: applyRagEnrichmentIfNeeded(
+        cmsArticle.slug,
+        locale,
+        pickField(cmsArticle.contentFr, cmsArticle.contentEn, cmsArticle.contentCn),
+      ),
       category,
       categoryKey,
       viewCount: stat?.viewCount ?? 0,
@@ -250,7 +263,7 @@ export async function getHelpArticleBySlug(
     return {
       slug,
       title: texts.title,
-      content: texts.body,
+      content: applyRagEnrichmentIfNeeded(slug, locale, texts.body),
       category: texts.category,
       categoryKey: staticDef.categoryKey,
       viewCount: stat?.viewCount ?? 0,
@@ -263,8 +276,7 @@ export async function getHelpArticleBySlug(
   if (extra) {
     const title =
       locale === 'cn' ? extra.titleCn : locale === 'en' ? extra.titleEn : extra.titleFr;
-    const content =
-      locale === 'cn' ? extra.contentCn : locale === 'en' ? extra.contentEn : extra.contentFr;
+    const content = getExtraHelpArticleContent(slug, locale) ?? extra.contentFr;
     const categoryKey = extra.categoryKey;
     const category = getMessages(locale).help.categories[categoryKey];
     return {

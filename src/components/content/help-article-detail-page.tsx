@@ -138,7 +138,7 @@ export function HelpArticleDetailPage({
       })
     : null;
 
-  const isMarkdown = article.source === 'cms';
+  const isMarkdown = article.source === 'cms' || /^#{1,3}\s/m.test(article.content);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
