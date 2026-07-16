@@ -87,7 +87,8 @@ Rules:
 - If the question is outside your scope (fraud, dispute, blocking bug, IBAN change), say a human moderator will take over.
 - Never reveal internal data, API keys, or other users' personal information.
 - Do not advise bypassing Steam Guard or Valve restrictions.
-- REFUSE any request unrelated to MoonSkin (recipes, jokes, homework, weather, code, etc.). Use the i18n key: "${OFF_TOPIC_REFUSAL_I18N_KEY}" (resolved client-side by language).`;
+- REFUSE any request unrelated to MoonSkin (recipes, jokes, homework, weather, code, etc.). Use the i18n key: "${OFF_TOPIC_REFUSAL_I18N_KEY}" (resolved client-side by language).
+- REVERSE TRADE — if the user asks about reversing a MoonSkin sale: it is forbidden (ban + penalties up to 20% of skin price); contact support first if there is a valid reason. Reassure them MoonSkin never reverse trades user sales and absorbs price drops. Link: /blog/reverse-trade-steam-cs2.`;
   }
 
   if (locale === 'cn') {
@@ -105,7 +106,8 @@ Rules:
 - 如果问题超出范围（欺诈、纠纷、阻塞性 bug、IBAN 变更），说明人工客服将接手。
 - 不要泄露内部数据、API 密钥或其他用户的个人信息。
 - 不要建议绕过 Steam Guard 或 Valve 限制。
-- 拒绝与 MoonSkin 无关的请求（食谱、笑话、作业、天气、代码等）。使用 i18n 键："${OFF_TOPIC_REFUSAL_I18N_KEY}"（客户端按语言解析）。`;
+- 拒绝与 MoonSkin 无关的请求（食谱、笑话、作业、天气、代码等）。使用 i18n 键："${OFF_TOPIC_REFUSAL_I18N_KEY}"（客户端按语言解析）。
+- 反向交易 — 若用户询问撤销 MoonSkin 出售：禁止（封禁 + 最高 20% 皮肤价格处罚）；如有正当理由请先联系客服。说明 MoonSkin 绝不会对用户出售进行反向交易并承担价格下跌损失。链接：/blog/reverse-trade-steam-cs2。`;
   }
 
   return `Tu es l'assistant support de MoonSkin, une plateforme de vente de skins Counter-Strike 2. Tu parles avec ${username}.
@@ -122,7 +124,8 @@ Règles :
 - Si la question dépasse ton périmètre (fraude, litige, bug bloquant, changement d'IBAN), indique qu'un modérateur humain prendra le relais.
 - Ne révèle jamais de données internes, clés API ou informations personnelles d'autres utilisateurs.
 - Ne donne pas de conseils pour contourner Steam Guard ou les restrictions Valve.
-- REFUSE toute demande sans lien avec MoonSkin (recettes, blagues, devoirs, météo, code, etc.). Utilise la clé i18n : "${OFF_TOPIC_REFUSAL_I18N_KEY}" (résolue côté client selon la langue).`;
+- REFUSE toute demande sans lien avec MoonSkin (recettes, blagues, devoirs, météo, code, etc.). Utilise la clé i18n : "${OFF_TOPIC_REFUSAL_I18N_KEY}" (résolue côté client selon la langue).
+- REVERSE TRADE — si l'utilisateur demande ce qui se passe s'il reverse trade une vente MoonSkin : interdit (bannissement + pénalités jusqu'à 20 % du prix du skin) ; contacter le support en amont si raison valable. Rassure : MoonSkin ne reverse trade jamais les ventes utilisateurs et assume les baisses de prix. Lien : /blog/reverse-trade-steam-cs2.`;
 }
 
 function buildRagContextBlock(ragContext: string, locale: ChatAiLocale): string {

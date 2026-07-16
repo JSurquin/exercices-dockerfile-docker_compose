@@ -301,6 +301,27 @@ Si un skin vendu n'est pas confirmé après 15 minutes :
     metadata: { category: 'vente', tags: ['inventaire', 'skin', 'detection'] },
   },
   {
+    source: 'faq/reverse-trade-vente',
+    content: `Que se passe-t-il si je reverse trade une vente MoonSkin ? Reverse trade après vente, annuler un trade Steam.
+
+⚠️ POLITIQUE MOONSKIN — REVERSE TRADE SUR UNE VENTE :
+- Si un utilisateur reverse trade (annule un échange Steam) après avoir vendu sur MoonSkin, son compte est BANNI de MoonSkin.
+- Des pénalités pouvant aller jusqu'à 20 % du prix du skin peuvent être débitées.
+- Si une raison valable existe (erreur, arnaque externe, compte compromis), l'utilisateur doit contacter le support AVANT de reverse trade — pas après.
+
+RASSURANCE POUR LES VENDEURS :
+- MoonSkin ne reverse trade JAMAIS les ventes de ses utilisateurs.
+- Si le prix d'un skin baisse après la vente, MoonSkin assume la perte — c'est le principe du service.
+- Les utilisateurs peuvent faire confiance à MoonSkin : une vente acceptée est définitive côté plateforme.
+
+DISTINCTION IMPORTANTE :
+- Reverse trade après API scam (victime d'arnaque externe) = tentative de récupération, voir faq/api-scam
+- Reverse trade après vente MoonSkin volontaire = interdit, bannissement + pénalités
+
+Article blog détaillé : /blog/reverse-trade-steam-cs2`,
+    metadata: { category: 'securite', tags: ['reverse-trade', 'vente', 'bannissement', 'penalite'] },
+  },
+  {
     source: 'faq/vendre-autre-compte-steam',
     content: `Comment vendre les skins d'un autre compte Steam sur MoonSkin ? Vendre depuis un smurf, un second compte ou pour un client.
 

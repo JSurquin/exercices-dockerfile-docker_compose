@@ -2,6 +2,7 @@ import {
   isCryptoTimingQuestion,
   isHowToGetMoneyQuestion,
   isHowToSellQuestion,
+  isReverseTradeQuestion,
   isScamVictimConcern,
   isSellFromOtherAccountQuestion,
   resolveTrustedAiAnswer,
@@ -167,6 +168,25 @@ describe('resolveTrustedAiAnswer', () => {
     expect(answer).toContain('panneau de droite');
     expect(answer).toContain('smurfs');
   });
+
+  it('retourne la politique reverse trade en anglais', () => {
+    const answer = resolveTrustedAiAnswer('ok and what happen if you reverse ?', 'en');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('ban');
+    expect(answer).toContain('20%');
+    expect(answer).toContain('never reverse trades');
+    expect(answer).toContain('/blog/reverse-trade-steam-cs2');
+    expect(answer).not.toContain('No refunds');
+  });
+
+  it('retourne la politique reverse trade en français', () => {
+    const answer = resolveTrustedAiAnswer('Et si je reverse trade ma vente MoonSkin ?', 'fr');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('bannissement');
+    expect(answer).toContain('20 %');
+    expect(answer).toContain('ne reverse trade jamais');
+    expect(answer).toContain('/blog/reverse-trade-steam-cs2');
+  });
 });
 
 describe('isSellFromOtherAccountQuestion', () => {
@@ -182,5 +202,20 @@ describe('isSellFromOtherAccountQuestion', () => {
 
   it('ignore une question sans lien multi-compte', () => {
     expect(isSellFromOtherAccountQuestion('Comment vendre mes skins ?')).toBe(false);
+  });
+});
+
+describe('isReverseTradeQuestion', () => {
+  it.each([
+    'ok and what happen if you reverse ?',
+    'What happens if I reverse trade my sale?',
+    'Et si je reverse trade ma vente MoonSkin ?',
+    'Que se passe-t-il si j annule mon trade après une vente ?',
+  ])('détecte une question reverse trade vente : %s', (message) => {
+    expect(isReverseTradeQuestion(message)).toBe(true);
+  });
+
+  it('ignore une question API scam sans lien vente MoonSkin', () => {
+    expect(isReverseTradeQuestion('Comment faire un reverse trade après un API scam ?')).toBe(false);
   });
 });

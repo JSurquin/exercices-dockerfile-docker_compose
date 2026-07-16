@@ -234,6 +234,257 @@ Opening cases remains a game of chance, but some offer better value than others.
 Rather than opening cases, many players prefer to **buy directly** the skin they want on the market, or sell existing skins to fund a targeted purchase.`,
   },
   {
+    slug: 'reverse-trade-steam-cs2',
+    category: 'trading',
+    readTimeMinutes: 7,
+    isFeatured: true,
+    sortOrder: 1,
+    publishedAt: '2026-07-16T12:00:00Z',
+    titleFr: 'Reverse trade Steam : ce que c\'est, les risques et la politique MoonSkin',
+    titleEn: 'Steam reverse trade: what it is, the risks, and MoonSkin\'s policy',
+    titleCn: 'Steam 反向交易：是什么、风险及 MoonSkin 政策',
+    summaryFr:
+      'Tout savoir sur le reverse trade Steam : origine, fonctionnement, dangers pour les vendeurs CS2 et ce que MoonSkin fait (ou ne fait pas) pour vous protéger.',
+    summaryEn:
+      'Everything about Steam reverse trade: origin, how it works, risks for CS2 sellers, and what MoonSkin does (and does not do) to protect you.',
+    summaryCn:
+      '全面了解 Steam 反向交易：起源、运作方式、对 CS2 卖家的风险，以及 MoonSkin 如何（或不）保护您。',
+    contentFr: `# Reverse trade Steam : guide complet
+
+Le **reverse trade** (ou « annulation d'échange ») est une fonctionnalité Steam qui permet d'**annuler un échange d'objets** dans certaines conditions. Comprendre ce mécanisme est essentiel pour tout vendeur de skins CS2.
+
+## Qu'est-ce que le reverse trade ?
+
+Le reverse trade est une option Steam permettant de **revenir en arrière** sur un échange récent, généralement lorsque :
+
+- Votre compte a été **compromis** (mot de passe volé, phishing)
+- Vous avez accepté un trade **par erreur** ou sous la contrainte d'une arnaque
+- Valve détecte une activité suspecte sur votre compte
+
+Steam a introduit et renforcé ces mécanismes de protection au fil des années pour lutter contre le **phishing**, les **API scams** et le vol d'inventaires.
+
+## Depuis quand existe-t-il ?
+
+Valve a progressivement durci les règles d'échange depuis CS:GO :
+
+- **Trade hold de 7 jours** — imposé sur tous les échanges entre comptes
+- **Steam Guard mobile** — obligatoire pour trader
+- **Trade Protection (2025)** — renforcement des délais de révocation et des alertes
+
+Le reverse trade s'inscrit dans cette logique : donner aux victimes une **fenêtre pour récupérer** leurs items volés.
+
+## Comment les gens l'utilisent
+
+### Usage légitime (victime d'arnaque)
+
+Si vous avez été victime d'un **API scam** ou d'un phishing :
+
+1. Changez immédiatement votre mot de passe Steam
+2. Révoquez vos clés API sur [steamcommunity.com/dev/apikey](https://steamcommunity.com/dev/apikey)
+3. Tentez un **reverse trade** pour récupérer vos skins
+4. Contactez le support de la plateforme concernée
+
+### Usage abusif (après une vente volontaire)
+
+Certains utilisateurs tentent de reverse trade **après avoir vendu volontairement** leurs skins, par exemple parce que :
+
+- Le prix du skin a **monté** sur le marché
+- Ils regrettent la vente
+- Ils veulent « récupérer » l'objet sans rembourser l'acheteur
+
+**C'est une fraude** : l'acheteur (ou la plateforme) a déjà payé ou engagé des fonds.
+
+## Les dangers du reverse trade abusif
+
+- **Bannissement** de la plateforme de vente
+- **Pénalités financières** (jusqu'à 20 % du prix du skin sur MoonSkin)
+- **Restriction Steam** possible sur votre compte
+- **Perte de confiance** sur le marché CS2
+
+## La politique MoonSkin
+
+### Ce que MoonSkin ne fera JAMAIS
+
+MoonSkin **ne reverse trade jamais** les ventes de ses utilisateurs. Si vous vendez un skin et que son prix baisse ensuite, **nous assumons la perte**. C'est le principe de notre service : vous recevez le montant convenu au moment de la vente, point final.
+
+Vous n'avez **aucune raison de craindre** que nous annulions votre trade parce que le marché a bougé.
+
+### Ce qui se passe si VOUS reverse tradez une vente MoonSkin
+
+Si vous reverse tradez volontairement une vente effectuée sur MoonSkin :
+
+1. Votre compte MoonSkin sera **banni**
+2. Des pénalités pouvant aller **jusqu'à 20 %** du prix du skin pourront être débitées
+3. Aucun remboursement ne sera accordé
+
+**Exception** : si vous avez une raison valable (compte compromis, arnaque externe, erreur avérée), **contactez notre support AVANT** d'agir. Nous examinerons votre cas.
+
+## Conseils pour vendre en toute confiance
+
+- Vérifiez le **Steam ID** du bot MoonSkin avant chaque trade
+- Ne reverse tradez jamais une vente volontaire
+- En cas de doute, **contactez le support** avant d'agir
+- Consultez notre article sur le [trade hold Steam](/blog/steam-trade-hold-cs2)
+
+[Commencer à vendre sur MoonSkin](/sell)`,
+    contentEn: `# Steam reverse trade: complete guide
+
+**Reverse trade** (trade cancellation) is a Steam feature that lets you **undo a recent item exchange** under certain conditions. Understanding this mechanism is essential for every CS2 skin seller.
+
+## What is reverse trade?
+
+Reverse trade is a Steam option to **roll back** a recent trade, typically when:
+
+- Your account was **compromised** (stolen password, phishing)
+- You accepted a trade **by mistake** or under scam pressure
+- Valve detects suspicious activity on your account
+
+Valve introduced and strengthened these protections over the years to fight **phishing**, **API scams**, and inventory theft.
+
+## How long has it existed?
+
+Valve has progressively tightened trading rules since CS:GO:
+
+- **7-day trade hold** — enforced on all account-to-account exchanges
+- **Mobile Steam Guard** — required to trade
+- **Trade Protection (2025)** — stronger revocation windows and alerts
+
+Reverse trade fits this logic: giving victims a **window to recover** stolen items.
+
+## How people use it
+
+### Legitimate use (scam victim)
+
+If you were hit by an **API scam** or phishing:
+
+1. Change your Steam password immediately
+2. Revoke API keys at [steamcommunity.com/dev/apikey](https://steamcommunity.com/dev/apikey)
+3. Attempt a **reverse trade** to recover your skins
+4. Contact the relevant platform's support
+
+### Abusive use (after a voluntary sale)
+
+Some users try to reverse trade **after voluntarily selling** their skins, for example because:
+
+- The skin price **went up** on the market
+- They regret the sale
+- They want to "get the item back" without refunding the buyer
+
+**This is fraud**: the buyer (or platform) has already paid or committed funds.
+
+## Risks of abusive reverse trade
+
+- **Ban** from the selling platform
+- **Financial penalties** (up to 20% of the skin price on MoonSkin)
+- Possible **Steam restrictions** on your account
+- **Loss of trust** in the CS2 market
+
+## MoonSkin's policy
+
+### What MoonSkin will NEVER do
+
+MoonSkin **never reverse trades** user sales. If you sell a skin and its price drops afterwards, **we absorb the loss**. That's our service principle: you receive the agreed amount at the time of sale, period.
+
+You have **no reason to worry** that we'll cancel your trade because the market moved.
+
+### What happens if YOU reverse trade a MoonSkin sale
+
+If you voluntarily reverse trade a sale completed on MoonSkin:
+
+1. Your MoonSkin account will be **banned**
+2. Penalties of **up to 20%** of the skin price may be debited
+3. No refund will be granted
+
+**Exception**: if you have a valid reason (compromised account, external scam, proven mistake), **contact our support BEFORE** acting. We'll review your case.
+
+## Tips to sell with confidence
+
+- Verify MoonSkin bot **Steam ID** before every trade
+- Never reverse trade a voluntary sale
+- If in doubt, **contact support** before acting
+- Read our article on [Steam trade hold](/blog/steam-trade-hold-cs2)
+
+[Start selling on MoonSkin](/sell)`,
+    contentCn: `# Steam 反向交易：完整指南
+
+**反向交易**（trade cancellation）是 Steam 的一项功能，可在特定条件下**撤销最近的物品交换**。每位 CS2 皮肤卖家都应了解这一机制。
+
+## 什么是反向交易？
+
+反向交易是 Steam 提供的**回滚**近期交易的选项，通常适用于：
+
+- 账号**被盗**（密码泄露、钓鱼）
+- **误操作**或在诈骗压力下接受交易
+- Valve 检测到账号可疑活动
+
+Valve 多年来逐步加强这些保护，以对抗**钓鱼**、**API 诈骗**和库存盗窃。
+
+## 存在多久了？
+
+自 CS:GO 时代起，Valve 逐步收紧交易规则：
+
+- **7 天交易冷却** — 所有账号间交换强制要求
+- **Steam 手机令牌** — 交易必需
+- **Trade Protection（2025）** — 加强撤销窗口和警报
+
+反向交易符合这一逻辑：给受害者**恢复物品的时间窗口**。
+
+## 人们如何使用
+
+### 合法用途（诈骗受害者）
+
+若遭遇 **API 诈骗**或钓鱼：
+
+1. 立即更改 Steam 密码
+2. 在 [steamcommunity.com/dev/apikey](https://steamcommunity.com/dev/apikey) 撤销 API 密钥
+3. 尝试**反向交易**恢复皮肤
+4. 联系相关平台客服
+
+### 滥用（自愿出售之后）
+
+部分用户在**自愿出售**皮肤后尝试反向交易，例如：
+
+- 皮肤市价**上涨**
+- 后悔出售
+- 想「拿回物品」而不退款给买家
+
+**这是欺诈**：买家（或平台）已付款或锁定资金。
+
+## 滥用反向交易的风险
+
+- 出售平台**封禁**
+- **经济处罚**（MoonSkin 上最高可达皮肤价格 20%）
+- Steam 账号可能**受限**
+- CS2 市场**信誉损失**
+
+## MoonSkin 政策
+
+### MoonSkin 绝不会做的事
+
+MoonSkin **绝不会**对用户的出售进行反向交易。若您出售皮肤后市价下跌，**损失由我们承担**。这是我们服务的原则：您在出售时收到约定金额，仅此而已。
+
+您**无需担心**我们会因市场波动而取消您的交易。
+
+### 若您对 MoonSkin 出售进行反向交易
+
+若您自愿对 MoonSkin 完成的出售进行反向交易：
+
+1. 您的 MoonSkin 账号将被**封禁**
+2. 可能扣除最高 **20%** 皮肤价格的费用
+3. 不予退款
+
+**例外**：如有正当理由（账号被盗、外部诈骗、经证实的误操作），请**先联系客服**再行动。我们会审核您的情况。
+
+## 安心出售的建议
+
+- 每次交易前核实 MoonSkin 机器人 **Steam ID**
+- 切勿对自愿出售进行反向交易
+- 如有疑问，**先联系客服**
+- 阅读我们的 [Steam 交易冷却](/blog/steam-trade-hold-cs2) 文章
+
+[开始在 MoonSkin 出售](/sell)`,
+  },
+  {
     slug: 'steam-trade-hold-cs2',
     category: 'trading',
     readTimeMinutes: 5,

@@ -5854,6 +5854,7 @@ export const messages: Record<Locale, Messages> = {
       popularGuides: "Guides populaires",
       popularGuideLinks: [
         { slug: "vendre-skins-cs2-argent-reel", label: "Vendre ses skins CS2" },
+        { slug: "reverse-trade-steam-cs2", label: "Reverse trade Steam" },
         { slug: "meilleures-caisses-cs2", label: "Meilleures caisses à ouvrir" },
         { slug: "steam-trade-hold-cs2", label: "Trade hold Steam" },
         { slug: "skins-cs2-plus-chers", label: "Skins les plus chers" },
@@ -13765,6 +13766,7 @@ export const messages: Record<Locale, Messages> = {
       popularGuides: "Popular guides",
       popularGuideLinks: [
         { slug: "vendre-skins-cs2-argent-reel", label: "Sell your CS2 skins" },
+        { slug: "reverse-trade-steam-cs2", label: "Steam reverse trade" },
         { slug: "meilleures-caisses-cs2", label: "Best cases to open" },
         { slug: "steam-trade-hold-cs2", label: "Steam trade hold" },
         { slug: "skins-cs2-plus-chers", label: "Most expensive skins" },
@@ -21358,6 +21360,7 @@ export const messages: Record<Locale, Messages> = {
       popularGuides: "热门指南",
       popularGuideLinks: [
         { slug: "vendre-skins-cs2-argent-reel", label: "出售 CS2 皮肤" },
+        { slug: "reverse-trade-steam-cs2", label: "Steam 反向交易" },
         { slug: "meilleures-caisses-cs2", label: "最佳开箱" },
         { slug: "steam-trade-hold-cs2", label: "Steam 交易冷却" },
         { slug: "skins-cs2-plus-chers", label: "最贵皮肤" },

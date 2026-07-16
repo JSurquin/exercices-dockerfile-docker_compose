@@ -151,6 +151,36 @@ This is perfect for selling skins from smurf accounts or client accounts without
 
 Learn more in our [help article](/help/sell-multiple-steam-accounts) or this [blog guide](/blog/vendre-skins-plusieurs-comptes-steam).`;
 
+const REVERSE_TRADE_ANSWER_FR = `Si vous **reverse trade** une vente effectuée sur MoonSkin (annuler un échange Steam après l'avoir accepté), voici notre politique :
+
+• **Interdit** : le reverse trade sur une vente MoonSkin entraîne le **bannissement** de votre compte MoonSkin.
+• **Pénalités** : des frais pouvant aller **jusqu'à 20 %** du prix du skin peuvent être débités.
+• **Avant d'agir** : si vous avez une raison valable (erreur, arnaque externe, compte compromis), **contactez d'abord notre support** — ne reverse tradez pas sans nous en parler.
+
+**Rassurance importante** : MoonSkin **ne reverse trade jamais** vos ventes. Si le prix d'un skin baisse après votre vente, nous assumons la perte — c'est le principe de notre service. Vous pouvez nous faire confiance.
+
+Pour en savoir plus : [article blog sur le reverse trade](/blog/reverse-trade-steam-cs2).`;
+
+const REVERSE_TRADE_ANSWER_EN = `If you **reverse trade** a sale completed on MoonSkin (cancelling a Steam trade after accepting it), here is our policy:
+
+• **Not allowed**: reversing a MoonSkin sale leads to a **ban** from MoonSkin.
+• **Penalties**: fees of **up to 20%** of the skin price may be debited.
+• **Before you act**: if you have a valid reason (mistake, external scam, compromised account), **contact our support first** — do not reverse trade without talking to us.
+
+**Important reassurance**: MoonSkin **never reverse trades** your sales. If a skin's price drops after your sale, we absorb the loss — that's how our service works. You can trust us.
+
+Learn more: [blog article about reverse trade](/blog/reverse-trade-steam-cs2).`;
+
+const REVERSE_TRADE_ANSWER_CN = `如果您对已在 MoonSkin 完成的出售进行**反向交易**（接受 Steam 交易后又取消），我们的政策如下：
+
+• **禁止**：对 MoonSkin 出售进行反向交易将导致 MoonSkin 账号**封禁**。
+• **处罚**：可能扣除最高达皮肤价格 **20%** 的费用。
+• **行动前**：如有正当理由（误操作、外部诈骗、账号被盗），请**先联系我们的客服** — 请勿未经沟通就进行反向交易。
+
+**重要说明**：MoonSkin **绝不会**对您的出售进行反向交易。若皮肤价格在您出售后下跌，损失由我们承担 — 这是我们服务的原则。请放心。
+
+了解更多：[反向交易博客文章](/blog/reverse-trade-steam-cs2)。`;
+
 const SELL_OTHER_ACCOUNT_ANSWER_CN = `非常简单！在 MoonSkin 上，您可以**保持主 MoonSkin 账号登录**的同时，出售**另一个 Steam 账号**的饰品：
 
 1. 前往[出售页面](/sell)。
@@ -268,6 +298,48 @@ export function isCryptoTimingQuestion(message: string): boolean {
   return mentionsCrypto && (asksTiming || /\binstantan/.test(m));
 }
 
+/** Question sur le reverse trade après une vente MoonSkin (pas récupération post API scam). */
+export function isReverseTradeQuestion(message: string): boolean {
+  const m = normalizeForMatch(message);
+
+  if (/[\u4e00-\u9fff]/.test(message)) {
+    return (
+      /(反向交易|撤销交易|取消交易).*(出售|卖|售出|moonskin|moon\s*skin)/.test(message) ||
+      /(出售|卖|售出).*(反向交易|撤销交易|取消交易)/.test(message)
+    );
+  }
+
+  if (
+    /\b(annuler|annule)\b.*\b(trade|echange|echang)\b.*\b(vente|vendu|moonskin|moon\s*skin)\b/.test(
+      m,
+    )
+  ) {
+    return true;
+  }
+
+  const mentionsReverse =
+    /\b(reverse\s*trade|reverse\s*trad|revers\s*trad|undo\s*(the\s*)?trade|cancel\s*(the\s*)?trade)\b/.test(
+      m,
+    ) || /\breverse\b/.test(m);
+
+  if (!mentionsReverse) return false;
+
+  if (
+    /\b(api\s*scam|victime|hacked|pirate|compromis|recuperer|recover)\b/.test(m) &&
+    !/\b(moon\s*skin|moonskin|vente|sale|vendu|sold|vendre|sell)\b/.test(m)
+  ) {
+    return false;
+  }
+
+  return (
+    /\b(what\s+happen|what\s+happens|what\s+if|ok\s+and)\b.*\breverse\b/.test(m) ||
+    /\b(et\s+si|que\s+se\s+passe)\b.*\breverse\b/.test(m) ||
+    /\breverse\b.*\b(vente|vendre|vendu|sale|sell|sold|moonskin|moon\s*skin)\b/.test(m) ||
+    (/\breverse\b/.test(m) &&
+      /\b(vente|vendre|vendu|sale|sell|sold|moonskin|moon\s*skin)\b/.test(m))
+  );
+}
+
 /** Vendre depuis un autre compte Steam (smurf, client, trade link alternatif). */
 export function isSellFromOtherAccountQuestion(message: string): boolean {
   const m = normalizeForMatch(message);
@@ -343,6 +415,14 @@ export function resolveTrustedAiAnswer(
       fr: SELL_OTHER_ACCOUNT_ANSWER_FR,
       en: SELL_OTHER_ACCOUNT_ANSWER_EN,
       cn: SELL_OTHER_ACCOUNT_ANSWER_CN,
+    });
+  }
+
+  if (isReverseTradeQuestion(trimmed)) {
+    return pickLocalizedAnswer(locale, {
+      fr: REVERSE_TRADE_ANSWER_FR,
+      en: REVERSE_TRADE_ANSWER_EN,
+      cn: REVERSE_TRADE_ANSWER_CN,
     });
   }
 
