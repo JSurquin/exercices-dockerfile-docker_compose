@@ -3358,6 +3358,13 @@ export interface Messages {
     helpArticles: {
       title: string;
       subtitle: string;
+      views: string;
+      helpful: string;
+      builtIn: string;
+      popular: string;
+      statsTitle: string;
+      byCategory: string;
+      categoryPlaceholder: string;
     };
     pressArticles: {
       title: string;

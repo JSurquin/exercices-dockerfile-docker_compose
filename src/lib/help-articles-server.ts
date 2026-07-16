@@ -7,6 +7,7 @@ import {
   helpfulPercent,
   type HelpCategoryKey,
 } from '@/lib/help-articles-config';
+import { EXTRA_HELP_ARTICLES } from '@/lib/help-articles-rag-enrichment';
 
 export interface HelpArticleListItem {
   slug: string;
@@ -106,8 +107,21 @@ export async function listHelpArticles(locale: Locale): Promise<HelpArticleListI
     },
   });
 
+  const cmsSlugs = new Set(cmsArticles.map((a) => a.slug));
+
+  const staticItemsSource = [
+    ...STATIC_HELP_ARTICLES,
+    ...EXTRA_HELP_ARTICLES.map((a) => ({
+      slug: a.slug,
+      categoryKey: a.categoryKey,
+      titleKey: a.slug,
+      bodyKey: a.slug,
+      sortOrder: a.sortOrder,
+    })),
+  ].filter((def) => !cmsSlugs.has(def.slug));
+
   const allSlugs = [
-    ...STATIC_HELP_ARTICLES.map((a) => a.slug),
+    ...staticItemsSource.map((a) => a.slug),
     ...cmsArticles.map((a) => a.slug),
   ];
   const statsMap = await fetchStatsMap(allSlugs);
@@ -118,7 +132,26 @@ export async function listHelpArticles(locale: Locale): Promise<HelpArticleListI
     return fr;
   };
 
-  const staticItems = STATIC_HELP_ARTICLES.map((def) => {
+  const staticItems = staticItemsSource.map((def) => {
+    const extra = EXTRA_HELP_ARTICLES.find((a) => a.slug === def.slug);
+    if (extra) {
+      const title =
+        locale === 'cn' ? extra.titleCn : locale === 'en' ? extra.titleEn : extra.titleFr;
+      const body =
+        locale === 'cn' ? extra.contentCn : locale === 'en' ? extra.contentEn : extra.contentFr;
+      const category = getMessages(locale).help.categories[extra.categoryKey];
+      return buildListItem(
+        def.slug,
+        title,
+        undefined,
+        body.slice(0, 200),
+        category,
+        extra.categoryKey,
+        def.sortOrder,
+        'static',
+        statsMap.get(def.slug),
+      );
+    }
     const texts = getStaticTexts(locale, def);
     return buildListItem(
       def.slug,
@@ -167,21 +200,7 @@ export async function getHelpArticleBySlug(
   const stat = await prisma.helpArticleStat.findUnique({ where: { slug } });
 
   const staticDef = getStaticHelpArticle(slug);
-  if (staticDef) {
-    const texts = getStaticTexts(locale, staticDef);
-    return {
-      slug,
-      title: texts.title,
-      content: texts.body,
-      category: texts.category,
-      categoryKey: staticDef.categoryKey,
-      viewCount: stat?.viewCount ?? 0,
-      helpfulPercent: helpfulPercent(stat?.helpfulYes ?? 0, stat?.helpfulNo ?? 0),
-      source: 'static',
-    };
-  }
-
-  const article = await prisma.helpArticle.findFirst({
+  const cmsArticle = await prisma.helpArticle.findFirst({
     where: { slug, isPublished: true },
     select: {
       slug: true,
@@ -199,36 +218,80 @@ export async function getHelpArticleBySlug(
     },
   });
 
-  if (!article) return null;
+  if (cmsArticle) {
+    const pickField = (fr: string, en: string, cn: string | null) => {
+      if (locale === 'cn' && cn) return cn;
+      if (locale === 'en') return en;
+      return fr;
+    };
 
-  const pickField = (fr: string, en: string, cn: string | null) => {
-    if (locale === 'cn' && cn) return cn;
-    if (locale === 'en') return en;
-    return fr;
-  };
+    const categoryKey = resolveCategoryKey(cmsArticle.category);
+    const category =
+      getMessages(locale).help.categories[categoryKey] ?? cmsArticle.category ?? categoryKey;
 
-  const categoryKey = resolveCategoryKey(article.category);
-  const category =
-    getMessages(locale).help.categories[categoryKey] ?? article.category ?? categoryKey;
+    return {
+      slug: cmsArticle.slug,
+      title: pickField(cmsArticle.titleFr, cmsArticle.titleEn, cmsArticle.titleCn),
+      subtitle:
+        pickField(cmsArticle.subtitleFr ?? '', cmsArticle.subtitleEn ?? '', cmsArticle.subtitleCn) ||
+        undefined,
+      content: pickField(cmsArticle.contentFr, cmsArticle.contentEn, cmsArticle.contentCn),
+      category,
+      categoryKey,
+      viewCount: stat?.viewCount ?? 0,
+      helpfulPercent: helpfulPercent(stat?.helpfulYes ?? 0, stat?.helpfulNo ?? 0),
+      updatedAt: cmsArticle.updatedAt.toISOString(),
+      source: 'cms',
+    };
+  }
 
-  return {
-    slug: article.slug,
-    title: pickField(article.titleFr, article.titleEn, article.titleCn),
-    subtitle:
-      pickField(article.subtitleFr ?? '', article.subtitleEn ?? '', article.subtitleCn) || undefined,
-    content: pickField(article.contentFr, article.contentEn, article.contentCn),
-    category,
-    categoryKey,
-    viewCount: stat?.viewCount ?? 0,
-    helpfulPercent: helpfulPercent(stat?.helpfulYes ?? 0, stat?.helpfulNo ?? 0),
-    updatedAt: article.updatedAt.toISOString(),
-    source: 'cms',
-  };
+  if (staticDef) {
+    const texts = getStaticTexts(locale, staticDef);
+    return {
+      slug,
+      title: texts.title,
+      content: texts.body,
+      category: texts.category,
+      categoryKey: staticDef.categoryKey,
+      viewCount: stat?.viewCount ?? 0,
+      helpfulPercent: helpfulPercent(stat?.helpfulYes ?? 0, stat?.helpfulNo ?? 0),
+      source: 'static',
+    };
+  }
+
+  const extra = EXTRA_HELP_ARTICLES.find((a) => a.slug === slug);
+  if (extra) {
+    const title =
+      locale === 'cn' ? extra.titleCn : locale === 'en' ? extra.titleEn : extra.titleFr;
+    const content =
+      locale === 'cn' ? extra.contentCn : locale === 'en' ? extra.contentEn : extra.contentFr;
+    const categoryKey = extra.categoryKey;
+    const category = getMessages(locale).help.categories[categoryKey];
+    return {
+      slug,
+      title,
+      content,
+      category,
+      categoryKey,
+      viewCount: stat?.viewCount ?? 0,
+      helpfulPercent: helpfulPercent(stat?.helpfulYes ?? 0, stat?.helpfulNo ?? 0),
+      source: 'static',
+    };
+  }
+
+  return null;
+}
+
+function articleSlugExists(slug: string) {
+  return (
+    getStaticHelpArticle(slug) ||
+    EXTRA_HELP_ARTICLES.some((a) => a.slug === slug)
+  );
 }
 
 export async function incrementHelpArticleView(slug: string): Promise<number> {
   const articleExists =
-    getStaticHelpArticle(slug) ||
+    articleSlugExists(slug) ||
     (await prisma.helpArticle.findFirst({ where: { slug, isPublished: true }, select: { slug: true } }));
 
   if (!articleExists) {
@@ -246,7 +309,7 @@ export async function incrementHelpArticleView(slug: string): Promise<number> {
 
 export async function recordHelpArticleFeedback(slug: string, helpful: boolean): Promise<void> {
   const articleExists =
-    getStaticHelpArticle(slug) ||
+    articleSlugExists(slug) ||
     (await prisma.helpArticle.findFirst({ where: { slug, isPublished: true }, select: { slug: true } }));
 
   if (!articleExists) {

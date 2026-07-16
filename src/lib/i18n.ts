@@ -2877,6 +2877,13 @@ export const messages: Record<Locale, Messages> = {
       helpArticles: {
         title: "Articles d'aide",
         subtitle: "Créez et publiez des guides sur /help/nom-de-l-article (ex. /help/scam)",
+        views: "vues",
+        helpful: "utile",
+        builtIn: "Intégré",
+        popular: "Populaire",
+        statsTitle: "Statistiques",
+        byCategory: "Articles par catégorie",
+        categoryPlaceholder: "Choisir une catégorie",
       },
       pressArticles: {
         title: "Articles presse",
@@ -9550,6 +9557,13 @@ export const messages: Record<Locale, Messages> = {
       helpArticles: {
         title: "Help articles",
         subtitle: "Create and publish guides at /help/article-slug (e.g. /help/scam)",
+        views: "views",
+        helpful: "helpful",
+        builtIn: "Built-in",
+        popular: "Popular",
+        statsTitle: "Statistics",
+        byCategory: "Articles by category",
+        categoryPlaceholder: "Choose a category",
       },
       pressArticles: {
         title: "Press articles",
@@ -17311,6 +17325,13 @@ export const messages: Record<Locale, Messages> = {
       helpArticles: {
         title: "帮助文章",
         subtitle: "在 /help/文章名称 创建和发布指南（例如 /help/scam）",
+        views: "浏览",
+        helpful: "有用",
+        builtIn: "内置",
+        popular: "热门",
+        statsTitle: "统计",
+        byCategory: "按分类的文章",
+        categoryPlaceholder: "选择分类",
       },
       pressArticles: {
         title: "媒体文章",

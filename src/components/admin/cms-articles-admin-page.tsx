@@ -26,6 +26,11 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { isPressCoverageArticle } from '@/lib/press-article-content';
+import {
+  HELP_CATEGORY_KEYS,
+  formatViewCount,
+  type HelpCategoryKey,
+} from '@/lib/help-articles-config';
 
 export interface CmsArticleRecord {
   id: string;
@@ -49,6 +54,12 @@ export interface CmsArticleRecord {
   isPublished: boolean;
   sortOrder?: number;
   updatedAt: string;
+  source?: 'static' | 'cms';
+  categoryKey?: HelpCategoryKey;
+  viewCount?: number;
+  helpfulYes?: number;
+  helpfulNo?: number;
+  helpfulPercent?: number | null;
 }
 
 interface CmsArticleForm {
@@ -118,6 +129,7 @@ export function CmsArticlesAdminPage({
 }: CmsArticlesAdminPageProps) {
   const { messages } = useLocale();
   const t = messages.admin.legalPages;
+  const helpT = messages.admin.helpArticles;
   const pressT = messages.admin.pressArticles;
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
@@ -136,6 +148,140 @@ export function CmsArticlesAdminPage({
       return (data.articles ?? []) as CmsArticleRecord[];
     },
   });
+
+  const groupedHelpArticles =
+    kind === 'help'
+      ? HELP_CATEGORY_KEYS.map((categoryKey) => ({
+          categoryKey,
+          label: messages.help.categories[categoryKey],
+          articles: articles.filter(
+            (a) => (a.categoryKey ?? a.category) === categoryKey,
+          ),
+        })).filter((g) => g.articles.length > 0)
+      : [];
+
+  const topViewedSlugs =
+    kind === 'help'
+      ? [...articles]
+          .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0))
+          .slice(0, 3)
+          .map((a) => a.slug)
+      : [];
+
+  const renderArticleRow = (article: CmsArticleRecord) => (
+    <div
+      key={article.id}
+      className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700 hover:border-theme-accent/50 transition-colors"
+    >
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center flex-wrap gap-2 mb-1">
+          <h3 className="font-semibold text-white">{article.titleFr}</h3>
+          <Badge variant="outline" className="text-xs">
+            {publicPathPrefix}/{article.slug}
+          </Badge>
+          {article.isPublished ? (
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/50">{t.list.published}</Badge>
+          ) : (
+            <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">{t.list.draft}</Badge>
+          )}
+          {kind === 'help' && article.source === 'static' ? (
+            <Badge className="bg-slate-500/20 text-slate-300 border-slate-500/50">{helpT.builtIn}</Badge>
+          ) : null}
+          {kind === 'help' && topViewedSlugs.includes(article.slug) ? (
+            <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/50">{helpT.popular}</Badge>
+          ) : null}
+          {kind === 'press' && isPressCoverageArticle(article.externalUrl) ? (
+            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/50">{pressT.formTypeCoverage}</Badge>
+          ) : null}
+        </div>
+        <p className="text-sm text-slate-400 truncate">{article.titleEn}</p>
+        <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-500">
+          <span className="flex items-center">
+            <ClockIcon className="w-3 h-3 mr-1" />
+            {t.list.updatedAt} {new Date(article.updatedAt).toLocaleDateString('fr-FR')}
+          </span>
+          {kind === 'help' && article.viewCount != null ? (
+            <>
+              <span className="flex items-center">
+                <EyeIcon className="w-3 h-3 mr-1" />
+                {formatViewCount(article.viewCount)} {helpT.views}
+              </span>
+              {article.helpfulPercent != null ? (
+                <span className="text-green-400/80">
+                  {article.helpfulPercent}% {helpT.helpful}
+                </span>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      </div>
+      <div className="flex items-center space-x-2 shrink-0 ml-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => window.open(`${publicPathPrefix}/${article.slug}`, '_blank')}
+          className="text-slate-400 hover:text-white"
+        >
+          <EyeIcon className="w-4 h-4" />
+        </Button>
+        {kind === 'help' && article.source === 'static' ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setEditMode('create');
+              setForm({
+                ...emptyForm,
+                slug: article.slug,
+                titleFr: article.titleFr,
+                titleEn: article.titleEn,
+                contentFr: article.contentFr,
+                contentEn: article.contentEn,
+                category: article.categoryKey ?? article.category ?? '',
+                sortOrder: article.sortOrder ?? 0,
+              });
+              setDialogOpen(true);
+            }}
+            className="text-slate-400 hover:text-theme-highlight"
+            title="Migrer vers CMS"
+          >
+            <PlusIcon className="w-4 h-4" />
+          </Button>
+        ) : (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleTogglePublish(article)}
+              className="text-slate-400 hover:text-white"
+            >
+              {article.isPublished ? (
+                <ArchiveBoxIcon className="w-4 h-4" />
+              ) : (
+                <CheckCircleIcon className="w-4 h-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openEditDialog(article)}
+              className="text-slate-400 hover:text-theme-highlight"
+            >
+              <PencilIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDelete(article.slug)}
+              className="text-slate-400 hover:text-red-400"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 
   const openEditDialog = (article?: CmsArticleRecord) => {
     if (article) {
@@ -300,76 +446,23 @@ export function CmsArticlesAdminPage({
                 {t.list.createFirst}
               </Button>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {articles.map((article) => (
-                <div
-                  key={article.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700 hover:border-theme-accent/50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center flex-wrap gap-2 mb-1">
-                      <h3 className="font-semibold text-white">{article.titleFr}</h3>
-                      <Badge variant="outline" className="text-xs">
-                        {publicPathPrefix}/{article.slug}
-                      </Badge>
-                      {article.isPublished ? (
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/50">{t.list.published}</Badge>
-                      ) : (
-                        <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">{t.list.draft}</Badge>
-                      )}
-                      {kind === 'press' && isPressCoverageArticle(article.externalUrl) ? (
-                        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/50">{pressT.formTypeCoverage}</Badge>
-                      ) : null}
-                    </div>
-                    <p className="text-sm text-slate-400 truncate">{article.titleEn}</p>
-                    <div className="flex items-center space-x-4 mt-2 text-xs text-slate-500">
-                      <span className="flex items-center">
-                        <ClockIcon className="w-3 h-3 mr-1" />
-                        {t.list.updatedAt} {new Date(article.updatedAt).toLocaleDateString('fr-FR')}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 shrink-0 ml-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.open(`${publicPathPrefix}/${article.slug}`, '_blank')}
-                      className="text-slate-400 hover:text-white"
-                    >
-                      <EyeIcon className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleTogglePublish(article)}
-                      className="text-slate-400 hover:text-white"
-                    >
-                      {article.isPublished ? (
-                        <ArchiveBoxIcon className="w-4 h-4" />
-                      ) : (
-                        <CheckCircleIcon className="w-4 h-4" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditDialog(article)}
-                      className="text-slate-400 hover:text-theme-highlight"
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(article.slug)}
-                      className="text-slate-400 hover:text-red-400"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </Button>
-                  </div>
+          ) : kind === 'help' ? (
+            <div className="space-y-6">
+              {groupedHelpArticles.map((group) => (
+                <div key={group.categoryKey}>
+                  <h3 className="text-sm font-semibold text-theme-highlight uppercase tracking-wide mb-3">
+                    {group.label}
+                    <span className="ml-2 text-slate-500 font-normal normal-case">
+                      ({group.articles.length})
+                    </span>
+                  </h3>
+                  <div className="space-y-3">{group.articles.map(renderArticleRow)}</div>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {articles.map((article) => renderArticleRow(article))}
             </div>
           )}
         </CardContent>
@@ -462,13 +555,19 @@ export function CmsArticlesAdminPage({
               {kind === 'help' ? (
                 <div>
                   <Label htmlFor="category">Catégorie</Label>
-                  <Input
+                  <select
                     id="category"
                     value={form.category}
                     onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
-                    placeholder="security"
-                    className="bg-slate-800 border-slate-600"
-                  />
+                    className="flex h-10 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-white"
+                  >
+                    <option value="">{helpT.categoryPlaceholder}</option>
+                    {HELP_CATEGORY_KEYS.map((key) => (
+                      <option key={key} value={key}>
+                        {messages.help.categories[key]}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               ) : (
                 <div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
+import { listAdminHelpArticles } from '@/lib/help-articles-admin-server';
 import {
   requireAdminOrModeratorSessionWithDbCheck,
   requireAdminSessionWithDbCheck,
@@ -14,9 +15,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const articles = await prisma.helpArticle.findMany({
-      orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
-    });
+    const articles = await listAdminHelpArticles();
 
     return NextResponse.json({ articles });
   } catch (error) {
