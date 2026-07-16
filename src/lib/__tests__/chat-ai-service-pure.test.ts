@@ -48,6 +48,8 @@ describe('buildSystemPrompt', () => {
   it('impose l anglais quand la locale UI est en', () => {
     const prompt = buildSystemPrompt('Test', undefined, 'en');
     expect(prompt).toContain('Respond ONLY in English');
+    expect(prompt).toContain("You are MoonSkin's support assistant");
+    expect(prompt).not.toContain("Tu es l'assistant support");
   });
 
   it.each([

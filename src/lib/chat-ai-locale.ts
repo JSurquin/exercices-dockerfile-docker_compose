@@ -18,7 +18,7 @@ export function detectMessageLocale(message: string): ChatAiLocale {
   const englishWords =
     /\b(how|what|why|when|where|does|work|help|please|thanks|hello|hey|can|could|would|is|are|the|my|your|moon\s*skin|moonskin|sell|selling|payment|trade|skin|skins|if|get|scammed)\b/i;
   const frenchWords =
-    /\b(comment|pourquoi|quand|bonjour|salut|merci|aide|marche|fonctionne|paiement|vendre|vente|skin|skins|je|tu|vous|nous|et\s+si|me\s+fais|me\s+faire)\b/i;
+    /\b(comment|pourquoi|quand|bonjour|salut|merci|aide|marche|fonctionne|paiement|vendre|vente|je|tu|vous|nous|et\s+si|me\s+fais|me\s+faire)\b/i;
 
   const hasEnglish = englishWords.test(trimmed);
   const hasFrench = frenchWords.test(trimmed);
@@ -38,11 +38,11 @@ export function resolveChatAiLocale(input: {
   uiLocale?: string | null;
   userMessage?: string;
 }): ChatAiLocale {
+  if (input.userMessage?.trim()) {
+    return detectMessageLocale(input.userMessage);
+  }
   if (isValidChatAiLocale(input.uiLocale ?? undefined)) {
     return input.uiLocale as ChatAiLocale;
-  }
-  if (input.userMessage) {
-    return detectMessageLocale(input.userMessage);
   }
   return 'fr';
 }

@@ -176,11 +176,12 @@ export function isHowToSellQuestion(message: string): boolean {
   }
 
   return (
-    /\b(how\s+to\s+sell|how\s+do\s+i\s+sell|how\s+can\s+i\s+sell)\b/.test(m) ||
-    /\b(comment|how)\b.*\b(vendre|sell|selling)\b.*\b(skin|skins|cs2|csgo|counter[\s-]?strike)\b/.test(
+    /\b(how\s+to\s+sell|how\s+do\s+i\s+sell|how\s+can\s+i\s+sel+\b)/.test(m) ||
+    /\b(how|comment)\b.*\b(vendre|sell(?:ing)?|sel+\b)\b.*\b(skin|skins|cs2|csgo|counter[\s-]?strike)\b/.test(
       m,
     ) ||
-    /\b(vendre|sell)\b.*\b(mes|my)\b.*\b(skin|skins)\b/.test(m) ||
+    /\b(how\s+can\s+i|how\s+do\s+i|i\s+wonder\s+how)\b.*\b(skin|skins)\b/.test(m) ||
+    /\b(vendre|sell|sel+\b)\b.*\b(mes|my)\b.*\b(skin|skins)\b/.test(m) ||
     /\bcomment\s+vendre\b/.test(m)
   );
 }

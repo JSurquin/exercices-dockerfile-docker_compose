@@ -46,6 +46,7 @@ describe('isHowToSellQuestion', () => {
   it.each([
     'how to sell my skins?',
     'How do I sell my CS2 skins?',
+    'hey how are you , i wonder how can i sel skins',
     'Comment vendre mes skins CS2 ?',
     'comment vendre mes skins',
     '如何出售我的CS2皮肤？',
@@ -91,6 +92,16 @@ describe('resolveTrustedAiAnswer', () => {
     expect(answer).toContain('Create sale');
     expect(answer).not.toContain('publish your offer');
     expect(answer).not.toContain('wait for offers');
+  });
+
+  it('retourne le guide de vente en anglais pour une question avec faute de frappe', () => {
+    const answer = resolveTrustedAiAnswer(
+      'hey how are you , i wonder how can i sel skins',
+      'en',
+    );
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('Sell page');
+    expect(answer).toContain('Create sale');
   });
 
   it('retourne le guide de vente en français', () => {

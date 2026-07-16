@@ -20,6 +20,7 @@ describe('detectMessageLocale', () => {
     ['hey how moonskin work', 'en'],
     ['How does MoonSkin work?', 'en'],
     ['What is the payout delay?', 'en'],
+    ['hey how are you , i wonder how can i sel skins', 'en'],
     ['comment ça marche MoonSkin ?', 'fr'],
     ['Bonjour, quel délai pour le SEPA ?', 'fr'],
     ['MoonSkin 怎么运作？', 'cn'],
@@ -29,11 +30,20 @@ describe('detectMessageLocale', () => {
 });
 
 describe('resolveChatAiLocale', () => {
-  it('priorise la locale UI', () => {
+  it('priorise la langue du message utilisateur', () => {
     expect(
       resolveChatAiLocale({
         uiLocale: 'en',
         userMessage: 'comment ça marche ?',
+      }),
+    ).toBe('fr');
+  });
+
+  it('détecte l anglais même si la locale UI est française', () => {
+    expect(
+      resolveChatAiLocale({
+        uiLocale: 'fr',
+        userMessage: 'hey how are you , i wonder how can i sel skins',
       }),
     ).toBe('en');
   });
@@ -44,6 +54,10 @@ describe('resolveChatAiLocale', () => {
         userMessage: 'hey how moonskin work',
       }),
     ).toBe('en');
+  });
+
+  it('utilise la locale UI sans message utilisateur', () => {
+    expect(resolveChatAiLocale({ uiLocale: 'en' })).toBe('en');
   });
 
   it('utilise le français par défaut', () => {
