@@ -1,8 +1,13 @@
 'use client';
 
+import Image from 'next/image';
 import type { ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import {
+  parseChatMessageAttachment,
+  shouldShowChatMessageText,
+} from '@/lib/chat-attachment';
 import { preserveChatLineBreaks } from '@/lib/chat-widget-styles';
 
 export const CHAT_REMARK_PLUGINS = [remarkGfm];
@@ -42,6 +47,64 @@ export const CHAT_MARKDOWN_COMPONENTS = {
 
 export function shouldRenderChatMarkdown(senderType: string): boolean {
   return senderType !== 'USER';
+}
+
+export function ChatMessageImage({
+  url,
+  alt,
+  className = 'max-w-full rounded-md border border-border/40',
+}: {
+  url: string;
+  alt: string;
+  className?: string;
+}) {
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="block mt-1 first:mt-0">
+      <Image
+        src={url}
+        alt={alt}
+        width={320}
+        height={240}
+        unoptimized
+        className={`${className} h-auto w-auto max-h-52 object-contain cursor-zoom-in`}
+      />
+    </a>
+  );
+}
+
+export function ChatMessageContent({
+  content,
+  senderType,
+  metadata,
+  resolveContent,
+  imageAlt,
+}: {
+  content: string;
+  senderType: string;
+  metadata?: unknown;
+  resolveContent: (content: string) => string;
+  imageAlt: string;
+}) {
+  const attachment = parseChatMessageAttachment(metadata);
+  const resolvedContent = resolveContent(content);
+  const showText = shouldShowChatMessageText(content, Boolean(attachment));
+
+  return (
+    <>
+      {attachment ? (
+        <ChatMessageImage url={attachment.url} alt={imageAlt} />
+      ) : null}
+      {showText ? (
+        senderType === 'USER' ? (
+          <p className={`whitespace-pre-wrap ${attachment ? 'mt-2' : ''}`}>{resolvedContent}</p>
+        ) : (
+          <div className={attachment ? 'mt-2' : undefined}>
+            <ChatMarkdownContent content={resolvedContent} />
+          </div>
+        )
+      ) : null}
+    </>
+  );
 }
 
 export function ChatMarkdownContent({

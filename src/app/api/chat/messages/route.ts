@@ -29,6 +29,7 @@ import {
   resolveConversationClientLocale,
 } from '@/lib/chat-support-translation';
 import { autoAssignModeratorOnReplyIfUnassigned } from '@/lib/chat-assignment';
+import { prepareChatOutgoingMessage } from '@/lib/chat-attachment';
 
 // POST /api/chat/messages — création auto de conversation si conversationId absent
 export async function POST(request: NextRequest) {
@@ -43,6 +44,16 @@ export async function POST(request: NextRequest) {
     const parsed = safeParseJson(raw, createChatMessageSchema);
     if (!parsed.ok) return parsed.response;
     const body = parsed.data;
+
+    let outgoingMessage: ReturnType<typeof prepareChatOutgoingMessage>;
+    try {
+      outgoingMessage = prepareChatOutgoingMessage({
+        content: body.content,
+        attachmentUrl: body.attachmentUrl,
+      });
+    } catch {
+      return NextResponse.json({ error: 'Image invalide' }, { status: 400 });
+    }
 
     let conversationId = body.conversationId;
     let createdNewConversation = false;
@@ -89,7 +100,7 @@ export async function POST(request: NextRequest) {
           currentCategory: existing.category,
           newCategory,
           priorUserMessages: priorUserMessages.map((m) => m.content),
-          newMessage: body.content,
+          newMessage: outgoingMessage.content,
           forceNew: body.forceNew,
           existingMessages,
         });
@@ -161,11 +172,14 @@ export async function POST(request: NextRequest) {
 
     let messageMetadata: Prisma.InputJsonValue | undefined;
     if (senderType === 'USER') {
-      messageMetadata = buildOutgoingMessageLocaleMetadata({
-        senderType,
-        content: body.content,
-        uiLocale: body.locale,
-      });
+      messageMetadata = {
+        ...buildOutgoingMessageLocaleMetadata({
+          senderType,
+          content: outgoingMessage.content,
+          uiLocale: body.locale,
+        }),
+        ...outgoingMessage.metadata,
+      } as Prisma.InputJsonValue;
     } else if (senderType === 'MODERATOR') {
       const priorUserMessages = await prisma.chatMessage.findMany({
         where: { conversationId, senderType: 'USER' },
@@ -181,7 +195,7 @@ export async function POST(request: NextRequest) {
         })),
       );
       messageMetadata = await prepareModeratorMessageMetadata({
-        content: body.content,
+        content: outgoingMessage.content,
         uiLocale: body.locale,
         clientLocale,
       });
@@ -198,7 +212,7 @@ export async function POST(request: NextRequest) {
     const message = await createChatMessageRecord({
       conversationId,
       userId: identity.kind === 'user' ? identity.session.user.id : null,
-      content: body.content,
+      content: outgoingMessage.content,
       senderType,
       metadata: messageMetadata,
     });
@@ -220,12 +234,12 @@ export async function POST(request: NextRequest) {
       const sideEffects = await handleUserMessageSideEffects({
         conversationId,
         messageId: message.id,
-        messageContent: body.content,
+        messageContent: outgoingMessage.content,
         assignedTo: conversation.assignedTo,
         status: conversation.status,
         aiEnabled: conversation.aiEnabled,
         existingMessages,
-        skipAi: body.skipAi,
+        skipAi: body.skipAi || outgoingMessage.skipAi,
       });
       aiQueueHint = sideEffects.aiQueueHint;
       shouldRunAi =
@@ -239,7 +253,7 @@ export async function POST(request: NextRequest) {
         messageId: message.id,
         conversationId,
         senderType,
-        contentLength: body.content.length,
+        contentLength: outgoingMessage.content.length,
       });
     }
 

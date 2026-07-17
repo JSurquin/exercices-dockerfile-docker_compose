@@ -349,6 +349,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
       category?: string;
       forceNew?: boolean;
       skipAi?: boolean;
+      attachmentUrl?: string;
     }) => {
       const activeMeta = conversationId
         ? conversations.find((c) => c.id === conversationId)
@@ -370,6 +371,7 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
           body: JSON.stringify({
             conversationId: forceNew ? undefined : explicitConversationId,
             content: params.content,
+            attachmentUrl: params.attachmentUrl,
             category: params.category,
             forceNew: forceNew || undefined,
             skipAi: params.skipAi || undefined,
@@ -581,8 +583,10 @@ export function useChat(isOpen = false, isViewingConversation = false, isGuest =
     conversationId,
     setConversationId,
     startNewConversation,
-    sendMessage: (content: string, options?: { category?: string; forceNew?: boolean; skipAi?: boolean }) =>
-      sendMessageMutation.mutateAsync({ content, ...options }),
+    sendMessage: (
+      content: string,
+      options?: { category?: string; forceNew?: boolean; skipAi?: boolean; attachmentUrl?: string },
+    ) => sendMessageMutation.mutateAsync({ content, ...options }),
     loadOlderMessages: fetchNextPage,
     hasOlderMessages: hasNextPage,
     isLoadingOlderMessages: isFetchingNextPage,

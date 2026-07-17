@@ -29,7 +29,8 @@ export const createConversationPostSchema = z
 export const createChatMessageSchema = z
   .object({
     conversationId: z.string().min(1, 'ID de conversation requis').optional(),
-    content: z.string().trim().min(1, 'Contenu du message requis'),
+    content: z.string().trim().optional(),
+    attachmentUrl: z.string().trim().max(512).optional(),
     senderType: z.enum(['USER', 'BOT', 'MODERATOR', 'SYSTEM']).optional(),
     category: z.string().max(64).optional(),
     forceNew: z.boolean().optional(),
@@ -37,7 +38,18 @@ export const createChatMessageSchema = z
     replyContext: z.enum(['widget', 'moderation']).optional(),
     locale: z.enum(['fr', 'en', 'cn']).optional(),
   })
-  .strip();
+  .strip()
+  .superRefine((data, ctx) => {
+    const hasContent = Boolean(data.content && data.content.length > 0);
+    const hasAttachment = Boolean(data.attachmentUrl && data.attachmentUrl.length > 0);
+    if (!hasContent && !hasAttachment) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Contenu du message ou image requis',
+        path: ['content'],
+      });
+    }
+  });
 
 export const conversationMessagesQuerySchema = z
   .object({

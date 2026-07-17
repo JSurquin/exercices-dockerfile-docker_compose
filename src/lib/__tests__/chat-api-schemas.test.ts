@@ -44,6 +44,23 @@ describe('createChatMessageSchema', () => {
     ).toBe(false);
   });
 
+  it('accepte une image sans texte', () => {
+    expect(
+      createChatMessageSchema.safeParse({
+        conversationId: 'c1',
+        attachmentUrl: '/uploads/chat/abc.jpg',
+      }).success,
+    ).toBe(true);
+  });
+
+  it('refuse un message vide sans image', () => {
+    expect(
+      createChatMessageSchema.safeParse({
+        conversationId: 'c1',
+      }).success,
+    ).toBe(false);
+  });
+
   it('accepte USER/BOT/MODERATOR/SYSTEM', () => {
     for (const senderType of ['USER', 'BOT', 'MODERATOR', 'SYSTEM'] as const) {
       expect(

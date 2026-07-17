@@ -3991,6 +3991,11 @@ export interface Messages {
     escalateError: string;
     aiTypingQueued: string;
     sendHint: string;
+    attachImage: string;
+    removeImage: string;
+    imageMessage: string;
+    imageUploading: string;
+    imageUploadError: string;
     conversationEnded: string;
     rateConversation: string;
     rateRatedTitle: string;

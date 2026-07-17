@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, memo, useMemo, type ComponentType, type SVGProps } from "react";
 import Image from "next/image";
-import { ChatMarkdownContent } from "@/lib/chat-markdown";
+import { ChatMessageContent } from "@/lib/chat-markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -105,6 +105,7 @@ import {
   QuestionMarkCircleIcon,
   MagnifyingGlassIcon,
   EllipsisHorizontalIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
 const SUPPORT_AVATAR_SRC = MOONSKIN_LOGO_AVATAR_SRC;
 
@@ -224,6 +225,7 @@ type WidgetMessage = {
   createdAt: string | Date;
   userId?: string | null;
   translationFooter?: string;
+  metadata?: unknown;
   user?: {
     name?: string | null;
     steamUsername?: string | null;
@@ -232,11 +234,15 @@ type WidgetMessage = {
 };
 
 interface ChatWidgetInputProps {
-  onSend: (content: string) => void | Promise<void>;
+  onSend: (content: string, options?: { attachmentUrl?: string }) => void | Promise<void>;
   disabled: boolean;
   placeholder: string;
   sendHint: string;
   prefillMessage?: string;
+  attachImageLabel: string;
+  removeImageLabel: string;
+  imageUploadError: string;
+  imageUploading: string;
 }
 
 /** Fenêtre anti-doublon : même contenu renvoyé trop vite (Entrée + clic, double-clic, etc.) */
@@ -248,10 +254,26 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
   placeholder,
   sendHint,
   prefillMessage,
+  attachImageLabel,
+  removeImageLabel,
+  imageUploadError,
+  imageUploading,
 }: ChatWidgetInputProps) {
+  const { toast } = useToast();
   const [message, setMessage] = useState("");
+  const [pendingImage, setPendingImage] = useState<{ file: File; previewUrl: string } | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isSendingRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      if (pendingImage?.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(pendingImage.previewUrl);
+      }
+    };
+  }, [pendingImage]);
 
   useEffect(() => {
     if (prefillMessage) {
@@ -270,14 +292,81 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
     el.style.height = "38px";
   }, []);
 
+  const clearPendingImage = useCallback(() => {
+    setPendingImage((current) => {
+      if (current?.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(current.previewUrl);
+      }
+      return null;
+    });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) {
+      event.target.value = '';
+      return;
+    }
+    setPendingImage((current) => {
+      if (current?.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(current.previewUrl);
+      }
+      return {
+        file,
+        previewUrl: URL.createObjectURL(file),
+      };
+    });
+  };
+
+  const uploadPendingImage = async (): Promise<string | undefined> => {
+    if (!pendingImage) return undefined;
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', pendingImage.file);
+      const response = await fetch('/api/chat/images', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error('upload failed');
+      }
+      const payload = (await response.json()) as { url?: string };
+      if (!payload.url) {
+        throw new Error('missing url');
+      }
+      return payload.url;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSend = async () => {
-    if (!message.trim() || disabled || isSendingRef.current) return;
+    const trimmed = message.trim();
+    if ((!trimmed && !pendingImage) || disabled || isSendingRef.current || uploadingImage) return;
     isSendingRef.current = true;
     const content = message;
     setMessage("");
     resetTextareaHeight();
     try {
-      await onSend(content);
+      let attachmentUrl: string | undefined;
+      if (pendingImage) {
+        try {
+          attachmentUrl = await uploadPendingImage();
+          clearPendingImage();
+        } catch {
+          toast({
+            title: imageUploadError,
+            variant: "destructive",
+          });
+          setMessage(content);
+          return;
+        }
+      }
+      await onSend(content, attachmentUrl ? { attachmentUrl } : undefined);
     } finally {
       isSendingRef.current = false;
     }
@@ -290,9 +379,53 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
     }
   };
 
+  const canSend = Boolean(message.trim() || pendingImage) && !disabled && !uploadingImage;
+
   return (
     <div className={chatWidgetInputAreaClass()}>
+      {pendingImage ? (
+        <div className="mb-2 flex items-start gap-2">
+          <div className="relative shrink-0">
+            <Image
+              src={pendingImage.previewUrl}
+              alt={attachImageLabel}
+              width={72}
+              height={72}
+              unoptimized
+              className="h-[72px] w-[72px] rounded-md border border-border/50 object-cover"
+            />
+            <button
+              type="button"
+              onClick={clearPendingImage}
+              className="absolute -top-1.5 -right-1.5 rounded-full bg-background border border-border/60 p-0.5 shadow-sm"
+              aria-label={removeImageLabel}
+            >
+              <XMarkIcon className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      ) : null}
       <div className="flex items-end gap-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="hidden"
+          data-testid="chat-image-input"
+          onChange={handleImageSelect}
+        />
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          data-testid="chat-attach-image-button"
+          className="h-[38px] w-[38px] shrink-0 text-muted-foreground hover:text-foreground"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || uploadingImage}
+          aria-label={attachImageLabel}
+        >
+          <PhotoIcon className="h-5 w-5" />
+        </Button>
         <textarea
           ref={textareaRef}
           data-testid="chat-message-input"
@@ -304,7 +437,7 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          disabled={disabled}
+          disabled={disabled || uploadingImage}
           rows={1}
           className={chatWidgetTextareaClass()}
           style={{ height: "38px", fontSize: "16px" }}
@@ -314,9 +447,9 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
           data-testid="chat-send-button"
           className={chatWidgetSendButtonClass()}
           onClick={() => void handleSend()}
-          disabled={!message.trim() || disabled}
+          disabled={!canSend}
         >
-          {disabled ? (
+          {disabled || uploadingImage ? (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
           ) : (
             <PaperAirplaneIcon className="h-4 w-4" />
@@ -324,7 +457,7 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
         </Button>
       </div>
       <p className="text-[10px] text-muted-foreground mt-1.5 text-center select-none">
-        {sendHint}
+        {uploadingImage ? imageUploading : sendHint}
       </p>
     </div>
   );
@@ -541,6 +674,7 @@ interface ChatWidgetMessageListProps {
   onScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
   agentAvatarUrl?: string | null;
+  imageAlt: string;
 }
 
 const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
@@ -583,6 +717,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
   onScroll,
   containerRef,
   agentAvatarUrl,
+  imageAlt,
 }: ChatWidgetMessageListProps) {
   const seenMessageIdsRef = useRef<Set<string>>(new Set());
   const seenConversationRef = useRef<string | null>(null);
@@ -709,11 +844,13 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
                 <span className={chatWidgetSenderLabelClass(isUser)}>{senderName}</span>
               ) : null}
               <div className={chatWidgetMessageBubbleClass(bubbleSender)}>
-                {isUser ? (
-                  <p className="whitespace-pre-wrap">{resolveContent(msg.content)}</p>
-                ) : (
-                  <ChatMarkdownContent content={resolveContent(msg.content)} />
-                )}
+                <ChatMessageContent
+                  content={msg.content}
+                  senderType={bubbleSender}
+                  metadata={msg.metadata}
+                  resolveContent={resolveContent}
+                  imageAlt={imageAlt}
+                />
                 {msg.translationFooter ? (
                   <p className="mt-2 pt-2 border-t border-theme-accent/20 text-[10px] text-muted-foreground italic">
                     {msg.translationFooter}
@@ -1167,24 +1304,28 @@ export function ChatWidget() {
     setMessagesStep("conversation");
   };
 
-  const handleSendMessage = useCallback(async (content: string) => {
+  const handleSendMessage = useCallback(async (
+    content: string,
+    options?: { attachmentUrl?: string },
+  ) => {
     if (isLoading || sendInFlightRef.current) return;
 
     const normalized = content.trim();
-    if (!normalized) return;
+    if (!normalized && !options?.attachmentUrl) return;
 
+    const dedupeKey = `${normalized}::${options?.attachmentUrl ?? ''}`;
     const now = Date.now();
     const last = lastSentRef.current;
     if (
       last &&
-      last.content === normalized &&
+      last.content === dedupeKey &&
       now - last.at < SEND_DEDUPE_MS
     ) {
       return;
     }
 
     sendInFlightRef.current = true;
-    lastSentRef.current = { content: normalized, at: now };
+    lastSentRef.current = { content: dedupeKey, at: now };
 
     const baseCount = currentConversation?.messages.length ?? 0;
     const askFlow = isAskQuestionFlow;
@@ -1194,9 +1335,12 @@ export function ChatWidget() {
         askFlow
           ? {
               category: "support",
+              attachmentUrl: options?.attachmentUrl,
               ...(conversationId ? {} : { forceNew: true }),
             }
-          : undefined,
+          : options?.attachmentUrl
+            ? { attachmentUrl: options.attachmentUrl }
+            : undefined,
       );
       setInputPrefill(undefined);
       if (askFlow) {
@@ -1873,6 +2017,7 @@ export function ChatWidget() {
         agentAvatarUrl={agentAvatarUrl}
         onScroll={handleMessagesScroll}
         containerRef={messagesContainerRef}
+        imageAlt={messages.chatWidget.imageMessage}
       />
       {conversationClosed ? (
         <div className={chatWidgetConversationEndedClass()} data-testid="chat-conversation-ended">
@@ -1885,6 +2030,10 @@ export function ChatWidget() {
           placeholder={messages.chatWidget.placeholder}
           sendHint={messages.chatWidget.sendHint}
           prefillMessage={inputPrefill}
+          attachImageLabel={messages.chatWidget.attachImage}
+          removeImageLabel={messages.chatWidget.removeImage}
+          imageUploadError={messages.chatWidget.imageUploadError}
+          imageUploading={messages.chatWidget.imageUploading}
         />
       )}
     </>
