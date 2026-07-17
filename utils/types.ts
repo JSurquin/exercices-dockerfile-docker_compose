@@ -5357,6 +5357,8 @@ export interface Messages {
     categoriesTitle: string;
     allCategories: string;
     noArticles: string;
+    searchPlaceholder: string;
+    searchNoResults: string;
     popularGuides: string;
     popularGuideLinks: Array<{ slug: string; label: string }>;
     ctaTitle: string;

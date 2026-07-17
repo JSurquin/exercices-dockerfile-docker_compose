@@ -5868,6 +5868,8 @@ export const messages: Record<Locale, Messages> = {
       categoriesTitle: "Catégories",
       allCategories: "Toutes les catégories",
       noArticles: "Aucun article dans cette catégorie pour le moment.",
+      searchPlaceholder: "Rechercher un article…",
+      searchNoResults: "Aucun article ne correspond à votre recherche.",
       popularGuides: "Guides populaires",
       popularGuideLinks: [
         { slug: "vendre-skins-cs2-argent-reel", label: "Vendre ses skins CS2" },
@@ -13797,6 +13799,8 @@ export const messages: Record<Locale, Messages> = {
       categoriesTitle: "Categories",
       allCategories: "All categories",
       noArticles: "No articles in this category yet.",
+      searchPlaceholder: "Search articles…",
+      searchNoResults: "No articles match your search.",
       popularGuides: "Popular guides",
       popularGuideLinks: [
         { slug: "vendre-skins-cs2-argent-reel", label: "Sell your CS2 skins" },
@@ -21408,6 +21412,8 @@ export const messages: Record<Locale, Messages> = {
       categoriesTitle: "分类",
       allCategories: "全部分类",
       noArticles: "该分类暂无文章。",
+      searchPlaceholder: "搜索文章…",
+      searchNoResults: "没有符合您搜索的文章。",
       popularGuides: "热门指南",
       popularGuideLinks: [
         { slug: "vendre-skins-cs2-argent-reel", label: "出售 CS2 皮肤" },

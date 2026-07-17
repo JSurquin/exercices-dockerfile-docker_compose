@@ -132,32 +132,26 @@ export function DynamicCmsArticlePage({
           </div>
         </motion.div>
 
-        {coverImageUrl && !coverFailed ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.05 }}
-            className="mb-8 overflow-hidden rounded-xl border border-border/50 shadow-lg"
-          >
-            <img
-              src={coverImageUrl}
-              alt=""
-              className="w-full max-h-[480px] object-cover"
-              onError={() => setCoverFailed(true)}
-            />
-          </motion.div>
-        ) : coverImageUrl && coverFailed ? (
-          <div className="mb-8 flex items-center justify-center h-48 rounded-xl border border-dashed border-border/50 bg-muted/30">
-            <PhotoIcon className="w-10 h-10 text-muted-foreground/40" />
-          </div>
-        ) : null}
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <Card>
+          <Card className="overflow-hidden">
+            {coverImageUrl && !coverFailed ? (
+              <figure className="m-0">
+                <img
+                  src={coverImageUrl}
+                  alt=""
+                  className="w-full max-h-[480px] object-cover"
+                  onError={() => setCoverFailed(true)}
+                />
+              </figure>
+            ) : coverImageUrl && coverFailed ? (
+              <div className="flex items-center justify-center h-48 bg-muted/30">
+                <PhotoIcon className="w-10 h-10 text-muted-foreground/40" />
+              </div>
+            ) : null}
             <CardContent className="p-6 sm:p-8">
               <div className="prose prose-gray dark:prose-invert max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={CMS_MARKDOWN_COMPONENTS}>

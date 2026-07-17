@@ -41,7 +41,7 @@ export const CMS_MARKDOWN_COMPONENTS = {
       {...props}
       src={src}
       alt={alt ?? ''}
-      className="rounded-lg my-6 w-full max-w-full h-auto border border-border/50"
+      className="rounded-md my-6 w-full max-w-full h-auto"
       loading="lazy"
     />
   ),

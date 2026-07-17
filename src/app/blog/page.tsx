@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   NewspaperIcon,
   ClockIcon,
@@ -12,6 +13,7 @@ import {
   SparklesIcon,
   BookOpenIcon,
   PhotoIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +30,13 @@ type BlogArticleItem = {
   isFeatured: boolean;
   publishedAt: string;
 };
+
+function normalizeSearch(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "");
+}
 
 function BlogCoverImage({
   src,
@@ -65,6 +74,7 @@ export default function BlogPage() {
   const { messages, locale } = useLocale();
   const t = messages.blogPage;
   const [activeCategory, setActiveCategory] = useState<BlogCategoryKey | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: allArticles = [] } = useQuery({
     queryKey: ["blog-articles", locale],
@@ -77,18 +87,45 @@ export default function BlogPage() {
     staleTime: 10 * 60 * 1000,
   });
 
+  const getCategoryLabel = (category?: string) => {
+    if (!category || !isBlogCategoryKey(category)) return null;
+    return messages.blogPage.categories[category];
+  };
+
+  const searchFilteredArticles = useMemo(() => {
+    const q = searchQuery.trim();
+    if (!q) return allArticles;
+    const n = normalizeSearch(q);
+    const categories = messages.blogPage.categories;
+    return allArticles.filter((article) => {
+      const categoryLabel =
+        article.category && isBlogCategoryKey(article.category)
+          ? categories[article.category]
+          : null;
+      return (
+        normalizeSearch(article.title).includes(n) ||
+        (article.summary ? normalizeSearch(article.summary).includes(n) : false) ||
+        (categoryLabel ? normalizeSearch(categoryLabel).includes(n) : false)
+      );
+    });
+  }, [allArticles, searchQuery, messages.blogPage.categories]);
+
   const featuredArticles = useMemo(
-    () => allArticles.filter((a) => a.isFeatured).slice(0, 3),
-    [allArticles],
+    () => searchFilteredArticles.filter((a) => a.isFeatured).slice(0, 3),
+    [searchFilteredArticles],
   );
 
   const heroArticle = featuredArticles[0] ?? null;
   const secondaryFeatured = featuredArticles.slice(1);
+  const isSearching = searchQuery.trim().length > 0;
 
   const filteredArticles = useMemo(() => {
-    if (activeCategory === "all") return allArticles;
-    return allArticles.filter((a) => a.category === activeCategory);
-  }, [allArticles, activeCategory]);
+    let articles = searchFilteredArticles;
+    if (activeCategory !== "all") {
+      articles = articles.filter((a) => a.category === activeCategory);
+    }
+    return articles;
+  }, [searchFilteredArticles, activeCategory]);
 
   const localeTag = locale === "cn" ? "zh-CN" : locale === "en" ? "en-GB" : "fr-FR";
 
@@ -98,11 +135,6 @@ export default function BlogPage() {
       month: "long",
       year: "numeric",
     }).format(new Date(publishedAt));
-
-  const getCategoryLabel = (category?: string) => {
-    if (!category || !isBlogCategoryKey(category)) return null;
-    return messages.blogPage.categories[category];
-  };
 
   const renderMetaRow = (article: BlogArticleItem, featured = false) => (
     <div className="flex flex-wrap items-center gap-2">
@@ -219,16 +251,52 @@ export default function BlogPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-10 sm:mb-14"
+          className="text-center mb-8 sm:mb-10"
         >
           <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">
             <NewspaperIcon className="w-8 h-8 md:w-10 md:h-10 inline-block mr-2 text-theme-accent" />
             {t.title}
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">{t.subtitle}</p>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">{t.subtitle}</p>
+
+          <div className="max-w-lg mx-auto relative">
+            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <Input
+              type="search"
+              placeholder={t.searchPlaceholder}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-3"
+              aria-label={t.searchPlaceholder}
+            />
+          </div>
         </motion.div>
 
-        {heroArticle ? (
+        {!isSearching ? (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="mb-10"
+          >
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3 text-center sm:text-left">
+              {t.popularGuides}
+            </p>
+            <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+              {t.popularGuideLinks.map((link: { slug: string; label: string }) => (
+                <Link
+                  key={link.slug}
+                  href={`/blog/${link.slug}`}
+                  className="inline-flex items-center rounded-full border border-border/60 bg-card px-4 py-2 text-sm text-foreground/90 transition-colors hover:border-theme-accent/50 hover:bg-theme-accent/5 hover:text-theme-accent"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        ) : null}
+
+        {!isSearching && heroArticle ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -290,24 +358,6 @@ export default function BlogPage() {
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="mt-4 bg-muted/50">
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-2">{t.popularGuides}</h3>
-                <ul className="space-y-2">
-                  {t.popularGuideLinks.map((link: { slug: string; label: string }) => (
-                    <li key={link.slug}>
-                      <Link
-                        href={`/blog/${link.slug}`}
-                        className="text-sm text-theme-accent hover:underline"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
           </motion.aside>
 
           <motion.div
@@ -324,7 +374,9 @@ export default function BlogPage() {
             ) : (
               <Card className="border-dashed">
                 <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground">{t.noArticles}</p>
+                  <p className="text-muted-foreground">
+                    {isSearching ? t.searchNoResults : t.noArticles}
+                  </p>
                 </CardContent>
               </Card>
             )}
