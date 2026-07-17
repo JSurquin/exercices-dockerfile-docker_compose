@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { pickLocalizedField, pickLocalizedOptionalField, resolveCmsLocale } from '@/lib/cms-localized';
+import { normalizeCmsImageUrl } from '@/lib/cms-image-url';
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         ),
         content: pickLocalizedField(lang, article.contentFr, article.contentEn, article.contentCn),
         category: article.category,
-        coverImageUrl: article.coverImageUrl,
+        coverImageUrl: normalizeCmsImageUrl(article.coverImageUrl),
         readTimeMinutes: article.readTimeMinutes,
         isFeatured: article.isFeatured,
         publishedAt: article.publishedAt,

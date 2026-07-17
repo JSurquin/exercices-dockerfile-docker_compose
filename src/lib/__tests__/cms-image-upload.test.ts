@@ -3,11 +3,12 @@ import {
   CmsImageUploadError,
   isCmsImageUploadError,
   resetCmsUploadDirectoryCache,
+  resolveCmsImageFilePath,
   resolveCmsImageMimeType,
   resolveCmsUploadDirectory,
   saveCmsImage,
 } from '@/lib/cms-image-upload';
-import { chmodSync, mkdirSync } from 'fs';
+import { chmodSync, mkdirSync, writeFileSync } from 'fs';
 import os from 'os';
 import path from 'path';
 
@@ -35,9 +36,9 @@ describe('cms-image-upload', () => {
     expect(() => resolveCmsImageMimeType(file, buffer)).toThrow(CmsImageUploadError);
   });
 
-  it('utilise /uploads/cms quand le dossier public est cible', () => {
+  it('retourne toujours une URL /api/cms-media', () => {
     const uploadDir = resolveCmsUploadDirectory();
-    expect(buildCmsImagePublicUrl('abc.jpg', uploadDir)).toMatch(/^\/(uploads\/cms|api\/cms-media)\//);
+    expect(buildCmsImagePublicUrl('abc.jpg', uploadDir)).toBe('/api/cms-media/abc.jpg');
   });
 
   it('bascule sur un dossier temporaire si public/uploads/cms est en lecture seule', async () => {
@@ -62,5 +63,16 @@ describe('cms-image-upload', () => {
     const error = new CmsImageUploadError('test');
     expect(isCmsImageUploadError(error)).toBe(true);
     expect(isCmsImageUploadError(new Error('autre'))).toBe(false);
+  });
+
+  it('retrouve un fichier dans le dossier temporaire même si public est la cible par défaut', async () => {
+    const fallbackDir = path.join(os.tmpdir(), 'moonskin-cms-uploads');
+    mkdirSync(fallbackDir, { recursive: true });
+    const filename = 'test-resolve-fallback.jpg';
+    writeFileSync(path.join(fallbackDir, filename), Buffer.from([0xff, 0xd8, 0xff]));
+
+    resetCmsUploadDirectoryCache();
+    const resolved = await resolveCmsImageFilePath(filename);
+    expect(resolved).toBe(path.join(fallbackDir, filename));
   });
 });

@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
-import { resolveCmsUploadDirectory } from '@/lib/cms-image-upload';
+import { resolveCmsImageFilePath } from '@/lib/cms-image-upload';
 
 interface RouteParams {
   params: Promise<{ filename: string }>;
@@ -26,10 +26,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
-    const uploadDir = resolveCmsUploadDirectory();
-    const filePath = path.join(uploadDir, filename);
-    const resolved = path.resolve(filePath);
-    if (!resolved.startsWith(path.resolve(uploadDir))) {
+    const resolved = await resolveCmsImageFilePath(filename);
+    if (!resolved) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 

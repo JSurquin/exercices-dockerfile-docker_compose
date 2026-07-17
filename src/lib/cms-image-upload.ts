@@ -1,8 +1,9 @@
 import { randomUUID } from 'crypto';
 import { accessSync, constants, mkdirSync } from 'fs';
-import { mkdir, writeFile } from 'fs/promises';
+import { access, mkdir, writeFile } from 'fs/promises';
 import os from 'os';
 import path from 'path';
+import { extractCmsImageFilename } from '@/lib/cms-image-url';
 
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
@@ -120,12 +121,40 @@ export function resetCmsUploadDirectoryCache(): void {
   cachedUploadDir = null;
 }
 
-export function buildCmsImagePublicUrl(filename: string, uploadDir: string): string {
-  const publicDir = path.join(process.cwd(), 'public', 'uploads', 'cms');
-  if (path.resolve(uploadDir) === path.resolve(publicDir)) {
-    return `/uploads/cms/${filename}`;
+export function getCmsUploadSearchDirectories(): string[] {
+  const dirs: string[] = [];
+  const configured = process.env.CMS_UPLOAD_DIR?.trim();
+  if (configured) {
+    dirs.push(path.resolve(configured));
   }
+  dirs.push(path.join(process.cwd(), 'public', 'uploads', 'cms'));
+  dirs.push(resolveFallbackUploadDirectory());
+  return [...new Set(dirs.map((dir) => path.resolve(dir)))];
+}
+
+export async function resolveCmsImageFilePath(filename: string): Promise<string | null> {
+  for (const dir of getCmsUploadSearchDirectories()) {
+    const filePath = path.join(dir, filename);
+    const resolved = path.resolve(filePath);
+    if (!resolved.startsWith(`${path.resolve(dir)}${path.sep}`) && resolved !== path.resolve(dir)) {
+      continue;
+    }
+    try {
+      await access(resolved);
+      return resolved;
+    } catch {
+      // fichier absent dans ce répertoire
+    }
+  }
+  return null;
+}
+
+export function buildCmsImagePublicUrl(filename: string, _uploadDir?: string): string {
   return `/api/cms-media/${filename}`;
+}
+
+export function resolveCmsImageFilenameFromUrl(url: string): string | null {
+  return extractCmsImageFilename(url);
 }
 
 export async function saveCmsImage(file: File): Promise<{ url: string }> {

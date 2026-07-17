@@ -9,10 +9,13 @@ import {
   DocumentTextIcon,
   CalendarIcon,
   ExclamationTriangleIcon,
+  PhotoIcon,
 } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CMS_MARKDOWN_COMPONENTS } from '@/components/content/markdown-components';
+import { normalizeCmsImageUrl } from '@/lib/cms-image-url';
+import { useMemo, useState } from 'react';
 
 interface DynamicCmsArticlePageProps {
   apiPath: string;
@@ -53,6 +56,12 @@ export function DynamicCmsArticlePage({
     en: 'en-US',
     cn: 'zh-CN',
   };
+
+  const coverImageUrl = useMemo(
+    () => normalizeCmsImageUrl(article?.coverImageUrl),
+    [article?.coverImageUrl],
+  );
+  const [coverFailed, setCoverFailed] = useState(false);
 
   if (isLoading) {
     return (
@@ -123,19 +132,24 @@ export function DynamicCmsArticlePage({
           </div>
         </motion.div>
 
-        {article.coverImageUrl ? (
+        {coverImageUrl && !coverFailed ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="mb-8 overflow-hidden rounded-xl border border-border/50"
+            className="mb-8 overflow-hidden rounded-xl border border-border/50 shadow-lg"
           >
             <img
-              src={article.coverImageUrl}
+              src={coverImageUrl}
               alt=""
-              className="w-full max-h-[420px] object-cover"
+              className="w-full max-h-[480px] object-cover"
+              onError={() => setCoverFailed(true)}
             />
           </motion.div>
+        ) : coverImageUrl && coverFailed ? (
+          <div className="mb-8 flex items-center justify-center h-48 rounded-xl border border-dashed border-border/50 bg-muted/30">
+            <PhotoIcon className="w-10 h-10 text-muted-foreground/40" />
+          </div>
         ) : null}
 
         <motion.div

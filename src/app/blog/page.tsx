@@ -11,6 +11,7 @@ import {
   ChevronRightIcon,
   SparklesIcon,
   BookOpenIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +28,38 @@ type BlogArticleItem = {
   isFeatured: boolean;
   publishedAt: string;
 };
+
+function BlogCoverImage({
+  src,
+  alt,
+  className,
+}: {
+  src?: string | null;
+  alt: string;
+  className?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (!src || failed) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-gradient-to-br from-muted/80 via-muted/40 to-theme-accent/10 ${className ?? ""}`}
+      >
+        <PhotoIcon className="w-10 h-10 text-muted-foreground/40" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 
 export default function BlogPage() {
   const { messages, locale } = useLocale();
@@ -49,6 +82,9 @@ export default function BlogPage() {
     [allArticles],
   );
 
+  const heroArticle = featuredArticles[0] ?? null;
+  const secondaryFeatured = featuredArticles.slice(1);
+
   const filteredArticles = useMemo(() => {
     if (activeCategory === "all") return allArticles;
     return allArticles.filter((a) => a.category === activeCategory);
@@ -68,87 +104,147 @@ export default function BlogPage() {
     return messages.blogPage.categories[category];
   };
 
-  const renderArticleCard = (article: BlogArticleItem, featured = false) => (
-    <Card
-      key={article.slug}
-      className={`overflow-hidden hover:shadow-md transition-shadow ${featured ? "border-theme-accent/30 bg-theme-accent/5" : ""}`}
-    >
-      {article.coverImageUrl ? (
-        <div className="aspect-[16/9] overflow-hidden border-b border-border/50">
-          <img
-            src={article.coverImageUrl}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        </div>
+  const renderMetaRow = (article: BlogArticleItem, featured = false) => (
+    <div className="flex flex-wrap items-center gap-2">
+      {article.category && getCategoryLabel(article.category) ? (
+        <Badge variant="secondary" className="text-xs font-medium">
+          {getCategoryLabel(article.category)}
+        </Badge>
       ) : null}
-      <CardContent className="p-6">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {article.category && getCategoryLabel(article.category) ? (
-              <Badge variant="secondary" className="text-xs">
-                {getCategoryLabel(article.category)}
-              </Badge>
-            ) : null}
-            {featured ? (
-              <Badge className="bg-theme-accent/15 text-theme-accent border-theme-accent/30 text-xs">
-                <SparklesIcon className="w-3 h-3 mr-1" />
-                {t.featured}
-              </Badge>
-            ) : null}
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <ClockIcon className="w-3 h-3" />
-              {article.readTimeMinutes} {t.readTime}
-            </span>
+      {featured ? (
+        <Badge className="bg-theme-accent/15 text-theme-accent border-theme-accent/30 text-xs">
+          <SparklesIcon className="w-3 h-3 mr-1" />
+          {t.featured}
+        </Badge>
+      ) : null}
+      <span className="text-xs text-muted-foreground flex items-center gap-1">
+        <ClockIcon className="w-3 h-3" />
+        {article.readTimeMinutes} {t.readTime}
+      </span>
+    </div>
+  );
+
+  const renderHeroCard = (article: BlogArticleItem) => (
+    <Link href={`/blog/${article.slug}`} className="group block">
+      <Card className="overflow-hidden border-theme-accent/20 bg-gradient-to-br from-theme-accent/5 via-card to-card hover:shadow-xl hover:border-theme-accent/40 transition-all duration-300">
+        <div className="grid md:grid-cols-2 gap-0">
+          <div className="relative aspect-[16/10] md:aspect-auto md:min-h-[320px] overflow-hidden">
+            <BlogCoverImage
+              src={article.coverImageUrl}
+              alt={article.title}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-black/10 pointer-events-none" />
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-2">{formatDate(article.publishedAt)}</p>
-            <h3 className={`font-semibold mb-2 ${featured ? "text-xl" : "text-lg"}`}>{article.title}</h3>
-            {article.summary ? (
-              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{article.summary}</p>
-            ) : null}
-          </div>
-          <Button variant="outline" className="w-fit" asChild>
-            <Link href={`/blog/${article.slug}`}>
+          <CardContent className="p-6 sm:p-8 flex flex-col justify-center gap-4">
+            {renderMetaRow(article, true)}
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">{formatDate(article.publishedAt)}</p>
+              <h2 className="text-2xl sm:text-3xl font-bold leading-tight mb-3 group-hover:text-theme-accent transition-colors">
+                {article.title}
+              </h2>
+              {article.summary ? (
+                <p className="text-muted-foreground leading-relaxed line-clamp-4">{article.summary}</p>
+              ) : null}
+            </div>
+            <span className="inline-flex items-center text-sm font-medium text-theme-accent group-hover:gap-2 transition-all">
               {t.readMore}
               <ChevronRightIcon className="w-4 h-4 ml-1" />
-            </Link>
-          </Button>
+            </span>
+          </CardContent>
         </div>
-      </CardContent>
-    </Card>
+      </Card>
+    </Link>
+  );
+
+  const renderCompactFeaturedCard = (article: BlogArticleItem) => (
+    <Link href={`/blog/${article.slug}`} className="group block h-full">
+      <Card className="overflow-hidden h-full hover:shadow-lg hover:border-theme-accent/30 transition-all duration-300">
+        <div className="aspect-[16/10] overflow-hidden">
+          <BlogCoverImage
+            src={article.coverImageUrl}
+            alt={article.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </div>
+        <CardContent className="p-5 flex flex-col gap-3">
+          {renderMetaRow(article, true)}
+          <div>
+            <p className="text-xs text-muted-foreground mb-1.5">{formatDate(article.publishedAt)}</p>
+            <h3 className="font-semibold text-lg leading-snug line-clamp-2 group-hover:text-theme-accent transition-colors">
+              {article.title}
+            </h3>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+
+  const renderArticleRow = (article: BlogArticleItem) => (
+    <Link href={`/blog/${article.slug}`} className="group block">
+      <Card className="overflow-hidden hover:shadow-md hover:border-border/80 transition-all duration-300">
+        <div className="flex flex-col sm:flex-row">
+          <div className="sm:w-56 md:w-64 shrink-0 aspect-[16/10] sm:aspect-auto sm:min-h-[160px] overflow-hidden">
+            <BlogCoverImage
+              src={article.coverImageUrl}
+              alt={article.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+          <CardContent className="p-5 sm:p-6 flex flex-col justify-center gap-3 flex-1 min-w-0">
+            {renderMetaRow(article)}
+            <div>
+              <p className="text-xs text-muted-foreground mb-1.5">{formatDate(article.publishedAt)}</p>
+              <h3 className="font-semibold text-lg sm:text-xl mb-2 leading-snug group-hover:text-theme-accent transition-colors">
+                {article.title}
+              </h3>
+              {article.summary ? (
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{article.summary}</p>
+              ) : null}
+            </div>
+            <span className="inline-flex items-center text-sm text-theme-accent opacity-0 group-hover:opacity-100 transition-opacity">
+              {t.readMore}
+              <ChevronRightIcon className="w-4 h-4 ml-1" />
+            </span>
+          </CardContent>
+        </div>
+      </Card>
+    </Link>
   );
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8 sm:mb-12"
+          className="text-center mb-10 sm:mb-14"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            <NewspaperIcon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
+          <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">
+            <NewspaperIcon className="w-8 h-8 md:w-10 md:h-10 inline-block mr-2 text-theme-accent" />
             {t.title}
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.subtitle}</p>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">{t.subtitle}</p>
         </motion.div>
 
-        {featuredArticles.length > 0 ? (
+        {heroArticle ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-10"
           >
-            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-              <SparklesIcon className="w-6 h-6 text-theme-accent" />
+            <h2 className="text-xl font-semibold mb-5 flex items-center gap-2 text-muted-foreground uppercase tracking-wide text-sm">
+              <SparklesIcon className="w-5 h-5 text-theme-accent" />
               {t.featuredPosts}
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {featuredArticles.map((article) => renderArticleCard(article, true))}
-            </div>
+            {renderHeroCard(heroArticle)}
+            {secondaryFeatured.length > 0 ? (
+              <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                {secondaryFeatured.map((article) => renderCompactFeaturedCard(article))}
+              </div>
+            ) : null}
           </motion.div>
         ) : null}
 
@@ -159,7 +255,7 @@ export default function BlogPage() {
             transition={{ duration: 0.6, delay: 0.15 }}
             className="lg:col-span-1"
           >
-            <Card>
+            <Card className="sticky top-24">
               <CardContent className="p-4">
                 <h3 className="font-semibold mb-4 flex items-center gap-2">
                   <BookOpenIcon className="w-5 h-5 text-theme-accent" />
@@ -223,7 +319,7 @@ export default function BlogPage() {
             <h2 className="text-2xl font-semibold mb-6">{t.allPosts}</h2>
             {filteredArticles.length > 0 ? (
               <div className="space-y-4">
-                {filteredArticles.map((article) => renderArticleCard(article))}
+                {filteredArticles.map((article) => renderArticleRow(article))}
               </div>
             ) : (
               <Card className="border-dashed">

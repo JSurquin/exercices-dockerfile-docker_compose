@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useLocale } from '@/components/providers/locale-provider';
 import { ImageIcon, Loader2Icon, Trash2Icon } from 'lucide-react';
 import { toast } from 'sonner';
+import { normalizeCmsImageUrl } from '@/lib/cms-image-url';
 
 interface CmsCoverImageFieldProps {
   value: string;
@@ -52,6 +53,8 @@ export function CmsCoverImageField({ value, onChange }: CmsCoverImageFieldProps)
     }
   };
 
+  const previewUrl = normalizeCmsImageUrl(value);
+
   return (
     <div className="space-y-3">
       <div>
@@ -59,9 +62,9 @@ export function CmsCoverImageField({ value, onChange }: CmsCoverImageFieldProps)
         <p className="text-xs text-slate-400 mt-1">{t.coverImageHint}</p>
       </div>
 
-      {value ? (
+      {previewUrl ? (
         <div className="relative overflow-hidden rounded-lg border border-slate-600 bg-slate-900">
-          <img src={value} alt="" className="w-full max-h-48 object-cover" />
+          <img src={previewUrl} alt="" className="w-full max-h-48 object-cover" />
           <Button
             type="button"
             variant="destructive"

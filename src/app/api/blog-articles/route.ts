@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { pickLocalizedField, pickLocalizedOptionalField, resolveCmsLocale } from '@/lib/cms-localized';
 import { isBlogCategoryKey } from '@/lib/blog-articles-config';
+import { normalizeCmsImageUrl } from '@/lib/cms-image-url';
 
 /**
  * GET /api/blog-articles
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
         article.summaryCn,
       ),
       category: article.category,
-      coverImageUrl: article.coverImageUrl,
+      coverImageUrl: normalizeCmsImageUrl(article.coverImageUrl),
       readTimeMinutes: article.readTimeMinutes,
       isFeatured: article.isFeatured,
       publishedAt: article.publishedAt,
