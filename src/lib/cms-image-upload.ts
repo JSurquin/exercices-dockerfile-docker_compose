@@ -1,5 +1,7 @@
 import { randomUUID } from 'crypto';
+import { accessSync, constants, mkdirSync } from 'fs';
 import { mkdir, writeFile } from 'fs/promises';
+import os from 'os';
 import path from 'path';
 
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -24,6 +26,29 @@ export class CmsImageUploadError extends Error {
     super(message);
     this.name = 'CmsImageUploadError';
   }
+}
+
+export function isCmsImageUploadError(error: unknown): error is CmsImageUploadError {
+  return (
+    error instanceof CmsImageUploadError ||
+    (error instanceof Error && error.name === 'CmsImageUploadError')
+  );
+}
+
+let cachedUploadDir: string | null = null;
+
+function canWriteDirectorySync(dir: string): boolean {
+  try {
+    mkdirSync(dir, { recursive: true });
+    accessSync(dir, constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function resolveFallbackUploadDirectory(): string {
+  return path.join(os.tmpdir(), 'moonskin-cms-uploads');
 }
 
 function detectMimeFromBuffer(buffer: Buffer): string | null {
@@ -68,11 +93,31 @@ export function resolveCmsImageMimeType(file: File, buffer: Buffer): string {
 }
 
 export function resolveCmsUploadDirectory(): string {
+  if (cachedUploadDir) {
+    return cachedUploadDir;
+  }
+
   const configured = process.env.CMS_UPLOAD_DIR?.trim();
   if (configured) {
-    return path.resolve(configured);
+    cachedUploadDir = path.resolve(configured);
+    return cachedUploadDir;
   }
-  return path.join(process.cwd(), 'public', 'uploads', 'cms');
+
+  const publicDir = path.join(process.cwd(), 'public', 'uploads', 'cms');
+  if (canWriteDirectorySync(publicDir)) {
+    cachedUploadDir = publicDir;
+    return cachedUploadDir;
+  }
+
+  const fallbackDir = resolveFallbackUploadDirectory();
+  mkdirSync(fallbackDir, { recursive: true });
+  cachedUploadDir = fallbackDir;
+  return cachedUploadDir;
+}
+
+/** Réinitialise le cache (tests ou bascule après échec d'écriture). */
+export function resetCmsUploadDirectoryCache(): void {
+  cachedUploadDir = null;
 }
 
 export function buildCmsImagePublicUrl(filename: string, uploadDir: string): string {
@@ -96,16 +141,32 @@ export async function saveCmsImage(file: File): Promise<{ url: string }> {
   const mimeType = resolveCmsImageMimeType(file, buffer);
   const extension = EXTENSION_BY_MIME[mimeType];
   const filename = `${randomUUID()}.${extension}`;
-  const uploadDir = resolveCmsUploadDirectory();
+  let uploadDir = resolveCmsUploadDirectory();
+  const publicDir = path.join(process.cwd(), 'public', 'uploads', 'cms');
 
   try {
     await mkdir(uploadDir, { recursive: true });
     await writeFile(path.join(uploadDir, filename), buffer);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erreur inconnue';
-    throw new CmsImageUploadError(
-      `Impossible d'enregistrer l'image (${message}). Vérifiez les droits d'écriture ou définissez CMS_UPLOAD_DIR.`,
-    );
+    if (path.resolve(uploadDir) === path.resolve(publicDir)) {
+      resetCmsUploadDirectoryCache();
+      uploadDir = resolveFallbackUploadDirectory();
+      try {
+        await mkdir(uploadDir, { recursive: true });
+        await writeFile(path.join(uploadDir, filename), buffer);
+        cachedUploadDir = uploadDir;
+      } catch (retryError) {
+        const message = retryError instanceof Error ? retryError.message : 'Erreur inconnue';
+        throw new CmsImageUploadError(
+          `Impossible d'enregistrer l'image (${message}). Vérifiez les droits d'écriture ou définissez CMS_UPLOAD_DIR.`,
+        );
+      }
+    } else {
+      const message = error instanceof Error ? error.message : 'Erreur inconnue';
+      throw new CmsImageUploadError(
+        `Impossible d'enregistrer l'image (${message}). Vérifiez les droits d'écriture ou définissez CMS_UPLOAD_DIR.`,
+      );
+    }
   }
 
   return { url: buildCmsImagePublicUrl(filename, uploadDir) };

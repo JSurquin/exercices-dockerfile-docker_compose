@@ -1,11 +1,22 @@
 import {
   buildCmsImagePublicUrl,
   CmsImageUploadError,
+  isCmsImageUploadError,
+  resetCmsUploadDirectoryCache,
   resolveCmsImageMimeType,
   resolveCmsUploadDirectory,
+  saveCmsImage,
 } from '@/lib/cms-image-upload';
+import { chmodSync, mkdirSync } from 'fs';
+import os from 'os';
+import path from 'path';
 
 describe('cms-image-upload', () => {
+  afterEach(() => {
+    resetCmsUploadDirectoryCache();
+    delete process.env.CMS_UPLOAD_DIR;
+  });
+
   it('accepte un JPEG sans type MIME via extension', () => {
     const buffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
     const file = new File([buffer], 'cover.jpg', { type: '' });
@@ -27,5 +38,29 @@ describe('cms-image-upload', () => {
   it('utilise /uploads/cms quand le dossier public est cible', () => {
     const uploadDir = resolveCmsUploadDirectory();
     expect(buildCmsImagePublicUrl('abc.jpg', uploadDir)).toMatch(/^\/(uploads\/cms|api\/cms-media)\//);
+  });
+
+  it('bascule sur un dossier temporaire si public/uploads/cms est en lecture seule', async () => {
+    const publicDir = path.join(process.cwd(), 'public', 'uploads', 'cms');
+    mkdirSync(publicDir, { recursive: true });
+    chmodSync(publicDir, 0o555);
+
+    try {
+      const buffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]);
+      const file = new File([buffer], 'cover.jpg', { type: 'image/jpeg' });
+      const result = await saveCmsImage(file);
+
+      expect(result.url).toMatch(/^\/api\/cms-media\//);
+      expect(resolveCmsUploadDirectory()).toBe(path.join(os.tmpdir(), 'moonskin-cms-uploads'));
+    } finally {
+      chmodSync(publicDir, 0o755);
+      resetCmsUploadDirectoryCache();
+    }
+  });
+
+  it('reconnaît une CmsImageUploadError par son nom', () => {
+    const error = new CmsImageUploadError('test');
+    expect(isCmsImageUploadError(error)).toBe(true);
+    expect(isCmsImageUploadError(new Error('autre'))).toBe(false);
   });
 });
