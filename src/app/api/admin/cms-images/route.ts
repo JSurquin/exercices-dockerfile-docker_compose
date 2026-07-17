@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CmsImageUploadError, saveCmsImage } from '@/lib/cms-image-upload';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await requireAdminSessionWithDbCheck(request);

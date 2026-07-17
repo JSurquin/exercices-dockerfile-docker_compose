@@ -240,18 +240,18 @@ Rather than opening cases, many players prefer to **buy directly** the skin they
     isFeatured: true,
     sortOrder: 1,
     publishedAt: '2026-07-16T12:00:00Z',
-    titleFr: 'Reverse trade Steam : ce que c\'est, les risques et la politique MoonSkin',
-    titleEn: 'Steam reverse trade: what it is, the risks, and MoonSkin\'s policy',
-    titleCn: 'Steam 反向交易：是什么、风险及 MoonSkin 政策',
+    titleFr: 'CS2 reverse trade : guide complet Steam (annulation d\'échange)',
+    titleEn: 'CS2 reverse trade: complete Steam guide (trade reversal)',
+    titleCn: 'CS2 反向交易：Steam 完整指南（撤销交易）',
     summaryFr:
-      'Tout savoir sur le reverse trade Steam : origine, fonctionnement, dangers pour les vendeurs CS2 et ce que MoonSkin fait (ou ne fait pas) pour vous protéger.',
+      'CS2 reverse trade expliqué : origine Steam, fonctionnement, risques pour les vendeurs Counter-Strike 2 et politique MoonSkin (bannissement, pénalités, protection).',
     summaryEn:
-      'Everything about Steam reverse trade: origin, how it works, risks for CS2 sellers, and what MoonSkin does (and does not do) to protect you.',
+      'CS2 reverse trade explained: Steam origins, how it works, risks for Counter-Strike 2 sellers and MoonSkin policy (bans, penalties, protection).',
     summaryCn:
       '全面了解 Steam 反向交易：起源、运作方式、对 CS2 卖家的风险，以及 MoonSkin 如何（或不）保护您。',
-    contentFr: `# Reverse trade Steam : guide complet
+    contentFr: `# CS2 reverse trade : guide complet Steam
 
-Le **reverse trade** (ou « annulation d'échange ») est une fonctionnalité Steam qui permet d'**annuler un échange d'objets** dans certaines conditions. Comprendre ce mécanisme est essentiel pour tout vendeur de skins CS2.
+Le **CS2 reverse trade** (ou « annulation d'échange Steam ») est une fonctionnalité qui permet d'**annuler un échange d'objets Counter-Strike 2** dans certaines conditions. Comprendre ce mécanisme est essentiel pour tout vendeur de skins CS2.
 
 ## Qu'est-ce que le reverse trade ?
 
@@ -327,9 +327,9 @@ Si vous reverse tradez volontairement une vente effectuée sur MoonSkin :
 - Consultez notre article sur le [trade hold Steam](/blog/steam-trade-hold-cs2)
 
 [Commencer à vendre sur MoonSkin](/sell)`,
-    contentEn: `# Steam reverse trade: complete guide
+    contentEn: `# CS2 reverse trade: complete Steam guide
 
-**Reverse trade** (trade cancellation) is a Steam feature that lets you **undo a recent item exchange** under certain conditions. Understanding this mechanism is essential for every CS2 skin seller.
+The **CS2 reverse trade** (Steam trade cancellation) is a feature that lets you **undo a recent Counter-Strike 2 item exchange** under certain conditions. Understanding this mechanism is essential for every CS2 skin seller.
 
 ## What is reverse trade?
 
