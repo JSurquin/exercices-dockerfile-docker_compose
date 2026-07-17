@@ -34,6 +34,8 @@ import {
 import {
   BLOG_CATEGORY_KEYS,
 } from '@/lib/blog-articles-config';
+import { CmsMarkdownField } from '@/components/admin/cms-markdown-field';
+import { CmsCoverImageField } from '@/components/admin/cms-cover-image-field';
 
 export interface CmsArticleRecord {
   id: string;
@@ -58,6 +60,7 @@ export interface CmsArticleRecord {
   sortOrder?: number;
   readTimeMinutes?: number;
   isFeatured?: boolean;
+  coverImageUrl?: string | null;
   updatedAt: string;
   source?: 'static' | 'cms';
   categoryKey?: HelpCategoryKey;
@@ -89,6 +92,7 @@ interface CmsArticleForm {
   sortOrder: number;
   readTimeMinutes: number;
   isFeatured: boolean;
+  coverImageUrl: string;
 }
 
 type PressArticleType = 'release' | 'coverage';
@@ -125,6 +129,7 @@ const emptyForm: CmsArticleForm = {
   sortOrder: 0,
   readTimeMinutes: 5,
   isFeatured: false,
+  coverImageUrl: '',
 };
 
 export function CmsArticlesAdminPage({
@@ -333,6 +338,7 @@ export function CmsArticlesAdminPage({
         sortOrder: article.sortOrder ?? 0,
         readTimeMinutes: article.readTimeMinutes ?? 5,
         isFeatured: article.isFeatured ?? false,
+        coverImageUrl: article.coverImageUrl || '',
       });
     } else {
       setEditMode('create');
@@ -704,6 +710,13 @@ export function CmsArticlesAdminPage({
               </div>
             )}
 
+            {kind === 'blog' && (
+              <CmsCoverImageField
+                value={form.coverImageUrl}
+                onChange={(coverImageUrl) => setForm((prev) => ({ ...prev, coverImageUrl }))}
+              />
+            )}
+
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="bg-slate-800">
                 <TabsTrigger value="fr">FR</TabsTrigger>
@@ -750,17 +763,29 @@ export function CmsArticlesAdminPage({
                       Contenu Markdown ({lang.toUpperCase()})
                       {kind === 'press' && articleType === 'coverage' ? ` — ${pressT.contentOptional}` : ''}
                     </Label>
-                    <Textarea
-                      value={form[`content${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          [`content${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]: e.target.value,
-                        }))
-                      }
-                      rows={12}
-                      className="bg-slate-800 border-slate-600 font-mono text-sm"
-                    />
+                    {kind === 'help' || kind === 'blog' ? (
+                      <CmsMarkdownField
+                        value={form[`content${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]}
+                        onChange={(content) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            [`content${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]: content,
+                          }))
+                        }
+                      />
+                    ) : (
+                      <Textarea
+                        value={form[`content${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]}
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            [`content${lang === 'fr' ? 'Fr' : lang === 'en' ? 'En' : 'Cn'}`]: e.target.value,
+                          }))
+                        }
+                        rows={12}
+                        className="bg-slate-800 border-slate-600 font-mono text-sm"
+                      />
+                    )}
                   </div>
                 </TabsContent>
               ))}

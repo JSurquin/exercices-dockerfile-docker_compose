@@ -3384,6 +3384,18 @@ export interface Messages {
       categoryPlaceholder: string;
       readTimeMinutes: string;
     };
+    cmsArticles: {
+      coverImage: string;
+      coverImageHint: string;
+      insertImage: string;
+      insertImageHint: string;
+      uploadImage: string;
+      uploading: string;
+      imageUploaded: string;
+      uploadError: string;
+      removeImage: string;
+      orUrl: string;
+    };
   };
   kycPage: {
     title: string;

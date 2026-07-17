@@ -12,43 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
-const MARKDOWN_COMPONENTS = {
-  h1: ({ children }: { children?: React.ReactNode }) => (
-    <h1 className="text-2xl font-bold mt-8 mb-4 first:mt-0">{children}</h1>
-  ),
-  h2: ({ children }: { children?: React.ReactNode }) => (
-    <h2 className="text-xl font-semibold mt-6 mb-3">{children}</h2>
-  ),
-  h3: ({ children }: { children?: React.ReactNode }) => (
-    <h3 className="text-lg font-semibold mt-4 mb-2">{children}</h3>
-  ),
-  p: ({ children }: { children?: React.ReactNode }) => (
-    <p className="mb-4 leading-relaxed">{children}</p>
-  ),
-  ul: ({ children }: { children?: React.ReactNode }) => (
-    <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>
-  ),
-  ol: ({ children }: { children?: React.ReactNode }) => (
-    <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>
-  ),
-  li: ({ children }: { children?: React.ReactNode }) => (
-    <li className="leading-relaxed">{children}</li>
-  ),
-  strong: ({ children }: { children?: React.ReactNode }) => (
-    <strong className="font-semibold">{children}</strong>
-  ),
-  a: ({ children, href }: { children?: React.ReactNode; href?: string }) => (
-    <a
-      href={href}
-      className="text-theme-accent hover:underline"
-      target={href?.startsWith('/') ? undefined : '_blank'}
-      rel={href?.startsWith('/') ? undefined : 'noopener noreferrer'}
-    >
-      {children}
-    </a>
-  ),
-};
+import { CMS_MARKDOWN_COMPONENTS } from '@/components/content/markdown-components';
 
 interface DynamicCmsArticlePageProps {
   apiPath: string;
@@ -60,6 +24,7 @@ interface CmsArticleData {
   subtitle?: string;
   summary?: string;
   content: string;
+  coverImageUrl?: string | null;
   updatedAt: string;
   publishedAt?: string;
   sourceName?: string;
@@ -158,6 +123,21 @@ export function DynamicCmsArticlePage({
           </div>
         </motion.div>
 
+        {article.coverImageUrl ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="mb-8 overflow-hidden rounded-xl border border-border/50"
+          >
+            <img
+              src={article.coverImageUrl}
+              alt=""
+              className="w-full max-h-[420px] object-cover"
+            />
+          </motion.div>
+        ) : null}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -166,7 +146,7 @@ export function DynamicCmsArticlePage({
           <Card>
             <CardContent className="p-6 sm:p-8">
               <div className="prose prose-gray dark:prose-invert max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={CMS_MARKDOWN_COMPONENTS}>
                   {article.content}
                 </ReactMarkdown>
               </div>

@@ -979,6 +979,7 @@ model BlogArticle {
   contentEn       String
   contentCn       String?
   category        String?
+  coverImageUrl   String?
   readTimeMinutes Int      @default(5)
   isFeatured      Boolean  @default(false)
   publishedAt     DateTime @default(now())

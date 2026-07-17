@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
       readTimeMinutes = 5,
       isFeatured = false,
       publishedAt,
+      coverImageUrl,
     } = d;
 
     const validationError = validateBlogArticlePayload({
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
         contentEn: String(contentEn),
         contentCn: contentCn != null ? String(contentCn) : null,
         category: category != null ? String(category) : null,
+        coverImageUrl: coverImageUrl != null && String(coverImageUrl).trim() ? String(coverImageUrl).trim() : null,
         readTimeMinutes: Number(readTimeMinutes) || 5,
         isFeatured: Boolean(isFeatured),
         publishedAt: publishedAt ? new Date(String(publishedAt)) : new Date(),

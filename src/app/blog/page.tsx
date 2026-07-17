@@ -22,6 +22,7 @@ type BlogArticleItem = {
   title: string;
   summary?: string;
   category?: string;
+  coverImageUrl?: string | null;
   readTimeMinutes: number;
   isFeatured: boolean;
   publishedAt: string;
@@ -70,8 +71,17 @@ export default function BlogPage() {
   const renderArticleCard = (article: BlogArticleItem, featured = false) => (
     <Card
       key={article.slug}
-      className={`hover:shadow-md transition-shadow ${featured ? "border-theme-accent/30 bg-theme-accent/5" : ""}`}
+      className={`overflow-hidden hover:shadow-md transition-shadow ${featured ? "border-theme-accent/30 bg-theme-accent/5" : ""}`}
     >
+      {article.coverImageUrl ? (
+        <div className="aspect-[16/9] overflow-hidden border-b border-border/50">
+          <img
+            src={article.coverImageUrl}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : null}
       <CardContent className="p-6">
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-2">

@@ -64,6 +64,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         contentEn: (body.contentEn as string | undefined) ?? existing.contentEn,
         contentCn: body.contentCn !== undefined ? (body.contentCn as string | null) : existing.contentCn,
         category: body.category !== undefined ? (body.category as string | null) : existing.category,
+        coverImageUrl:
+          body.coverImageUrl !== undefined
+            ? body.coverImageUrl
+              ? String(body.coverImageUrl).trim()
+              : null
+            : existing.coverImageUrl,
         readTimeMinutes:
           body.readTimeMinutes !== undefined
             ? Number(body.readTimeMinutes) || existing.readTimeMinutes
