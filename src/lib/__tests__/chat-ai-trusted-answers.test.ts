@@ -169,6 +169,15 @@ describe('resolveTrustedAiAnswer', () => {
     expect(answer).toContain('smurfs');
   });
 
+  it('retourne le guide multi-compte pour « comment changer de compte »', () => {
+    const answer = resolveTrustedAiAnswer('comment changer de compte', 'fr');
+    expect(answer).not.toBeNull();
+    expect(answer).toContain('Trade Link');
+    expect(answer).toContain('page Vendre');
+    expect(answer).not.toContain('mot de passe');
+    expect(answer).not.toContain('S\'inscrire');
+  });
+
   it('retourne la politique reverse trade en anglais', () => {
     const answer = resolveTrustedAiAnswer('ok and what happen if you reverse ?', 'en');
     expect(answer).not.toBeNull();
@@ -196,12 +205,20 @@ describe('isSellFromOtherAccountQuestion', () => {
     'Je veux vendre depuis un autre compte',
     'Comment vendre avec plusieurs comptes steam ?',
     'sell skins from my smurf account',
+    'comment changer de compte',
+    'Comment changer de compte ?',
+    'How do I change account?',
+    '如何更换账号？',
   ])('détecte une question multi-compte : %s', (message) => {
     expect(isSellFromOtherAccountQuestion(message)).toBe(true);
   });
 
-  it('ignore une question sans lien multi-compte', () => {
-    expect(isSellFromOtherAccountQuestion('Comment vendre mes skins ?')).toBe(false);
+  it.each([
+    'Comment vendre mes skins ?',
+    'Comment changer mon mot de passe ?',
+    'Comment changer mon IBAN ?',
+  ])('ignore une question sans lien multi-compte : %s', (message) => {
+    expect(isSellFromOtherAccountQuestion(message)).toBe(false);
   });
 });
 

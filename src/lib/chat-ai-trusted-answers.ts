@@ -344,11 +344,28 @@ export function isReverseTradeQuestion(message: string): boolean {
 export function isSellFromOtherAccountQuestion(message: string): boolean {
   const m = normalizeForMatch(message);
 
+  if (
+    /\b(iban|mot\s+de\s+passe|password|email|paiement|payment\s+method|methode\s+de\s+paiement)\b/.test(
+      m,
+    )
+  ) {
+    return false;
+  }
+
   if (/[\u4e00-\u9fff]/.test(message)) {
     return (
       /(其他|别的|另一个|多个).*(steam|账号|账户).*(出售|卖|售出)/.test(message) ||
-      /(出售|卖).*(其他|别的|另一个|多个).*(steam|账号|账户)/.test(message)
+      /(出售|卖).*(其他|别的|另一个|多个).*(steam|账号|账户)/.test(message) ||
+      /(如何|怎么|怎样).*(切换|更换|换).*(账号|账户)/.test(message) ||
+      /(切换|更换|换).*(账号|账户)/.test(message)
     );
+  }
+
+  if (
+    /\b(changer|change|switch|changement|changing)\b.*\b(compte|account)\b/.test(m) ||
+    /\b(compte|account)\b.*\b(changer|change|switch)\b/.test(m)
+  ) {
+    return true;
   }
 
   return (

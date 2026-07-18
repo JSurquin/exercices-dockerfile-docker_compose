@@ -323,7 +323,9 @@ Article blog détaillé : /blog/reverse-trade-steam-cs2`,
   },
   {
     source: 'faq/vendre-autre-compte-steam',
-    content: `Comment vendre les skins d'un autre compte Steam sur MoonSkin ? Vendre depuis un smurf, un second compte ou pour un client.
+    content: `Comment changer de compte pour vendre sur MoonSkin ? Comment vendre les skins d'un autre compte Steam ? Vendre depuis un smurf, un second compte ou pour un client.
+
+Il n'y a PAS de bouton « Changer de compte » ni de mot de passe MoonSkin à saisir : tu restes connecté sur ton compte principal MoonSkin.
 
 Sur MoonSkin, tu peux vendre les skins d'un autre compte Steam tout en restant connecté sur ton compte principal MoonSkin :
 
