@@ -138,8 +138,10 @@ export const partnerEndpointDetails = [
     method: 'GET',
     path: '/api/v1/partner/trades/{id}',
     scope: 'read',
-    description: 'Détail complet d\'une vente avec items.',
-    response: 'Objet vente (statut en français : créé, en_trade_hold, payé, ...)',
+    description:
+      'Détail complet d\'une vente avec items. À utiliser en complément des webhooks (secours si notification manquée ou reconnexion).',
+    response:
+      '{ id, statut, brut_centimes, frais, net_centimes, disponible_le, reference_paiement, items, ... }',
   },
   {
     method: 'POST',
@@ -165,6 +167,14 @@ export const partnerEndpointDetails = [
     response: '{ webhook_url, signature_header, signature_format }',
   },
 ];
+
+export const partnerPollingGuide = `Flux recommandé pour suivre une vente :
+1. Configurer l'URL webhook (PUT /api/v1/partner/webhook)
+2. Créer la vente (POST /api/v1/partner/trades) — conserver le trade_id retourné
+3. Recevoir les notifications push à chaque changement de statut
+4. En complément ou secours : interroger GET /api/v1/partner/trades/{id} avec ce trade_id
+
+Le polling est utile si un webhook n'a pas été reçu (timeout réseau, maintenance côté partenaire) ou pour resynchroniser un état au redémarrage de votre serveur.`;
 
 export const partnerScopesGuide = `Scopes disponibles par clé API :
 • read — consultation (profil, solde, inventaire, estimation, liste ventes, webhook)
@@ -213,6 +223,24 @@ export const partnerResponseExamples = {
   "error": {
     "code": "FORBIDDEN",
     "message": "Scopes requis manquants: trade"
+  }
+}`,
+  tradeDetail: `{
+  "success": true,
+  "data": {
+    "id": "TRADE-123",
+    "user_id": "clx123",
+    "statut": "en_trade_hold",
+    "brut_centimes": 125000,
+    "frais": { "cashout": 625, "réseau": 4375 },
+    "net_centimes": 120000,
+    "ticket_id": "TICK-20250728-0001",
+    "reference_paiement": "TICK-20250728-0001",
+    "disponible_le": "2026-08-04T12:00:00.000Z",
+    "created_at": "2026-07-28T12:00:00.000Z",
+    "items": [
+      { "market_hash_name": "AK-47 | Redline (FT)", "prix_centimes": 125000 }
+    ]
   }
 }`,
 };

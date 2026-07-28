@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 jest.mock('~/prisma/prisma', () => ({
   prisma: {
     user: { findUnique: jest.fn() },
-    trade: { findMany: jest.fn() },
+    trade: { findMany: jest.fn(), findFirst: jest.fn() },
     apiClient: { findUnique: jest.fn(), update: jest.fn() },
   },
 }));
@@ -21,6 +21,7 @@ import { prisma } from '~/prisma/prisma';
 import { requireApiKey } from '@/lib/partner-api/auth';
 import { GET as getMe } from '@/app/api/v1/partner/me/route';
 import { GET as getTrades } from '@/app/api/v1/partner/trades/route';
+import { GET as getTradeById } from '@/app/api/v1/partner/trades/[id]/route';
 
 const mockedRequireApiKey = requireApiKey as jest.MockedFunction<typeof requireApiKey>;
 
@@ -116,5 +117,62 @@ describe('partner API HTTP routes', () => {
     expect(response.status).toBe(200);
     expect(body.data.trades).toHaveLength(1);
     expect(body.data.trades[0].statut).toBe('créé');
+  });
+
+  it('GET /trades/{id} returns trade detail for read scope', async () => {
+    mockAuth(['read']);
+    (prisma.trade.findFirst as jest.Mock).mockResolvedValue({
+      id: 'TRADE-1',
+      userId: 'user-1',
+      status: 'IN_TRADE_HOLD',
+      grossCents: 1000,
+      cashoutFees: 5,
+      networkFees: 0,
+      netCents: 995,
+      ticketId: 'TICK-1',
+      steamId: '76561198012345678',
+      tradeUrl: null,
+      tradeAcceptedAt: new Date('2026-07-28T10:00:00Z'),
+      availableAt: new Date('2026-08-04T10:00:00Z'),
+      createdAt: new Date('2026-07-28T09:00:00Z'),
+      items: [
+        {
+          id: 'item-1',
+          name: 'AK-47 | Redline',
+          marketHashName: 'AK-47 | Redline (Field-Tested)',
+          priceCents: 1000,
+          iconUrl: null,
+          exterior: 'Field-Tested',
+          statTrak: false,
+          rarity: 'Classified',
+        },
+      ],
+    });
+
+    const response = await getTradeById(
+      new NextRequest('http://localhost/api/v1/partner/trades/TRADE-1'),
+      { params: Promise.resolve({ id: 'TRADE-1' }) }
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.id).toBe('TRADE-1');
+    expect(body.data.statut).toBe('en_trade_hold');
+    expect(body.data.reference_paiement).toBe('TICK-1');
+    expect(body.data.items).toHaveLength(1);
+  });
+
+  it('GET /trades/{id} returns 404 when trade is missing', async () => {
+    mockAuth(['read']);
+    (prisma.trade.findFirst as jest.Mock).mockResolvedValue(null);
+
+    const response = await getTradeById(
+      new NextRequest('http://localhost/api/v1/partner/trades/UNKNOWN'),
+      { params: Promise.resolve({ id: 'UNKNOWN' }) }
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body.error.code).toBe('NOT_FOUND');
   });
 });

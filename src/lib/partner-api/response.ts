@@ -104,6 +104,7 @@ export function formatTradeForPartner(trade: {
     trade_link: trade.tradeUrl,
     trade_accepté_le: trade.tradeAcceptedAt?.toISOString() ?? null,
     disponible_le: trade.availableAt?.toISOString() ?? null,
+    reference_paiement: trade.ticketId,
     created_at: trade.createdAt.toISOString(),
     items: trade.items?.map((item) => ({
       id: item.id,

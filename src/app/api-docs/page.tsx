@@ -23,6 +23,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 import {
   partnerCurlExamples,
   partnerEndpointDetails,
+  partnerPollingGuide,
   partnerResponseExamples,
   partnerScopesGuide,
   partnerWebhookGuide,
@@ -572,6 +573,17 @@ export default function ApiDocsPage() {
 
                 <Card>
                   <CardHeader>
+                    <CardTitle className="text-orange-600">Suivi d&apos;une vente (webhooks + secours)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="text-sm whitespace-pre-wrap overflow-x-auto bg-muted rounded-lg p-4">
+                      {partnerPollingGuide}
+                    </pre>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
                     <CardTitle className="text-orange-600">Webhooks sortants</CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -600,13 +612,14 @@ export default function ApiDocsPage() {
                   </CardHeader>
                   <CardContent>
                     <Tabs defaultValue="me" className="w-full">
-                      <TabsList className="grid w-full grid-cols-4">
+                      <TabsList className="grid w-full grid-cols-5">
                         <TabsTrigger value="me">Profil</TabsTrigger>
                         <TabsTrigger value="estimate">Estimation</TabsTrigger>
+                        <TabsTrigger value="tradeDetail">Vente</TabsTrigger>
                         <TabsTrigger value="webhook">Webhook</TabsTrigger>
                         <TabsTrigger value="error">Erreur</TabsTrigger>
                       </TabsList>
-                      {(['me', 'estimate', 'webhook', 'error'] as const).map((key) => (
+                      {(['me', 'estimate', 'tradeDetail', 'webhook', 'error'] as const).map((key) => (
                         <TabsContent key={key} value={key} className="mt-4">
                           <div className="bg-muted rounded-lg p-4">
                             <pre className="text-sm overflow-x-auto">
