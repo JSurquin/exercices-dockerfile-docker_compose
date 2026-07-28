@@ -55,6 +55,8 @@ model User {
   userTag                  String?
   /// Crédit instantané : si activé, le solde est crédité immédiatement (sans attendre le trade hold 7j)
   instantCreditEnabled     Boolean                 @default(false)
+  /// Programme développeur : permet de générer / régénérer une clé API partenaire en self-service
+  developerProgramEnabled  Boolean                 @default(false)
   /// Bloque commissions affilié, promo affilié et fragments promo pour cet utilisateur
   affiliateRewardsBlocked  Boolean                 @default(false)
   /// Bloque XP, tickets et fragments liés aux ventes pour cet utilisateur

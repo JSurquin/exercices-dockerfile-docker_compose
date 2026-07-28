@@ -1043,6 +1043,7 @@ export interface Messages {
       notifications: string;
       payments: string;
       preferences: string;
+      developer: string;
     };
     profile: {
       title: string;
@@ -1144,6 +1145,30 @@ export interface Messages {
         system: string;
       };
       save: string;
+    };
+    developer: {
+      title: string;
+      description: string;
+      notEligibleDesc: string;
+      noKeyYet: string;
+      createButton: string;
+      regenerateButton: string;
+      createConfirm: string;
+      regenerateConfirm: string;
+      createSuccess: string;
+      regenerateSuccess: string;
+      credentialsWarning: string;
+      apiKeyLabel: string;
+      webhookSecretLabel: string;
+      scopesLabel: string;
+      rateLimitLabel: string;
+      lastUsedLabel: string;
+      viewDocs: string;
+      loading: string;
+      generating: string;
+      show: string;
+      hide: string;
+      errorGeneric: string;
     };
     loginRequired: {
       title: string;
@@ -1596,6 +1621,14 @@ export interface Messages {
       instantCreditEnabledDesc: string;
       instantCreditDisabledTitle: string;
       instantCreditDisabledDesc: string;
+      developerProgramTitle: string;
+      developerProgramLabel: string;
+      developerProgramHelp: string;
+      developerProgramActiveWarning: string;
+      developerProgramEnabledTitle: string;
+      developerProgramEnabledDesc: string;
+      developerProgramDisabledTitle: string;
+      developerProgramDisabledDesc: string;
       referredByLabel: string;
       affiliateHistoryTitle: string;
       affiliateHistoryCurrent: string;

@@ -533,7 +533,12 @@ export default function ApiDocsPage() {
                   <CardContent className="space-y-3">
                     <p className="text-muted-foreground text-sm">
                       Les routes sous <code className="text-xs">/api/v1/partner/</code> utilisent une clé API
-                      Bearer au format <code className="text-xs">msk_live_...</code>, fournie par l&apos;équipe MoonSkin.
+                      Bearer au format <code className="text-xs">msk_live_...</code>. Membres du programme développeur :
+                      générez ou régénérez votre clé depuis{' '}
+                      <a href="/settings" className="text-theme-accent underline underline-offset-2">
+                        Paramètres → Développeur
+                      </a>
+                      .
                     </p>
                     <div className="bg-muted rounded-lg p-4">
                       <code className="text-sm">Authorization: Bearer msk_live_VOTRE_CLE</code>

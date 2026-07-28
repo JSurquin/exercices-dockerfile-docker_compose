@@ -71,6 +71,32 @@ export async function revokeApiClient(id: string): Promise<void> {
   });
 }
 
+export async function getActiveApiClientForUser(userId: string): Promise<ApiClient | null> {
+  return prisma.apiClient.findFirst({
+    where: { userId, status: 'ACTIVE' },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+export async function regenerateApiClientCredentials(
+  clientId: string
+): Promise<{ client: ApiClient; rawKey: string }> {
+  const { rawKey, keyPrefix, keyHash } = generateApiKey();
+  const webhookSecret = generateWebhookSecret();
+
+  const client = await prisma.apiClient.update({
+    where: { id: clientId },
+    data: {
+      keyPrefix,
+      keyHash,
+      webhookSecret,
+      status: 'ACTIVE',
+    },
+  });
+
+  return { client, rawKey };
+}
+
 export async function updateApiClient(
   id: string,
   params: { rateLimitPerMin?: number; scopes?: string[] }

@@ -23,6 +23,7 @@ import {
   Shield,
   Wallet,
   TrendingUp,
+  Key,
 } from 'lucide-react';
 import { BalanceManagement } from '@/components/admin/balance-management';
 import { WithdrawalLimits } from '@/components/admin/withdrawal-limits';
@@ -70,6 +71,7 @@ interface UserDetail {
   bonusRatePercent: number;
   userTag: string | null;
   instantCreditEnabled: boolean;
+  developerProgramEnabled: boolean;
   affiliateRewardsBlocked: boolean;
   xpRewardsBlocked: boolean;
   referredBy: { affiliateId: string; code: string; steamUsername: string | null } | null;
@@ -118,6 +120,7 @@ export default function AdminUserDetailPage() {
   const [userTag, setUserTag] = useState('');
   const [bonusSaving, setBonusSaving] = useState(false);
   const [instantCreditSaving, setInstantCreditSaving] = useState(false);
+  const [developerProgramSaving, setDeveloperProgramSaving] = useState(false);
 
   const { data: user, isLoading: loading, error: queryError, refetch: refetchUser } = useQuery({
     queryKey: queryKeys.adminUser(userId ?? ''),
@@ -245,6 +248,34 @@ export default function AdminUserDetailPage() {
       });
     } finally {
       setInstantCreditSaving(false);
+    }
+  };
+
+  const handleToggleDeveloperProgram = async (enabled: boolean) => {
+    if (!userId) return;
+    setDeveloperProgramSaving(true);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/developer-program`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t.errorTitle);
+      toast({
+        title: enabled ? t.developerProgramEnabledTitle : t.developerProgramDisabledTitle,
+        description: enabled ? t.developerProgramEnabledDesc : t.developerProgramDisabledDesc,
+      });
+      await refetchUser();
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    } catch (e) {
+      toast({
+        title: t.errorTitle,
+        description: e instanceof Error ? e.message : t.errorSave,
+        variant: 'destructive',
+      });
+    } finally {
+      setDeveloperProgramSaving(false);
     }
   };
 
@@ -439,6 +470,29 @@ export default function AdminUserDetailPage() {
               </div>
               {user.instantCreditEnabled && (
                 <p className="text-sm text-theme-highlight">{t.instantCreditActiveWarning}</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800/30 border-slate-700">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-white flex items-center gap-2 text-base">
+                <Key className="h-5 w-5 text-theme-highlight" />
+                {t.developerProgramTitle}
+              </CardTitle>
+              <CardDescription className="text-slate-400">{t.developerProgramHelp}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-900/30 p-4">
+                <Label className="text-slate-200">{t.developerProgramLabel}</Label>
+                <Switch
+                  checked={user.developerProgramEnabled}
+                  onCheckedChange={handleToggleDeveloperProgram}
+                  disabled={developerProgramSaving}
+                />
+              </div>
+              {user.developerProgramEnabled && (
+                <p className="text-sm text-theme-highlight">{t.developerProgramActiveWarning}</p>
               )}
             </CardContent>
           </Card>
