@@ -33,6 +33,7 @@ import {
   WHITEPAY_SUPPORTED_CRYPTOS,
   MEMO_REQUIRED_NETWORKS,
   getWhitepayAddressPlaceholder,
+  formatWhitepayNetworkFeeLabel,
 } from '@/lib/whitepay';
 import {
   Select,
@@ -146,7 +147,7 @@ export default function PayoutPage() {
     beneficiaryEmail: '',
     walletAddress: '',
     selectedCrypto: 'USDT',
-    selectedNetwork: 'ERC20',
+    selectedNetwork: 'TRC20',
     memo: '',
   });
   const [useSavedIban, setUseSavedIban] = useState(false);
@@ -1433,7 +1434,7 @@ export default function PayoutPage() {
                             setFormData(prev => ({
                               ...prev,
                               selectedCrypto: v,
-                              selectedNetwork: crypto?.networks[0] || 'ERC20',
+                              selectedNetwork: crypto?.networks[0] || 'TRC20',
                             }));
                             setQuote(null);
                           }}
@@ -1470,11 +1471,14 @@ export default function PayoutPage() {
                             <SelectValue placeholder={text.request.networkPlaceholder} />
                           </SelectTrigger>
                           <SelectContent>
-                            {availableNetworks.map((net) => (
+                            {availableNetworks.map((net) => {
+                              const feeLabel = formatWhitepayNetworkFeeLabel(formData.selectedCrypto, net);
+                              return (
                               <SelectItem key={net} value={net}>
-                                {net}
+                                {feeLabel ? `${net} (${feeLabel})` : net}
                               </SelectItem>
-                            ))}
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>

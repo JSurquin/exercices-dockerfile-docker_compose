@@ -60,7 +60,7 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
   // Crypto fields
   const [walletAddress, setWalletAddress] = useState('');
   const [selectedCrypto, setSelectedCrypto] = useState('USDT');
-  const [selectedNetwork, setSelectedNetwork] = useState('ERC20');
+  const [selectedNetwork, setSelectedNetwork] = useState('TRC20');
   const [memo, setMemo] = useState('');
 
   // Common fields

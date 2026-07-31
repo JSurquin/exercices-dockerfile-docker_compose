@@ -80,7 +80,7 @@ export function WhitepayCryptoForm({
 
   // State, Sélection
   const [selectedCrypto, setSelectedCrypto] = useState('USDT');
-  const [selectedNetwork, setSelectedNetwork] = useState('ERC20');
+  const [selectedNetwork, setSelectedNetwork] = useState('TRC20');
   const [walletAddress, setWalletAddress] = useState('');
   const [memo, setMemo] = useState('');
 

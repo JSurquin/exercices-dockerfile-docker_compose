@@ -256,13 +256,14 @@ export const WHITEPAY_SUPPORTED_CRYPTOS = [
   {
     ticker: 'USDT',
     name: 'Tether (USDT)',
-    networks: ['ERC20', 'TRC20', 'BEP20', 'TON', 'SOL', 'POLYGON', 'ARBITRUM', 'NEAR', 'CCHAIN'],
+    // Réseaux bon marché en premier (ERC20 ~9,54 USDT de frais Whitepay — dernier recours)
+    networks: ['TRC20', 'BEP20', 'TON', 'POLYGON', 'ARBITRUM', 'SOL', 'NEAR', 'CCHAIN', 'ERC20'],
     is_stable: true,
   },
   {
     ticker: 'USDC',
     name: 'USD Coin (USDC)',
-    networks: ['ERC20', 'SOL', 'POLYGON', 'ARBITRUM', 'BASE', 'OPTIMISM', 'NEAR', 'STELLAR', 'CCHAIN', 'WHITECHAIN', 'DOTASSETHUB'],
+    networks: ['SOL', 'POLYGON', 'ARBITRUM', 'BASE', 'OPTIMISM', 'NEAR', 'STELLAR', 'CCHAIN', 'WHITECHAIN', 'DOTASSETHUB', 'ERC20'],
     is_stable: true,
   },
   { ticker: 'BTC', name: 'Bitcoin (BTC)', networks: ['BTC'], is_stable: false },
@@ -355,6 +356,19 @@ function getStaticNetworkFeeUnits(ticker: string, network: string): number {
   const byCrypto = WHITEPAY_STATIC_NETWORK_FEE_UNITS[ticker.toUpperCase()];
   if (!byCrypto) return 0;
   return byCrypto[network.toUpperCase()] ?? 0;
+}
+
+/** Frais réseau fixes Whitepay en unités crypto (doc /private-api/withdrawals/fees). */
+export function getWhitepayNetworkFeeUnits(ticker: string, network: string): number {
+  return getStaticNetworkFeeUnits(ticker, network);
+}
+
+/** Libellé indicatif du frais réseau, ex. « ~1 USDT » ou « ~9,54 USDT ». */
+export function formatWhitepayNetworkFeeLabel(ticker: string, network: string): string | null {
+  const units = getStaticNetworkFeeUnits(ticker, network);
+  if (units <= 0) return null;
+  const formatted = Number.isInteger(units) ? String(units) : units.toFixed(2);
+  return `~${formatted} ${ticker.toUpperCase()}`;
 }
 
 /** Estimation synchrone (UI) — frais réseau en centimes EUR */

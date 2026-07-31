@@ -7680,6 +7680,9 @@ export const messages: Record<Locale, Messages> = {
         cardLabel: 'Frais carte (4,2% + 0,50€)',
         sepaLabel: 'Frais SEPA (2% + 3,50€)',
         cryptoLabel: 'Frais crypto (1,1%)',
+        networkFees: 'Frais réseau',
+        networkFeeHighHint:
+          'Le réseau Ethereum (ERC20) coûte environ 9,54 USDT de frais chez notre prestataire. Préférez TRC20 ou Polygon (~1 USDT) si votre wallet le permet.',
         cardDelay: 'Crédité sous 24h',
         sepaDelay: 'Instantané',
       },
@@ -15611,6 +15614,9 @@ export const messages: Record<Locale, Messages> = {
         cardLabel: 'Card fees (4.2% + €0.50)',
         sepaLabel: 'SEPA fees (2% + €3.50)',
         cryptoLabel: 'Crypto fees (1.1%)',
+        networkFees: 'Network fees',
+        networkFeeHighHint:
+          'Ethereum (ERC20) costs about 9.54 USDT in provider network fees. Prefer TRC20 or Polygon (~1 USDT) if your wallet supports them.',
         cardDelay: 'Credited within 24h',
         sepaDelay: 'Instant',
       },
@@ -23221,6 +23227,9 @@ export const messages: Record<Locale, Messages> = {
         cardLabel: '卡费 (4.2% + €0.50)',
         sepaLabel: 'SEPA费 (2% + €3.50)',
         cryptoLabel: '加密货币费 (1.1%)',
+        networkFees: '网络费',
+        networkFeeHighHint:
+          'Ethereum（ERC20）网络费约 9.54 USDT。若钱包支持，建议选择 TRC20 或 Polygon（约 1 USDT）。',
         cardDelay: '24小时内到账',
         sepaDelay: '即时',
       },

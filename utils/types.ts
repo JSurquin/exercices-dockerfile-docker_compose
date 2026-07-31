@@ -7243,6 +7243,8 @@ export interface Messages {
       cardLabel: string;
       sepaLabel: string;
       cryptoLabel: string;
+      networkFees: string;
+      networkFeeHighHint: string;
       cardDelay: string;
       sepaDelay: string;
     };

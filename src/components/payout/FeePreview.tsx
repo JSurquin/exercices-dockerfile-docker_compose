@@ -5,7 +5,7 @@ import { ClockIcon } from '@heroicons/react/24/outline';
 import { Separator } from '@/components/ui/separator';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
 import { useLocale } from '@/components/providers/locale-provider';
-import { calculateWhitepayFees, estimateNetworkFeeCentsSync } from '@/lib/whitepay';
+import { calculateWhitepayFees, estimateNetworkFeeCentsSync, getWhitepayNetworkFeeUnits } from '@/lib/whitepay';
 
 type PayoutMethod = 'card' | 'sepa' | 'crypto';
 
@@ -102,6 +102,15 @@ export function FeePreview({ method, amountCents, targetCurrency, network, label
           <span>-{formatCentsToCurrency(networkCents, 'EUR')}</span>
         </div>
       )}
+      {method === 'crypto' &&
+        cryptoContext &&
+        getWhitepayNetworkFeeUnits(cryptoContext.targetCurrency, cryptoContext.network) >= 5 && (
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {'networkFeeHighHint' in fees
+              ? String(fees.networkFeeHighHint)
+              : 'Le réseau Ethereum (ERC20) coûte environ 9,54 USDT de frais chez notre prestataire. Préférez TRC20 ou Polygon (~1 USDT) si votre wallet le permet.'}
+          </p>
+        )}
       <Separator />
       <div className="flex justify-between font-semibold">
         <span>{labels.youReceive}</span>
