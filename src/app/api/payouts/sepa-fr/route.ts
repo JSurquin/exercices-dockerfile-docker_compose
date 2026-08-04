@@ -5,7 +5,7 @@ import { prisma } from '~/prisma/prisma';
 import { canUserMakePayout } from '@/lib/kycaid';
 import { buildEncryptedSepaDetails } from '@/lib/payment-method-sepa';
 import { encrypt } from '@/lib/encryption';
-import { validateIban } from '@/lib/flexify';
+import { validateSepaIban } from '@/lib/iban-sepa';
 import { getBalance } from '@/lib/balance-service';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hooks';
@@ -64,14 +64,8 @@ export async function POST(request: NextRequest) {
     }
 
     const ibanClean = iban.replace(/\s/g, '').toUpperCase();
-    if (!ibanClean.startsWith('FR')) {
-      return NextResponse.json(
-        { error: 'Cet endpoint est réservé aux IBAN français (FR). Pour les autres pays, utilisez la méthode SEPA standard.' },
-        { status: 400 }
-      );
-    }
 
-    const ibanValidation = validateIban(iban);
+    const ibanValidation = validateSepaIban(ibanClean);
     if (!ibanValidation.isValid) {
       return NextResponse.json({ error: ibanValidation.error }, { status: 400 });
     }

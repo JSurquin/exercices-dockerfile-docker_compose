@@ -6972,7 +6972,11 @@ export interface Messages {
       tabLabel: string;
       infoTitle: string;
       infoDesc: string;
-      ibanFrOnly: string;
+      recommendedBadge: string;
+      compareFees: string;
+      compareDelay: string;
+      compareCoverage: string;
+      ibanSepaHint: string;
       ibanLabel: string;
       ibanPlaceholder: string;
       ibanError: string;

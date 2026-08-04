@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/components/providers/auth-provider';
@@ -42,6 +42,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { validateSepaIban, isFrenchIban } from '@/lib/iban-sepa';
 
 type PayoutMethod = 'card' | 'sepa' | 'crypto' | 'sepa_fr';
 
@@ -181,6 +183,7 @@ export default function PayoutPage() {
 
   // Traductions locales pour la page payout
   const text = messages.payoutPage;
+  const feeLabels = messages.payoutComponents.fees;
 
   const queryClient = useQueryClient();
 
@@ -422,7 +425,7 @@ export default function PayoutPage() {
 
     if (payoutMethod === 'sepa' && (!useSavedIban || !selectedPaymentMethodId)) {
       const ibanClean = formData.iban.replace(/\s/g, '').toUpperCase();
-      if (ibanClean.startsWith('FR')) {
+      if (isFrenchIban(ibanClean)) {
         toast.error(text.request.ibanFrWarningToast);
         return;
       }
@@ -528,7 +531,7 @@ export default function PayoutPage() {
           toast.error(`${text.request.ibanLabel} required`);
           return;
         }
-        if (ibanClean.startsWith('FR')) {
+        if (isFrenchIban(ibanClean)) {
           toast.error(text.request.ibanFrWarningToast);
           return;
         }
@@ -847,24 +850,82 @@ export default function PayoutPage() {
                   setQuote(null);
                   setSepaFrResult(null);
                 }}>
-                  <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4 sm:gap-0">
-                    <TabsTrigger value="card" className="flex items-center justify-center gap-1 px-1.5 py-2 text-[11px] sm:px-3 sm:text-sm">
-                      <CreditCardIcon className="w-4 h-4" />
-                      <span className="hidden sm:inline">{text.request.cardLabel}</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="sepa" className="flex items-center justify-center gap-1 px-1.5 py-2 text-[11px] sm:px-3 sm:text-sm">
-                      <BanknotesIcon className="w-4 h-4" />
-                      <span className="hidden sm:inline">SEPA</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="sepa_fr" className="flex items-center justify-center gap-1 px-1.5 py-2 text-[11px] sm:px-3 sm:text-sm">
-                      <BanknotesIcon className="w-4 h-4" />
-                      <span>{text.sepaFr?.tabLabel}</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="crypto" className="flex items-center justify-center gap-1 px-1.5 py-2 text-[11px] sm:px-3 sm:text-sm">
-                      <CurrencyDollarIcon className="w-4 h-4" />
-                      <span className="hidden sm:inline">Crypto</span>
-                    </TabsTrigger>
-                  </TabsList>
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPayoutResult(null);
+                        setPayoutMethod('sepa_fr');
+                        setQuote(null);
+                        setSepaFrResult(null);
+                      }}
+                      className={cn(
+                        'w-full rounded-xl border-2 p-4 sm:p-5 text-left transition-all backdrop-blur-sm',
+                        payoutMethod === 'sepa_fr'
+                          ? 'border-theme-accent bg-theme-accent/10 shadow-[0_0_28px_rgba(59,130,246,0.18)] ring-1 ring-theme-accent/40'
+                          : 'border-border/50 bg-background/40 hover:border-theme-accent/35 hover:bg-muted/30'
+                      )}
+                    >
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <BanknotesIcon className="w-5 h-5 text-theme-accent shrink-0" />
+                        <span className="font-semibold text-base sm:text-lg">{text.sepaFr?.tabLabel}</span>
+                        <Badge className="bg-theme-accent/15 text-theme-accent border-theme-accent/30 hover:bg-theme-accent/20">
+                          {text.sepaFr?.recommendedBadge}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <CheckCircleIcon className="w-3.5 h-3.5 text-theme-accent shrink-0" />
+                          {text.sepaFr?.compareFees}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <ClockIcon className="w-3.5 h-3.5 text-theme-accent shrink-0" />
+                          {text.sepaFr?.compareDelay}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <ShieldCheckIcon className="w-3.5 h-3.5 text-theme-accent shrink-0" />
+                          {text.sepaFr?.compareCoverage}
+                        </span>
+                      </div>
+                    </button>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { id: 'card' as const, icon: CreditCardIcon, label: text.request.cardLabel, fee: feeLabels.cardLabel, delay: feeLabels.cardDelay },
+                        { id: 'sepa' as const, icon: BanknotesIcon, label: 'SEPA', fee: feeLabels.sepaLabel, delay: feeLabels.sepaDelay },
+                        { id: 'crypto' as const, icon: CurrencyDollarIcon, label: 'Crypto', fee: feeLabels.cryptoLabel, delay: undefined as string | undefined },
+                      ]).map(({ id, icon: Icon, label, fee, delay }) => (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() => {
+                            setPayoutResult(null);
+                            setPayoutMethod(id);
+                            setQuote(null);
+                            setSepaFrResult(null);
+                          }}
+                          className={cn(
+                            'rounded-lg border p-2.5 sm:p-3 text-left transition-all',
+                            payoutMethod === id
+                              ? 'border-primary/50 bg-muted/60 ring-1 ring-primary/20'
+                              : 'border-border/40 bg-muted/20 opacity-80 hover:opacity-100 hover:border-border/70'
+                          )}
+                        >
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
+                            <span className="text-xs sm:text-sm font-medium truncate">{label}</span>
+                          </div>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">{fee}</p>
+                          {delay && (
+                            <p className="text-[10px] text-muted-foreground/80 mt-0.5 flex items-center gap-0.5">
+                              <ClockIcon className="w-2.5 h-2.5" />
+                              {delay}
+                            </p>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                   <TabsContent value="card" className="space-y-4 mt-4">
                     <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
@@ -1090,13 +1151,13 @@ export default function PayoutPage() {
                             const formatted = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
                             setFormData(prev => ({ ...prev, iban: formatted }));
                             setQuote(null);
-                            if (raw.startsWith('FR') && raw.length >= 4) {
+                            if (isFrenchIban(raw) && raw.length >= 4) {
                               toast.warning(text.request.ibanFrWarningToast, { duration: 6000 });
                             }
                           }}
                           maxLength={42}
                         />
-                        {formData.iban.replace(/\s/g, '').length >= 4 && formData.iban.replace(/\s/g, '').toUpperCase().startsWith('FR') && (
+                        {formData.iban.replace(/\s/g, '').length >= 4 && isFrenchIban(formData.iban) && (
                           <p className="text-sm text-destructive">{text.request.ibanFrWarningToast}</p>
                         )}
                       </div>
@@ -1275,10 +1336,14 @@ export default function PayoutPage() {
                             }}
                             maxLength={42}
                           />
-                          {sepaFrForm.iban.replace(/\s/g, '').length >= 2 && !sepaFrForm.iban.replace(/\s/g, '').startsWith('FR') && (
-                            <p className="text-xs text-destructive">{text.sepaFr?.ibanError}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground">{text.sepaFr?.ibanFrOnly}</p>
+                          {(() => {
+                            const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
+                            if (ibanClean.length < 15) return null;
+                            const validation = validateSepaIban(ibanClean);
+                            if (validation.isValid) return null;
+                            return <p className="text-xs text-destructive">{text.sepaFr?.ibanError}</p>;
+                          })()}
+                          <p className="text-xs text-muted-foreground">{text.sepaFr?.ibanSepaHint}</p>
                         </div>
 
                         <div className="space-y-2">
@@ -1323,7 +1388,8 @@ export default function PayoutPage() {
                               return;
                             }
                             const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
-                            if (!ibanClean.startsWith('FR')) {
+                            const ibanValidation = validateSepaIban(ibanClean);
+                            if (!ibanValidation.isValid) {
                               toast.error(text.sepaFr?.ibanError);
                               return;
                             }

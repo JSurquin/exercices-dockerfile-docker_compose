@@ -16,6 +16,7 @@ import {
   FlexifyApiError,
   flexifyLog,
 } from '@/lib/flexify';
+import { isFrenchIban } from '@/lib/iban-sepa';
 import { canUserMakePayout } from '@/lib/kycaid';
 import crypto from 'crypto';
 import {
@@ -587,7 +588,7 @@ export async function POST(request: NextRequest) {
       ibanToUse = payload.iban;
       bicToUse = payload.bic || '';
       // Bloquer les IBAN FR même s'ils sont enregistrés en base
-      if (ibanToUse.replace(/\s/g, '').toUpperCase().startsWith('FR')) {
+      if (isFrenchIban(ibanToUse)) {
         LOG('SEPA_SAVED_IBAN_FR_REJECTED', { paymentMethodId });
         return NextResponse.json(
           { error: 'Les IBAN français (FR) ne fonctionnent pas avec le SEPA standard. Utilisez l\'onglet SEPA Premium.' },
@@ -614,7 +615,7 @@ export async function POST(request: NextRequest) {
       }
       // Bloquer les IBAN français : Flexify ne supporte pas les banques FR
       const ibanClean = iban.replace(/\s/g, '').toUpperCase();
-      if (ibanClean.startsWith('FR')) {
+      if (isFrenchIban(ibanClean)) {
         LOG('SEPA_IBAN_FR_REJECTED', { country: 'FR' });
         return NextResponse.json(
           { error: 'Les IBAN français (FR) ne fonctionnent pas avec le SEPA standard. Utilisez l\'onglet SEPA Premium.' },
