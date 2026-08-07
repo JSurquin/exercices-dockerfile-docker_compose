@@ -5228,6 +5228,15 @@ export const messages: Record<Locale, Messages> = {
         description: 'Vous devez compléter la vérification KYC avant de pouvoir effectuer des retraits.',
         startKyc: 'Commencer la vérification'
       },
+      howItWorks: {
+        title: 'Comment ça marche',
+        step1Title: 'Indiquez le montant',
+        step1Desc: 'Choisissez combien vous souhaitez retirer.',
+        step2Title: 'Choisissez votre méthode',
+        step2Desc: 'Comparez les frais et les délais.',
+        step3Title: 'Recevez vos fonds',
+        step3Desc: 'L\'argent est envoyé sur votre compte.',
+      },
       tabs: {
         request: 'Demander un retrait',
         history: 'Historique'
@@ -5362,8 +5371,9 @@ export const messages: Record<Locale, Messages> = {
         infoDesc: 'Votre demande sera traitée manuellement par notre équipe sous 24-48h ouvrées. Frais : 1,7%. Un email de confirmation vous sera envoyé à chaque étape.',
         recommendedBadge: 'Recommandé',
         compareFees: 'Frais : 1,7 %',
-        compareDelay: 'Délai : 24 à 48 h ouvrées',
+        compareDelay: 'Envoi immédiat',
         compareCoverage: 'Tous les IBAN de la zone SEPA',
+        deliveryDisclaimer: 'Les fonds sont envoyés immédiatement par MoonSkin. Le délai de crédit sur votre compte dépend de votre banque réceptrice et peut aller jusqu\'à 48 h ouvrées.',
         ibanSepaHint: 'IBAN d\'un pays de la zone SEPA (format international).',
         ibanLabel: 'IBAN',
         ibanPlaceholder: 'FR76 3000 6000 0112 3456 7890 189',
@@ -11969,6 +11979,15 @@ export const messages: Record<Locale, Messages> = {
         description: 'You must complete KYC verification before making withdrawals.',
         startKyc: 'Start verification'
       },
+      howItWorks: {
+        title: 'How it works',
+        step1Title: 'Enter your amount',
+        step1Desc: 'Choose how much you want to withdraw.',
+        step2Title: 'Choose your method',
+        step2Desc: 'Compare fees and delivery times.',
+        step3Title: 'Receive your funds',
+        step3Desc: 'Your money is sent to your account.',
+      },
       tabs: {
         request: 'Request withdrawal',
         history: 'History'
@@ -12103,8 +12122,9 @@ export const messages: Record<Locale, Messages> = {
         infoDesc: 'Your request will be processed manually by our team within 24-48 business hours. Fees: 1.7%. A confirmation email will be sent to you at each step.',
         recommendedBadge: 'Recommended',
         compareFees: 'Fees: 1.7%',
-        compareDelay: 'Delivery: 24 to 48 business hours',
+        compareDelay: 'Sent immediately',
         compareCoverage: 'All SEPA zone IBANs',
+        deliveryDisclaimer: 'Funds are sent immediately by MoonSkin. Availability in your bank account depends on your receiving bank and may take up to 48 business hours.',
         ibanSepaHint: 'IBAN from a SEPA zone country (international format).',
         ibanLabel: 'IBAN',
         ibanPlaceholder: 'FR76 3000 6000 0112 3456 7890 189',
@@ -19650,6 +19670,15 @@ export const messages: Record<Locale, Messages> = {
         description: '您必须完成KYC验证才能提取资金。',
         startKyc: '开始验证'
       },
+      howItWorks: {
+        title: '如何运作',
+        step1Title: '输入金额',
+        step1Desc: '选择您要提取的金额。',
+        step2Title: '选择方式',
+        step2Desc: '比较费用和到账时间。',
+        step3Title: '收到资金',
+        step3Desc: '资金将发送到您的账户。',
+      },
       tabs: {
         request: '申请提取',
         history: '历史记录'
@@ -19784,8 +19813,9 @@ export const messages: Record<Locale, Messages> = {
         infoDesc: '您的请求将由我们的团队在24-48个工作小时内人工处理。费用：1.7%。每个步骤都会向您发送确认邮件。',
         recommendedBadge: '推荐',
         compareFees: '费用：1.7%',
-        compareDelay: '到账：24至48个工作小时',
+        compareDelay: '即时发送',
         compareCoverage: '所有SEPA区IBAN',
+        deliveryDisclaimer: 'MoonSkin会立即发送资金。到账时间取决于收款银行，最长可能需要48个工作小时。',
         ibanSepaHint: 'SEPA区国家的IBAN（国际格式）。',
         ibanLabel: 'IBAN',
         ibanPlaceholder: 'FR76 3000 6000 0112 3456 7890 189',

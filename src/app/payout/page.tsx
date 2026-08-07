@@ -53,13 +53,15 @@ const CRYPTO_MIN_CENTS = 2120;
 const SEPA_ZONE_IBAN_PLACEHOLDER = 'DE89 3704 0044 0532 0130 00';
 const SEPA_ZONE_BIC_PLACEHOLDER = 'COBADEFFXXX';
 
-/** Shortens SEPA Premium delay label so the 3 benefit rows stay aligned on desktop. */
+/** Returns SEPA Premium delay label for closed card display. */
 function formatSepaPremiumDelayLabel(delay?: string): string | undefined {
-  if (!delay) return delay;
-  return delay
-    .replace('Delivery: 24 to 48 business hours', '24-48 business hours')
-    .replace('Délai : 24 à 48 h ouvrées', '24-48 h ouvrées')
-    .replace('到账：24至48个工作小时', '24-48 个工作小时');
+  return delay;
+}
+
+type SecondaryPayoutMethod = 'card' | 'sepa' | 'crypto';
+
+function isSecondaryPayoutMethod(method: PayoutMethod | null): method is SecondaryPayoutMethod {
+  return method === 'card' || method === 'sepa' || method === 'crypto';
 }
 
 const PAYOUT_SUBMIT_BTN_CLASS =
@@ -201,6 +203,46 @@ export default function PayoutPage() {
   // Traductions locales pour la page payout
   const text = messages.payoutPage;
   const feeLabels = messages.payoutComponents.fees;
+  const howItWorks = text.howItWorks;
+
+  const secondaryMethodsMeta = useMemo(
+    () =>
+      [
+        {
+          id: 'card' as const,
+          icon: CreditCardIcon,
+          label: text.request.cardLabel,
+          fee: feeLabels.cardLabel,
+          delay: feeLabels.cardDelay,
+          iconColor: 'text-emerald-500',
+        },
+        {
+          id: 'sepa' as const,
+          icon: BanknotesIcon,
+          label: 'SEPA',
+          fee: feeLabels.sepaLabel,
+          delay: feeLabels.sepaDelay,
+          iconColor: 'text-blue-500',
+        },
+        {
+          id: 'crypto' as const,
+          icon: CurrencyDollarIcon,
+          label: 'Crypto',
+          fee: feeLabels.cryptoLabel,
+          delay: undefined as string | undefined,
+          iconColor: 'text-purple-500',
+        },
+      ] as const,
+    [text.request.cardLabel, feeLabels.cardLabel, feeLabels.cardDelay, feeLabels.sepaLabel, feeLabels.sepaDelay, feeLabels.cryptoLabel],
+  );
+
+  const isSecondaryExpanded = isSecondaryPayoutMethod(expandedMethod);
+  const orderedSecondaryMethods = useMemo(() => {
+    if (!isSecondaryExpanded || !expandedMethod) return [...secondaryMethodsMeta];
+    const active = secondaryMethodsMeta.find((m) => m.id === expandedMethod);
+    const rest = secondaryMethodsMeta.filter((m) => m.id !== expandedMethod);
+    return active ? [active, ...rest] : [...secondaryMethodsMeta];
+  }, [secondaryMethodsMeta, isSecondaryExpanded, expandedMethod]);
 
   const queryClient = useQueryClient();
 
@@ -936,6 +978,28 @@ export default function PayoutPage() {
               <CardContent className="space-y-6">
                 {!payoutResult && (
                 <>
+                {/* Guide en 3 étapes */}
+                <div className="rounded-lg border border-border/40 bg-muted/20 px-4 py-4 sm:px-5">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">
+                    {howItWorks.title}
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-3">
+                    {[
+                      { num: '01', title: howItWorks.step1Title, desc: howItWorks.step1Desc },
+                      { num: '02', title: howItWorks.step2Title, desc: howItWorks.step2Desc },
+                      { num: '03', title: howItWorks.step3Title, desc: howItWorks.step3Desc },
+                    ].map((step) => (
+                      <div key={step.num} className="flex gap-3 sm:flex-col sm:gap-1.5">
+                        <span className="text-sm font-semibold text-theme-accent tabular-nums shrink-0">{step.num}</span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground leading-snug">{step.title}</p>
+                          <p className="text-xs text-muted-foreground leading-snug mt-0.5">{step.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Montant */}
                 <div className="space-y-2">
                   <Label htmlFor="amount">{text.request.amountLabel}</Label>
@@ -969,21 +1033,21 @@ export default function PayoutPage() {
                   <div className="space-y-3">
                     <div
                       className={cn(
-                        'payout-premium-card rounded-xl border-2 border-theme-accent bg-muted/45 backdrop-blur-sm overflow-hidden ring-1 ring-theme-accent/40'
+                        'relative payout-premium-card rounded-xl border-2 border-theme-accent bg-muted/45 backdrop-blur-sm ring-1 ring-theme-accent/40'
                       )}
                     >
+                      <span className="absolute -top-2.5 -right-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-theme-accent px-2.5 py-1 text-xs font-semibold text-white shadow-[0_2px_8px_color-mix(in_srgb,var(--theme-accent)_45%,transparent)]">
+                        <CheckCircleIcon className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                        {text.sepaFr?.recommendedBadge}
+                      </span>
                       <button
                         type="button"
                         onClick={() => selectPayoutMethod('sepa_fr')}
                         className="w-full p-4 sm:p-5 text-left"
                       >
-                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <div className="flex flex-wrap items-center gap-2 mb-3 pr-16">
                           <BanknotesIcon className="w-5 h-5 shrink-0 text-theme-accent" />
                           <span className="font-semibold text-base sm:text-lg text-foreground">{text.sepaFr?.tabLabel}</span>
-                          <CheckCircleIcon className="w-5 h-5 shrink-0 text-theme-accent" aria-hidden />
-                          <Badge className="bg-theme-accent text-white border-theme-accent hover:bg-theme-accent/90">
-                            {text.sepaFr?.recommendedBadge}
-                          </Badge>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 sm:items-start gap-2 text-xs sm:text-sm text-muted-foreground">
                           <span className="flex items-start gap-1.5">
@@ -1199,6 +1263,12 @@ export default function PayoutPage() {
                                     text.sepaFr?.submitButton
                                   )}
                                 </Button>
+
+                                {text.sepaFr?.deliveryDisclaimer && (
+                                  <p className="text-xs text-muted-foreground leading-relaxed">
+                                    {text.sepaFr.deliveryDisclaimer}
+                                  </p>
+                                )}
                               </>
                             )}
                           </TabsContent>
@@ -1207,34 +1277,37 @@ export default function PayoutPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2">
-                      {([
-                        { id: 'card' as const, icon: CreditCardIcon, label: text.request.cardLabel, fee: feeLabels.cardLabel, delay: feeLabels.cardDelay, iconColor: 'text-emerald-500' },
-                        { id: 'sepa' as const, icon: BanknotesIcon, label: 'SEPA', fee: feeLabels.sepaLabel, delay: feeLabels.sepaDelay, iconColor: 'text-blue-500' },
-                        { id: 'crypto' as const, icon: CurrencyDollarIcon, label: 'Crypto', fee: feeLabels.cryptoLabel, delay: undefined as string | undefined, iconColor: 'text-purple-500' },
-                      ]).map(({ id, icon: Icon, label, fee, delay, iconColor }) => (
+                    <div className="grid grid-cols-6 gap-2">
+                      {orderedSecondaryMethods.map(({ id, icon: Icon, label, fee, delay, iconColor }) => {
+                        const isExpanded = expandedMethod === id;
+                        return (
                         <div
                           key={id}
                           className={cn(
-                            'rounded-lg border transition-all overflow-hidden',
-                            expandedMethod === id
-                              ? 'border-theme-accent/60 bg-muted/50 ring-1 ring-theme-accent/25'
-                              : 'border-border/60 bg-muted/30 hover:bg-muted/50 hover:border-border/80'
+                            'rounded-lg border transition-all duration-[275ms] ease-out overflow-hidden',
+                            isExpanded
+                              ? 'col-span-6 border-theme-accent/60 bg-muted/50 ring-1 ring-theme-accent/25'
+                              : isSecondaryExpanded
+                                ? 'col-span-3 border-border/60 bg-muted/30 hover:bg-muted/50 hover:border-border/80'
+                                : 'col-span-2 border-border/60 bg-muted/30 hover:bg-muted/50 hover:border-border/80'
                           )}
                         >
                           <button
                             type="button"
                             onClick={() => selectPayoutMethod(id)}
-                            className="w-full p-2.5 sm:p-3 text-left"
+                            className={cn(
+                              'w-full text-left',
+                              isExpanded ? 'p-4 sm:p-5' : 'p-2.5 sm:p-3'
+                            )}
                           >
-                            <div className="flex items-center gap-1.5 mb-1.5">
-                              <Icon className={cn('w-4 h-4 shrink-0', iconColor)} />
-                              <span className="text-xs sm:text-sm font-medium truncate text-foreground">{label}</span>
+                            <div className={cn('flex items-center gap-1.5', isExpanded ? 'mb-3' : 'mb-1.5')}>
+                              <Icon className={cn('shrink-0', isExpanded ? 'w-5 h-5' : 'w-4 h-4', iconColor)} />
+                              <span className={cn('font-medium truncate text-foreground', isExpanded ? 'text-base sm:text-lg font-semibold' : 'text-xs sm:text-sm')}>{label}</span>
                             </div>
-                            <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">{fee}</p>
+                            <p className={cn('text-muted-foreground leading-tight', isExpanded ? 'text-xs sm:text-sm' : 'text-[10px] sm:text-xs line-clamp-2')}>{fee}</p>
                             {delay && (
-                              <p className="text-[10px] text-muted-foreground/80 mt-0.5 flex items-center gap-0.5">
-                                <ClockIcon className="w-2.5 h-2.5" />
+                              <p className={cn('text-muted-foreground/80 flex items-center gap-0.5', isExpanded ? 'text-xs mt-1' : 'text-[10px] mt-0.5')}>
+                                <ClockIcon className={cn(isExpanded ? 'w-3.5 h-3.5' : 'w-2.5 h-2.5')} />
                                 {delay}
                               </p>
                             )}
@@ -1242,13 +1315,13 @@ export default function PayoutPage() {
 
                           <div
                             className={cn(
-                              'grid transition-[grid-template-rows] duration-[225ms] ease-out',
-                              expandedMethod === id ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                              'grid transition-[grid-template-rows] duration-[275ms] ease-out',
+                              isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                             )}
                           >
                             <div className="overflow-hidden">
-                              <div className="px-3 pb-3 pt-0 border-t border-border/50">
-                              <TabsContent value={id} className="space-y-4 mt-3">
+                              <div className={cn('pt-0 border-t border-border/50', isExpanded ? 'px-4 sm:px-5 pb-4 sm:pb-5' : 'px-3 pb-3')}>
+                              <TabsContent value={id} className={cn('space-y-4', isExpanded ? 'mt-4' : 'mt-3')}>
                                 {id === 'card' && (
                                   <>
                                     <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
@@ -1703,7 +1776,8 @@ export default function PayoutPage() {
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 

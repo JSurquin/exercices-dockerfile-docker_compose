@@ -6832,6 +6832,15 @@ export interface Messages {
       description: string;
       startKyc: string;
     };
+    howItWorks: {
+      title: string;
+      step1Title: string;
+      step1Desc: string;
+      step2Title: string;
+      step2Desc: string;
+      step3Title: string;
+      step3Desc: string;
+    };
     tabs: {
       request: string;
       history: string;
@@ -6976,6 +6985,7 @@ export interface Messages {
       compareFees: string;
       compareDelay: string;
       compareCoverage: string;
+      deliveryDisclaimer: string;
       ibanSepaHint: string;
       ibanLabel: string;
       ibanPlaceholder: string;
