@@ -53,6 +53,18 @@ const CRYPTO_MIN_CENTS = 2120;
 const SEPA_ZONE_IBAN_PLACEHOLDER = 'DE89 3704 0044 0532 0130 00';
 const SEPA_ZONE_BIC_PLACEHOLDER = 'COBADEFFXXX';
 
+/** Shortens SEPA Premium delay label so the 3 benefit rows stay aligned on desktop. */
+function formatSepaPremiumDelayLabel(delay?: string): string | undefined {
+  if (!delay) return delay;
+  return delay
+    .replace('Delivery: 24 to 48 business hours', '24-48 business hours')
+    .replace('Délai : 24 à 48 h ouvrées', '24-48 h ouvrées')
+    .replace('到账：24至48个工作小时', '24-48 个工作小时');
+}
+
+const PAYOUT_SUBMIT_BTN_CLASS =
+  'w-full h-11 text-base font-semibold bg-theme-accent text-white border border-theme-accent shadow-[0_4px_16px_color-mix(in_srgb,var(--theme-accent)_40%,transparent)] hover:brightness-110 hover:shadow-[0_6px_24px_color-mix(in_srgb,var(--theme-accent)_50%,transparent)] focus-visible:ring-theme-accent/40 disabled:bg-muted/50 disabled:text-muted-foreground disabled:border-border/60 disabled:shadow-none disabled:opacity-100 disabled:brightness-100 disabled:hover:brightness-100';
+
 /** Flexify envoie processingFeeCents / Whitepay processingCents, évite NaN dans le récap */
 function normalizeWithdrawalFeesCents(fees: unknown): { processingCents: number; networkCents: number } {
   if (!fees || typeof fees !== 'object') return { processingCents: 0, networkCents: 0 };
@@ -204,6 +216,17 @@ export default function PayoutPage() {
   });
   const availableBalanceCents = balanceData?.availableCents ?? null;
   const frozenBalanceCents = balanceData?.frozenBalanceCents ?? null;
+
+  const sepaFrSubmitReady = useMemo(() => {
+    if (!amount || availableBalanceCents === null) return false;
+    const parsed = parseFloat(amount);
+    if (!Number.isFinite(parsed) || parsed <= 0) return false;
+    const amountCents = toCents(parsed);
+    if (amountCents < 1000 || amountCents > availableBalanceCents) return false;
+    if (!sepaFrForm.firstName.trim() || !sepaFrForm.lastName.trim()) return false;
+    const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
+    return validateSepaIban(ibanClean).isValid;
+  }, [amount, availableBalanceCents, sepaFrForm]);
 
   const { data: historyData } = useQuery({
     queryKey: queryKeys.payoutHistory,
@@ -962,18 +985,18 @@ export default function PayoutPage() {
                             {text.sepaFr?.recommendedBadge}
                           </Badge>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1.5">
-                            <CheckCircleIcon className="w-3.5 h-3.5 shrink-0 text-theme-accent" />
-                            {text.sepaFr?.compareFees}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 sm:items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <span className="flex items-start gap-1.5">
+                            <CheckCircleIcon className="w-3.5 h-3.5 shrink-0 text-theme-accent mt-0.5" aria-hidden />
+                            <span className="leading-snug">{text.sepaFr?.compareFees}</span>
                           </span>
-                          <span className="flex items-center gap-1.5">
-                            <ClockIcon className="w-3.5 h-3.5 shrink-0 text-theme-accent" />
-                            {text.sepaFr?.compareDelay}
+                          <span className="flex items-start gap-1.5">
+                            <ClockIcon className="w-3.5 h-3.5 shrink-0 text-theme-accent mt-0.5" aria-hidden />
+                            <span className="leading-snug">{formatSepaPremiumDelayLabel(text.sepaFr?.compareDelay)}</span>
                           </span>
-                          <span className="flex items-center gap-1.5">
-                            <ShieldCheckIcon className="w-3.5 h-3.5 shrink-0 text-theme-accent" />
-                            {text.sepaFr?.compareCoverage}
+                          <span className="flex items-start gap-1.5">
+                            <ShieldCheckIcon className="w-3.5 h-3.5 shrink-0 text-theme-accent mt-0.5" aria-hidden />
+                            <span className="leading-snug">{text.sepaFr?.compareCoverage}</span>
                           </span>
                         </div>
                       </button>
@@ -1164,8 +1187,8 @@ export default function PayoutPage() {
                                       setSepaFrLoading(false);
                                     }
                                   }}
-                                  disabled={sepaFrLoading || !amount || availableBalanceCents === null}
-                                  className="w-full bg-cta-gradient hover:brightness-110"
+                                  disabled={sepaFrLoading || !sepaFrSubmitReady}
+                                  className={PAYOUT_SUBMIT_BTN_CLASS}
                                 >
                                   {sepaFrLoading ? (
                                     <>
@@ -1751,6 +1774,7 @@ export default function PayoutPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
+            className="lg:self-start"
           >
             <Card>
               <CardHeader>
@@ -1775,9 +1799,9 @@ export default function PayoutPage() {
               </CardHeader>
               <CardContent>
                 {payoutHistory.length === 0 ? (
-                  <div className="text-center py-4">
-                    <BanknotesIcon className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">{text.history.noPayoutDesc}</p>
+                  <div className="text-center py-2">
+                    <BanknotesIcon className="w-6 h-6 mx-auto mb-1 text-muted-foreground" aria-hidden />
+                    <p className="text-xs text-muted-foreground">{text.history.noPayoutDesc}</p>
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-[480px] overflow-y-auto pr-2 -mr-2">
