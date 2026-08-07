@@ -2383,6 +2383,30 @@ body.next-dev-overlay-present #sentry-feedback {
     text-transform: uppercase;
   }
 
+  @keyframes payout-premium-glow {
+    0%, 100% {
+      box-shadow:
+        0 0 18px rgba(59, 130, 246, 0.1),
+        0 0 36px rgba(59, 130, 246, 0.05);
+    }
+    50% {
+      box-shadow:
+        0 0 26px rgba(59, 130, 246, 0.2),
+        0 0 52px rgba(59, 130, 246, 0.08);
+    }
+  }
+
+  .payout-premium-card {
+    animation: payout-premium-glow 3s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .payout-premium-card {
+      animation: none;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.12);
+    }
+  }
+
   /* Chat Widget Animations */
 
   .chat-pulse-ring {

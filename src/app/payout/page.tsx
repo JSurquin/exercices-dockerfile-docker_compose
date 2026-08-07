@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -132,6 +132,7 @@ export default function PayoutPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { messages, locale } = useLocale();
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>('sepa_fr');
+  const [expandedMethod, setExpandedMethod] = useState<PayoutMethod | null>(null);
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
@@ -766,6 +767,14 @@ export default function PayoutPage() {
     }
   };
 
+  const selectPayoutMethod = (method: PayoutMethod) => {
+    setPayoutResult(null);
+    setPayoutMethod(method);
+    setExpandedMethod(method);
+    setQuote(null);
+    setSepaFrResult(null);
+  };
+
   const renderFlexifyMethodActions = () => (
     <>
       {!payoutResult && amount && parseFloat(amount) > 0 && (
@@ -859,6 +868,16 @@ export default function PayoutPage() {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{text.title}</h1>
+          <p className="text-muted-foreground">{text.subtitle}</p>
+        </motion.div>
+
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Formulaire principal */}
           <motion.div
@@ -868,32 +887,26 @@ export default function PayoutPage() {
             className="lg:col-span-2"
           >
             <Card>
-              <CardHeader className="space-y-4">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <CardHeader>
+                <div className="flex flex-wrap gap-6 justify-start">
                   <div>
-                    <CardTitle>{text.title}</CardTitle>
-                    <CardDescription>{text.subtitle}</CardDescription>
+                    <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
+                    <p className="text-2xl font-bold text-green-500">
+                      {availableBalanceCents === null
+                        ? '-'
+                        : formatCentsToCurrency(availableBalanceCents, 'EUR')}
+                    </p>
                   </div>
-                  <div className="flex flex-wrap gap-6 justify-end w-full sm:w-auto shrink-0 border-t pt-4 sm:border-0 sm:pt-0">
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
-                      <p className="text-2xl font-semibold text-foreground">
-                        {availableBalanceCents === null
-                          ? '-'
-                          : formatCentsToCurrency(availableBalanceCents, 'EUR')}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground flex items-center justify-end gap-1">
-                        <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                        {text.request.frozenBalance}
-                      </p>
-                      <p className="text-2xl font-semibold text-muted-foreground">
-                        {frozenBalanceCents === null
-                          ? '-'
-                          : formatCentsToCurrency(frozenBalanceCents, 'EUR')}
-                      </p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      {text.request.frozenBalance}
+                    </p>
+                    <p className="text-2xl font-semibold text-muted-foreground">
+                      {frozenBalanceCents === null
+                        ? '-'
+                        : formatCentsToCurrency(frozenBalanceCents, 'EUR')}
+                    </p>
                   </div>
                 </div>
               </CardHeader>
@@ -927,60 +940,52 @@ export default function PayoutPage() {
                 </div>
 
                 {/* Méthode de paiement */}
-                <Tabs value={payoutMethod} onValueChange={(v) => {
-                  setPayoutResult(null);
-                  setPayoutMethod(v as PayoutMethod);
-                  setQuote(null);
-                  setSepaFrResult(null);
+                <Tabs value={expandedMethod ?? '__closed__'} onValueChange={(v) => {
+                  if (v !== '__closed__') selectPayoutMethod(v as PayoutMethod);
                 }}>
                   <div className="space-y-3">
                     <div
                       className={cn(
-                        'rounded-xl border-2 transition-all backdrop-blur-sm overflow-hidden',
-                        payoutMethod === 'sepa_fr'
-                          ? 'border-theme-accent bg-theme-accent/10 shadow-[0_0_28px_rgba(59,130,246,0.18)] ring-1 ring-theme-accent/40'
-                          : 'border-border/60 bg-muted/30 hover:bg-muted/50 hover:border-border/80'
+                        'payout-premium-card rounded-xl border-2 border-theme-accent bg-muted/45 backdrop-blur-sm overflow-hidden ring-1 ring-theme-accent/40'
                       )}
                     >
                       <button
                         type="button"
-                        onClick={() => {
-                          setPayoutResult(null);
-                          setPayoutMethod('sepa_fr');
-                          setQuote(null);
-                          setSepaFrResult(null);
-                        }}
+                        onClick={() => selectPayoutMethod('sepa_fr')}
                         className="w-full p-4 sm:p-5 text-left"
                       >
                         <div className="flex flex-wrap items-center gap-2 mb-3">
-                          <BanknotesIcon className={cn('w-5 h-5 shrink-0', payoutMethod === 'sepa_fr' ? 'text-theme-accent' : 'text-muted-foreground')} />
+                          <BanknotesIcon className="w-5 h-5 shrink-0 text-theme-accent" />
                           <span className="font-semibold text-base sm:text-lg text-foreground">{text.sepaFr?.tabLabel}</span>
-                          <Badge className={cn(
-                            payoutMethod === 'sepa_fr'
-                              ? 'bg-theme-accent/15 text-theme-accent border-theme-accent/30 hover:bg-theme-accent/20'
-                              : 'bg-muted text-muted-foreground border-border/60'
-                          )}>
+                          <CheckCircleIcon className="w-5 h-5 shrink-0 text-theme-accent" aria-hidden />
+                          <Badge className="bg-theme-accent text-white border-theme-accent hover:bg-theme-accent/90">
                             {text.sepaFr?.recommendedBadge}
                           </Badge>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm text-muted-foreground">
                           <span className="flex items-center gap-1.5">
-                            <CheckCircleIcon className={cn('w-3.5 h-3.5 shrink-0', payoutMethod === 'sepa_fr' ? 'text-theme-accent' : 'text-muted-foreground')} />
+                            <CheckCircleIcon className="w-3.5 h-3.5 shrink-0 text-theme-accent" />
                             {text.sepaFr?.compareFees}
                           </span>
                           <span className="flex items-center gap-1.5">
-                            <ClockIcon className={cn('w-3.5 h-3.5 shrink-0', payoutMethod === 'sepa_fr' ? 'text-theme-accent' : 'text-muted-foreground')} />
+                            <ClockIcon className="w-3.5 h-3.5 shrink-0 text-theme-accent" />
                             {text.sepaFr?.compareDelay}
                           </span>
                           <span className="flex items-center gap-1.5">
-                            <ShieldCheckIcon className={cn('w-3.5 h-3.5 shrink-0', payoutMethod === 'sepa_fr' ? 'text-theme-accent' : 'text-muted-foreground')} />
+                            <ShieldCheckIcon className="w-3.5 h-3.5 shrink-0 text-theme-accent" />
                             {text.sepaFr?.compareCoverage}
                           </span>
                         </div>
                       </button>
 
-                      {payoutMethod === 'sepa_fr' && (
-                        <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 border-t border-border/50">
+                      <div
+                        className={cn(
+                          'grid transition-[grid-template-rows] duration-[225ms] ease-out',
+                          expandedMethod === 'sepa_fr' ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                        )}
+                      >
+                        <div className="overflow-hidden">
+                          <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 border-t border-border/50">
                           <TabsContent value="sepa_fr" className="space-y-4 mt-4">
                             {amount && parseFloat(amount) > 0 && (() => {
                               const gross = Math.round(parseFloat(amount) * 100);
@@ -1174,37 +1179,33 @@ export default function PayoutPage() {
                               </>
                             )}
                           </TabsContent>
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
                       {([
-                        { id: 'card' as const, icon: CreditCardIcon, label: text.request.cardLabel, fee: feeLabels.cardLabel, delay: feeLabels.cardDelay },
-                        { id: 'sepa' as const, icon: BanknotesIcon, label: 'SEPA', fee: feeLabels.sepaLabel, delay: feeLabels.sepaDelay },
-                        { id: 'crypto' as const, icon: CurrencyDollarIcon, label: 'Crypto', fee: feeLabels.cryptoLabel, delay: undefined as string | undefined },
-                      ]).map(({ id, icon: Icon, label, fee, delay }) => (
+                        { id: 'card' as const, icon: CreditCardIcon, label: text.request.cardLabel, fee: feeLabels.cardLabel, delay: feeLabels.cardDelay, iconColor: 'text-emerald-500' },
+                        { id: 'sepa' as const, icon: BanknotesIcon, label: 'SEPA', fee: feeLabels.sepaLabel, delay: feeLabels.sepaDelay, iconColor: 'text-blue-500' },
+                        { id: 'crypto' as const, icon: CurrencyDollarIcon, label: 'Crypto', fee: feeLabels.cryptoLabel, delay: undefined as string | undefined, iconColor: 'text-purple-500' },
+                      ]).map(({ id, icon: Icon, label, fee, delay, iconColor }) => (
                         <div
                           key={id}
                           className={cn(
                             'rounded-lg border transition-all overflow-hidden',
-                            payoutMethod === id
-                              ? 'col-span-3 border-theme-accent bg-theme-accent/10 ring-1 ring-theme-accent/40'
+                            expandedMethod === id
+                              ? 'border-theme-accent/60 bg-muted/50 ring-1 ring-theme-accent/25'
                               : 'border-border/60 bg-muted/30 hover:bg-muted/50 hover:border-border/80'
                           )}
                         >
                           <button
                             type="button"
-                            onClick={() => {
-                              setPayoutResult(null);
-                              setPayoutMethod(id);
-                              setQuote(null);
-                              setSepaFrResult(null);
-                            }}
+                            onClick={() => selectPayoutMethod(id)}
                             className="w-full p-2.5 sm:p-3 text-left"
                           >
                             <div className="flex items-center gap-1.5 mb-1.5">
-                              <Icon className={cn('w-4 h-4 shrink-0', payoutMethod === id ? 'text-theme-accent' : 'text-muted-foreground')} />
+                              <Icon className={cn('w-4 h-4 shrink-0', iconColor)} />
                               <span className="text-xs sm:text-sm font-medium truncate text-foreground">{label}</span>
                             </div>
                             <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">{fee}</p>
@@ -1216,8 +1217,14 @@ export default function PayoutPage() {
                             )}
                           </button>
 
-                          {payoutMethod === id && (
-                            <div className="px-3 pb-3 pt-0 border-t border-border/50">
+                          <div
+                            className={cn(
+                              'grid transition-[grid-template-rows] duration-[225ms] ease-out',
+                              expandedMethod === id ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                            )}
+                          >
+                            <div className="overflow-hidden">
+                              <div className="px-3 pb-3 pt-0 border-t border-border/50">
                               <TabsContent value={id} className="space-y-4 mt-3">
                                 {id === 'card' && (
                                   <>
@@ -1669,8 +1676,9 @@ export default function PayoutPage() {
                                 )}
                                 {renderFlexifyMethodActions()}
                               </TabsContent>
+                              </div>
                             </div>
-                          )}
+                          </div>
                         </div>
                       ))}
                     </div>
