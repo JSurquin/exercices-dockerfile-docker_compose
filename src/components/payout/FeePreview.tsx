@@ -7,23 +7,36 @@ import { formatCentsToCurrency } from '@/lib/currency-converter';
 import { useLocale } from '@/components/providers/locale-provider';
 import { calculateWhitepayFees, estimateNetworkFeeCentsSync, getWhitepayNetworkFeeUnits } from '@/lib/whitepay';
 
-type PayoutMethod = 'card' | 'sepa' | 'crypto';
+export type PayoutFeeMethod = 'card' | 'sepa' | 'crypto' | 'sepa_fr';
+
+/** Aligné sur /api/payouts/sepa-fr — frais SEPA Premium */
+export const SEPA_FR_FEE_RATE = 0.017;
 
 interface FeeNumericConfig {
   rate: number;
   fixedCents: number;
 }
 
-const FEE_CONFIG: Record<Exclude<PayoutMethod, 'crypto'>, FeeNumericConfig> = {
+const FEE_CONFIG: Record<'card' | 'sepa', FeeNumericConfig> = {
   card: { rate: 0.042, fixedCents: 50 },
   sepa: { rate: 0.02, fixedCents: 350 },
 };
 
 export function computeFees(
-  method: PayoutMethod,
+  method: PayoutFeeMethod,
   amountCents: number,
   crypto?: { targetCurrency: string; network: string }
 ) {
+  if (method === 'sepa_fr') {
+    const processingCents = Math.ceil(amountCents * SEPA_FR_FEE_RATE);
+    return {
+      totalCents: processingCents,
+      netCents: amountCents - processingCents,
+      networkCents: 0,
+      processingCents,
+    };
+  }
+
   if (method === 'crypto') {
     const networkFeeCents =
       crypto?.targetCurrency && crypto?.network
@@ -40,7 +53,7 @@ export function computeFees(
 }
 
 interface FeePreviewProps {
-  method: PayoutMethod;
+  method: Exclude<PayoutFeeMethod, 'sepa_fr'>;
   amountCents: number;
   targetCurrency?: string;
   network?: string;
@@ -64,13 +77,13 @@ export function FeePreview({ method, amountCents, targetCurrency, network, label
     cryptoContext
   );
 
-  const labelMap: Record<PayoutMethod, string> = {
+  const labelMap: Record<Exclude<PayoutFeeMethod, 'sepa_fr'>, string> = {
     card: fees.cardLabel,
     sepa: fees.sepaLabel,
     crypto: fees.cryptoLabel,
   };
 
-  const delayMap: Record<PayoutMethod, string | undefined> = {
+  const delayMap: Record<Exclude<PayoutFeeMethod, 'sepa_fr'>, string | undefined> = {
     card: fees.cardDelay,
     sepa: fees.sepaDelay,
     crypto: undefined,

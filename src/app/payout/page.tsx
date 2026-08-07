@@ -18,7 +18,6 @@ import {
   ShieldCheckIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
   InformationCircleIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
@@ -28,7 +27,9 @@ import { toast } from 'sonner';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { PageLoading } from '@/components/ui/page-loading';
-import { FeePreview } from '@/components/payout/FeePreview';
+import { FeePreview, computeFees } from '@/components/payout/FeePreview';
+import { NetReceivePreview } from '@/components/payout/NetReceivePreview';
+import { SepaFrPremiumHint } from '@/components/payout/SepaFrPremiumHint';
 import {
   WHITEPAY_SUPPORTED_CRYPTOS,
   MEMO_REQUIRED_NETWORKS,
@@ -178,6 +179,7 @@ export default function PayoutPage() {
   const [useSavedWallet, setUseSavedWallet] = useState(false);
   const [selectedCryptoMethodId, setSelectedCryptoMethodId] = useState<string | null>(null);
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const expandedMethodRef = useRef<HTMLDivElement | null>(null);
 
   // SEPA France form state
   const [sepaFrForm, setSepaFrForm] = useState({
@@ -397,6 +399,22 @@ export default function PayoutPage() {
       if (pollingRef.current) clearTimeout(pollingRef.current);
     };
   }, []);
+
+  // Évite que le contenu d'une carte ouverte ne passe sous la navbar sticky
+  useEffect(() => {
+    if (!expandedMethod) return;
+    const el = expandedMethodRef.current;
+    if (!el) return;
+    const headerOffset = 80;
+    const rect = el.getBoundingClientRect();
+    if (rect.top < headerOffset) {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollBy({
+        top: rect.top - headerOffset,
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      });
+    }
+  }, [expandedMethod]);
 
   // Pré-sélectionner les moyens enregistrés au premier chargement
   const hasSetSepaDefault = useRef(false);
@@ -931,7 +949,7 @@ export default function PayoutPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="relative z-0 container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1024,16 +1042,24 @@ export default function PayoutPage() {
                     <span>{text.request.minAmount}</span>
                     <span>{text.request.maxAmount}</span>
                   </div>
+                  <NetReceivePreview
+                    method={payoutMethod}
+                    amount={amount}
+                    youReceiveLabel={text.request.youReceive}
+                    targetCurrency={payoutMethod === 'crypto' ? formData.selectedCrypto : undefined}
+                    network={payoutMethod === 'crypto' ? formData.selectedNetwork : undefined}
+                  />
                 </div>
 
                 {/* Méthode de paiement */}
                 <Tabs value={expandedMethod ?? '__closed__'} onValueChange={(v) => {
                   if (v !== '__closed__') selectPayoutMethod(v as PayoutMethod);
                 }}>
-                  <div className="space-y-3">
+                  <div className="relative z-0 isolate space-y-3">
                     <div
+                      ref={expandedMethod === 'sepa_fr' ? expandedMethodRef : undefined}
                       className={cn(
-                        'relative payout-premium-card rounded-xl border-2 border-theme-accent bg-muted/45 backdrop-blur-sm ring-1 ring-theme-accent/40'
+                        'relative z-0 payout-premium-card rounded-xl border-2 border-theme-accent bg-muted/45 ring-1 ring-theme-accent/40'
                       )}
                     >
                       <span className="absolute -top-2.5 -right-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-theme-accent px-2.5 py-1 text-xs font-semibold text-white shadow-[0_2px_8px_color-mix(in_srgb,var(--theme-accent)_45%,transparent)]">
@@ -1042,8 +1068,9 @@ export default function PayoutPage() {
                       </span>
                       <button
                         type="button"
+                        aria-expanded={expandedMethod === 'sepa_fr'}
                         onClick={() => selectPayoutMethod('sepa_fr')}
-                        className="w-full p-4 sm:p-5 text-left"
+                        className="w-full p-4 sm:p-5 text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent/40"
                       >
                         <div className="flex flex-wrap items-center gap-2 mb-3 pr-16">
                           <BanknotesIcon className="w-5 h-5 shrink-0 text-theme-accent" />
@@ -1075,9 +1102,8 @@ export default function PayoutPage() {
                           <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 border-t border-border/50">
                           <TabsContent value="sepa_fr" className="space-y-4 mt-4">
                             {amount && parseFloat(amount) > 0 && (() => {
-                              const gross = Math.round(parseFloat(amount) * 100);
-                              const fee = Math.ceil(gross * 0.017);
-                              const net = gross - fee;
+                              const gross = toCents(parseFloat(amount));
+                              const { netCents: net, processingCents: fee } = computeFees('sepa_fr', gross);
                               return (
                                 <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
                                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -1094,7 +1120,7 @@ export default function PayoutPage() {
                                   <Separator />
                                   <div className="flex justify-between font-semibold">
                                     <span>{text.request.youReceive}</span>
-                                    <span>{formatCentsToCurrency(net, 'EUR')}</span>
+                                    <span className="text-green-500">{formatCentsToCurrency(net, 'EUR')}</span>
                                   </div>
                                 </div>
                               );
@@ -1283,8 +1309,9 @@ export default function PayoutPage() {
                         return (
                         <div
                           key={id}
+                          ref={isExpanded ? expandedMethodRef : undefined}
                           className={cn(
-                            'rounded-lg border transition-all duration-[275ms] ease-out overflow-hidden',
+                            'relative z-0 rounded-lg border transition-all duration-[275ms] ease-out overflow-hidden motion-reduce:transition-none',
                             isExpanded
                               ? 'col-span-6 border-theme-accent/60 bg-muted/50 ring-1 ring-theme-accent/25'
                               : isSecondaryExpanded
@@ -1294,9 +1321,10 @@ export default function PayoutPage() {
                         >
                           <button
                             type="button"
+                            aria-expanded={isExpanded}
                             onClick={() => selectPayoutMethod(id)}
                             className={cn(
-                              'w-full text-left',
+                              'w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-theme-accent/40 rounded-lg',
                               isExpanded ? 'p-4 sm:p-5' : 'p-2.5 sm:p-3'
                             )}
                           >
@@ -1460,20 +1488,7 @@ export default function PayoutPage() {
                                 )}
                                 {id === 'sepa' && (
                                   <>
-                                    <div className="bg-theme-highlight/5 dark:bg-theme-highlight/10 border border-theme-highlight/25 dark:border-theme-highlight/35 rounded-lg p-4">
-                                      <div className="flex items-start space-x-3">
-                                        <ExclamationTriangleIcon className="w-5 h-5 text-theme-stat flex-shrink-0 mt-0.5" />
-                                        <p className="text-sm text-theme-highlight">
-                                          {text.request.security.sepaFrIbanWarning}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                                      <div className="flex items-start space-x-3">
-                                        <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                                        <p className="text-sm text-blue-700 dark:text-blue-300">{text.request.security.sepaInfo}</p>
-                                      </div>
-                                    </div>
+                                    <SepaFrPremiumHint onSelectSepaPremium={() => selectPayoutMethod('sepa_fr')} />
 
                                     <div className="grid grid-cols-2 gap-4">
                                       <div className="space-y-2">
