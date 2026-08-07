@@ -6987,6 +6987,7 @@ export interface Messages {
       firstNamePlaceholder: string;
       lastNamePlaceholder: string;
       submitButton: string;
+      submitHint: string;
       submitting: string;
       successTitle: string;
       successDesc: string;

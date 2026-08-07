@@ -762,20 +762,99 @@ export default function PayoutPage() {
     }
   };
 
+  const renderFlexifyMethodActions = () => (
+    <>
+      {!payoutResult && amount && parseFloat(amount) > 0 && (
+        <FeePreview
+          method={payoutMethod as 'card' | 'sepa' | 'crypto'}
+          amountCents={toCents(parseFloat(amount))}
+          targetCurrency={payoutMethod === 'crypto' ? formData.selectedCrypto : undefined}
+          network={payoutMethod === 'crypto' ? formData.selectedNetwork : undefined}
+          labels={{
+            feesPreview: text.request.feesPreview,
+            grossAmount: text.request.grossAmount,
+            youReceive: text.request.youReceive,
+          }}
+        />
+      )}
+
+      {!quote && !payoutResult && (
+        <Button
+          onClick={getQuote}
+          disabled={isLoadingQuote || !amount || availableBalanceCents === null}
+          className="w-full"
+          variant="outline"
+        >
+          {isLoadingQuote ? (
+            <>
+              <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+              {text.request.submitting}
+            </>
+          ) : (
+            text.request.submitButton
+          )}
+        </Button>
+      )}
+
+      {quote && !payoutResult && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-muted/50 rounded-lg p-4 space-y-3"
+        >
+          <h3 className="font-semibold flex items-center gap-2">
+            <CheckCircleIcon className="w-5 h-5 text-green-500" />
+            {text.request.confirmTitle}
+          </h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{text.request.grossAmount}</span>
+              <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
+            </div>
+            <div className="flex justify-between text-theme-accent">
+              <span>{text.request.processingFee}</span>
+              <span>-{formatCentsToCurrency(quote.fees.processingCents, 'EUR')}</span>
+            </div>
+            <div className="flex justify-between text-theme-accent">
+              <span>{text.request.networkFee}</span>
+              <span>-{formatCentsToCurrency(quote.fees.networkCents, 'EUR')}</span>
+            </div>
+            <Separator />
+            <div className="flex justify-between font-semibold text-lg">
+              <span>{text.request.youReceive}</span>
+              <span className="text-green-500">{formatCentsToCurrency(quote.netCents, 'EUR')}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>{text.request.estimatedDelay}</span>
+              <span className="flex items-center gap-1">
+                <ClockIcon className="w-4 h-4" />
+                {quote.estimatedDelivery}
+              </span>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="w-full bg-cta-gradient hover:brightness-110"
+          >
+            {isLoading ? (
+              <>
+                <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                {text.request.submitting}
+              </>
+            ) : (
+              text.request.submitButton
+            )}
+          </Button>
+        </motion.div>
+      )}
+    </>
+  );
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-8"
-        >
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{text.title}</h1>
-          <p className="text-muted-foreground">{text.subtitle}</p>
-        </motion.div>
-
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Formulaire principal */}
           <motion.div
@@ -794,7 +873,7 @@ export default function PayoutPage() {
                   <div className="flex flex-wrap gap-6 justify-end w-full sm:w-auto shrink-0 border-t pt-4 sm:border-0 sm:pt-0">
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
-                      <p className="text-2xl font-bold text-green-500">
+                      <p className="text-2xl font-semibold text-foreground">
                         {availableBalanceCents === null
                           ? '-'
                           : formatCentsToCurrency(availableBalanceCents, 'EUR')}
@@ -805,7 +884,7 @@ export default function PayoutPage() {
                         <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
                         {text.request.frozenBalance}
                       </p>
-                      <p className="text-2xl font-bold text-theme-stat">
+                      <p className="text-2xl font-semibold text-muted-foreground">
                         {frozenBalanceCents === null
                           ? '-'
                           : formatCentsToCurrency(frozenBalanceCents, 'EUR')}
@@ -851,43 +930,249 @@ export default function PayoutPage() {
                   setSepaFrResult(null);
                 }}>
                   <div className="space-y-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPayoutResult(null);
-                        setPayoutMethod('sepa_fr');
-                        setQuote(null);
-                        setSepaFrResult(null);
-                      }}
+                    <div
                       className={cn(
-                        'w-full rounded-xl border-2 p-4 sm:p-5 text-left transition-all backdrop-blur-sm',
+                        'rounded-xl border-2 transition-all backdrop-blur-sm overflow-hidden',
                         payoutMethod === 'sepa_fr'
                           ? 'border-theme-accent bg-theme-accent/10 shadow-[0_0_28px_rgba(59,130,246,0.18)] ring-1 ring-theme-accent/40'
-                          : 'border-border/50 bg-background/40 hover:border-theme-accent/35 hover:bg-muted/30'
+                          : 'border-border/60 bg-muted/30 hover:bg-muted/50 hover:border-border/80'
                       )}
                     >
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <BanknotesIcon className="w-5 h-5 text-theme-accent shrink-0" />
-                        <span className="font-semibold text-base sm:text-lg">{text.sepaFr?.tabLabel}</span>
-                        <Badge className="bg-theme-accent/15 text-theme-accent border-theme-accent/30 hover:bg-theme-accent/20">
-                          {text.sepaFr?.recommendedBadge}
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                          <CheckCircleIcon className="w-3.5 h-3.5 text-theme-accent shrink-0" />
-                          {text.sepaFr?.compareFees}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <ClockIcon className="w-3.5 h-3.5 text-theme-accent shrink-0" />
-                          {text.sepaFr?.compareDelay}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <ShieldCheckIcon className="w-3.5 h-3.5 text-theme-accent shrink-0" />
-                          {text.sepaFr?.compareCoverage}
-                        </span>
-                      </div>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPayoutResult(null);
+                          setPayoutMethod('sepa_fr');
+                          setQuote(null);
+                          setSepaFrResult(null);
+                        }}
+                        className="w-full p-4 sm:p-5 text-left"
+                      >
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          <BanknotesIcon className={cn('w-5 h-5 shrink-0', payoutMethod === 'sepa_fr' ? 'text-theme-accent' : 'text-muted-foreground')} />
+                          <span className="font-semibold text-base sm:text-lg text-foreground">{text.sepaFr?.tabLabel}</span>
+                          <Badge className={cn(
+                            payoutMethod === 'sepa_fr'
+                              ? 'bg-theme-accent/15 text-theme-accent border-theme-accent/30 hover:bg-theme-accent/20'
+                              : 'bg-muted text-muted-foreground border-border/60'
+                          )}>
+                            {text.sepaFr?.recommendedBadge}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1.5">
+                            <CheckCircleIcon className={cn('w-3.5 h-3.5 shrink-0', payoutMethod === 'sepa_fr' ? 'text-theme-accent' : 'text-muted-foreground')} />
+                            {text.sepaFr?.compareFees}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <ClockIcon className={cn('w-3.5 h-3.5 shrink-0', payoutMethod === 'sepa_fr' ? 'text-theme-accent' : 'text-muted-foreground')} />
+                            {text.sepaFr?.compareDelay}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <ShieldCheckIcon className={cn('w-3.5 h-3.5 shrink-0', payoutMethod === 'sepa_fr' ? 'text-theme-accent' : 'text-muted-foreground')} />
+                            {text.sepaFr?.compareCoverage}
+                          </span>
+                        </div>
+                      </button>
+
+                      {payoutMethod === 'sepa_fr' && (
+                        <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-0 border-t border-border/50">
+                          <TabsContent value="sepa_fr" className="space-y-4 mt-4">
+                            {amount && parseFloat(amount) > 0 && (() => {
+                              const gross = Math.round(parseFloat(amount) * 100);
+                              const fee = Math.ceil(gross * 0.017);
+                              const net = gross - fee;
+                              return (
+                                <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                    {text.request.feesPreview}
+                                  </p>
+                                  <div className="flex justify-between text-muted-foreground">
+                                    <span>{text.request.grossAmount}</span>
+                                    <span>{formatCentsToCurrency(gross, 'EUR')}</span>
+                                  </div>
+                                  <div className="flex justify-between text-muted-foreground">
+                                    <span>{text.request.sepaFrFeeLabel}</span>
+                                    <span>-{formatCentsToCurrency(fee, 'EUR')}</span>
+                                  </div>
+                                  <Separator />
+                                  <div className="flex justify-between font-semibold">
+                                    <span>{text.request.youReceive}</span>
+                                    <span>{formatCentsToCurrency(net, 'EUR')}</span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            {sepaFrResult ? (
+                              <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="rounded-lg border border-green-500/40 bg-green-500/5 p-4 space-y-3"
+                              >
+                                <h3 className="font-semibold flex items-center gap-2 text-green-600 dark:text-green-400">
+                                  <CheckCircleIcon className="w-5 h-5" />
+                                  {text.sepaFr?.successTitle}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {text.sepaFr?.successDesc}
+                                </p>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">{text.sepaFr?.reference}</span>
+                                  <span className="font-mono text-xs">{sepaFrResult.reference}</span>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full"
+                                  onClick={() => { setSepaFrResult(null); setSepaFrForm({ iban: '', bic: '', firstName: '', lastName: '' }); }}
+                                >
+                                  {text.sepaFr?.newRequest}
+                                </Button>
+                              </motion.div>
+                            ) : (
+                              <>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="sepaFrFirstName">{text.sepaFr?.firstNameLabel}</Label>
+                                    <Input
+                                      id="sepaFrFirstName"
+                                      placeholder={text.sepaFr?.firstNamePlaceholder}
+                                      value={sepaFrForm.firstName}
+                                      onChange={(e) => setSepaFrForm((p) => ({ ...p, firstName: e.target.value }))}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="sepaFrLastName">{text.sepaFr?.lastNameLabel}</Label>
+                                    <Input
+                                      id="sepaFrLastName"
+                                      placeholder={text.sepaFr?.lastNamePlaceholder}
+                                      value={sepaFrForm.lastName}
+                                      onChange={(e) => setSepaFrForm((p) => ({ ...p, lastName: e.target.value }))}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="sepaFrIban">{text.sepaFr?.ibanLabel}</Label>
+                                  <Input
+                                    id="sepaFrIban"
+                                    placeholder={text.sepaFr?.ibanPlaceholder}
+                                    value={sepaFrForm.iban}
+                                    onChange={(e) => {
+                                      const raw = e.target.value.replace(/\s/g, '').toUpperCase();
+                                      const formatted = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
+                                      setSepaFrForm((p) => ({ ...p, iban: formatted }));
+                                    }}
+                                    maxLength={42}
+                                  />
+                                  {(() => {
+                                    const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
+                                    if (ibanClean.length < 15) return null;
+                                    const validation = validateSepaIban(ibanClean);
+                                    if (validation.isValid) return null;
+                                    return <p className="text-xs text-destructive">{text.sepaFr?.ibanError}</p>;
+                                  })()}
+                                  <p className="text-xs text-muted-foreground">{text.sepaFr?.ibanSepaHint}</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="sepaFrBic">{text.sepaFr?.bicLabel}</Label>
+                                  <Input
+                                    id="sepaFrBic"
+                                    placeholder={text.sepaFr?.bicPlaceholder}
+                                    value={sepaFrForm.bic}
+                                    onChange={(e) => setSepaFrForm((p) => ({ ...p, bic: e.target.value.toUpperCase() }))}
+                                    maxLength={11}
+                                  />
+                                </div>
+
+                                {quote && payoutMethod === 'sepa_fr' && (
+                                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">{text.request.grossAmount}</span>
+                                      <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
+                                    </div>
+                                    <Separator />
+                                    <div className="flex justify-between font-semibold">
+                                      <span>{text.request.youReceive}</span>
+                                      <span>{formatCentsToCurrency(quote.netCents, 'EUR')}</span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <p className="text-sm text-muted-foreground">{text.sepaFr?.submitHint}</p>
+
+                                <Button
+                                  onClick={async () => {
+                                    if (!amount || parseFloat(amount) <= 0) {
+                                      toast.error(text.toast.amountTooLow);
+                                      return;
+                                    }
+                                    const amountCents = toCents(parseFloat(amount));
+                                    if (amountCents < 1000) {
+                                      toast.error(text.request.minAmount);
+                                      return;
+                                    }
+                                    if (amountCents > (availableBalanceCents ?? 0)) {
+                                      toast.error(text.toast.insufficientBalance);
+                                      return;
+                                    }
+                                    const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
+                                    const ibanValidation = validateSepaIban(ibanClean);
+                                    if (!ibanValidation.isValid) {
+                                      toast.error(text.sepaFr?.ibanError);
+                                      return;
+                                    }
+                                    if (!sepaFrForm.firstName.trim() || !sepaFrForm.lastName.trim()) {
+                                      toast.error(text.request.firstLastNameRequired);
+                                      return;
+                                    }
+                                    setSepaFrLoading(true);
+                                    try {
+                                      const bicClean = sepaFrForm.bic.replace(/\s/g, '').toUpperCase();
+                                      const res = await fetch('/api/payouts/sepa-fr', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          amountCents,
+                                          iban: ibanClean,
+                                          ...(bicClean ? { bic: bicClean } : {}),
+                                          firstName: sepaFrForm.firstName.trim(),
+                                          lastName: sepaFrForm.lastName.trim(),
+                                        }),
+                                      });
+                                      const data = await res.json();
+                                      if (!res.ok) throw new Error(data.error ?? 'Error');
+                                      toast.success(text.sepaFr?.successTitle);
+                                      setSepaFrResult({ reference: data.payout.reference, amountCents });
+                                      setAmount('');
+                                      queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
+                                      queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
+                                    } catch (err) {
+                                      toast.error(err instanceof Error ? err.message : text.toast.payoutError);
+                                    } finally {
+                                      setSepaFrLoading(false);
+                                    }
+                                  }}
+                                  disabled={sepaFrLoading || !amount || availableBalanceCents === null}
+                                  className="w-full bg-cta-gradient hover:brightness-110"
+                                >
+                                  {sepaFrLoading ? (
+                                    <>
+                                      <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
+                                      {text.sepaFr?.submitting}
+                                    </>
+                                  ) : (
+                                    text.sepaFr?.submitButton
+                                  )}
+                                </Button>
+                              </>
+                            )}
+                          </TabsContent>
+                        </div>
+                      )}
+                    </div>
 
                     <div className="grid grid-cols-3 gap-2">
                       {([
@@ -895,785 +1180,499 @@ export default function PayoutPage() {
                         { id: 'sepa' as const, icon: BanknotesIcon, label: 'SEPA', fee: feeLabels.sepaLabel, delay: feeLabels.sepaDelay },
                         { id: 'crypto' as const, icon: CurrencyDollarIcon, label: 'Crypto', fee: feeLabels.cryptoLabel, delay: undefined as string | undefined },
                       ]).map(({ id, icon: Icon, label, fee, delay }) => (
-                        <button
+                        <div
                           key={id}
-                          type="button"
-                          onClick={() => {
-                            setPayoutResult(null);
-                            setPayoutMethod(id);
-                            setQuote(null);
-                            setSepaFrResult(null);
-                          }}
                           className={cn(
-                            'rounded-lg border p-2.5 sm:p-3 text-left transition-all',
+                            'rounded-lg border transition-all overflow-hidden',
                             payoutMethod === id
-                              ? 'border-primary/50 bg-muted/60 ring-1 ring-primary/20'
-                              : 'border-border/40 bg-muted/20 opacity-80 hover:opacity-100 hover:border-border/70'
+                              ? 'col-span-3 border-theme-accent bg-theme-accent/10 ring-1 ring-theme-accent/40'
+                              : 'border-border/60 bg-muted/30 hover:bg-muted/50 hover:border-border/80'
                           )}
                         >
-                          <div className="flex items-center gap-1.5 mb-1.5">
-                            <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
-                            <span className="text-xs sm:text-sm font-medium truncate">{label}</span>
-                          </div>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">{fee}</p>
-                          {delay && (
-                            <p className="text-[10px] text-muted-foreground/80 mt-0.5 flex items-center gap-0.5">
-                              <ClockIcon className="w-2.5 h-2.5" />
-                              {delay}
-                            </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPayoutResult(null);
+                              setPayoutMethod(id);
+                              setQuote(null);
+                              setSepaFrResult(null);
+                            }}
+                            className="w-full p-2.5 sm:p-3 text-left"
+                          >
+                            <div className="flex items-center gap-1.5 mb-1.5">
+                              <Icon className={cn('w-4 h-4 shrink-0', payoutMethod === id ? 'text-theme-accent' : 'text-muted-foreground')} />
+                              <span className="text-xs sm:text-sm font-medium truncate text-foreground">{label}</span>
+                            </div>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">{fee}</p>
+                            {delay && (
+                              <p className="text-[10px] text-muted-foreground/80 mt-0.5 flex items-center gap-0.5">
+                                <ClockIcon className="w-2.5 h-2.5" />
+                                {delay}
+                              </p>
+                            )}
+                          </button>
+
+                          {payoutMethod === id && (
+                            <div className="px-3 pb-3 pt-0 border-t border-border/50">
+                              <TabsContent value={id} className="space-y-4 mt-3">
+                                {id === 'card' && (
+                                  <>
+                                    <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+                                      <div className="flex items-start space-x-3">
+                                        <InformationCircleIcon className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                        <p className="text-sm text-emerald-700 dark:text-emerald-300">{text.request.security.cardInfo}</p>
+                                      </div>
+                                    </div>
+                                    {savedCardMethods.length > 0 && (
+                                      <div className="space-y-2">
+                                        <Label>{text.request.savedCardLabel}</Label>
+                                        <div className="flex flex-col gap-2">
+                                          {savedCardMethods.map((pm: { id: string; last4: string | null; holderName: string | null }) => (
+                                            <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                                              <input
+                                                type="radio"
+                                                name="card-source"
+                                                checked={useSavedCard && selectedCardMethodId === pm.id}
+                                                onChange={() => {
+                                                  setUseSavedCard(true);
+                                                  setSelectedCardMethodId(pm.id);
+                                                }}
+                                                className="h-4 w-4"
+                                              />
+                                              <span className="text-sm">
+                                                {text.request.useSavedCard}: **** {pm.last4 ?? '••••'}
+                                                {pm.holderName ? `, ${pm.holderName}` : ''}
+                                              </span>
+                                            </label>
+                                          ))}
+                                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                                            <input
+                                              type="radio"
+                                              name="card-source"
+                                              checked={!useSavedCard}
+                                              onChange={() => {
+                                                setUseSavedCard(false);
+                                                setSelectedCardMethodId(null);
+                                              }}
+                                              className="h-4 w-4"
+                                            />
+                                            <span className="text-sm">{text.request.enterNewCard}</span>
+                                          </label>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">{text.request.savedCardHint}</p>
+                                      </div>
+                                    )}
+                                    {(!useSavedCard || savedCardMethods.length === 0) && (
+                                    <div className="space-y-4">
+                                      <div className="space-y-2">
+                                        <Label htmlFor="cardNumber">{text.request.cardNumberLabel}</Label>
+                                        <Input
+                                          id="cardNumber"
+                                          type="text"
+                                          inputMode="numeric"
+                                          autoComplete="cc-number"
+                                          placeholder={text.request.cardNumberPlaceholder}
+                                          value={formData.cardNumber}
+                                          onChange={(e) => {
+                                            const v = e.target.value.replace(/\D/g, '').slice(0, 19);
+                                            setFormData(prev => ({ ...prev, cardNumber: v.replace(/(\d{4})/g, '$1 ').trim() }));
+                                            setQuote(null);
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label htmlFor="cardHolder">{text.request.cardHolderLabel}</Label>
+                                        <Input
+                                          id="cardHolder"
+                                          autoComplete="cc-name"
+                                          placeholder={text.request.cardHolderPlaceholder}
+                                          value={formData.cardHolder}
+                                          onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, cardHolder: e.target.value }));
+                                            setQuote(null);
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                          <Label htmlFor="expireMonth">{text.request.cardExpireMonthLabel}</Label>
+                                          <Select
+                                            value={formData.expireMonth}
+                                            onValueChange={(v) => {
+                                              setFormData(prev => ({ ...prev, expireMonth: v }));
+                                              setQuote(null);
+                                            }}
+                                          >
+                                            <SelectTrigger id="expireMonth">
+                                              <SelectValue placeholder={text.request.cardExpireMonthPlaceholder} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0')).map((m) => (
+                                                <SelectItem key={m} value={m}>{m}</SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label htmlFor="expireYear">{text.request.cardExpireYearLabel}</Label>
+                                          <Input
+                                            id="expireYear"
+                                            placeholder={text.request.cardExpireYearPlaceholder}
+                                            maxLength={4}
+                                            value={formData.expireYear}
+                                            onChange={(e) => {
+                                              const v = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                              setFormData(prev => ({ ...prev, expireYear: v }));
+                                              setQuote(null);
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label htmlFor="cvv">{text.request.cardCvvLabel}</Label>
+                                          <Input
+                                            id="cvv"
+                                            type="password"
+                                            inputMode="numeric"
+                                            autoComplete="cc-csc"
+                                            placeholder={text.request.cardCvvPlaceholder}
+                                            maxLength={4}
+                                            value={formData.cvv}
+                                            onChange={(e) => {
+                                              setFormData(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }));
+                                              setQuote(null);
+                                            }}
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                    )}
+                                    {(!useSavedCard || savedCardMethods.length === 0) && (
+                                      <p className="text-xs text-muted-foreground">{text.request.saveCardHint}</p>
+                                    )}
+                                  </>
+                                )}
+                                {id === 'sepa' && (
+                                  <>
+                                    <div className="bg-theme-highlight/5 dark:bg-theme-highlight/10 border border-theme-highlight/25 dark:border-theme-highlight/35 rounded-lg p-4">
+                                      <div className="flex items-start space-x-3">
+                                        <ExclamationTriangleIcon className="w-5 h-5 text-theme-stat flex-shrink-0 mt-0.5" />
+                                        <p className="text-sm text-theme-highlight">
+                                          {text.request.security.sepaFrIbanWarning}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                      <div className="flex items-start space-x-3">
+                                        <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                                        <p className="text-sm text-blue-700 dark:text-blue-300">{text.request.security.sepaInfo}</p>
+                                      </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                        <Label htmlFor="sepaFirstName">{text.request.firstNameLabel}</Label>
+                                        <Input
+                                          id="sepaFirstName"
+                                          placeholder={text.request.firstNamePlaceholder}
+                                          value={formData.firstName}
+                                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label htmlFor="sepaLastName">{text.request.lastNameLabel}</Label>
+                                        <Input
+                                          id="sepaLastName"
+                                          placeholder={text.request.lastNamePlaceholder}
+                                          value={formData.lastName}
+                                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {savedSepaMethods.length > 0 && (
+                                      <div className="space-y-2">
+                                        <Label>{text.request.savedIbanLabel}</Label>
+                                        <div className="flex flex-col gap-2">
+                                          {savedSepaMethods.map((pm: { id: string; maskedIban?: string | null; holderName?: string | null }) => (
+                                            <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                                              <input
+                                                type="radio"
+                                                name="sepa-source"
+                                                checked={useSavedIban && selectedPaymentMethodId === pm.id}
+                                                onChange={() => {
+                                                  setUseSavedIban(true);
+                                                  setSelectedPaymentMethodId(pm.id);
+                                                }}
+                                                className="h-4 w-4"
+                                              />
+                                              <span className="text-sm">
+                                                {text.request.useSavedIban}: <strong>{String(pm.maskedIban ?? '••••••••••••').slice(-4).padStart(12, '•')}</strong>
+                                                {pm.holderName ? `, ${pm.holderName}` : ''}
+                                              </span>
+                                            </label>
+                                          ))}
+                                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                                            <input
+                                              type="radio"
+                                              name="sepa-source"
+                                              checked={!useSavedIban}
+                                              onChange={() => {
+                                                setUseSavedIban(false);
+                                                setSelectedPaymentMethodId(null);
+                                              }}
+                                              className="h-4 w-4"
+                                            />
+                                            <span className="text-sm">{text.request.enterNewIban}</span>
+                                          </label>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {(!useSavedIban || savedSepaMethods.length === 0) && (
+                                    <div className="space-y-4">
+                                      <div className="space-y-2">
+                                        <Label htmlFor="iban">{text.request.ibanLabel}</Label>
+                                        <Input
+                                          id="iban"
+                                          placeholder={text.request.ibanPlaceholder}
+                                          value={formData.iban}
+                                          onChange={(e) => {
+                                            const raw = e.target.value.replace(/\s/g, '').toUpperCase();
+                                            const formatted = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
+                                            setFormData(prev => ({ ...prev, iban: formatted }));
+                                            setQuote(null);
+                                            if (isFrenchIban(raw) && raw.length >= 4) {
+                                              toast.warning(text.request.ibanFrWarningToast, { duration: 6000 });
+                                            }
+                                          }}
+                                          maxLength={42}
+                                        />
+                                        {formData.iban.replace(/\s/g, '').length >= 4 && isFrenchIban(formData.iban) && (
+                                          <p className="text-sm text-destructive">{text.request.ibanFrWarningToast}</p>
+                                        )}
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label htmlFor="bic">{text.request.bicLabel}</Label>
+                                        <Input
+                                          id="bic"
+                                          placeholder={text.request.bicPlaceholder}
+                                          value={formData.bic}
+                                          onChange={(e) => setFormData(prev => ({ ...prev, bic: e.target.value.toUpperCase() }))}
+                                          maxLength={11}
+                                        />
+                                      </div>
+                                    </div>
+                                    )}
+
+                                    <div className="space-y-4">
+                                      <div className="space-y-2">
+                                        <Label htmlFor="sepaPhone">{text.request.phoneLabel}</Label>
+                                        <Input
+                                          id="sepaPhone"
+                                          type="tel"
+                                          placeholder={text.request.phonePlaceholder}
+                                          value={formData.phone}
+                                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label htmlFor="sepaAddress">{text.request.addressLabel}</Label>
+                                        <Input
+                                          id="sepaAddress"
+                                          placeholder={text.request.addressPlaceholder}
+                                          value={formData.address}
+                                          onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                                        />
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <Label htmlFor="sepaCity">{text.request.cityLabel}</Label>
+                                          <Input
+                                            id="sepaCity"
+                                            placeholder={text.request.cityPlaceholder}
+                                            value={formData.beneficiaryCity}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCity: e.target.value }))}
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label htmlFor="sepaCountry">{text.request.countryLabel}</Label>
+                                          <Input
+                                            id="sepaCountry"
+                                            placeholder={text.request.countryPlaceholder}
+                                            value={formData.beneficiaryCountry}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCountry: e.target.value.toUpperCase().slice(0, 2) }))}
+                                            maxLength={2}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label htmlFor="sepaEmail">{text.request.beneficiaryEmailLabel}</Label>
+                                        <Input
+                                          id="sepaEmail"
+                                          type="email"
+                                          placeholder={text.request.beneficiaryEmailPlaceholder}
+                                          value={formData.beneficiaryEmail}
+                                          onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryEmail: e.target.value }))}
+                                        />
+                                      </div>
+                                    </div>
+                                    {(!useSavedIban || savedSepaMethods.length === 0) && (
+                                      <p className="text-xs text-muted-foreground">{text.request.saveIbanHint}</p>
+                                    )}
+                                  </>
+                                )}
+                                {id === 'crypto' && (
+                                  <>
+                                    <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                                      <div className="flex items-start space-x-3">
+                                        <InformationCircleIcon className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                                        <p className="text-sm text-purple-700 dark:text-purple-300">{text.request.security.cryptoInfo}</p>
+                                      </div>
+                                    </div>
+
+                                    {savedCryptoMethods.length > 0 && (
+                                      <div className="space-y-2">
+                                        <Label>{text.request.savedWalletLabel}</Label>
+                                        <div className="flex flex-col gap-2">
+                                          {savedCryptoMethods.map((pm: { id: string; maskedAddress: string | null; network: string | null; targetCurrency: string | null; memo: string | null }) => (
+                                            <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                                              <input
+                                                type="radio"
+                                                name="crypto-source"
+                                                checked={useSavedWallet && selectedCryptoMethodId === pm.id}
+                                                onChange={() => {
+                                                  setUseSavedWallet(true);
+                                                  setSelectedCryptoMethodId(pm.id);
+                                                }}
+                                                className="h-4 w-4"
+                                              />
+                                              <span className="text-sm">
+                                                {text.request.useSavedWallet}: <strong>{pm.maskedAddress ?? '••••'}</strong>
+                                                {pm.network ? ` (${pm.network})` : ''} {pm.targetCurrency ? `, ${pm.targetCurrency}` : ''}
+                                              </span>
+                                            </label>
+                                          ))}
+                                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                                            <input
+                                              type="radio"
+                                              name="crypto-source"
+                                              checked={!useSavedWallet}
+                                              onChange={() => {
+                                                setUseSavedWallet(false);
+                                                setSelectedCryptoMethodId(null);
+                                              }}
+                                              className="h-4 w-4"
+                                            />
+                                            <span className="text-sm">{text.request.enterNewWallet}</span>
+                                          </label>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {(!useSavedWallet || savedCryptoMethods.length === 0) && (
+                                    <>
+                                    <div className="space-y-4">
+                                      <div className="space-y-2">
+                                        <Label htmlFor="crypto">{text.request.cryptoLabel}</Label>
+                                        <Select
+                                          value={formData.selectedCrypto}
+                                          onValueChange={(v) => {
+                                            const crypto = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === v);
+                                            setFormData(prev => ({
+                                              ...prev,
+                                              selectedCrypto: v,
+                                              selectedNetwork: crypto?.networks[0] || 'TRC20',
+                                            }));
+                                            setQuote(null);
+                                          }}
+                                        >
+                                          <SelectTrigger id="crypto">
+                                            <SelectValue placeholder={text.request.cryptoPlaceholder} />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {WHITEPAY_SUPPORTED_CRYPTOS.map((c) => (
+                                              <SelectItem key={c.ticker} value={c.ticker}>
+                                                <span className="flex items-center gap-2">
+                                                  {c.name}
+                                                  {c.is_stable && (
+                                                    <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">{text.request.stablecoinBadge}</span>
+                                                  )}
+                                                </span>
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        <Label htmlFor="network">{text.request.networkLabel}</Label>
+                                        <Select
+                                          value={formData.selectedNetwork}
+                                          onValueChange={(v) => {
+                                            setFormData(prev => ({ ...prev, selectedNetwork: v }));
+                                            setQuote(null);
+                                          }}
+                                        >
+                                          <SelectTrigger id="network">
+                                            <SelectValue placeholder={text.request.networkPlaceholder} />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {availableNetworks.map((net) => {
+                                              const feeLabel = formatWhitepayNetworkFeeLabel(formData.selectedCrypto, net);
+                                              return (
+                                              <SelectItem key={net} value={net}>
+                                                {feeLabel ? `${net} (${feeLabel})` : net}
+                                              </SelectItem>
+                                              );
+                                            })}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        <Label htmlFor="walletAddress">{text.request.walletAddressLabel}</Label>
+                                        <Input
+                                          id="walletAddress"
+                                          value={formData.walletAddress}
+                                          onChange={(e) => setFormData(prev => ({ ...prev, walletAddress: e.target.value.trim() }))}
+                                          placeholder={getWhitepayAddressPlaceholder(formData.selectedNetwork)}
+                                        />
+                                        <p className="text-xs text-muted-foreground">{text.request.walletAddressWarning}</p>
+                                      </div>
+
+                                      {needsMemo && (
+                                        <div className="space-y-2">
+                                          <Label htmlFor="memo" className="flex items-center gap-2">
+                                            {text.request.memoLabel}
+                                            <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-medium">{text.request.memoRequired}</span>
+                                          </Label>
+                                          <Input
+                                            id="memo"
+                                            value={formData.memo}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, memo: e.target.value }))}
+                                            placeholder={text.request.memoPlaceholder}
+                                          />
+                                          <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-theme-highlight/25 dark:border-theme-highlight/35 rounded-lg p-3">
+                                            <p className="text-xs text-yellow-700 dark:text-yellow-300">{text.request.memoWarning}</p>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">{text.request.saveWalletHint}</p>
+                                    </>
+                                    )}
+                                  </>
+                                )}
+                                {renderFlexifyMethodActions()}
+                              </TabsContent>
+                            </div>
                           )}
-                        </button>
+                        </div>
                       ))}
                     </div>
                   </div>
 
-                  <TabsContent value="card" className="space-y-4 mt-4">
-                    <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <InformationCircleIcon className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-emerald-700 dark:text-emerald-300">{text.request.security.cardInfo}</p>
-                      </div>
-                    </div>
-                    {savedCardMethods.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>{text.request.savedCardLabel}</Label>
-                        <div className="flex flex-col gap-2">
-                          {savedCardMethods.map((pm: { id: string; last4: string | null; holderName: string | null }) => (
-                            <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
-                              <input
-                                type="radio"
-                                name="card-source"
-                                checked={useSavedCard && selectedCardMethodId === pm.id}
-                                onChange={() => {
-                                  setUseSavedCard(true);
-                                  setSelectedCardMethodId(pm.id);
-                                }}
-                                className="h-4 w-4"
-                              />
-                              <span className="text-sm">
-                                {text.request.useSavedCard}: **** {pm.last4 ?? '••••'}
-                                {pm.holderName ? `, ${pm.holderName}` : ''}
-                              </span>
-                            </label>
-                          ))}
-                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
-                            <input
-                              type="radio"
-                              name="card-source"
-                              checked={!useSavedCard}
-                              onChange={() => {
-                                setUseSavedCard(false);
-                                setSelectedCardMethodId(null);
-                              }}
-                              className="h-4 w-4"
-                            />
-                            <span className="text-sm">{text.request.enterNewCard}</span>
-                          </label>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{text.request.savedCardHint}</p>
-                      </div>
-                    )}
-                    {(!useSavedCard || savedCardMethods.length === 0) && (
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="cardNumber">{text.request.cardNumberLabel}</Label>
-                        <Input
-                          id="cardNumber"
-                          type="text"
-                          inputMode="numeric"
-                          autoComplete="cc-number"
-                          placeholder={text.request.cardNumberPlaceholder}
-                          value={formData.cardNumber}
-                          onChange={(e) => {
-                            const v = e.target.value.replace(/\D/g, '').slice(0, 19);
-                            setFormData(prev => ({ ...prev, cardNumber: v.replace(/(\d{4})/g, '$1 ').trim() }));
-                            setQuote(null);
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="cardHolder">{text.request.cardHolderLabel}</Label>
-                        <Input
-                          id="cardHolder"
-                          autoComplete="cc-name"
-                          placeholder={text.request.cardHolderPlaceholder}
-                          value={formData.cardHolder}
-                          onChange={(e) => {
-                            setFormData(prev => ({ ...prev, cardHolder: e.target.value }));
-                            setQuote(null);
-                          }}
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="expireMonth">{text.request.cardExpireMonthLabel}</Label>
-                          <Select
-                            value={formData.expireMonth}
-                            onValueChange={(v) => {
-                              setFormData(prev => ({ ...prev, expireMonth: v }));
-                              setQuote(null);
-                            }}
-                          >
-                            <SelectTrigger id="expireMonth">
-                              <SelectValue placeholder={text.request.cardExpireMonthPlaceholder} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0')).map((m) => (
-                                <SelectItem key={m} value={m}>{m}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="expireYear">{text.request.cardExpireYearLabel}</Label>
-                          <Input
-                            id="expireYear"
-                            placeholder={text.request.cardExpireYearPlaceholder}
-                            maxLength={4}
-                            value={formData.expireYear}
-                            onChange={(e) => {
-                              const v = e.target.value.replace(/\D/g, '').slice(0, 4);
-                              setFormData(prev => ({ ...prev, expireYear: v }));
-                              setQuote(null);
-                            }}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="cvv">{text.request.cardCvvLabel}</Label>
-                          <Input
-                            id="cvv"
-                            type="password"
-                            inputMode="numeric"
-                            autoComplete="cc-csc"
-                            placeholder={text.request.cardCvvPlaceholder}
-                            maxLength={4}
-                            value={formData.cvv}
-                            onChange={(e) => {
-                              setFormData(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }));
-                              setQuote(null);
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    )}
-                    {(!useSavedCard || savedCardMethods.length === 0) && (
-                      <p className="text-xs text-muted-foreground">{text.request.saveCardHint}</p>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="sepa" className="space-y-4 mt-4">
-                    <div className="bg-theme-highlight/5 dark:bg-theme-highlight/10 border border-theme-highlight/25 dark:border-theme-highlight/35 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <ExclamationTriangleIcon className="w-5 h-5 text-theme-stat flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-theme-highlight">
-                          {text.request.security.sepaFrIbanWarning}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-blue-700 dark:text-blue-300">{text.request.security.sepaInfo}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="sepaFirstName">{text.request.firstNameLabel}</Label>
-                        <Input
-                          id="sepaFirstName"
-                          placeholder={text.request.firstNamePlaceholder}
-                          value={formData.firstName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sepaLastName">{text.request.lastNameLabel}</Label>
-                        <Input
-                          id="sepaLastName"
-                          placeholder={text.request.lastNamePlaceholder}
-                          value={formData.lastName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-
-                    {savedSepaMethods.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>{text.request.savedIbanLabel}</Label>
-                        <div className="flex flex-col gap-2">
-                          {savedSepaMethods.map((pm: { id: string; maskedIban?: string | null; holderName?: string | null }) => (
-                            <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
-                              <input
-                                type="radio"
-                                name="sepa-source"
-                                checked={useSavedIban && selectedPaymentMethodId === pm.id}
-                                onChange={() => {
-                                  setUseSavedIban(true);
-                                  setSelectedPaymentMethodId(pm.id);
-                                }}
-                                className="h-4 w-4"
-                              />
-                              <span className="text-sm">
-                                {text.request.useSavedIban}: <strong>{String(pm.maskedIban ?? '••••••••••••').slice(-4).padStart(12, '•')}</strong>
-                                {pm.holderName ? `, ${pm.holderName}` : ''}
-                              </span>
-                            </label>
-                          ))}
-                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
-                            <input
-                              type="radio"
-                              name="sepa-source"
-                              checked={!useSavedIban}
-                              onChange={() => {
-                                setUseSavedIban(false);
-                                setSelectedPaymentMethodId(null);
-                              }}
-                              className="h-4 w-4"
-                            />
-                            <span className="text-sm">{text.request.enterNewIban}</span>
-                          </label>
-                        </div>
-                      </div>
-                    )}
-
-                    {(!useSavedIban || savedSepaMethods.length === 0) && (
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="iban">{text.request.ibanLabel}</Label>
-                        <Input
-                          id="iban"
-                          placeholder={text.request.ibanPlaceholder}
-                          value={formData.iban}
-                          onChange={(e) => {
-                            const raw = e.target.value.replace(/\s/g, '').toUpperCase();
-                            const formatted = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
-                            setFormData(prev => ({ ...prev, iban: formatted }));
-                            setQuote(null);
-                            if (isFrenchIban(raw) && raw.length >= 4) {
-                              toast.warning(text.request.ibanFrWarningToast, { duration: 6000 });
-                            }
-                          }}
-                          maxLength={42}
-                        />
-                        {formData.iban.replace(/\s/g, '').length >= 4 && isFrenchIban(formData.iban) && (
-                          <p className="text-sm text-destructive">{text.request.ibanFrWarningToast}</p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="bic">{text.request.bicLabel}</Label>
-                        <Input
-                          id="bic"
-                          placeholder={text.request.bicPlaceholder}
-                          value={formData.bic}
-                          onChange={(e) => setFormData(prev => ({ ...prev, bic: e.target.value.toUpperCase() }))}
-                          maxLength={11}
-                        />
-                      </div>
-                    </div>
-                    )}
-
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="sepaPhone">{text.request.phoneLabel}</Label>
-                        <Input
-                          id="sepaPhone"
-                          type="tel"
-                          placeholder={text.request.phonePlaceholder}
-                          value={formData.phone}
-                          onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sepaAddress">{text.request.addressLabel}</Label>
-                        <Input
-                          id="sepaAddress"
-                          placeholder={text.request.addressPlaceholder}
-                          value={formData.address}
-                          onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="sepaCity">{text.request.cityLabel}</Label>
-                          <Input
-                            id="sepaCity"
-                            placeholder={text.request.cityPlaceholder}
-                            value={formData.beneficiaryCity}
-                            onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCity: e.target.value }))}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="sepaCountry">{text.request.countryLabel}</Label>
-                          <Input
-                            id="sepaCountry"
-                            placeholder={text.request.countryPlaceholder}
-                            value={formData.beneficiaryCountry}
-                            onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryCountry: e.target.value.toUpperCase().slice(0, 2) }))}
-                            maxLength={2}
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="sepaEmail">{text.request.beneficiaryEmailLabel}</Label>
-                        <Input
-                          id="sepaEmail"
-                          type="email"
-                          placeholder={text.request.beneficiaryEmailPlaceholder}
-                          value={formData.beneficiaryEmail}
-                          onChange={(e) => setFormData(prev => ({ ...prev, beneficiaryEmail: e.target.value }))}
-                        />
-                      </div>
-                    </div>
-                    {(!useSavedIban || savedSepaMethods.length === 0) && (
-                      <p className="text-xs text-muted-foreground">{text.request.saveIbanHint}</p>
-                    )}
-                  </TabsContent>
-
-                  {/* ─── SEPA France (Manuel) ─── */}
-                  <TabsContent value="sepa_fr" className="space-y-4 mt-4">
-                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <InformationCircleIcon className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">
-                            {text.sepaFr?.infoTitle}
-                          </p>
-                          <p className="text-sm text-blue-600 dark:text-blue-400">
-                            {text.sepaFr?.infoDesc}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Notice frais SEPA Premium 1.7% */}
-                    {amount && parseFloat(amount) > 0 && (() => {
-                      const gross = Math.round(parseFloat(amount) * 100);
-                      const fee = Math.ceil(gross * 0.017);
-                      const net = gross - fee;
-                      return (
-                        <div className="bg-theme-accent/5 dark:bg-theme-accent/10 border border-theme-accent/20 dark:border-theme-accent/30 rounded-lg p-4 space-y-2 text-sm">
-                          <p className="text-xs font-medium text-theme-highlight uppercase tracking-wide">
-                            {text.request.feesPreview}
-                          </p>
-                          <div className="flex justify-between text-muted-foreground">
-                            <span>{text.request.grossAmount}</span>
-                            <span>{formatCentsToCurrency(gross, 'EUR')}</span>
-                          </div>
-                          <div className="flex justify-between text-theme-accent">
-                            <span>{text.request.sepaFrFeeLabel}</span>
-                            <span>-{formatCentsToCurrency(fee, 'EUR')}</span>
-                          </div>
-                          <Separator />
-                          <div className="flex justify-between font-semibold">
-                            <span>{text.request.youReceive}</span>
-                            <span className="text-green-500">{formatCentsToCurrency(net, 'EUR')}</span>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {sepaFrResult ? (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="rounded-lg border border-green-500/40 bg-green-500/5 p-4 space-y-3"
-                      >
-                        <h3 className="font-semibold flex items-center gap-2 text-green-600 dark:text-green-400">
-                          <CheckCircleIcon className="w-5 h-5" />
-                          {text.sepaFr?.successTitle}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {text.sepaFr?.successDesc}
-                        </p>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">{text.sepaFr?.reference}</span>
-                          <span className="font-mono text-xs">{sepaFrResult.reference}</span>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => { setSepaFrResult(null); setSepaFrForm({ iban: '', bic: '', firstName: '', lastName: '' }); }}
-                        >
-                          {text.sepaFr?.newRequest}
-                        </Button>
-                      </motion.div>
-                    ) : (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="sepaFrFirstName">{text.sepaFr?.firstNameLabel}</Label>
-                            <Input
-                              id="sepaFrFirstName"
-                              placeholder={text.sepaFr?.firstNamePlaceholder}
-                              value={sepaFrForm.firstName}
-                              onChange={(e) => setSepaFrForm((p) => ({ ...p, firstName: e.target.value }))}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="sepaFrLastName">{text.sepaFr?.lastNameLabel}</Label>
-                            <Input
-                              id="sepaFrLastName"
-                              placeholder={text.sepaFr?.lastNamePlaceholder}
-                              value={sepaFrForm.lastName}
-                              onChange={(e) => setSepaFrForm((p) => ({ ...p, lastName: e.target.value }))}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="sepaFrIban">{text.sepaFr?.ibanLabel}</Label>
-                          <Input
-                            id="sepaFrIban"
-                            placeholder={text.sepaFr?.ibanPlaceholder}
-                            value={sepaFrForm.iban}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/\s/g, '').toUpperCase();
-                              const formatted = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
-                              setSepaFrForm((p) => ({ ...p, iban: formatted }));
-                            }}
-                            maxLength={42}
-                          />
-                          {(() => {
-                            const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
-                            if (ibanClean.length < 15) return null;
-                            const validation = validateSepaIban(ibanClean);
-                            if (validation.isValid) return null;
-                            return <p className="text-xs text-destructive">{text.sepaFr?.ibanError}</p>;
-                          })()}
-                          <p className="text-xs text-muted-foreground">{text.sepaFr?.ibanSepaHint}</p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="sepaFrBic">{text.sepaFr?.bicLabel}</Label>
-                          <Input
-                            id="sepaFrBic"
-                            placeholder={text.sepaFr?.bicPlaceholder}
-                            value={sepaFrForm.bic}
-                            onChange={(e) => setSepaFrForm((p) => ({ ...p, bic: e.target.value.toUpperCase() }))}
-                            maxLength={11}
-                          />
-                        </div>
-
-                        {/* Quote display if available */}
-                        {quote && payoutMethod === 'sepa_fr' && (
-                          <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">{text.request.grossAmount}</span>
-                              <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
-                            </div>
-                            <Separator />
-                            <div className="flex justify-between font-semibold">
-                              <span>{text.request.youReceive}</span>
-                              <span className="text-green-500">{formatCentsToCurrency(quote.netCents, 'EUR')}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        <Button
-                          onClick={async () => {
-                            if (!amount || parseFloat(amount) <= 0) {
-                              toast.error(text.toast.amountTooLow);
-                              return;
-                            }
-                            const amountCents = toCents(parseFloat(amount));
-                            if (amountCents < 1000) {
-                              toast.error(text.request.minAmount);
-                              return;
-                            }
-                            if (amountCents > (availableBalanceCents ?? 0)) {
-                              toast.error(text.toast.insufficientBalance);
-                              return;
-                            }
-                            const ibanClean = sepaFrForm.iban.replace(/\s/g, '').toUpperCase();
-                            const ibanValidation = validateSepaIban(ibanClean);
-                            if (!ibanValidation.isValid) {
-                              toast.error(text.sepaFr?.ibanError);
-                              return;
-                            }
-                            if (!sepaFrForm.firstName.trim() || !sepaFrForm.lastName.trim()) {
-                              toast.error(text.request.firstLastNameRequired);
-                              return;
-                            }
-                            setSepaFrLoading(true);
-                            try {
-                              const bicClean = sepaFrForm.bic.replace(/\s/g, '').toUpperCase();
-                              const res = await fetch('/api/payouts/sepa-fr', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                  amountCents,
-                                  iban: ibanClean,
-                                  ...(bicClean ? { bic: bicClean } : {}),
-                                  firstName: sepaFrForm.firstName.trim(),
-                                  lastName: sepaFrForm.lastName.trim(),
-                                }),
-                              });
-                              const data = await res.json();
-                              if (!res.ok) throw new Error(data.error ?? 'Error');
-                              toast.success(text.sepaFr?.successTitle);
-                              setSepaFrResult({ reference: data.payout.reference, amountCents });
-                              setAmount('');
-                              queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
-                              queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
-                            } catch (err) {
-                              toast.error(err instanceof Error ? err.message : text.toast.payoutError);
-                            } finally {
-                              setSepaFrLoading(false);
-                            }
-                          }}
-                          disabled={sepaFrLoading || !amount || availableBalanceCents === null}
-                          className="w-full bg-cta-gradient hover:brightness-110"
-                        >
-                          {sepaFrLoading ? (
-                            <>
-                              <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-                              {text.sepaFr?.submitting}
-                            </>
-                          ) : (
-                            text.sepaFr?.submitButton
-                          )}
-                        </Button>
-                      </>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="crypto" className="space-y-4 mt-4">
-                    <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <InformationCircleIcon className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-purple-700 dark:text-purple-300">{text.request.security.cryptoInfo}</p>
-                      </div>
-                    </div>
-
-                    {savedCryptoMethods.length > 0 && (
-                      <div className="space-y-2">
-                        <Label>{text.request.savedWalletLabel}</Label>
-                        <div className="flex flex-col gap-2">
-                          {savedCryptoMethods.map((pm: { id: string; maskedAddress: string | null; network: string | null; targetCurrency: string | null; memo: string | null }) => (
-                            <label key={pm.id} className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
-                              <input
-                                type="radio"
-                                name="crypto-source"
-                                checked={useSavedWallet && selectedCryptoMethodId === pm.id}
-                                onChange={() => {
-                                  setUseSavedWallet(true);
-                                  setSelectedCryptoMethodId(pm.id);
-                                }}
-                                className="h-4 w-4"
-                              />
-                              <span className="text-sm">
-                                {text.request.useSavedWallet}: <strong>{pm.maskedAddress ?? '••••'}</strong>
-                                {pm.network ? ` (${pm.network})` : ''} {pm.targetCurrency ? `, ${pm.targetCurrency}` : ''}
-                              </span>
-                            </label>
-                          ))}
-                          <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
-                            <input
-                              type="radio"
-                              name="crypto-source"
-                              checked={!useSavedWallet}
-                              onChange={() => {
-                                setUseSavedWallet(false);
-                                setSelectedCryptoMethodId(null);
-                              }}
-                              className="h-4 w-4"
-                            />
-                            <span className="text-sm">{text.request.enterNewWallet}</span>
-                          </label>
-                        </div>
-                      </div>
-                    )}
-
-                    {(!useSavedWallet || savedCryptoMethods.length === 0) && (
-                    <>
-                    <div className="space-y-4">
-                      {/* Sélection de la crypto-monnaie */}
-                      <div className="space-y-2">
-                        <Label htmlFor="crypto">{text.request.cryptoLabel}</Label>
-                        <Select
-                          value={formData.selectedCrypto}
-                          onValueChange={(v) => {
-                            const crypto = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === v);
-                            setFormData(prev => ({
-                              ...prev,
-                              selectedCrypto: v,
-                              selectedNetwork: crypto?.networks[0] || 'TRC20',
-                            }));
-                            setQuote(null);
-                          }}
-                        >
-                          <SelectTrigger id="crypto">
-                            <SelectValue placeholder={text.request.cryptoPlaceholder} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {WHITEPAY_SUPPORTED_CRYPTOS.map((c) => (
-                              <SelectItem key={c.ticker} value={c.ticker}>
-                                <span className="flex items-center gap-2">
-                                  {c.name}
-                                  {c.is_stable && (
-                                    <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded">{text.request.stablecoinBadge}</span>
-                                  )}
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Sélection du réseau */}
-                      <div className="space-y-2">
-                        <Label htmlFor="network">{text.request.networkLabel}</Label>
-                        <Select
-                          value={formData.selectedNetwork}
-                          onValueChange={(v) => {
-                            setFormData(prev => ({ ...prev, selectedNetwork: v }));
-                            setQuote(null);
-                          }}
-                        >
-                          <SelectTrigger id="network">
-                            <SelectValue placeholder={text.request.networkPlaceholder} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableNetworks.map((net) => {
-                              const feeLabel = formatWhitepayNetworkFeeLabel(formData.selectedCrypto, net);
-                              return (
-                              <SelectItem key={net} value={net}>
-                                {feeLabel ? `${net} (${feeLabel})` : net}
-                              </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Adresse du wallet */}
-                      <div className="space-y-2">
-                        <Label htmlFor="walletAddress">{text.request.walletAddressLabel}</Label>
-                        <Input
-                          id="walletAddress"
-                          value={formData.walletAddress}
-                          onChange={(e) => setFormData(prev => ({ ...prev, walletAddress: e.target.value.trim() }))}
-                          placeholder={getWhitepayAddressPlaceholder(formData.selectedNetwork)}
-                        />
-                        <p className="text-xs text-muted-foreground">{text.request.walletAddressWarning}</p>
-                      </div>
-
-                      {/* Memo/Tag (si requis par le réseau) */}
-                      {needsMemo && (
-                        <div className="space-y-2">
-                          <Label htmlFor="memo" className="flex items-center gap-2">
-                            {text.request.memoLabel}
-                            <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded font-medium">{text.request.memoRequired}</span>
-                          </Label>
-                          <Input
-                            id="memo"
-                            value={formData.memo}
-                            onChange={(e) => setFormData(prev => ({ ...prev, memo: e.target.value }))}
-                            placeholder={text.request.memoPlaceholder}
-                          />
-                          <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-theme-highlight/25 dark:border-theme-highlight/35 rounded-lg p-3">
-                            <p className="text-xs text-yellow-700 dark:text-yellow-300">{text.request.memoWarning}</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">{text.request.saveWalletHint}</p>
-                    </>
-                    )}
-                  </TabsContent>
                 </Tabs>
-
-                {/* Aperçu des frais inline, affiché dès qu'un montant est saisi */}
-                {!payoutResult && payoutMethod !== 'sepa_fr' && amount && parseFloat(amount) > 0 && (
-                  <FeePreview
-                    method={payoutMethod as 'card' | 'sepa' | 'crypto'}
-                    amountCents={toCents(parseFloat(amount))}
-                    targetCurrency={payoutMethod === 'crypto' ? formData.selectedCrypto : undefined}
-                    network={payoutMethod === 'crypto' ? formData.selectedNetwork : undefined}
-                    labels={{
-                      feesPreview: text.request.feesPreview,
-                      grossAmount: text.request.grossAmount,
-                      youReceive: text.request.youReceive,
-                    }}
-                  />
-                )}
-
-                {/* Bouton de confirmation, fetch le quote en background puis affiche le récap */}
-                {!quote && !payoutResult && payoutMethod !== 'sepa_fr' && (
-                  <Button
-                    onClick={getQuote}
-                    disabled={isLoadingQuote || !amount || availableBalanceCents === null}
-                    className="w-full"
-                    variant="outline"
-                  >
-                    {isLoadingQuote ? (
-                      <>
-                        <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-                        {text.request.submitting}
-                      </>
-                    ) : (
-                      text.request.submitButton
-                    )}
-                  </Button>
-                )}
-
-                {/* Confirmation finale après validation du quote */}
-                {quote && !payoutResult && payoutMethod !== 'sepa_fr' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-muted/50 rounded-lg p-4 space-y-3"
-                  >
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                      {text.request.confirmTitle}
-                    </h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{text.request.grossAmount}</span>
-                        <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
-                      </div>
-                      <div className="flex justify-between text-theme-accent">
-                        <span>{text.request.processingFee}</span>
-                        <span>-{formatCentsToCurrency(quote.fees.processingCents, 'EUR')}</span>
-                      </div>
-                      <div className="flex justify-between text-theme-accent">
-                        <span>{text.request.networkFee}</span>
-                        <span>-{formatCentsToCurrency(quote.fees.networkCents, 'EUR')}</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between font-semibold text-lg">
-                        <span>{text.request.youReceive}</span>
-                        <span className="text-green-500">{formatCentsToCurrency(quote.netCents, 'EUR')}</span>
-                      </div>
-                      <div className="flex justify-between text-muted-foreground">
-                        <span>{text.request.estimatedDelay}</span>
-                        <span className="flex items-center gap-1">
-                          <ClockIcon className="w-4 h-4" />
-                          {quote.estimatedDelivery}
-                        </span>
-                      </div>
-                    </div>
-
-                    <Button
-                      onClick={handleSubmit}
-                      disabled={isLoading}
-                      className="w-full bg-cta-gradient hover:brightness-110"
-                    >
-                      {isLoading ? (
-                        <>
-                          <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-                          {text.request.submitting}
-                        </>
-                      ) : (
-                        text.request.submitButton
-                      )}
-                    </Button>
-                  </motion.div>
-                )}
                 </>
                 )}
 
@@ -1764,8 +1763,8 @@ export default function PayoutPage() {
               </CardHeader>
               <CardContent>
                 {payoutHistory.length === 0 ? (
-                  <div className="text-center py-8">
-                    <BanknotesIcon className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                  <div className="text-center py-4">
+                    <BanknotesIcon className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">{text.history.noPayoutDesc}</p>
                   </div>
                 ) : (
@@ -1802,27 +1801,15 @@ export default function PayoutPage() {
               </CardContent>
             </Card>
 
-            {/* Informations de sécurité */}
             <Card className="mt-4">
               <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <ShieldCheckIcon className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-sm">{text.request.security.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {text.request.security.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-sm">{text.request.ibanVerificationTitle}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {text.request.security.ibanVerificationDesc}
-                      </p>
-                    </div>
+                <div className="flex items-start space-x-3">
+                  <InformationCircleIcon className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">{text.request.ibanVerificationTitle}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {text.request.security.ibanVerificationDesc}
+                    </p>
                   </div>
                 </div>
               </CardContent>
