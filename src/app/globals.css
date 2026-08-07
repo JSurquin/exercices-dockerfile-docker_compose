@@ -2386,13 +2386,13 @@ body.next-dev-overlay-present #sentry-feedback {
   @keyframes payout-premium-glow {
     0%, 100% {
       box-shadow:
-        0 0 18px rgba(59, 130, 246, 0.1),
-        0 0 36px rgba(59, 130, 246, 0.05);
+        0 0 22px color-mix(in srgb, var(--theme-accent) 18%, transparent),
+        0 0 44px color-mix(in srgb, var(--theme-accent) 8%, transparent);
     }
     50% {
       box-shadow:
-        0 0 26px rgba(59, 130, 246, 0.2),
-        0 0 52px rgba(59, 130, 246, 0.08);
+        0 0 32px color-mix(in srgb, var(--theme-accent) 28%, transparent),
+        0 0 56px color-mix(in srgb, var(--theme-accent) 12%, transparent);
     }
   }
 
@@ -2400,10 +2400,36 @@ body.next-dev-overlay-present #sentry-feedback {
     animation: payout-premium-glow 3s ease-in-out infinite;
   }
 
+  @keyframes payout-sepa-instant-glow {
+    0%, 100% {
+      box-shadow:
+        0 0 10px color-mix(in srgb, var(--theme-success) 10%, transparent),
+        0 0 18px color-mix(in srgb, var(--theme-success) 4%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 0 14px color-mix(in srgb, var(--theme-success) 14%, transparent),
+        0 0 24px color-mix(in srgb, var(--theme-success) 6%, transparent);
+    }
+  }
+
+  .payout-sepa-instant-card {
+    animation: payout-sepa-instant-glow 3s ease-in-out infinite;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .payout-premium-card {
       animation: none;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.12);
+      box-shadow:
+        0 0 22px color-mix(in srgb, var(--theme-accent) 16%, transparent),
+        0 0 40px color-mix(in srgb, var(--theme-accent) 8%, transparent);
+    }
+
+    .payout-sepa-instant-card {
+      animation: none;
+      box-shadow:
+        0 0 10px color-mix(in srgb, var(--theme-success) 10%, transparent),
+        0 0 18px color-mix(in srgb, var(--theme-success) 5%, transparent);
     }
   }
 

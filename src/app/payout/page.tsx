@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -221,7 +222,7 @@ export default function PayoutPage() {
         {
           id: 'sepa' as const,
           icon: BanknotesIcon,
-          label: 'SEPA',
+          label: text.request.sepaInstantLabel,
           fee: feeLabels.sepaLabel,
           delay: feeLabels.sepaDelay,
           iconColor: 'text-blue-500',
@@ -235,7 +236,7 @@ export default function PayoutPage() {
           iconColor: 'text-purple-500',
         },
       ] as const,
-    [text.request.cardLabel, feeLabels.cardLabel, feeLabels.cardDelay, feeLabels.sepaLabel, feeLabels.sepaDelay, feeLabels.cryptoLabel],
+    [text.request.cardLabel, text.request.sepaInstantLabel, feeLabels.cardLabel, feeLabels.cardDelay, feeLabels.sepaLabel, feeLabels.sepaDelay, feeLabels.cryptoLabel],
   );
 
   const isSecondaryExpanded = isSecondaryPayoutMethod(expandedMethod);
@@ -971,25 +972,43 @@ export default function PayoutPage() {
           >
             <Card>
               <CardHeader>
-                <div className="flex flex-wrap gap-6 justify-start">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
-                    <p className="text-2xl font-bold text-green-500">
-                      {availableBalanceCents === null
-                        ? '-'
-                        : formatCentsToCurrency(availableBalanceCents, 'EUR')}
-                    </p>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap gap-6 justify-start">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{text.request.availableBalance}</p>
+                      <p className="text-2xl font-bold text-green-500">
+                        {availableBalanceCents === null
+                          ? '-'
+                          : formatCentsToCurrency(availableBalanceCents, 'EUR')}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                        {text.request.frozenBalance}
+                      </p>
+                      <p className="text-2xl font-semibold text-muted-foreground">
+                        {frozenBalanceCents === null
+                          ? '-'
+                          : formatCentsToCurrency(frozenBalanceCents, 'EUR')}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Snowflake className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                      {text.request.frozenBalance}
-                    </p>
-                    <p className="text-2xl font-semibold text-muted-foreground">
-                      {frozenBalanceCents === null
-                        ? '-'
-                        : formatCentsToCurrency(frozenBalanceCents, 'EUR')}
-                    </p>
+                  <div
+                    className="flex items-center gap-2 shrink-0"
+                    aria-label={text.request.euPlatformAriaLabel}
+                  >
+                    <Image
+                      src="/images/eu-flag.svg"
+                      alt=""
+                      width={22}
+                      height={15}
+                      className="shrink-0 rounded-[2px]"
+                      aria-hidden
+                    />
+                    <span className="text-xs text-muted-foreground leading-tight">
+                      {text.request.euPlatformLabel}
+                    </span>
                   </div>
                 </div>
               </CardHeader>
@@ -1312,6 +1331,7 @@ export default function PayoutPage() {
                           ref={isExpanded ? expandedMethodRef : undefined}
                           className={cn(
                             'relative z-0 rounded-lg border transition-all duration-[275ms] ease-out overflow-hidden motion-reduce:transition-none',
+                            id === 'sepa' && 'payout-sepa-instant-card',
                             isExpanded
                               ? 'col-span-6 border-theme-accent/60 bg-muted/50 ring-1 ring-theme-accent/25'
                               : isSecondaryExpanded
@@ -1749,6 +1769,9 @@ export default function PayoutPage() {
                                             })}
                                           </SelectContent>
                                         </Select>
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                          {text.request.cryptoNetworkFeeEstimateHint}
+                                        </p>
                                       </div>
 
                                       <div className="space-y-2">
@@ -1916,7 +1939,13 @@ export default function PayoutPage() {
                         <div className="text-right">
                           {getStatusBadge(displayPayoutStatus(payout))}
                           <p className="text-xs text-muted-foreground mt-1">
-                            {payout.method === 'FLEXIFY_SEPA' ? 'SEPA' : payout.method === 'WHITEPAY_CRYPTO' ? 'Crypto' : payout.method === 'SEPA_FR' ? text.history.sepaPremiumLabel : payout.method}
+                            {payout.method === 'FLEXIFY_SEPA' || payout.method === 'SEPA'
+                              ? text.history.sepaInstantLabel
+                              : payout.method === 'WHITEPAY_CRYPTO'
+                                ? 'Crypto'
+                                : payout.method === 'SEPA_FR'
+                                  ? text.history.sepaPremiumLabel
+                                  : payout.method}
                           </p>
                         </div>
                       </div>

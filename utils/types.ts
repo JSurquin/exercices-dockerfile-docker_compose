@@ -6930,6 +6930,10 @@ export interface Messages {
         autoVerification: string;
         ibanFrWarningToast: string;
         sepaFrFeeLabel: string;
+        sepaInstantLabel: string;
+        euPlatformLabel: string;
+        euPlatformAriaLabel: string;
+        cryptoNetworkFeeEstimateHint: string;
         security: {
           title: string;
           description: string;
@@ -6957,6 +6961,7 @@ export interface Messages {
       balanceDebitedHint: string;
       requestPayout: string;
       sepaPremiumLabel: string;
+      sepaInstantLabel: string;
       columns: {
         date: string;
         amount: string;
