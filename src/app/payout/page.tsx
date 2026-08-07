@@ -49,6 +49,10 @@ type PayoutMethod = 'card' | 'sepa' | 'crypto' | 'sepa_fr';
 
 const CRYPTO_MIN_CENTS = 2120;
 
+/** Neutral SEPA zone examples — not tied to a single country (SEPA Premium accepts all zone IBANs). */
+const SEPA_ZONE_IBAN_PLACEHOLDER = 'DE89 3704 0044 0532 0130 00';
+const SEPA_ZONE_BIC_PLACEHOLDER = 'COBADEFFXXX';
+
 /** Flexify envoie processingFeeCents / Whitepay processingCents, évite NaN dans le récap */
 function normalizeWithdrawalFeesCents(fees: unknown): { processingCents: number; networkCents: number } {
   if (!fees || typeof fees !== 'object') return { processingCents: 0, networkCents: 0 };
@@ -854,7 +858,7 @@ export default function PayoutPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Formulaire principal */}
           <motion.div
@@ -1057,7 +1061,7 @@ export default function PayoutPage() {
                                   <Label htmlFor="sepaFrIban">{text.sepaFr?.ibanLabel}</Label>
                                   <Input
                                     id="sepaFrIban"
-                                    placeholder={text.sepaFr?.ibanPlaceholder}
+                                    placeholder={SEPA_ZONE_IBAN_PLACEHOLDER}
                                     value={sepaFrForm.iban}
                                     onChange={(e) => {
                                       const raw = e.target.value.replace(/\s/g, '').toUpperCase();
@@ -1080,7 +1084,7 @@ export default function PayoutPage() {
                                   <Label htmlFor="sepaFrBic">{text.sepaFr?.bicLabel}</Label>
                                   <Input
                                     id="sepaFrBic"
-                                    placeholder={text.sepaFr?.bicPlaceholder}
+                                    placeholder={SEPA_ZONE_BIC_PLACEHOLDER}
                                     value={sepaFrForm.bic}
                                     onChange={(e) => setSepaFrForm((p) => ({ ...p, bic: e.target.value.toUpperCase() }))}
                                     maxLength={11}
@@ -1434,7 +1438,7 @@ export default function PayoutPage() {
                                         <Label htmlFor="iban">{text.request.ibanLabel}</Label>
                                         <Input
                                           id="iban"
-                                          placeholder={text.request.ibanPlaceholder}
+                                          placeholder={SEPA_ZONE_IBAN_PLACEHOLDER}
                                           value={formData.iban}
                                           onChange={(e) => {
                                             const raw = e.target.value.replace(/\s/g, '').toUpperCase();
@@ -1455,7 +1459,7 @@ export default function PayoutPage() {
                                         <Label htmlFor="bic">{text.request.bicLabel}</Label>
                                         <Input
                                           id="bic"
-                                          placeholder={text.request.bicPlaceholder}
+                                          placeholder={SEPA_ZONE_BIC_PLACEHOLDER}
                                           value={formData.bic}
                                           onChange={(e) => setFormData(prev => ({ ...prev, bic: e.target.value.toUpperCase() }))}
                                           maxLength={11}
