@@ -134,9 +134,12 @@ describe('Templates BOT — parité structure', () => {
     'clé widget « %s » existe dans les 3 arbres',
     (key) => {
       const [category, sub] = key.split('.') as [keyof ChatBotTemplateTree, string];
-      expect(chatBotTemplatesFr[category][sub as keyof ChatBotTemplateTree['trade']]).toBeTruthy();
-      expect(chatBotTemplatesEn[category][sub as keyof ChatBotTemplateTree['trade']]).toBeTruthy();
-      expect(chatBotTemplatesCn[category][sub as keyof ChatBotTemplateTree['trade']]).toBeTruthy();
+      const frCategory = chatBotTemplatesFr[category] as Record<string, string>;
+      const enCategory = chatBotTemplatesEn[category] as Record<string, string>;
+      const cnCategory = chatBotTemplatesCn[category] as Record<string, string>;
+      expect(frCategory[sub]).toBeTruthy();
+      expect(enCategory[sub]).toBeTruthy();
+      expect(cnCategory[sub]).toBeTruthy();
     },
   );
 });

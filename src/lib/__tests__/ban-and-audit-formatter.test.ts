@@ -60,6 +60,11 @@ describe('formatAuditLogDetails', () => {
     bodyLength: 'Taille body',
     signaturePresent: 'Signature présente',
     tokenConfigured: 'Token configuré',
+    applicantId: 'ID candidat',
+    verificationId: 'ID vérification',
+    externalApplicantId: 'ID candidat externe',
+    verified: 'Vérifié',
+    apiPath: 'Chemin API',
     noDetails: 'Aucun détail',
   };
 

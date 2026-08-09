@@ -1,3 +1,4 @@
+import https from 'node:https';
 import { 
   SkinplaceInventoryResponse,
   SkinplaceMultipleInventoryResponse,
@@ -237,6 +238,46 @@ class SkinplaceService {
     );
   }
 
+  private httpsGetWithBody(
+    url: string,
+    headers: Record<string, string>,
+    body: string,
+  ): Promise<{ statusCode: number; body: string }> {
+    return new Promise((resolve, reject) => {
+      const parsed = new URL(url);
+      const req = https.request(
+        {
+          hostname: parsed.hostname,
+          port: parsed.port || 443,
+          path: `${parsed.pathname}${parsed.search}`,
+          method: 'GET',
+          headers: {
+            ...headers,
+            'Content-Length': Buffer.byteLength(body),
+          },
+          timeout: this.config.timeout,
+        },
+        (res) => {
+          const chunks: Buffer[] = [];
+          res.on('data', (chunk) => chunks.push(chunk));
+          res.on('end', () => {
+            resolve({
+              statusCode: res.statusCode ?? 0,
+              body: Buffer.concat(chunks).toString('utf8'),
+            });
+          });
+        },
+      );
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('Request timeout'));
+      });
+      req.write(body);
+      req.end();
+    });
+  }
+
   // Historique instantané
   async getInstantHistory(
     page = 1,
@@ -250,55 +291,68 @@ class SkinplaceService {
   }
 
   // Lookup par order_ids (notre ticketId)
-  // La doc Skinplace indique GET avec body JSON.
-  // On tente d'abord GET+body (conforme à la doc), puis fallback GET sans body (pagination générale).
+  // La doc Skinplace indique GET avec body JSON — fetch Node refuse un body sur GET.
   async getInstantHistoryByOrderIds(orderIds: string[]): Promise<SkinplaceHistoryResponse> {
-    // Tentative 1 : GET avec body JSON (conforme doc Skinplace)
+    if (orderIds.length === 0) {
+      return { status: 'success', data: [] };
+    }
+
+    const requestBody = JSON.stringify({ order_ids: orderIds, limit: orderIds.length });
+
     try {
-      const url = `${this.config.baseUrl}/api/v3/instant/history`;
-      const headers: Record<string, string> = {
-        'Authorization': `Bearer ${this.config.apiKey}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'MoonSkin/1.0',
-      };
       logger.api('GET', '/api/v3/instant/history (body)', undefined, { order_ids: orderIds });
-      const resp = await fetch(url, {
-        method: 'GET',
-        headers,
-        body: JSON.stringify({ order_ids: orderIds, limit: orderIds.length }),
-        signal: AbortSignal.timeout(this.config.timeout),
-      });
-      logger.api('GET', '/api/v3/instant/history (body)', resp.status);
-      if (resp.ok) {
-        const data = await resp.json();
-        logger.api('GET', '/api/v3/instant/history (body)', resp.status, data);
-        return data as SkinplaceHistoryResponse;
+      const { statusCode, body } = await this.httpsGetWithBody(
+        `${this.config.baseUrl}/api/v3/instant/history`,
+        {
+          Authorization: `Bearer ${this.config.apiKey}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'MoonSkin/1.0',
+        },
+        requestBody,
+      );
+      logger.api('GET', '/api/v3/instant/history (body)', statusCode);
+      if (statusCode >= 200 && statusCode < 300) {
+        const data = JSON.parse(body) as SkinplaceHistoryResponse;
+        logger.api('GET', '/api/v3/instant/history (body)', statusCode, data);
+        return data;
       }
-      logger.warn(`GET+body retourné ${resp.status} — fallback sur GET sans body`);
+      logger.warn(`GET+body retourné ${statusCode} — fallback sur pagination`);
     } catch (e) {
       logger.warn('GET+body /instant/history échoué:', (e as Error).message);
     }
 
-    // Tentative 2 : GET sans body, on filtre côté client dans la réponse paginée
-    logger.api('GET', '/api/v3/instant/history (no-body fallback)');
-    const fallback = await this.makeRequest<SkinplaceHistoryResponse>(
-      '/api/v3/instant/history',
-      { method: 'GET' }
-    );
+    // Fallback : pagination GET standard puis filtre côté client
+    const orderIdSet = new Set(orderIds);
+    const matches: SkinplaceHistoryResponse['data'] = [];
+    const pageLimit = 100;
+    const maxPages = 30;
 
-    // Filtrer manuellement l'entrée correspondant à l'order_id
-    const fallbackData = fallback as unknown as { data?: Array<{ payment?: { order_id?: string }; token?: string }> };
-    if (fallbackData?.data && orderIds.length > 0) {
-      const match = fallbackData.data.find(
-        (entry) => orderIds.includes(entry.payment?.order_id ?? '')
-      );
-      if (match) {
-        return { ...fallback, data: [match] } as unknown as SkinplaceHistoryResponse;
+    for (let page = 1; page <= maxPages && matches.length < orderIds.length; page += 1) {
+      const history = await this.getInstantHistory(page, pageLimit);
+      if (history.status !== 'success' || !history.data?.length) {
+        break;
       }
-      logger.warn(`Fallback GET /instant/history : order_id "${orderIds[0]}" absent des ${fallbackData.data.length} entrées retournées`);
+
+      for (const entry of history.data) {
+        const payment = (entry as { payment?: { order_id?: string } }).payment;
+        const orderId = payment?.order_id;
+        if (orderId && orderIdSet.has(orderId)) {
+          matches.push(entry);
+        }
+      }
+
+      if (history.data.length < pageLimit) {
+        break;
+      }
     }
 
-    return fallback;
+    if (matches.length === 0) {
+      logger.warn(
+        `Fallback pagination /instant/history : aucun order_id trouvé parmi ${orderIds.length} demandé(s)`,
+      );
+    }
+
+    return { status: 'success', data: matches };
   }
 
   // Hold orders

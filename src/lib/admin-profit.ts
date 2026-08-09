@@ -47,8 +47,8 @@ type ProfitTradeRow = {
   user: { steamUsername: string | null; name: string | null } | null;
 };
 
-const SKINPLACE_BATCH_SIZE = 50;
-const SKINPLACE_BATCH_CONCURRENCY = 4;
+const SKINPLACE_HISTORY_PAGE_SIZE = 100;
+const SKINPLACE_HISTORY_MAX_PAGES = 30;
 
 function unwrapHistoryEntry(entry: unknown): Record<string, unknown> | null {
   const root = entry as Record<string, unknown> | null;
@@ -135,28 +135,19 @@ function ingestHistoryEntries(
   }
 }
 
-async function fetchSkinplacePricesForOrderIds(orderIds: string[]): Promise<Map<string, number>> {
+async function fetchSkinplacePriceByOrderId(): Promise<Map<string, number>> {
   const map = new Map<string, number>();
-  if (orderIds.length === 0) return map;
 
-  const uniqueIds = [...new Set(orderIds)];
-  const chunks: string[][] = [];
-  for (let i = 0; i < uniqueIds.length; i += SKINPLACE_BATCH_SIZE) {
-    chunks.push(uniqueIds.slice(i, i + SKINPLACE_BATCH_SIZE));
-  }
+  for (let page = 1; page <= SKINPLACE_HISTORY_MAX_PAGES; page += 1) {
+    const history = await skinplaceService.getInstantHistory(page, SKINPLACE_HISTORY_PAGE_SIZE);
+    if (history.status !== 'success' || !history.data?.length) {
+      break;
+    }
 
-  for (let i = 0; i < chunks.length; i += SKINPLACE_BATCH_CONCURRENCY) {
-    const batch = chunks.slice(i, i + SKINPLACE_BATCH_CONCURRENCY);
-    const results = await Promise.allSettled(
-      batch.map((orderIdsChunk) => skinplaceService.getInstantHistoryByOrderIds(orderIdsChunk)),
-    );
+    ingestHistoryEntries(map, history.data);
 
-    for (const result of results) {
-      if (result.status !== 'fulfilled') {
-        console.error('[AdminProfit] Skinplace batch fetch failed:', result.reason);
-        continue;
-      }
-      ingestHistoryEntries(map, result.value.data);
+    if (history.data.length < SKINPLACE_HISTORY_PAGE_SIZE) {
+      break;
     }
   }
 
@@ -209,7 +200,7 @@ export async function getAdminProfitMetrics(): Promise<AdminProfitMetrics> {
 
   let skinplaceByOrderId = new Map<string, number>();
   try {
-    skinplaceByOrderId = await fetchSkinplacePricesForOrderIds(trades.map((trade) => trade.ticketId));
+    skinplaceByOrderId = await fetchSkinplacePriceByOrderId();
   } catch (error) {
     console.error('[AdminProfit] Skinplace history fetch failed:', error);
   }
