@@ -591,7 +591,7 @@ export async function POST(request: NextRequest) {
       if (isFrenchIban(ibanToUse)) {
         LOG('SEPA_SAVED_IBAN_FR_REJECTED', { paymentMethodId });
         return NextResponse.json(
-          { error: 'Les IBAN français (FR) ne fonctionnent pas avec le SEPA standard. Utilisez l\'onglet SEPA Premium.' },
+          { error: 'Les IBAN français (FR) ne fonctionnent pas avec le SEPA standard. Utilisez l\'onglet Virement bancaire instantané.' },
           { status: 400 }
         );
       }
@@ -618,7 +618,7 @@ export async function POST(request: NextRequest) {
       if (isFrenchIban(ibanClean)) {
         LOG('SEPA_IBAN_FR_REJECTED', { country: 'FR' });
         return NextResponse.json(
-          { error: 'Les IBAN français (FR) ne fonctionnent pas avec le SEPA standard. Utilisez l\'onglet SEPA Premium.' },
+          { error: 'Les IBAN français (FR) ne fonctionnent pas avec le SEPA standard. Utilisez l\'onglet Virement bancaire instantané.' },
           { status: 400 }
         );
       }

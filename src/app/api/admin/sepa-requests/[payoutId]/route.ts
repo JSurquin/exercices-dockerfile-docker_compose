@@ -84,7 +84,7 @@ export async function PATCH(
         {
           tradeId: payout.tradeId,
           
-          reason: `Payout SEPA Premium ${payoutId} approuvé`,
+          reason: `Payout Instant bank transfer ${payoutId} approuvé`,
           finalStatus: 'PAID',
           paidAt: new Date(),
         },

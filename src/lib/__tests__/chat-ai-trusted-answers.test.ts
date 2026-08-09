@@ -136,7 +136,7 @@ describe('resolveTrustedAiAnswer', () => {
     expect(answer).not.toBeNull();
     expect(answer).toContain('Cashout page');
     expect(answer).toContain('/payout');
-    expect(answer).toContain('SEPA Premium');
+    expect(answer).toContain('Instant bank transfer');
     expect(answer).toContain('instant');
     expect(answer).not.toContain('SEPA France');
     expect(answer).not.toContain('SEPA Europe');
@@ -146,7 +146,7 @@ describe('resolveTrustedAiAnswer', () => {
     const answer = resolveTrustedAiAnswer('Comment recevoir mon argent ?', 'fr');
     expect(answer).not.toBeNull();
     expect(answer).toContain('page Retrait');
-    expect(answer).toContain('SEPA Premium');
+    expect(answer).toContain('Instant bank transfer');
     expect(answer).toContain('instantané');
   });
 

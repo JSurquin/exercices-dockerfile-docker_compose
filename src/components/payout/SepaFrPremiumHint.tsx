@@ -9,17 +9,17 @@ const COPY: Record<
 > = {
   fr: {
     before: 'IBAN français ? Passez par ',
-    cta: 'SEPA Premium',
+    cta: 'Virement bancaire instantané',
     after: ' — frais réduits.',
   },
   en: {
     before: 'French IBAN? Use ',
-    cta: 'SEPA Premium',
+    cta: 'Instant bank transfer',
     after: ' — lower fees.',
   },
   cn: {
     before: '法国 IBAN？请使用 ',
-    cta: 'SEPA Premium',
+    cta: '即时银行转账',
     after: ' — 更低费用。',
   },
 };
