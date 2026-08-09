@@ -86,6 +86,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
     pendingApprovals: number;
     kycPending: number;
     sepaPending: number;
+    merchantWithdrawPending: number;
   }>({
     queryKey: queryKeys.adminPendingCounts,
     queryFn: async () => {
@@ -113,6 +114,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
         { title: t.items.trades, href: '/admin/dashboard?tab=trades', icon: ShoppingCart },
         { title: t.items.payouts, href: '/admin/dashboard?tab=payouts', icon: CreditCard, badge: pendingCounts?.pendingApprovals, badgeVariant: 'destructive' as const },
         { title: t.items.sepaRequests, href: '/admin/sepa-requests', icon: Landmark, badge: pendingCounts?.sepaPending, badgeVariant: 'destructive' as const },
+        { title: t.items.merchantWithdrawals, href: '/admin/merchant-withdrawals', icon: Store, badge: pendingCounts?.merchantWithdrawPending, badgeVariant: 'destructive' as const },
         { title: t.items.kyc, href: '/admin/dashboard?tab=kyc', icon: Shield, badge: pendingCounts?.kycPending, badgeVariant: 'destructive' as const },
       ],
     },

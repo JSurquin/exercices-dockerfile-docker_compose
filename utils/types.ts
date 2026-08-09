@@ -6316,6 +6316,7 @@ export interface Messages {
         trades: string;
         payouts: string;
         sepaRequests: string;
+        merchantWithdrawals: string;
         kyc: string;
         applications: string;
         affiliates: string;
@@ -6961,6 +6962,7 @@ export interface Messages {
       balanceDebitedHint: string;
       requestPayout: string;
       sepaPremiumLabel: string;
+      merchantWithdrawLabel: string;
       sepaInstantLabel: string;
       columns: {
         date: string;
@@ -7008,6 +7010,34 @@ export interface Messages {
       successDesc: string;
       reference: string;
       newRequest: string;
+    };
+    merchantWithdraw: {
+      tabLabel: string;
+      infoTitle: string;
+      infoDesc: string;
+      feeLabel: string;
+      bankTab: string;
+      cryptoTab: string;
+      accountHolderLabel: string;
+      ibanLabel: string;
+      bicLabel: string;
+      countryLabel: string;
+      assetLabel: string;
+      networkLabel: string;
+      addressLabel: string;
+      memoLabel: string;
+      cryptoWarning: string;
+      submitButton: string;
+      submitting: string;
+      successTitle: string;
+      successDesc: string;
+      reference: string;
+      newRequest: string;
+      grossAmount: string;
+      youReceive: string;
+      feesPreview: string;
+      amountRequired: string;
+      ibanError: string;
     };
     toast: {
       amountTooLow: string;
@@ -7091,6 +7121,82 @@ export interface Messages {
       fees: string;
       netToTransfer: string;
     };
+  };
+  adminMerchantWithdrawals: {
+    title: string;
+    subtitle: string;
+    emptyState: string;
+    columns: {
+      user: string;
+      amount: string;
+      type: string;
+      destination: string;
+      date: string;
+      status: string;
+      actions: string;
+    };
+    status: {
+      pending: string;
+      processing: string;
+      paid: string;
+      rejected: string;
+    };
+    actions: {
+      process: string;
+      approve: string;
+      reject: string;
+    };
+    approveModal: {
+      title: string;
+      description: string;
+      referenceLabel: string;
+      referencePlaceholder: string;
+      internalNoteLabel: string;
+      confirm: string;
+      cancel: string;
+    };
+    rejectModal: {
+      title: string;
+      description: string;
+      reasonLabel: string;
+      reasonPlaceholder: string;
+      confirm: string;
+      cancel: string;
+    };
+    toast: {
+      approveSuccess: string;
+      approveError: string;
+      rejectSuccess: string;
+      rejectError: string;
+      processSuccess: string;
+      processError: string;
+    };
+    filters: {
+      all: string;
+      pending: string;
+      processing: string;
+      paid: string;
+      rejected: string;
+      bank: string;
+      crypto: string;
+    };
+    badge: string;
+    refresh: string;
+    statusLabel: string;
+    rejectReasonRequired: string;
+    referenceRequired: string;
+    paginationPrev: string;
+    paginationNext: string;
+    paginationOf: string;
+    paginationPage: string;
+    perPage: string;
+    amountLabels: {
+      gross: string;
+      fees: string;
+      netToTransfer: string;
+    };
+    subtypeBank: string;
+    subtypeCrypto: string;
   };
   kycPolicy: {
     title: string;

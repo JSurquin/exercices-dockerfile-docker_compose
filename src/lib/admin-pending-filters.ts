@@ -20,6 +20,11 @@ export const sepaPendingApprovalWhere: Prisma.PayoutWhereInput = {
   gateFiOrderId: { startsWith: 'MOON-SEPA-FR' },
 };
 
+export const merchantWithdrawPendingWhere: Prisma.PayoutWhereInput = {
+  status: { in: ['PENDING_APPROVAL', 'PROCESSING'] },
+  gateFiOrderId: { startsWith: 'MOON-MERCHANT-WD-' },
+};
+
 export const payoutProcessingWhere: Prisma.PayoutWhereInput = {
   status: {
     in: [

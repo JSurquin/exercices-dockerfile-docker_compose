@@ -31,6 +31,7 @@ import { PageLoading } from '@/components/ui/page-loading';
 import { FeePreview, computeFees } from '@/components/payout/FeePreview';
 import { NetReceivePreview } from '@/components/payout/NetReceivePreview';
 import { SepaFrPremiumHint } from '@/components/payout/SepaFrPremiumHint';
+import { MerchantWithdrawCard } from '@/components/payout/MerchantWithdrawCard';
 import {
   WHITEPAY_SUPPORTED_CRYPTOS,
   MEMO_REQUIRED_NETWORKS,
@@ -191,6 +192,9 @@ export default function PayoutPage() {
   });
   const [sepaFrLoading, setSepaFrLoading] = useState(false);
   const [sepaFrResult, setSepaFrResult] = useState<{ reference: string; amountCents: number } | null>(null);
+  const [merchantWithdrawExpanded, setMerchantWithdrawExpanded] = useState(false);
+
+  const isMerchant = user?.userTag === 'MERCHANT';
 
   const [payoutResult, setPayoutResult] = useState<{
     id: string;
@@ -857,6 +861,7 @@ export default function PayoutPage() {
     setExpandedMethod(method);
     setQuote(null);
     setSepaFrResult(null);
+    setMerchantWithdrawExpanded(false);
   };
 
   const renderFlexifyMethodActions = () => (
@@ -1075,6 +1080,25 @@ export default function PayoutPage() {
                   if (v !== '__closed__') selectPayoutMethod(v as PayoutMethod);
                 }}>
                   <div className="relative z-0 isolate space-y-3">
+                    {isMerchant && (
+                      <MerchantWithdrawCard
+                        amount={amount}
+                        text={text.merchantWithdraw}
+                        requestText={{ minAmount: text.request.minAmount, maxAmount: text.request.maxAmount }}
+                        expanded={merchantWithdrawExpanded}
+                        onToggle={() => {
+                          setMerchantWithdrawExpanded((prev) => !prev);
+                          if (!merchantWithdrawExpanded) {
+                            setExpandedMethod(null);
+                            setPayoutResult(null);
+                          }
+                        }}
+                        onSuccess={() => {
+                          queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
+                          queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
+                        }}
+                      />
+                    )}
                     <div
                       ref={expandedMethod === 'sepa_fr' ? expandedMethodRef : undefined}
                       className={cn(
@@ -1945,7 +1969,9 @@ export default function PayoutPage() {
                                 ? 'Crypto'
                                 : payout.method === 'SEPA_FR'
                                   ? text.history.sepaPremiumLabel
-                                  : payout.method}
+                                  : payout.method === 'MERCHANT_WITHDRAW'
+                                    ? text.history.merchantWithdrawLabel
+                                    : payout.method}
                           </p>
                         </div>
                       </div>

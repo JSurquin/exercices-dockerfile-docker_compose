@@ -46,6 +46,7 @@ export async function GET(_request: NextRequest) {
         updatedAt: true,
         paymentReference: true,
         flexifyPayoutId: true,
+        gateFiOrderId: true,
         paymentMethod: {
           select: {
             type: true,
@@ -59,6 +60,13 @@ export async function GET(_request: NextRequest) {
       const fees = (payout.processingFeeCents || 0) + (payout.networkFeeCents || 0);
       const netAmount = payout.amountCents - fees;
       
+      const method =
+        payout.gateFiOrderId?.startsWith('MOON-MERCHANT-WD-')
+          ? 'MERCHANT_WITHDRAW'
+          : payout.gateFiOrderId?.startsWith('MOON-SEPA-FR')
+            ? 'SEPA_FR'
+            : payout.paymentMethod?.type || 'UNKNOWN';
+
       return {
         id: payout.id,
         amount: payout.amountCents,
@@ -67,7 +75,7 @@ export async function GET(_request: NextRequest) {
         status: payout.status,
         paidAt: payout.paidAt?.toISOString() ?? null,
         balanceDebitedAt: payout.balanceDebitedAt?.toISOString() ?? null,
-        method: payout.paymentMethod?.type || 'UNKNOWN',
+        method,
         createdAt: payout.createdAt.toISOString(),
         updatedAt: payout.updatedAt.toISOString(),
         reference: payout.paymentReference,
