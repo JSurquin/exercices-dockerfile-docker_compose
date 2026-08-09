@@ -30,6 +30,7 @@ import {
 import { cn } from '@/lib/utils';
 import { SEPA_COUNTRY_CODES } from '@/lib/iban-sepa';
 import { Store } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const PAYOUT_SUBMIT_BTN_CLASS =
   'w-full h-11 text-base font-semibold bg-theme-accent text-white border border-theme-accent shadow-[0_4px_16px_color-mix(in_srgb,var(--theme-accent)_40%,transparent)] hover:brightness-110 hover:shadow-[0_6px_24px_color-mix(in_srgb,var(--theme-accent)_50%,transparent)] focus-visible:ring-theme-accent/40 disabled:bg-muted/50 disabled:text-muted-foreground disabled:border-border/60 disabled:shadow-none disabled:opacity-100 disabled:brightness-100 disabled:hover:brightness-100';
@@ -54,6 +55,8 @@ type MerchantWithdrawText = {
   submitting: string;
   successTitle: string;
   successDesc: string;
+  successTimingNote: string;
+  statusProcessing: string;
   reference: string;
   newRequest: string;
   grossAmount: string;
@@ -225,7 +228,9 @@ export function MerchantWithdrawCard({
                   <CheckCircleIcon className="w-5 h-5" />
                   {text.successTitle}
                 </h3>
+                <Badge className="bg-blue-500 w-fit">{text.statusProcessing}</Badge>
                 <p className="text-sm text-muted-foreground">{text.successDesc}</p>
+                <p className="text-xs text-muted-foreground">{text.successTimingNote}</p>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{text.reference}</span>
                   <span className="font-mono text-xs">{result.reference}</span>

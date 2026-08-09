@@ -7031,6 +7031,8 @@ export interface Messages {
       submitting: string;
       successTitle: string;
       successDesc: string;
+      successTimingNote: string;
+      statusProcessing: string;
       reference: string;
       newRequest: string;
       grossAmount: string;

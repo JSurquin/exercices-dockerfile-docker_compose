@@ -67,6 +67,7 @@ import { LevelBadge, FragmentBadge } from "@/components/ui/level-badge";
 import { LevelProgressBar } from "@/components/ui/level-progress-bar";
 
 import { getTradeStatusLabel } from "@/lib/trade-status-display";
+import { clientDisplayPayoutStatus, isMerchantWithdrawReference } from "@/lib/merchant-withdraw";
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
@@ -106,6 +107,7 @@ type DashboardPayoutApi = {
   amountCents: number;
   paymentReference: string | null;
   flexifyPayoutId: string | null;
+  gateFiOrderId: string | null;
   whitepayTransactionId: string | null;
   whitepayTargetCurrency: string | null;
   whitepayTargetValue: string | null;
@@ -131,6 +133,7 @@ const payoutChannelLabel = (
   p: DashboardPayoutApi,
   pay: Messages["dashboard"]["payments"],
 ) => {
+  if (isMerchantWithdrawReference(p.gateFiOrderId)) return pay.channelOther;
   const t = p.paymentMethod?.type ?? "";
   if (p.whitepayTransactionId || t === "WHITEPAY_CRYPTO") return pay.channelWhitepay;
   if (["FLEXIFY_CARD", "FLEXIFY_SEPA", "CARD", "SEPA"].includes(t)) return pay.channelFlexify;
@@ -155,9 +158,12 @@ const payoutStatusBadgeClass = (status: string) => {
 };
 
 const payoutStatusLabel = (
-  status: string,
+  payout: DashboardPayoutApi,
   labels: Messages["dashboard"]["payments"]["status"],
-) => labels[status as keyof typeof labels] ?? status;
+) => {
+  const status = clientDisplayPayoutStatus(payout.status, { gateFiOrderId: payout.gateFiOrderId });
+  return labels[status as keyof typeof labels] ?? status;
+};
 
 const dateLocaleTag = (locale: string) =>
   locale === "en" ? "en-GB" : locale === "cn" ? "zh-CN" : "fr-FR";
@@ -1283,7 +1289,7 @@ export default function DashboardPage() {
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-medium tabular-nums">{formatPrice(p.amountCents)}</span>
                                 <Badge variant="outline" className={payoutStatusBadgeClass(p.status)}>
-                                  {payoutStatusLabel(p.status, messages.dashboard.payments.status)}
+                                  {payoutStatusLabel(p, messages.dashboard.payments.status)}
                                 </Badge>
                               </div>
                               <p className="text-xs text-muted-foreground">
@@ -1331,7 +1337,7 @@ export default function DashboardPage() {
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-medium tabular-nums">{formatPrice(p.amountCents)}</span>
                                 <Badge variant="outline" className={payoutStatusBadgeClass(p.status)}>
-                                  {payoutStatusLabel(p.status, messages.dashboard.payments.status)}
+                                  {payoutStatusLabel(p, messages.dashboard.payments.status)}
                                 </Badge>
                               </div>
                               <p className="text-xs text-muted-foreground">

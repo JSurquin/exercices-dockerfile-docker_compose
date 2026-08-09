@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, History, CreditCard, Building2, ChevronLeft, ChevronRight, ArrowDownRight, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
+import { clientDisplayPayoutStatus } from '@/lib/merchant-withdraw';
 
 interface Payout {
   id: string;
@@ -15,6 +16,7 @@ interface Payout {
   amountCents: number;
   createdAt: string;
   paidAt?: string;
+  gateFiOrderId?: string | null;
   paymentMethod: {
     id: string;
     type: string;
@@ -65,8 +67,9 @@ export function PayoutHistory() {
     });
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
+  const getStatusBadge = (status: string, gateFiOrderId?: string | null) => {
+    const displayStatus = clientDisplayPayoutStatus(status, { gateFiOrderId });
+    switch (displayStatus) {
       case 'PAID':
       case 'FLEXIFY_PAID':
       case 'WHITEPAY_COMPLETE':
@@ -197,7 +200,7 @@ export function PayoutHistory() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{getMethodLabel(payout)}</span>
-                        {getStatusBadge(payout.status)}
+                        {getStatusBadge(payout.status, payout.gateFiOrderId)}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {formatDate(payout.createdAt)}

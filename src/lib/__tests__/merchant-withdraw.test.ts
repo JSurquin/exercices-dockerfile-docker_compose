@@ -2,6 +2,7 @@ import {
   validateMerchantWithdrawDetails,
   validateBic,
   isMerchantWithdrawReference,
+  clientDisplayPayoutStatus,
   MERCHANT_WITHDRAW_PREFIX,
 } from '@/lib/merchant-withdraw';
 
@@ -9,6 +10,17 @@ describe('merchant-withdraw', () => {
   it('identifie les références merchant withdraw', () => {
     expect(isMerchantWithdrawReference(`${MERCHANT_WITHDRAW_PREFIX}123`)).toBe(true);
     expect(isMerchantWithdrawReference('MOON-SEPA-FR-123')).toBe(false);
+  });
+
+  it('mappe PENDING_APPROVAL en Processing côté client pour les retraits merchant', () => {
+    expect(
+      clientDisplayPayoutStatus('PENDING_APPROVAL', { method: 'MERCHANT_WITHDRAW' }),
+    ).toBe('PROCESSING');
+    expect(
+      clientDisplayPayoutStatus('PENDING_APPROVAL', { gateFiOrderId: `${MERCHANT_WITHDRAW_PREFIX}abc` }),
+    ).toBe('PROCESSING');
+    expect(clientDisplayPayoutStatus('PENDING_APPROVAL', { method: 'SEPA_FR' })).toBe('PENDING_APPROVAL');
+    expect(clientDisplayPayoutStatus('PROCESSING', { method: 'MERCHANT_WITHDRAW' })).toBe('PROCESSING');
   });
 
   it('valide un IBAN et BIC bancaires', () => {

@@ -32,6 +32,7 @@ import { FeePreview, computeFees } from '@/components/payout/FeePreview';
 import { NetReceivePreview } from '@/components/payout/NetReceivePreview';
 import { SepaFrPremiumHint } from '@/components/payout/SepaFrPremiumHint';
 import { MerchantWithdrawCard } from '@/components/payout/MerchantWithdrawCard';
+import { clientDisplayPayoutStatus } from '@/lib/merchant-withdraw';
 import {
   WHITEPAY_SUPPORTED_CRYPTOS,
   MEMO_REQUIRED_NETWORKS,
@@ -823,8 +824,9 @@ export default function PayoutPage() {
     return row.status;
   };
 
-  const getStatusBadge = (status: string) => {
-    const s = status.toLowerCase();
+  const getStatusBadge = (status: string, method?: string) => {
+    const displayStatus = clientDisplayPayoutStatus(status, { method });
+    const s = displayStatus.toLowerCase();
     switch (s) {
       case 'paid':
       case 'completed':
@@ -1961,7 +1963,7 @@ export default function PayoutPage() {
                           )}
                         </div>
                         <div className="text-right">
-                          {getStatusBadge(displayPayoutStatus(payout))}
+                          {getStatusBadge(displayPayoutStatus(payout), payout.method)}
                           <p className="text-xs text-muted-foreground mt-1">
                             {payout.method === 'FLEXIFY_SEPA' || payout.method === 'SEPA'
                               ? text.history.sepaInstantLabel

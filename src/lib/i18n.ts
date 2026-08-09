@@ -5419,6 +5419,9 @@ export const messages: Record<Locale, Messages> = {
         submitting: 'Envoi en cours...',
         successTitle: 'Demande soumise',
         successDesc: 'Votre demande de retrait merchant a été enregistrée. Notre équipe la traitera manuellement.',
+        successTimingNote:
+          'Le traitement est généralement rapide, mais comme les retraits Merchant sont validés manuellement par notre équipe, cela peut prendre jusqu\'à 24 heures.',
+        statusProcessing: 'En cours',
         reference: 'Référence',
         newRequest: 'Nouvelle demande',
         grossAmount: 'Montant demandé',
@@ -12282,6 +12285,9 @@ export const messages: Record<Locale, Messages> = {
         submitting: 'Submitting...',
         successTitle: 'Request submitted',
         successDesc: 'Your merchant withdrawal request has been registered. Our team will process it manually.',
+        successTimingNote:
+          'Processing is usually quick, but because Merchant withdrawals are validated manually by our team, it may take up to 24 hours.',
+        statusProcessing: 'Processing',
         reference: 'Reference',
         newRequest: 'New request',
         grossAmount: 'Requested amount',
@@ -20085,6 +20091,9 @@ export const messages: Record<Locale, Messages> = {
         submitting: '提交中...',
         successTitle: '申请已提交',
         successDesc: '您的 Merchant 提款申请已登记。我们的团队将人工处理。',
+        successTimingNote:
+          '处理通常很快，但由于 Merchant 提款需由团队人工审核，最长可能需要 24 小时。',
+        statusProcessing: '处理中',
         reference: '参考',
         newRequest: '新请求',
         grossAmount: '申请金额',
