@@ -6804,6 +6804,7 @@ export interface Messages {
     vipBonus: string;
     priceUpdatedByServer: string;
     errorUnknown: string;
+    invalidServerResponse: string;
   };
   paymentMethodsList: {
     loadingError: string;

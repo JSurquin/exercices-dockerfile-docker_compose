@@ -7500,6 +7500,7 @@ export const messages: Record<Locale, Messages> = {
         vipBonus: "Bonus {tag} (+{percent}%)",
         priceUpdatedByServer: "Le prix a été mis à jour par le serveur : {server} $ au lieu de {client} $. Le trade a été créé avec le prix vérifié.",
         errorUnknown: "Erreur inconnue",
+        invalidServerResponse: "Le serveur n'a pas répondu correctement. Réessayez dans un instant.",
     },
     notFound: {
       code: "404",
@@ -15564,6 +15565,7 @@ export const messages: Record<Locale, Messages> = {
         vipBonus: "Bonus {tag} (+{percent}%)",
         priceUpdatedByServer: "Price updated by server: {server} $ instead of {client} $. The trade was created with the verified price.",
         errorUnknown: "Unknown error",
+        invalidServerResponse: "The server did not respond correctly. Please try again in a moment.",
     },
     notFound: {
       code: "404",
@@ -23307,6 +23309,7 @@ export const messages: Record<Locale, Messages> = {
         vipBonus: "{tag} 奖励 (+{percent}%)",
         priceUpdatedByServer: "服务器已更新价格：{server} $ 而非 {client} $。交易已按验证后的价格创建。",
         errorUnknown: "未知错误",
+        invalidServerResponse: "服务器未正确响应，请稍后再试。",
     },
     notFound: {
       code: "404",

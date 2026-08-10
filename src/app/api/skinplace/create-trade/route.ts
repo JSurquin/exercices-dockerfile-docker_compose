@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const maxDuration = 60;
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
@@ -312,8 +314,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const skinplaceData = await skinplaceResponse.json();
-    
+    let skinplaceData: {
+      status?: string;
+      error?: string;
+      message?: string;
+      token?: string;
+      steamtrade?: {
+        tradeofferid?: string;
+        status?: string;
+        bot?: SkinplaceBotInfo;
+      };
+    };
+    try {
+      skinplaceData = await skinplaceResponse.json();
+    } catch {
+      console.error('[CREATE-TRADE] Skinplace returned non-JSON response');
+      return NextResponse.json(
+        { success: false, error: 'Réponse invalide du partenaire de vente. Réessayez dans un instant.' },
+        { status: 502 }
+      );
+    }
+
     if (skinplaceData.status !== 'success') {
       return NextResponse.json(
         { 

@@ -35,6 +35,7 @@ import {
   AFFILIATE_SELL_PROMO_GROSS_RATE,
   computeSellPromoBonusCents,
 } from '@/lib/affiliate-sell-promo';
+import { parseApiJson } from '@/lib/parse-api-json';
 
 export interface SkinplaceBotInfo {
   name: string;
@@ -130,7 +131,7 @@ export function SkinplaceTradeCreator({
           `/api/affiliate/validate-sell-promo?code=${encodeURIComponent(trimmed)}`,
           { signal: ctrl.signal, credentials: 'include' }
         );
-        const data = (await res.json()) as {
+        const data = await parseApiJson<{
           valid?: boolean;
           code?: string;
           error?: string;
@@ -138,7 +139,7 @@ export function SkinplaceTradeCreator({
           alreadyLinkedToOther?: boolean;
           attached?: boolean;
           affiliateName?: string;
-        };
+        }>(res, messages.tradeCreator.invalidServerResponse);
         if (ctrl.signal.aborted) return;
         if (data.valid && data.code) {
           setPromoState('valid');
@@ -191,7 +192,10 @@ export function SkinplaceTradeCreator({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed }),
       });
-      const data = (await res.json()) as { error?: string };
+      const data = await parseApiJson<{ error?: string }>(
+        res,
+        messages.tradeCreator.invalidServerResponse
+      );
       if (!res.ok) {
         throw new Error(data.error ?? messages.tradeCreator.contactEmailError);
       }
@@ -323,14 +327,30 @@ export function SkinplaceTradeCreator({
         }),
       });
 
-      const result = await response.json();
+      const result = await parseApiJson<{
+        success?: boolean;
+        error?: string;
+        data?: {
+          trade_id: string;
+          token: string;
+          status: string;
+          gross_value_centimes: number;
+          net_value_centimes: number;
+          fees: { cashout_fee: number; network_fee: number };
+          expires_at: string | null;
+          bot?: SkinplaceBotInfo | null;
+          affiliateSwitch?: { attached?: boolean; affiliateName?: string };
+        };
+      }>(response, messages.tradeCreator.invalidServerResponse);
 
-      if (!response.ok || !result.success) {
+      if (!response.ok || !result.success || !result.data) {
         throw new Error(result.error || messages.tradeCreator.tradeCreationError);
       }
 
+      const tradePayload = result.data;
+
       // Vérifier si le prix serveur diffère de l'estimation affichée au client
-      const serverGross = result.data.gross_value_centimes;
+      const serverGross = tradePayload.gross_value_centimes;
       if (Math.abs(serverGross - grossValueCentimes) > 1) {
         toast.warning(
           messages.tradeCreator.priceUpdatedByServer
@@ -340,25 +360,23 @@ export function SkinplaceTradeCreator({
       }
 
       const tradeData: TradeCreatedData = {
-        trade_id: result.data.trade_id,
-        token: result.data.token,
-        status: result.data.status,
+        trade_id: tradePayload.trade_id,
+        token: tradePayload.token,
+        status: tradePayload.status,
         total_value: serverGross,
-        net_value: result.data.net_value_centimes,
+        net_value: tradePayload.net_value_centimes,
         fees: {
-          cashout_fee: result.data.fees.cashout_fee,
-          network_fee: result.data.fees.network_fee,
+          cashout_fee: tradePayload.fees.cashout_fee,
+          network_fee: tradePayload.fees.network_fee,
         },
-        expires_at: new Date(result.data.expires_at),
-        bot: result.data.bot || null,
+        expires_at: new Date(tradePayload.expires_at ?? Date.now()),
+        bot: tradePayload.bot || null,
       };
       
       onTradeCreated?.(tradeData);
       toast.success(messages.tradeCreator.tradeCreatedSuccess);
 
-      const switchInfo = result.data?.affiliateSwitch as
-        | { attached?: boolean; affiliateName?: string }
-        | undefined;
+      const switchInfo = tradePayload.affiliateSwitch;
       if (switchInfo?.attached && switchInfo?.affiliateName) {
         toast.success(
           messages.tradeCreator.promoAffiliateUpdated.replace(
