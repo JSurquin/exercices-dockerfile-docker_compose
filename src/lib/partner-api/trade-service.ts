@@ -9,6 +9,7 @@ import { notifyAdminsNewTrade } from '@/lib/admin-notification-hooks';
 import { notifyTradeStatusChange } from '@/lib/partner-api/webhook-service';
 import { logger } from '@/lib/logger';
 import { validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
+import { toPartnerFacingProviderError } from '@/lib/partner-api/response';
 
 function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
   const statusMap: Record<string, TradeStatus> = {
@@ -42,6 +43,7 @@ export type CreatePartnerTradeResult =
         networkFees: number;
         expiresAt: Date | null;
         availableAt: Date | null;
+        vipBonusCents: number;
       };
     }
   | { ok: false; error: string; code: string; status: number };
@@ -79,7 +81,12 @@ export async function createPartnerTrade(
   const verification = await verifyAndPriceItems(steamId, params.assetIds);
   if (!verification.ok) {
     const status = verification.code === 'ITEMS_NOT_FOUND' ? 400 : 502;
-    return { ok: false, error: verification.error, code: verification.code, status };
+    return {
+      ok: false,
+      error: toPartnerFacingProviderError(verification.code),
+      code: verification.code,
+      status,
+    };
   }
 
   const serverGrossCentimes = Array.from(verification.items.values()).reduce(
@@ -219,26 +226,41 @@ export async function createPartnerTrade(
     };
   });
 
-  const trade = await prisma.trade.create({
-    data: {
-      id: tradeId,
-      userId: user.id,
-      steamId,
-      tradeUrl: params.tradeUrl,
-      status: tradeStatus,
-      grossCents: serverGrossCentimes,
-      cashoutFees: ledger.cashoutFees,
-      networkFees: ledger.networkFees,
-      netCents: netCentsWithPromo,
-      vipBonusCents,
-      availableAt: tradeStatus !== 'FAILED' ? availableAt : undefined,
-      expiresAt,
-      tradeAcceptedAt,
-      ticketId: orderId,
-      skinplaceToken: skinplaceData.token || null,
-      items: { create: itemsData },
-    },
-  });
+  let trade;
+  try {
+    trade = await prisma.trade.create({
+      data: {
+        id: tradeId,
+        userId: user.id,
+        steamId,
+        tradeUrl: params.tradeUrl,
+        status: tradeStatus,
+        grossCents: serverGrossCentimes,
+        cashoutFees: ledger.cashoutFees,
+        networkFees: ledger.networkFees,
+        netCents: netCentsWithPromo,
+        vipBonusCents,
+        availableAt: tradeStatus !== 'FAILED' ? availableAt : undefined,
+        expiresAt,
+        tradeAcceptedAt,
+        ticketId: orderId,
+        skinplaceToken: skinplaceData.token || null,
+        items: { create: itemsData },
+      },
+    });
+  } catch (err) {
+    logger.error('[PartnerTrade] Skinplace offer created but DB persist failed', {
+      orderId,
+      userId,
+      err,
+    });
+    return {
+      ok: false,
+      error: `Trade could not be saved. Support reference: ${orderId}`,
+      code: 'INTERNAL_ERROR',
+      status: 500,
+    };
+  }
 
   await TradeHooks.onTradeCreated(user.id, trade.id);
   await notifyAdminsNewTrade(trade.id, user.id, serverGrossCentimes);
@@ -271,6 +293,7 @@ export async function createPartnerTrade(
       networkFees: trade.networkFees,
       expiresAt: trade.expiresAt,
       availableAt: trade.availableAt,
+      vipBonusCents,
     },
   };
 }
@@ -303,7 +326,7 @@ export async function estimatePartnerItems(
   if (!verification.ok) {
     return {
       ok: false,
-      error: verification.error,
+      error: toPartnerFacingProviderError(verification.code),
       code: verification.code,
       status: verification.code === 'ITEMS_NOT_FOUND' ? 400 : 502,
     };

@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   return withPartnerApi(
     request,
-    { endpoint: '/api/v1/partner/webhook', method: 'PUT', scopes: ['read'] },
+    { endpoint: '/api/v1/partner/webhook', method: 'PUT', anyOfScopes: ['trade', 'payout'] },
     async (req, ctx) => {
       const raw = await readPartnerJsonBody(req);
       if (!raw.ok) return raw.response;

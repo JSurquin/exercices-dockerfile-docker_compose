@@ -59,6 +59,17 @@ function mockAuth(scopes: string[]) {
         response: partnerError('FORBIDDEN', `Missing required scopes: ${missing.join(', ')}`, 403),
       };
     }
+    if (options.requiredAnyScopes?.length && !options.requiredAnyScopes.some((s) => scopes.includes(s))) {
+      const { partnerError } = await import('@/lib/partner-api/response');
+      return {
+        ok: false as const,
+        response: partnerError(
+          'FORBIDDEN',
+          `Missing required scopes: ${options.requiredAnyScopes.join(' or ')}`,
+          403
+        ),
+      };
+    }
     return {
       ok: true as const,
       ctx: {
@@ -102,7 +113,7 @@ describe('partner API HTTP routes', () => {
       id: 'user-1',
       steamId: '76561198012345678',
       steamUsername: 'Player',
-      kycStatus: 'APPROVED',
+      kycStatus: 'KYCAID_VERIFIED',
       acceptedTermsAt: new Date('2026-01-01'),
       tradeLink: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc',
       userTag: null,
@@ -116,6 +127,7 @@ describe('partner API HTTP routes', () => {
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
     expect(body.data.steam_username).toBe('Player');
+    expect(body.data.kyc_status).toBe('verified');
     expect(body.data).not.toHaveProperty('role');
   });
 
@@ -345,7 +357,7 @@ describe('partner API HTTP routes', () => {
   });
 
   it('PUT /webhook rejects localhost URLs', async () => {
-    mockAuth(['read']);
+    mockAuth(['trade']);
 
     const response = await putWebhook(
       new NextRequest('http://localhost/api/v1/partner/webhook', {
@@ -358,6 +370,23 @@ describe('partner API HTTP routes', () => {
 
     expect(response.status).toBe(400);
     expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(prisma.apiClient.update).not.toHaveBeenCalled();
+  });
+
+  it('PUT /webhook is blocked for read-only keys', async () => {
+    mockAuth(['read']);
+
+    const response = await putWebhook(
+      new NextRequest('http://localhost/api/v1/partner/webhook', {
+        method: 'PUT',
+        body: JSON.stringify({ webhook_url: 'https://partner.example.com/hooks' }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.error.code).toBe('FORBIDDEN');
     expect(prisma.apiClient.update).not.toHaveBeenCalled();
   });
 });

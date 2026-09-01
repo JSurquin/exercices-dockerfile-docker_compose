@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { prisma } from '~/prisma/prisma';
 import { formatFees, mapPayoutStatus, mapTradeStatus } from '@/lib/partner-api/response';
-import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
+import { assertSafeWebhookDeliveryUrl } from '@/lib/partner-api/webhook-url';
 import { logger } from '@/lib/logger';
 
 const MAX_ATTEMPTS = 3;
@@ -42,7 +42,7 @@ async function deliverWebhook(
   const signature = signPayload(secret, timestamp, body);
   const start = Date.now();
 
-  const urlCheck = assertPublicHttpsWebhookUrl(url);
+  const urlCheck = await assertSafeWebhookDeliveryUrl(url);
   if (!urlCheck.ok) {
     return { success: false, error: urlCheck.error, durationMs: Date.now() - start };
   }
@@ -124,7 +124,7 @@ async function processDelivery(deliveryId: string): Promise<void> {
   if (!client.webhookUrl || client.status !== 'ACTIVE') {
     await prisma.partnerWebhookDelivery.update({
       where: { id: deliveryId },
-      data: { status: 'failed', errorMessage: 'Webhook URL non configurée ou clé révoquée' },
+      data: { status: 'failed', errorMessage: 'Webhook URL is not configured or the API key was revoked' },
     });
     return;
   }
@@ -236,7 +236,7 @@ export async function notifyPayoutStatusChange(
     status: mapPayoutStatus(payout.status),
     gross_cents: payout.amountCents,
     net_cents: payout.amountCents,
-    payment_reference: payout.tradeId,
+    payment_reference: payout.id,
   });
 }
 

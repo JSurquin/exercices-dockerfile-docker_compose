@@ -5,10 +5,12 @@ import { checkWithdrawalLimit } from '@/lib/balance-service';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { notifyPayoutStatusChange } from '@/lib/partner-api/webhook-service';
 import { withPartnerApi } from '@/lib/partner-api/handler';
-import { partnerSuccess, partnerError, mapPayoutStatus } from '@/lib/partner-api/response';
+import { partnerSuccess, partnerError, formatPayoutForPartner } from '@/lib/partner-api/response';
 import { partnerPayoutSchema } from '@/lib/partner-api/schemas';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
 import { readPartnerJsonBody, safeParsePartnerJson } from '@/lib/partner-api/validation';
+
+const TRADE_NOT_CLAIMABLE = 'TRADE_NOT_CLAIMABLE';
 
 export async function POST(request: NextRequest) {
   return withPartnerApi(
@@ -42,17 +44,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (existingPayout) {
-        return partnerSuccess({
-          id: existingPayout.id,
-          status: mapPayoutStatus(existingPayout.status),
-          amount_cents: existingPayout.amountCents,
-          trade_id: trade.id,
-          payment_method: {
-            type: existingPayout.paymentMethod.type,
-            verified: existingPayout.paymentMethod.isVerified,
-          },
-          payment_reference: existingPayout.id,
-        });
+        return partnerSuccess(formatPayoutForPartner(existingPayout, { already_exists: true }));
       }
 
       if (trade.status !== 'AVAILABLE') {
@@ -87,34 +79,63 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const payout = await prisma.payout.create({
-        data: {
-          userId: ctx.userId,
-          tradeId,
-          amountCents: trade.netCents,
-          paymentMethodId: paymentMethod.id,
-          status: 'PENDING',
-        },
-        include: { paymentMethod: true },
-      });
+      let payout;
+      try {
+        payout = await prisma.$transaction(async (tx) => {
+          const claimed = await tx.trade.updateMany({
+            where: { id: tradeId, userId: ctx.userId, status: 'AVAILABLE' },
+            data: { status: 'PAYOUT_PENDING' },
+          });
+          if (claimed.count !== 1) {
+            throw new Error(TRADE_NOT_CLAIMABLE);
+          }
+          return tx.payout.create({
+            data: {
+              userId: ctx.userId,
+              tradeId,
+              amountCents: trade.netCents,
+              paymentMethodId: paymentMethod.id,
+              status: 'PENDING',
+            },
+            include: { paymentMethod: true },
+          });
+        });
+      } catch (err) {
+        if (err instanceof Error && err.message === TRADE_NOT_CLAIMABLE) {
+          const raced = await prisma.payout.findFirst({
+            where: {
+              tradeId,
+              userId: ctx.userId,
+              status: { notIn: ['FAILED', 'CANCELLED'] },
+            },
+            include: { paymentMethod: true },
+          });
+          if (raced) {
+            return partnerSuccess(formatPayoutForPartner(raced, { already_exists: true }));
+          }
+          return partnerError('VALIDATION_ERROR', 'Trade is not ready for payout', 400);
+        }
+        throw err;
+      }
 
       try {
         await PayoutLifecycle.onCreated(ctx.userId, payout.id, trade.netCents);
       } catch (freezeErr) {
-        await prisma.payout.update({
-          where: { id: payout.id },
-          data: { status: 'FAILED', errorMessage: 'freeze_failed' },
-        });
+        await prisma.$transaction([
+          prisma.payout.update({
+            where: { id: payout.id },
+            data: { status: 'FAILED', errorMessage: 'freeze_failed' },
+          }),
+          prisma.trade.update({
+            where: { id: tradeId },
+            data: { status: 'AVAILABLE' },
+          }),
+        ]);
         if (freezeErr instanceof Error && freezeErr.message === 'INSUFFICIENT_AVAILABLE_BALANCE') {
           return partnerError('VALIDATION_ERROR', 'Insufficient balance', 409);
         }
         throw freezeErr;
       }
-
-      await prisma.trade.update({
-        where: { id: tradeId },
-        data: { status: 'PAYOUT_PENDING' },
-      });
 
       void notifyPayoutStatusChange(ctx.userId, {
         id: payout.id,
@@ -123,17 +144,7 @@ export async function POST(request: NextRequest) {
         tradeId: payout.tradeId,
       });
 
-      return partnerSuccess({
-        id: payout.id,
-        status: mapPayoutStatus(payout.status),
-        amount_cents: payout.amountCents,
-        trade_id: trade.id,
-        payment_method: {
-          type: payout.paymentMethod.type,
-          verified: payout.paymentMethod.isVerified,
-        },
-        payment_reference: payout.id,
-      });
+      return partnerSuccess(formatPayoutForPartner(payout));
     }
   );
 }

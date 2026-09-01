@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { withPartnerApi } from '@/lib/partner-api/handler';
-import { partnerSuccess, partnerError } from '@/lib/partner-api/response';
+import { partnerSuccess, partnerError, mapKycStatus } from '@/lib/partner-api/response';
 
 export async function GET(request: NextRequest) {
   return withPartnerApi(request, { endpoint: '/api/v1/partner/me', method: 'GET', scopes: ['read'] }, async (_req, ctx) => {
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       id: user.id,
       steam_id: user.steamId,
       steam_username: user.steamUsername,
-      kyc_status: user.kycStatus,
+      kyc_status: mapKycStatus(user.kycStatus),
       accepted_terms_at: user.acceptedTermsAt?.toISOString() ?? null,
       trade_link: user.tradeLink,
       user_tag: user.userTag,

@@ -8,13 +8,14 @@ type PartnerHandler = (
 
 export async function withPartnerApi(
   request: NextRequest,
-  options: { endpoint: string; method: string; scopes?: string[] },
+  options: { endpoint: string; method: string; scopes?: string[]; anyOfScopes?: string[] },
   handler: PartnerHandler
 ): Promise<Response> {
   const auth = await requireApiKey(request, {
     endpoint: options.endpoint,
     method: options.method,
     requiredScopes: options.scopes,
+    ...(options.anyOfScopes ? { requiredAnyScopes: options.anyOfScopes } : {}),
   });
   if (!auth.ok) return auth.response;
 

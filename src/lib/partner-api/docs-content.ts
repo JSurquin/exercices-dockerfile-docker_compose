@@ -126,7 +126,7 @@ export const partnerEndpointDetails = [
     path: '/api/v1/partner/estimate',
     scope: 'read',
     body: '{ "asset_ids": ["..."] }',
-    description: 'Estimate gross, cashout fees (0.5 %), network fees, VIP bonus and net.',
+    description: 'Estimate gross, VIP bonus and net. Sale cashout/network fees are 0; platform fees apply at payout.',
     response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, items }',
   },
   {
@@ -160,15 +160,15 @@ export const partnerEndpointDetails = [
     scope: 'payout',
     body: '{ "trade_id": "TRADE-..." }',
     description:
-      'Request a SEPA/crypto payout (KYC required, trade must be available, a payout method must already be configured).',
+      'Request a SEPA/crypto payout (KYC required, trade must be available, a payout method must already be configured). Replaying the same trade_id returns the existing payout with already_exists: true.',
     response: '{ id, status, amount_cents, payment_reference }',
   },
   {
     method: 'PUT',
     path: '/api/v1/partner/webhook',
-    scope: 'read',
+    scope: 'trade or payout',
     body: '{ "webhook_url": "https://..." }',
-    description: 'Set the webhook receiver URL (public HTTPS only, private/local addresses rejected).',
+    description: 'Set the webhook receiver URL (public HTTPS only, private/local addresses rejected). Read-only keys cannot change it.',
     response: '{ webhook_url, message }',
   },
   {
@@ -189,11 +189,11 @@ export const partnerPollingGuide = `Recommended flow to track a sale:
 Polling is useful if a webhook was missed (network timeout, partner maintenance) or to resynchronize state after a restart.`;
 
 export const partnerScopesGuide = `Available scopes per API key:
-• read — lookup (profile, balance, inventory, estimate, trade list/detail, webhook)
-• trade — create sales (POST /trades)
-• payout — request payouts (POST /payouts)
+• read — lookup (profile, balance, inventory, estimate, trade list/detail, GET webhook)
+• trade — create sales (POST /trades) and configure the webhook URL (PUT /webhook)
+• payout — request payouts (POST /payouts) and configure the webhook URL (PUT /webhook)
 
-A read-only key (read scope only) cannot create sales or payouts. HTTP 403 if a required scope is missing.`;
+A read-only key (read scope only) cannot create sales, request payouts, or change the webhook URL. HTTP 403 if a required scope is missing.`;
 
 export const partnerResponseExamples = {
   me: `{
@@ -202,7 +202,7 @@ export const partnerResponseExamples = {
     "id": "clx123",
     "steam_id": "76561198012345678",
     "steam_username": "PlayerOne",
-    "kyc_status": "APPROVED",
+    "kyc_status": "verified",
     "trade_link": "https://steamcommunity.com/tradeoffer/new/?partner=...",
     "account_frozen": false
   }
@@ -211,8 +211,8 @@ export const partnerResponseExamples = {
   "success": true,
   "data": {
     "gross_cents": 125000,
-    "fees": { "cashout": 625, "network": 4375 },
-    "net_cents": 121250,
+    "fees": { "cashout": 0, "network": 0 },
+    "net_cents": 126250,
     "vip_bonus_cents": 1250,
     "items": [
       { "asset_id": "123", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 125000 }

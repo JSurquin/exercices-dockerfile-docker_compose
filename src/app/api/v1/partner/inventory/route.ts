@@ -1,7 +1,12 @@
 import type { NextRequest } from 'next/server';
-import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
+import { skinplaceService } from '@/lib/skinplace';
 import { withPartnerApi } from '@/lib/partner-api/handler';
-import { formatInventoryForPartner, partnerSuccess, partnerError } from '@/lib/partner-api/response';
+import {
+  formatInventoryForPartner,
+  partnerInventoryFetchFailed,
+  partnerSuccess,
+  partnerError,
+} from '@/lib/partner-api/response';
 import { prisma } from '~/prisma/prisma';
 
 export async function GET(request: NextRequest) {
@@ -20,10 +25,12 @@ export async function GET(request: NextRequest) {
 
       try {
         const inventory = await skinplaceService.getInventory(user.steamId);
+        if (partnerInventoryFetchFailed(inventory)) {
+          return partnerError('API_ERROR', 'Unable to fetch inventory from the trade provider', 502);
+        }
         return partnerSuccess(formatInventoryForPartner(user.steamId, inventory));
-      } catch (error) {
-        const skinplaceError = handleSkinplaceError(error);
-        return partnerError('INTERNAL_ERROR', skinplaceError.error || 'Inventory fetch failed', 502);
+      } catch {
+        return partnerError('API_ERROR', 'Unable to fetch inventory from the trade provider', 502);
       }
     }
   );

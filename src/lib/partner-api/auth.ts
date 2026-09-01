@@ -41,7 +41,12 @@ function getClientIp(request: NextRequest): string {
 
 export async function requireApiKey(
   request: NextRequest,
-  options: { requiredScopes?: string[]; endpoint: string; method: string } = {
+  options: {
+    requiredScopes?: string[];
+    requiredAnyScopes?: string[];
+    endpoint: string;
+    method: string;
+  } = {
     endpoint: 'unknown',
     method: 'GET',
   }
@@ -78,6 +83,20 @@ export async function requireApiKey(
       return {
         ok: false,
         response: partnerError('FORBIDDEN', `Missing required scopes: ${missing.join(', ')}`, 403),
+      };
+    }
+  }
+
+  if (options.requiredAnyScopes?.length) {
+    const hasAny = options.requiredAnyScopes.some((s) => client.scopes.includes(s));
+    if (!hasAny) {
+      return {
+        ok: false,
+        response: partnerError(
+          'FORBIDDEN',
+          `Missing required scopes: ${options.requiredAnyScopes.join(' or ')}`,
+          403
+        ),
       };
     }
   }

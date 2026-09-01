@@ -89,8 +89,72 @@ export function mapPayoutStatus(status: string): string {
   return PAYOUT_STATUS_MAP[status] ?? status.toLowerCase();
 }
 
+const KYC_STATUS_MAP: Record<string, string> = {
+  PENDING: 'pending',
+  IN_PROGRESS: 'pending',
+  KYCAID_PENDING: 'pending',
+  VERIFIED: 'verified',
+  KYCAID_VERIFIED: 'verified',
+  REJECTED: 'rejected',
+  KYCAID_REJECTED: 'rejected',
+};
+
+export function mapKycStatus(status: string): string {
+  return KYC_STATUS_MAP[status] ?? status.toLowerCase();
+}
+
+const PAYMENT_METHOD_TYPE_MAP: Record<string, string> = {
+  SEPA: 'sepa',
+  FLEXIFY_SEPA: 'sepa',
+  CARD: 'card',
+  FLEXIFY_CARD: 'card',
+  CRYPTO: 'crypto',
+  WHITEPAY_CRYPTO: 'crypto',
+};
+
+export function mapPaymentMethodType(type: string): string {
+  return PAYMENT_METHOD_TYPE_MAP[type] ?? type.toLowerCase();
+}
+
+export function toPartnerFacingProviderError(code: string): string {
+  switch (code) {
+    case 'CONFIG_ERROR':
+      return 'Trade provider is not configured';
+    case 'ITEMS_NOT_FOUND':
+      return 'One or more items were not found in the linked Steam inventory';
+    case 'API_ERROR':
+      return 'Unable to verify item prices with the trade provider';
+    default:
+      return 'Unable to process the request';
+  }
+}
+
 export function formatFees(cashout: number, network: number) {
   return { cashout, network };
+}
+
+export function formatPayoutForPartner(
+  payout: {
+    id: string;
+    status: string;
+    amountCents: number;
+    tradeId: string | null;
+    paymentMethod: { type: string; isVerified: boolean };
+  },
+  extra?: { already_exists?: boolean }
+) {
+  return {
+    id: payout.id,
+    status: mapPayoutStatus(payout.status),
+    amount_cents: payout.amountCents,
+    trade_id: payout.tradeId,
+    payment_method: {
+      type: mapPaymentMethodType(payout.paymentMethod.type),
+      verified: payout.paymentMethod.isVerified,
+    },
+    payment_reference: payout.id,
+    ...extra,
+  };
 }
 
 export function formatTradeForPartner(trade: {
@@ -153,6 +217,7 @@ export function formatCreatedTradeForPartner(trade: {
   netCents: number;
   cashoutFees: number;
   networkFees: number;
+  vipBonusCents?: number;
   expiresAt: Date | null;
   availableAt: Date | null;
 }) {
@@ -164,46 +229,63 @@ export function formatCreatedTradeForPartner(trade: {
     gross_cents: trade.grossCents,
     net_cents: trade.netCents,
     fees: formatFees(trade.cashoutFees, trade.networkFees),
+    vip_bonus_cents: trade.vipBonusCents ?? 0,
     expires_at: trade.expiresAt?.toISOString() ?? null,
     available_at: trade.availableAt?.toISOString() ?? null,
     payment_reference: trade.ticketId,
   };
 }
 
-export function formatInventoryForPartner(
-  steamId: string,
-  inventory: {
-    data?: {
-      items?: Array<{
-        id?: string;
-        asset_id?: string;
-        market_hash_name?: string;
-        price?: number;
-        icon_url?: string | null;
-        exterior?: string | null;
-        stat_trak?: boolean;
-        rarity?: string | null;
-      }>;
-      total_items?: number;
-      total_value?: number;
-    };
-  }
-) {
-  const rawItems = inventory.data?.items ?? [];
+type RawInventoryItem = {
+  id?: string;
+  asset_id?: string;
+  assetid?: string;
+  market_hash_name?: string;
+  price?: number;
+  icon_url?: string | null;
+  exterior?: string | null;
+  stat_trak?: boolean | number;
+  is_stattrak?: boolean | number;
+  rarity?: string | null;
+};
+
+function toPriceCents(price: number | undefined, fromInstantInventory: boolean): number {
+  if (typeof price !== 'number' || !Number.isFinite(price)) return 0;
+  if (fromInstantInventory) return Math.round(price * 100);
+  return Math.round(price);
+}
+
+export function partnerInventoryFetchFailed(inventory: unknown): boolean {
+  if (!inventory || typeof inventory !== 'object') return true;
+  const envelope = inventory as { success?: boolean };
+  return envelope.success === false;
+}
+
+export function formatInventoryForPartner(steamId: string, inventory: unknown) {
+  const envelope = (inventory ?? {}) as {
+    data?: { items?: RawInventoryItem[]; total_items?: number; total_value?: number };
+    inventory?: RawInventoryItem[];
+  };
+  const fromInstant = Array.isArray(envelope.inventory) && !envelope.data?.items;
+  const rawItems = envelope.data?.items ?? envelope.inventory ?? [];
   const items = rawItems.map((item) => ({
-    asset_id: String(item.asset_id ?? item.id ?? ''),
+    asset_id: String(item.asset_id ?? item.assetid ?? item.id ?? ''),
     market_hash_name: item.market_hash_name ?? '',
-    price_cents: item.price ?? 0,
+    price_cents: toPriceCents(item.price, fromInstant),
     icon_url: item.icon_url ?? null,
     exterior: item.exterior ?? null,
-    stat_trak: Boolean(item.stat_trak),
+    stat_trak: Boolean(item.stat_trak ?? item.is_stattrak),
     rarity: item.rarity ?? null,
   }));
+
+  const totalValue =
+    envelope.data?.total_value ??
+    items.reduce((sum, item) => sum + item.price_cents, 0);
 
   return {
     steam_id: steamId,
     items,
-    total_items: inventory.data?.total_items ?? items.length,
-    total_value_cents: inventory.data?.total_value ?? 0,
+    total_items: envelope.data?.total_items ?? items.length,
+    total_value_cents: totalValue,
   };
 }

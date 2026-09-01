@@ -9,10 +9,15 @@ import { verifyWebhookSignature } from '@/lib/partner-api/webhook-service';
 import {
   formatCreatedTradeForPartner,
   formatInventoryForPartner,
+  formatPayoutForPartner,
   formatTradeForPartner,
+  mapKycStatus,
+  mapPaymentMethodType,
   mapPayoutStatus,
   mapTradeStatus,
+  partnerInventoryFetchFailed,
   toPartnerErrorCode,
+  toPartnerFacingProviderError,
 } from '@/lib/partner-api/response';
 import { validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 import { withPartnerApi } from '@/lib/partner-api/handler';
@@ -176,6 +181,7 @@ describe('partner-api JSON contract', () => {
     expect(payload.gross_cents).toBe(1000);
     expect(payload.fees.network).toBe(0);
     expect(payload.payment_reference).toBe('TICK-1');
+    expect(payload.vip_bonus_cents).toBe(0);
   });
 
   it('inventory formatter unwraps Skinplace envelope into the partner contract', () => {
@@ -215,6 +221,59 @@ describe('partner-api JSON contract', () => {
     });
     expect(payload).not.toHaveProperty('success');
     expect(payload).not.toHaveProperty('data');
+  });
+
+  it('inventory formatter unwraps the raw Skinplace instant envelope', () => {
+    const payload = formatInventoryForPartner('76561198012345678', {
+      inventory: [
+        {
+          assetid: 'asset-9',
+          market_hash_name: 'AWP | Asiimov (FT)',
+          price: 12.5,
+          icon_url: null,
+          exterior: 'Field-Tested',
+          is_stattrak: 0,
+          rarity: 'Covert',
+        },
+      ],
+    });
+
+    expect(payload.items[0].asset_id).toBe('asset-9');
+    expect(payload.items[0].price_cents).toBe(1250);
+    expect(payload.total_items).toBe(1);
+    expect(payload.total_value_cents).toBe(1250);
+  });
+
+  it('treats success:false inventory as a provider failure', () => {
+    expect(partnerInventoryFetchFailed({ success: false, error: 'nope' })).toBe(true);
+    expect(partnerInventoryFetchFailed({ success: true, data: { items: [] } })).toBe(false);
+  });
+
+  it('maps KYC and payment method enums to English slugs', () => {
+    expect(mapKycStatus('KYCAID_VERIFIED')).toBe('verified');
+    expect(mapKycStatus('PENDING')).toBe('pending');
+    expect(mapKycStatus('KYCAID_REJECTED')).toBe('rejected');
+    expect(mapPaymentMethodType('WHITEPAY_CRYPTO')).toBe('crypto');
+    expect(mapPaymentMethodType('FLEXIFY_SEPA')).toBe('sepa');
+  });
+
+  it('maps provider errors to English partner messages', () => {
+    expect(toPartnerFacingProviderError('ITEMS_NOT_FOUND')).toMatch(/Steam inventory/i);
+    expect(toPartnerFacingProviderError('API_ERROR')).not.toMatch(/[éèàùôî]/);
+    expect(toPartnerFacingProviderError('CONFIG_ERROR')).toMatch(/not configured/i);
+  });
+
+  it('payout formatter uses payout id as payment_reference', () => {
+    const payload = formatPayoutForPartner({
+      id: 'payout-1',
+      status: 'PENDING',
+      amountCents: 120000,
+      tradeId: 'TRADE-1',
+      paymentMethod: { type: 'SEPA', isVerified: true },
+    });
+    expect(payload.payment_reference).toBe('payout-1');
+    expect(payload.payment_method.type).toBe('sepa');
+    expect(payload.status).toBe('pending');
   });
 
   it('toPartnerErrorCode keeps API_ERROR and maps unknown item errors', () => {
@@ -281,6 +340,9 @@ describe('partner-api webhook URL and payout guards', () => {
     expect(assertPublicHttpsWebhookUrl('https://192.168.1.10/hooks').ok).toBe(false);
     expect(assertPublicHttpsWebhookUrl('https://10.0.0.8/hooks').ok).toBe(false);
     expect(assertPublicHttpsWebhookUrl('https://user:pass@example.com/hooks').ok).toBe(false);
+    expect(assertPublicHttpsWebhookUrl('https://127.1/hooks').ok).toBe(false);
+    expect(assertPublicHttpsWebhookUrl('https://2130706433/hooks').ok).toBe(false);
+    expect(assertPublicHttpsWebhookUrl('https://[::1]/hooks').ok).toBe(false);
     expect(partnerWebhookConfigSchema.safeParse({ webhook_url: 'https://127.0.0.1/x' }).success).toBe(false);
   });
 
