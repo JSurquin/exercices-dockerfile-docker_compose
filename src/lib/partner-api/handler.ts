@@ -26,7 +26,7 @@ export async function withPartnerApi(
   } catch (err) {
     console.error(`[PartnerAPI] ${options.endpoint}`, err);
     const { partnerError } = await import('@/lib/partner-api/response');
-    const res = partnerError('INTERNAL_ERROR', 'Erreur interne du serveur', 500);
+    const res = partnerError('INTERNAL_ERROR', 'Internal server error', 500);
     await auth.logApiCall(500, auth.startMs);
     return res;
   }

@@ -19,7 +19,7 @@ export async function GET(
       });
 
       if (!trade) {
-        return partnerError('NOT_FOUND', 'Vente non trouvée', 404);
+        return partnerError('NOT_FOUND', 'Trade not found', 404);
       }
 
       return partnerSuccess(formatTradeForPartner(trade));

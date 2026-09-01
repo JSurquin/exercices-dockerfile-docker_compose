@@ -52,16 +52,16 @@ export async function createPartnerTrade(
 ): Promise<CreatePartnerTradeResult> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
-    return { ok: false, error: 'Utilisateur non trouvé', code: 'NOT_FOUND', status: 404 };
+    return { ok: false, error: 'User not found', code: 'NOT_FOUND', status: 404 };
   }
   if (user.accountFrozen) {
-    return { ok: false, error: 'Compte gelé', code: 'ACCOUNT_FROZEN', status: 403 };
+    return { ok: false, error: 'Account frozen', code: 'ACCOUNT_FROZEN', status: 403 };
   }
   if (!user.steamId) {
-    return { ok: false, error: 'Steam ID non lié au compte', code: 'VALIDATION_ERROR', status: 400 };
+    return { ok: false, error: 'Steam ID is not linked to this account', code: 'VALIDATION_ERROR', status: 400 };
   }
   if (!user.tradeLink) {
-    return { ok: false, error: 'Trade link non configuré sur le compte', code: 'VALIDATION_ERROR', status: 400 };
+    return { ok: false, error: 'Trade link is not configured on this account', code: 'VALIDATION_ERROR', status: 400 };
   }
 
   const steamId = user.steamId;
@@ -90,7 +90,7 @@ export async function createPartnerTrade(
   if (serverGrossCentimes < 100) {
     return {
       ok: false,
-      error: 'La valeur brute doit être d\'au moins 1,00 € (100 centimes)',
+      error: 'Gross value must be at least 1.00 EUR (100 cents)',
       code: 'VALIDATION_ERROR',
       status: 400,
     };
@@ -104,7 +104,7 @@ export async function createPartnerTrade(
   if (netCentsWithPromo <= 0) {
     return {
       ok: false,
-      error: 'La valeur nette après frais doit être positive',
+      error: 'Net value after fees must be positive',
       code: 'VALIDATION_ERROR',
       status: 400,
     };
@@ -118,7 +118,7 @@ export async function createPartnerTrade(
   if (tradesCountToday >= 10) {
     return {
       ok: false,
-      error: 'Limite de trades quotidienne atteinte (10 max)',
+      error: 'Daily trade limit reached (10 max)',
       code: 'RATE_LIMITED',
       status: 429,
     };
@@ -127,12 +127,12 @@ export async function createPartnerTrade(
   const privateKey = process.env.SKINPLACE_API_KEY_PRIVATE;
   const publicKey = process.env.SKINPLACE_API_KEY_PUBLIC;
   if (!privateKey || !publicKey) {
-    return { ok: false, error: 'Configuration API manquante', code: 'CONFIG_ERROR', status: 500 };
+    return { ok: false, error: 'Trade provider is not configured', code: 'CONFIG_ERROR', status: 500 };
   }
 
   const tradeUrlMatch = params.tradeUrl.match(/partner=(\d+)&token=([a-zA-Z0-9_-]+)/);
   if (!tradeUrlMatch) {
-    return { ok: false, error: 'URL de trade invalide', code: 'VALIDATION_ERROR', status: 400 };
+    return { ok: false, error: 'Invalid trade URL', code: 'VALIDATION_ERROR', status: 400 };
   }
   const tradeToken = tradeUrlMatch[2];
   const signature = generateSkinplaceSignature(steamId, privateKey);
@@ -163,9 +163,13 @@ export async function createPartnerTrade(
 
   if (!skinplaceResponse.ok) {
     const errorData = await skinplaceResponse.json().catch(() => ({}));
+    logger.warn('[PartnerTrade] Skinplace HTTP error', {
+      status: skinplaceResponse.status,
+      error: errorData,
+    });
     return {
       ok: false,
-      error: (errorData as { message?: string }).message || 'Erreur Skinplace',
+      error: 'Trade provider rejected the request',
       code: 'API_ERROR',
       status: skinplaceResponse.status >= 500 ? 502 : 400,
     };
@@ -173,9 +177,12 @@ export async function createPartnerTrade(
 
   const skinplaceData = await skinplaceResponse.json();
   if (skinplaceData.status !== 'success') {
+    logger.warn('[PartnerTrade] Skinplace business error', {
+      error: skinplaceData.error || skinplaceData.message,
+    });
     return {
       ok: false,
-      error: skinplaceData.error || skinplaceData.message || 'Erreur création trade',
+      error: 'Trade provider rejected the request',
       code: 'API_ERROR',
       status: 400,
     };
@@ -274,35 +281,50 @@ export async function estimatePartnerItems(
 ): Promise<
   | {
       ok: true;
-      gross_centimes: number;
-      frais: { cashout: number; réseau: number };
-      net_centimes: number;
-      items: Array<{ asset_id: string; market_hash_name: string; prix_centimes: number }>;
+      data: {
+        gross_cents: number;
+        fees: { cashout: number; network: number };
+        net_cents: number;
+        vip_bonus_cents: number;
+        items: Array<{ asset_id: string; market_hash_name: string; price_cents: number }>;
+      };
     }
-  | { ok: false; error: string; status: number }
+  | { ok: false; error: string; code: string; status: number }
 > {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { steamId: true } });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { steamId: true, bonusRatePercent: true },
+  });
   if (!user?.steamId) {
-    return { ok: false, error: 'Steam ID non lié', status: 400 };
+    return { ok: false, error: 'Steam ID is not linked to this account', code: 'VALIDATION_ERROR', status: 400 };
   }
 
   const verification = await verifyAndPriceItems(user.steamId, assetIds);
   if (!verification.ok) {
-    return { ok: false, error: verification.error, status: verification.code === 'ITEMS_NOT_FOUND' ? 400 : 502 };
+    return {
+      ok: false,
+      error: verification.error,
+      code: verification.code,
+      status: verification.code === 'ITEMS_NOT_FOUND' ? 400 : 502,
+    };
   }
 
   const gross = Array.from(verification.items.values()).reduce((s, i) => s + i.price_centimes, 0);
   const cashoutFeeRate = await getCashoutFeeRate();
   const ledger = computeTradeLedgerFromGross(gross, cashoutFeeRate);
+  const vipBonusCents = Math.round(gross * (user.bonusRatePercent ?? 0) / 100);
 
   return {
     ok: true,
-    gross_centimes: gross,
-    frais: { cashout: ledger.cashoutFees, réseau: ledger.networkFees },
-    net_centimes: ledger.netCents,
-    items: assetIds.map((id) => {
-      const v = verification.items.get(id)!;
-      return { asset_id: id, market_hash_name: v.market_hash_name, prix_centimes: v.price_centimes };
-    }),
+    data: {
+      gross_cents: gross,
+      fees: { cashout: ledger.cashoutFees, network: ledger.networkFees },
+      net_cents: ledger.netCents + vipBonusCents,
+      vip_bonus_cents: vipBonusCents,
+      items: assetIds.map((id) => {
+        const v = verification.items.get(id)!;
+        return { asset_id: id, market_hash_name: v.market_hash_name, price_cents: v.price_centimes };
+      }),
+    },
   };
 }

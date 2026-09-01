@@ -1,187 +1,199 @@
 export const PARTNER_API_BASE_URL = 'https://api.moonskin.gg';
 
-export const partnerCurlExamples = `# Authentification — toutes les routes partenaires
-# Header requis : Authorization: Bearer msk_live_...
+export const partnerApiConventionGuide = `All partner API responses follow a consistent English JSON convention:
+• HTTP status codes: 200, 201, 400, 401, 403, 404, 409, 429, 502, 500
+• Success envelope: { "success": true, "data": { ... } }
+• Error envelope: { "success": false, "error": { "code": "VALIDATION_ERROR", "message": "..." } }
+• Monetary amounts use *_cents fields (integers, never floats)
+• Status values use English snake_case (created, in_trade_hold, available, paid, failed, ...)
+• Error codes are uppercase English identifiers (UNAUTHORIZED, KYC_REQUIRED, RATE_LIMITED, ...)`;
 
-# Profil du compte lié
+export const partnerCurlExamples = `# Authentication — all partner routes
+# Required header: Authorization: Bearer msk_live_...
+
+# Linked account profile
 curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/me" \\
-  -H "Authorization: Bearer msk_live_VOTRE_CLE"
+  -H "Authorization: Bearer msk_live_YOUR_KEY"
 
-# Solde (centimes)
+# Balance (cents)
 curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/balance" \\
-  -H "Authorization: Bearer msk_live_VOTRE_CLE"
+  -H "Authorization: Bearer msk_live_YOUR_KEY"
 
-# Inventaire CS2
+# CS2 inventory
 curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/inventory" \\
-  -H "Authorization: Bearer msk_live_VOTRE_CLE"
+  -H "Authorization: Bearer msk_live_YOUR_KEY"
 
-# Estimation de prix
+# Price estimate
 curl -s -X POST "${PARTNER_API_BASE_URL}/api/v1/partner/estimate" \\
-  -H "Authorization: Bearer msk_live_VOTRE_CLE" \\
+  -H "Authorization: Bearer msk_live_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"asset_ids":["12345678901234567"]}'
 
-# Créer une vente (scope trade requis)
+# Create a trade (trade scope required)
 curl -s -X POST "${PARTNER_API_BASE_URL}/api/v1/partner/trades" \\
-  -H "Authorization: Bearer msk_live_VOTRE_CLE" \\
+  -H "Authorization: Bearer msk_live_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
     "items":[{"asset_id":"12345678901234567"}],
     "trade_url":"https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh"
   }'
 
-# Liste des ventes
+# List trades
 curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/trades?limit=20&offset=0" \\
-  -H "Authorization: Bearer msk_live_VOTRE_CLE"
+  -H "Authorization: Bearer msk_live_YOUR_KEY"
 
-# Détail d'une vente
+# Trade detail
 curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/trades/TRADE-123" \\
-  -H "Authorization: Bearer msk_live_VOTRE_CLE"
+  -H "Authorization: Bearer msk_live_YOUR_KEY"
 
-# Demander un retrait (scope payout + KYC validé)
+# Request a payout (payout scope + approved KYC)
 curl -s -X POST "${PARTNER_API_BASE_URL}/api/v1/partner/payouts" \\
-  -H "Authorization: Bearer msk_live_VOTRE_CLE" \\
+  -H "Authorization: Bearer msk_live_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"trade_id":"TRADE-123"}'
 
-# Configurer le webhook
+# Configure webhook
 curl -s -X PUT "${PARTNER_API_BASE_URL}/api/v1/partner/webhook" \\
-  -H "Authorization: Bearer msk_live_VOTRE_CLE" \\
+  -H "Authorization: Bearer msk_live_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"webhook_url":"https://votre-serveur.com/webhooks/moonskin"}'`;
+  -d '{"webhook_url":"https://your-server.com/webhooks/moonskin"}'`;
 
-export const partnerWebhookGuide = `MoonSkin envoie des notifications POST vers l'URL HTTPS configurée via PUT /api/v1/partner/webhook.
+export const partnerWebhookGuide = `MoonSkin sends POST notifications to the HTTPS URL configured via PUT /api/v1/partner/webhook.
 
-En-têtes HTTP :
+HTTP headers:
 • Content-Type: application/json
-• X-MoonSkin-Event-Id: identifiant unique de l'événement
-• X-MoonSkin-Signature: t=<timestamp_unix>,v1=<hmac_sha256_hex>
+• X-MoonSkin-Event-Id: unique event identifier
+• X-MoonSkin-Signature: t=<unix_timestamp>,v1=<hmac_sha256_hex>
 
-Corps JSON (exemple vente) :
+JSON body (trade example):
 {
   "event_id": "trade.status_changed:TRADE-123:...",
   "type": "trade.status_changed",
   "resource_id": "TRADE-123",
-  "statut": "en_trade_hold",
+  "status": "in_trade_hold",
   "timestamp": "2026-07-13T12:00:00.000Z",
-  "user_id": "cuid_utilisateur",
-  "brut_centimes": 125000,
-  "net_centimes": 120000,
-  "frais": { "cashout": 625, "réseau": 4375 },
-  "reference_paiement": "order-id-skinplace"
+  "user_id": "user_cuid",
+  "gross_cents": 125000,
+  "net_cents": 120000,
+  "fees": { "cashout": 625, "network": 4375 },
+  "payment_reference": "order-id-skinplace"
 }
 
-Types d'événements : trade.created, trade.status_changed, payout.created, payout.status_changed
+Event types: trade.created, trade.status_changed, payout.created, payout.status_changed
 
-Vérification de signature (Node.js) :
+Signature verification (Node.js):
 const crypto = require('crypto');
 const header = req.headers['x-moonskin-signature']; // t=123,v1=abc...
-const rawBody = req.rawBody; // corps brut non parsé
+const rawBody = req.rawBody; // raw unparsed body
 const match = header.match(/t=(\\d+),v1=([a-f0-9]+)/);
 const timestamp = parseInt(match[1], 10);
 const provided = match[2];
 const expected = crypto.createHmac('sha256', WEBHOOK_SECRET)
   .update(\`\${timestamp}.\${rawBody}\`)
   .digest('hex');
-if (expected !== provided) throw new Error('Signature invalide');
-// Rejeter si |now - timestamp| > 300 secondes
+if (expected.length !== provided.length ||
+    !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided))) {
+  throw new Error('Invalid signature');
+}
+// Reject if |now - timestamp| > 300 seconds
 
-Réponses attendues : HTTP 2xx pour confirmer la réception. En cas d'échec, MoonSkin retente jusqu'à 3 fois (1s, 5s, 15s).`;
+Expected responses: HTTP 2xx to acknowledge receipt. On failure, MoonSkin retries up to 3 times (1s, 5s, 15s).`;
 
 export const partnerEndpointDetails = [
   {
     method: 'GET',
     path: '/api/v1/partner/me',
     scope: 'read',
-    description: 'Profil du compte MoonSkin lié à la clé API.',
+    description: 'MoonSkin account linked to the API key.',
     response: '{ id, steam_id, steam_username, kyc_status, trade_link, account_frozen, ... }',
   },
   {
     method: 'GET',
     path: '/api/v1/partner/balance',
     scope: 'read',
-    description: 'Soldes en centimes (disponible, gelé, en attente).',
-    response: '{ balance_centimes, pending_centimes, frozen_centimes, available_centimes }',
+    description: 'Balances in cents (available, frozen, pending).',
+    response: '{ balance_cents, pending_cents, frozen_cents, available_cents }',
   },
   {
     method: 'GET',
     path: '/api/v1/partner/inventory',
     scope: 'read',
-    description: 'Inventaire CS2 du Steam ID lié.',
-    response: '{ items: [{ asset_id, market_hash_name, prix_centimes, ... }] }',
+    description: 'CS2 inventory for the linked Steam ID.',
+    response: '{ steam_id, items: [{ asset_id, market_hash_name, price_cents, ... }], total_items, total_value_cents }',
   },
   {
     method: 'POST',
     path: '/api/v1/partner/estimate',
     scope: 'read',
     body: '{ "asset_ids": ["..."] }',
-    description: 'Estimation brut, frais cashout (0,5 %), frais réseau et net.',
-    response: '{ gross_centimes, frais: { cashout, réseau }, net_centimes, items }',
+    description: 'Estimate gross, cashout fees (0.5 %), network fees, VIP bonus and net.',
+    response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, items }',
   },
   {
     method: 'POST',
     path: '/api/v1/partner/trades',
     scope: 'trade',
     body: '{ "items": [{ "asset_id": "..." }], "trade_url": "https://..." }',
-    description: 'Crée une vente. Le trade_url doit correspondre au compte Steam lié.',
-    response: '{ trade_id, ticket_id, statut, brut_centimes, net_centimes, disponible_le }',
+    description: 'Creates a sale. trade_url must match the linked Steam account.',
+    response: '{ id, trade_id, ticket_id, status, gross_cents, net_cents, available_at, payment_reference }',
   },
   {
     method: 'GET',
     path: '/api/v1/partner/trades',
     scope: 'read',
     query: '?limit=50&offset=0',
-    description: 'Liste paginée des ventes du compte.',
-    response: '{ trades: [...], pagination: { limit, offset, count } }',
+    description: 'Paginated list of the account trades.',
+    response: '{ trades: [...], pagination: { limit, offset, total } }',
   },
   {
     method: 'GET',
     path: '/api/v1/partner/trades/{id}',
     scope: 'read',
     description:
-      'Détail complet d\'une vente avec items. À utiliser en complément des webhooks (secours si notification manquée ou reconnexion).',
+      'Full trade detail including items. Use as a webhook fallback (missed notification or resync).',
     response:
-      '{ id, statut, brut_centimes, frais, net_centimes, disponible_le, reference_paiement, items, ... }',
+      '{ id, status, gross_cents, fees, net_cents, available_at, payment_reference, items, ... }',
   },
   {
     method: 'POST',
     path: '/api/v1/partner/payouts',
     scope: 'payout',
     body: '{ "trade_id": "TRADE-..." }',
-    description: 'Demande un retrait SEPA/crypto (KYC obligatoire, vente en statut disponible).',
-    response: '{ id, statut, amount_centimes, reference_paiement }',
+    description:
+      'Request a SEPA/crypto payout (KYC required, trade must be available, a payout method must already be configured).',
+    response: '{ id, status, amount_cents, payment_reference }',
   },
   {
     method: 'PUT',
     path: '/api/v1/partner/webhook',
     scope: 'read',
     body: '{ "webhook_url": "https://..." }',
-    description: 'Configure l\'URL de réception des webhooks (HTTPS obligatoire).',
+    description: 'Set the webhook receiver URL (public HTTPS only, private/local addresses rejected).',
     response: '{ webhook_url, message }',
   },
   {
     method: 'GET',
     path: '/api/v1/partner/webhook',
     scope: 'read',
-    description: 'Consulte la configuration webhook active.',
+    description: 'Read the active webhook configuration.',
     response: '{ webhook_url, signature_header, signature_format }',
   },
 ];
 
-export const partnerPollingGuide = `Flux recommandé pour suivre une vente :
-1. Configurer l'URL webhook (PUT /api/v1/partner/webhook)
-2. Créer la vente (POST /api/v1/partner/trades) — conserver le trade_id retourné
-3. Recevoir les notifications push à chaque changement de statut
-4. En complément ou secours : interroger GET /api/v1/partner/trades/{id} avec ce trade_id
+export const partnerPollingGuide = `Recommended flow to track a sale:
+1. Configure the webhook URL (PUT /api/v1/partner/webhook)
+2. Create the sale (POST /api/v1/partner/trades) — keep the returned id (also exposed as trade_id)
+3. Receive push notifications on every status change
+4. Fallback: poll GET /api/v1/partner/trades/{id} with that id
 
-Le polling est utile si un webhook n'a pas été reçu (timeout réseau, maintenance côté partenaire) ou pour resynchroniser un état au redémarrage de votre serveur.`;
+Polling is useful if a webhook was missed (network timeout, partner maintenance) or to resynchronize state after a restart.`;
 
-export const partnerScopesGuide = `Scopes disponibles par clé API :
-• read — consultation (profil, solde, inventaire, estimation, liste ventes, webhook)
-• trade — création de ventes (POST /trades)
-• payout — demandes de retrait (POST /payouts)
+export const partnerScopesGuide = `Available scopes per API key:
+• read — lookup (profile, balance, inventory, estimate, trade list/detail, webhook)
+• trade — create sales (POST /trades)
+• payout — request payouts (POST /payouts)
 
-Une clé « lecture seule » (scope read uniquement) ne peut pas créer de ventes ni de retraits. Réponse 403 si scope manquant.`;
+A read-only key (read scope only) cannot create sales or payouts. HTTP 403 if a required scope is missing.`;
 
 export const partnerResponseExamples = {
   me: `{
@@ -198,11 +210,12 @@ export const partnerResponseExamples = {
   estimate: `{
   "success": true,
   "data": {
-    "gross_centimes": 125000,
-    "frais": { "cashout": 625, "réseau": 4375 },
-    "net_centimes": 120000,
+    "gross_cents": 125000,
+    "fees": { "cashout": 625, "network": 4375 },
+    "net_cents": 121250,
+    "vip_bonus_cents": 1250,
     "items": [
-      { "asset_id": "123", "market_hash_name": "AK-47 | Redline (FT)", "prix_centimes": 125000 }
+      { "asset_id": "123", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 125000 }
     ]
   }
 }`,
@@ -210,19 +223,19 @@ export const partnerResponseExamples = {
   "event_id": "trade.status_changed:TRADE-123:1720872000000:clxabc",
   "type": "trade.status_changed",
   "resource_id": "TRADE-123",
-  "statut": "disponible",
+  "status": "available",
   "timestamp": "2026-07-13T12:00:00.000Z",
   "user_id": "clx123",
-  "brut_centimes": 125000,
-  "net_centimes": 120000,
-  "frais": { "cashout": 625, "réseau": 4375 },
-  "reference_paiement": "order-abc"
+  "gross_cents": 125000,
+  "net_cents": 120000,
+  "fees": { "cashout": 625, "network": 4375 },
+  "payment_reference": "order-abc"
 }`,
   error: `{
   "success": false,
   "error": {
     "code": "FORBIDDEN",
-    "message": "Scopes requis manquants: trade"
+    "message": "Missing required scopes: trade"
   }
 }`,
   tradeDetail: `{
@@ -230,16 +243,16 @@ export const partnerResponseExamples = {
   "data": {
     "id": "TRADE-123",
     "user_id": "clx123",
-    "statut": "en_trade_hold",
-    "brut_centimes": 125000,
-    "frais": { "cashout": 625, "réseau": 4375 },
-    "net_centimes": 120000,
+    "status": "in_trade_hold",
+    "gross_cents": 125000,
+    "fees": { "cashout": 625, "network": 4375 },
+    "net_cents": 120000,
     "ticket_id": "TICK-20250728-0001",
-    "reference_paiement": "TICK-20250728-0001",
-    "disponible_le": "2026-08-04T12:00:00.000Z",
+    "payment_reference": "TICK-20250728-0001",
+    "available_at": "2026-08-04T12:00:00.000Z",
     "created_at": "2026-07-28T12:00:00.000Z",
     "items": [
-      { "market_hash_name": "AK-47 | Redline (FT)", "prix_centimes": 125000 }
+      { "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 125000 }
     ]
   }
 }`,

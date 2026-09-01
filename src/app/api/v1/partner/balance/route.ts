@@ -19,16 +19,16 @@ export async function GET(request: NextRequest) {
       });
 
       if (!user) {
-        return partnerError('NOT_FOUND', 'Compte non trouvé', 404);
+        return partnerError('NOT_FOUND', 'Account not found', 404);
       }
 
       const available = user.balanceCents - user.frozenBalanceCents;
 
       return partnerSuccess({
-        balance_centimes: user.balanceCents,
-        pending_centimes: user.pendingBalanceCents,
-        frozen_centimes: user.frozenBalanceCents,
-        available_centimes: Math.max(0, available),
+        balance_cents: user.balanceCents,
+        pending_cents: user.pendingBalanceCents,
+        frozen_cents: user.frozenBalanceCents,
+        available_cents: Math.max(0, available),
         account_frozen: user.accountFrozen,
       });
     }

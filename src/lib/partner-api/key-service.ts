@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import type { ApiClient } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
 
@@ -27,8 +27,14 @@ export async function findApiClientByKey(rawKey: string): Promise<ApiClient | nu
   const keyPrefix = rawKey.slice(0, 16);
   const keyHash = hashApiKey(rawKey);
 
-  const client = await prisma.apiClient.findFirst({
-    where: { keyPrefix, keyHash, status: 'ACTIVE' },
+  const candidates = await prisma.apiClient.findMany({
+    where: { keyPrefix, status: 'ACTIVE' },
+  });
+
+  const expected = Buffer.from(keyHash, 'hex');
+  const client = candidates.find((candidate) => {
+    const stored = Buffer.from(candidate.keyHash, 'hex');
+    return stored.length === expected.length && timingSafeEqual(stored, expected);
   });
 
   if (!client) return null;

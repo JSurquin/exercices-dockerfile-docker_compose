@@ -7,7 +7,7 @@ export function validatePartnerTradeUrl(
 ): { ok: true } | { ok: false; error: string } {
   const urlSteamId = parseSteamId64FromUserInput(tradeUrl);
   if (!urlSteamId || urlSteamId !== userSteamId) {
-    return { ok: false, error: "L'URL de trade ne correspond pas au compte Steam lié" };
+    return { ok: false, error: 'Trade URL does not match the linked Steam account' };
   }
 
   const normalizedInput = normalizeSteamTradeLink(tradeUrl);
@@ -15,7 +15,7 @@ export function validatePartnerTradeUrl(
   if (!normalizedInput || !normalizedAccount || normalizedInput !== normalizedAccount) {
     return {
       ok: false,
-      error: "L'URL de trade doit correspondre au trade link enregistré sur le compte",
+      error: 'Trade URL must match the trade link saved on the account',
     };
   }
 

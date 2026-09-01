@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { skinplaceService, handleSkinplaceError } from '@/lib/skinplace';
 import { withPartnerApi } from '@/lib/partner-api/handler';
-import { partnerSuccess, partnerError } from '@/lib/partner-api/response';
+import { formatInventoryForPartner, partnerSuccess, partnerError } from '@/lib/partner-api/response';
 import { prisma } from '~/prisma/prisma';
 
 export async function GET(request: NextRequest) {
@@ -15,15 +15,15 @@ export async function GET(request: NextRequest) {
       });
 
       if (!user?.steamId) {
-        return partnerError('VALIDATION_ERROR', 'Steam ID non lié au compte', 400);
+        return partnerError('VALIDATION_ERROR', 'Steam ID is not linked to this account', 400);
       }
 
       try {
         const inventory = await skinplaceService.getInventory(user.steamId);
-        return partnerSuccess(inventory);
+        return partnerSuccess(formatInventoryForPartner(user.steamId, inventory));
       } catch (error) {
         const skinplaceError = handleSkinplaceError(error);
-        return partnerError('INTERNAL_ERROR', skinplaceError.error || 'Erreur inventaire', 502);
+        return partnerError('INTERNAL_ERROR', skinplaceError.error || 'Inventory fetch failed', 502);
       }
     }
   );

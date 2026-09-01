@@ -21,6 +21,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useLocale } from "@/components/providers/locale-provider";
 import {
+  partnerApiConventionGuide,
   partnerCurlExamples,
   partnerEndpointDetails,
   partnerPollingGuide,
@@ -545,6 +546,9 @@ export default function ApiDocsPage() {
                     </div>
                     <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-muted/50 rounded-lg p-4">
                       {partnerScopesGuide}
+                    </pre>
+                    <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-muted/50 rounded-lg p-4">
+                      {partnerApiConventionGuide}
                     </pre>
                   </CardContent>
                 </Card>

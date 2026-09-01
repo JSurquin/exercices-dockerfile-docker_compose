@@ -15,14 +15,13 @@ export async function GET(request: NextRequest) {
         acceptedTermsAt: true,
         tradeLink: true,
         userTag: true,
-        role: true,
         accountFrozen: true,
         createdAt: true,
       },
     });
 
     if (!user) {
-      return partnerError('NOT_FOUND', 'Compte non trouvé', 404);
+      return partnerError('NOT_FOUND', 'Account not found', 404);
     }
 
     return partnerSuccess({
@@ -33,7 +32,6 @@ export async function GET(request: NextRequest) {
       accepted_terms_at: user.acceptedTermsAt?.toISOString() ?? null,
       trade_link: user.tradeLink,
       user_tag: user.userTag,
-      role: user.role,
       account_frozen: user.accountFrozen,
       created_at: user.createdAt.toISOString(),
     });

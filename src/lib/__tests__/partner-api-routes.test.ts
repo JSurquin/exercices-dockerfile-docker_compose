@@ -3,7 +3,9 @@ import { NextRequest } from 'next/server';
 jest.mock('~/prisma/prisma', () => ({
   prisma: {
     user: { findUnique: jest.fn() },
-    trade: { findMany: jest.fn(), findFirst: jest.fn() },
+    trade: { findMany: jest.fn(), findFirst: jest.fn(), findUnique: jest.fn(), count: jest.fn() },
+    payout: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
+    paymentMethod: { findFirst: jest.fn() },
     apiClient: { findUnique: jest.fn(), update: jest.fn() },
   },
 }));
@@ -17,11 +19,32 @@ jest.mock('@/lib/partner-api/trade-service', () => ({
   estimatePartnerItems: jest.fn(),
 }));
 
+jest.mock('@/lib/kycaid', () => ({
+  canUserMakePayout: jest.fn(),
+}));
+
+jest.mock('@/lib/balance-service', () => ({
+  checkWithdrawalLimit: jest.fn(),
+}));
+
+jest.mock('@/lib/payout-lifecycle', () => ({
+  PayoutLifecycle: { onCreated: jest.fn() },
+}));
+
+jest.mock('@/lib/partner-api/webhook-service', () => ({
+  notifyPayoutStatusChange: jest.fn(),
+}));
+
 import { prisma } from '~/prisma/prisma';
 import { requireApiKey } from '@/lib/partner-api/auth';
+import { createPartnerTrade, estimatePartnerItems } from '@/lib/partner-api/trade-service';
+import { canUserMakePayout } from '@/lib/kycaid';
 import { GET as getMe } from '@/app/api/v1/partner/me/route';
-import { GET as getTrades } from '@/app/api/v1/partner/trades/route';
+import { GET as getTrades, POST as postTrades } from '@/app/api/v1/partner/trades/route';
 import { GET as getTradeById } from '@/app/api/v1/partner/trades/[id]/route';
+import { POST as postEstimate } from '@/app/api/v1/partner/estimate/route';
+import { POST as postPayouts } from '@/app/api/v1/partner/payouts/route';
+import { PUT as putWebhook } from '@/app/api/v1/partner/webhook/route';
 
 const mockedRequireApiKey = requireApiKey as jest.MockedFunction<typeof requireApiKey>;
 
@@ -33,7 +56,7 @@ function mockAuth(scopes: string[]) {
       const { partnerError } = await import('@/lib/partner-api/response');
       return {
         ok: false as const,
-        response: partnerError('FORBIDDEN', `Scopes requis manquants: ${missing.join(', ')}`, 403),
+        response: partnerError('FORBIDDEN', `Missing required scopes: ${missing.join(', ')}`, 403),
       };
     }
     return {
@@ -51,12 +74,29 @@ function mockAuth(scopes: string[]) {
   return logApiCall;
 }
 
+const sampleDbTrade = {
+  id: 'TRADE-1',
+  userId: 'user-1',
+  status: 'CREATED',
+  grossCents: 1000,
+  cashoutFees: 5,
+  networkFees: 0,
+  netCents: 995,
+  ticketId: 'T-1',
+  steamId: '76561198012345678',
+  tradeUrl: null,
+  tradeAcceptedAt: null,
+  availableAt: null,
+  createdAt: new Date('2026-07-28T09:00:00Z'),
+  items: [],
+};
+
 describe('partner API HTTP routes', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('GET /me returns profile for read scope', async () => {
+  it('GET /me returns profile without leaking role', async () => {
     mockAuth(['read']);
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: 'user-1',
@@ -66,7 +106,6 @@ describe('partner API HTTP routes', () => {
       acceptedTermsAt: new Date('2026-01-01'),
       tradeLink: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc',
       userTag: null,
-      role: 'USER',
       accountFrozen: false,
       createdAt: new Date('2025-01-01'),
     });
@@ -77,6 +116,7 @@ describe('partner API HTTP routes', () => {
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
     expect(body.data.steam_username).toBe('Player');
+    expect(body.data).not.toHaveProperty('role');
   });
 
   it('GET /me is blocked for trade-only scope', async () => {
@@ -90,51 +130,40 @@ describe('partner API HTTP routes', () => {
     expect(body.error.message).toContain('read');
   });
 
-  it('GET /trades lists trades for read scope', async () => {
+  it('GET /trades lists English statuses and returns total, not page length as count', async () => {
     mockAuth(['read']);
-    (prisma.trade.findMany as jest.Mock).mockResolvedValue([
-      {
-        id: 'TRADE-1',
-        userId: 'user-1',
-        status: 'CREATED',
-        grossCents: 1000,
-        cashoutFees: 5,
-        networkFees: 0,
-        netCents: 995,
-        ticketId: 'T-1',
-        steamId: '76561198012345678',
-        tradeUrl: null,
-        tradeAcceptedAt: null,
-        availableAt: null,
-        createdAt: new Date(),
-        items: [],
-      },
-    ]);
+    (prisma.trade.findMany as jest.Mock).mockResolvedValue([sampleDbTrade]);
+    (prisma.trade.count as jest.Mock).mockResolvedValue(42);
 
-    const response = await getTrades(new NextRequest('http://localhost/api/v1/partner/trades'));
+    const response = await getTrades(new NextRequest('http://localhost/api/v1/partner/trades?limit=1&offset=0'));
     const body = await response.json();
 
     expect(response.status).toBe(200);
     expect(body.data.trades).toHaveLength(1);
-    expect(body.data.trades[0].statut).toBe('créé');
+    expect(body.data.trades[0].status).toBe('created');
+    expect(body.data.trades[0]).not.toHaveProperty('statut');
+    expect(body.data.pagination).toEqual({ limit: 1, offset: 0, total: 42 });
   });
 
-  it('GET /trades/{id} returns trade detail for read scope', async () => {
+  it('GET /trades rejects non-integer pagination instead of querying with NaN', async () => {
+    mockAuth(['read']);
+
+    const response = await getTrades(new NextRequest('http://localhost/api/v1/partner/trades?limit=nope'));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(prisma.trade.findMany).not.toHaveBeenCalled();
+  });
+
+  it('GET /trades/{id} returns English trade detail with payment_reference', async () => {
     mockAuth(['read']);
     (prisma.trade.findFirst as jest.Mock).mockResolvedValue({
-      id: 'TRADE-1',
-      userId: 'user-1',
+      ...sampleDbTrade,
       status: 'IN_TRADE_HOLD',
-      grossCents: 1000,
-      cashoutFees: 5,
-      networkFees: 0,
-      netCents: 995,
       ticketId: 'TICK-1',
-      steamId: '76561198012345678',
-      tradeUrl: null,
       tradeAcceptedAt: new Date('2026-07-28T10:00:00Z'),
       availableAt: new Date('2026-08-04T10:00:00Z'),
-      createdAt: new Date('2026-07-28T09:00:00Z'),
       items: [
         {
           id: 'item-1',
@@ -157,9 +186,11 @@ describe('partner API HTTP routes', () => {
 
     expect(response.status).toBe(200);
     expect(body.data.id).toBe('TRADE-1');
-    expect(body.data.statut).toBe('en_trade_hold');
-    expect(body.data.reference_paiement).toBe('TICK-1');
-    expect(body.data.items).toHaveLength(1);
+    expect(body.data.status).toBe('in_trade_hold');
+    expect(body.data.payment_reference).toBe('TICK-1');
+    expect(body.data.gross_cents).toBe(1000);
+    expect(body.data.items[0].price_cents).toBe(1000);
+    expect(body.data).not.toHaveProperty('reference_paiement');
   });
 
   it('GET /trades/{id} returns 404 when trade is missing', async () => {
@@ -174,5 +205,159 @@ describe('partner API HTTP routes', () => {
 
     expect(response.status).toBe(404);
     expect(body.error.code).toBe('NOT_FOUND');
+  });
+
+  it('POST /trades maps provider status and keeps API_ERROR instead of VALIDATION_ERROR', async () => {
+    mockAuth(['read', 'trade']);
+    (createPartnerTrade as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      trade: {
+        id: 'TRADE-9',
+        ticketId: 'order-1',
+        status: 'CREATED',
+        grossCents: 2000,
+        netCents: 1990,
+        cashoutFees: 10,
+        networkFees: 0,
+        expiresAt: new Date('2026-08-04T00:00:00Z'),
+        availableAt: null,
+      },
+    });
+
+    const created = await postTrades(
+      new NextRequest('http://localhost/api/v1/partner/trades', {
+        method: 'POST',
+        body: JSON.stringify({
+          items: [{ asset_id: 'asset-1' }],
+          trade_url: 'https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh',
+        }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const createdBody = await created.json();
+
+    expect(created.status).toBe(201);
+    expect(createdBody.data.status).toBe('created');
+    expect(createdBody.data.gross_cents).toBe(2000);
+    expect(createdBody.data.id).toBe('TRADE-9');
+
+    (createPartnerTrade as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      error: 'Trade provider rejected the request',
+      code: 'API_ERROR',
+      status: 502,
+    });
+
+    const failed = await postTrades(
+      new NextRequest('http://localhost/api/v1/partner/trades', {
+        method: 'POST',
+        body: JSON.stringify({
+          items: [{ asset_id: 'asset-1' }],
+          trade_url: 'https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh',
+        }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const failedBody = await failed.json();
+    expect(failed.status).toBe(502);
+    expect(failedBody.error.code).toBe('API_ERROR');
+  });
+
+  it('POST /trades returns VALIDATION_ERROR envelope on invalid JSON', async () => {
+    mockAuth(['read', 'trade']);
+
+    const response = await postTrades(
+      new NextRequest('http://localhost/api/v1/partner/trades', {
+        method: 'POST',
+        body: '{not-json',
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.success).toBe(false);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(createPartnerTrade).not.toHaveBeenCalled();
+  });
+
+  it('POST /estimate does not leak the internal ok flag', async () => {
+    mockAuth(['read']);
+    (estimatePartnerItems as jest.Mock).mockResolvedValue({
+      ok: true,
+      data: {
+        gross_cents: 1000,
+        fees: { cashout: 5, network: 0 },
+        net_cents: 995,
+        vip_bonus_cents: 0,
+        items: [{ asset_id: '1', market_hash_name: 'AK', price_cents: 1000 }],
+      },
+    });
+
+    const response = await postEstimate(
+      new NextRequest('http://localhost/api/v1/partner/estimate', {
+        method: 'POST',
+        body: JSON.stringify({ asset_ids: ['1'] }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.gross_cents).toBe(1000);
+    expect(body.data).not.toHaveProperty('ok');
+    expect(body.data.fees.network).toBe(0);
+  });
+
+  it('POST /payouts refuses to create an empty SEPA method', async () => {
+    mockAuth(['payout']);
+    (prisma.trade.findUnique as jest.Mock).mockResolvedValue({
+      ...sampleDbTrade,
+      status: 'AVAILABLE',
+      user: { accountFrozen: false },
+    });
+    (prisma.payout.findFirst as jest.Mock).mockResolvedValue(null);
+    (canUserMakePayout as jest.Mock).mockResolvedValue({ allowed: true });
+    const { checkWithdrawalLimit } = jest.requireMock('@/lib/balance-service') as {
+      checkWithdrawalLimit: jest.Mock;
+    };
+    checkWithdrawalLimit.mockResolvedValue({ allowed: true });
+    (prisma.paymentMethod.findFirst as jest.Mock).mockResolvedValue({
+      id: 'pm-empty',
+      type: 'SEPA',
+      isVerified: false,
+      details: {},
+    });
+
+    const response = await postPayouts(
+      new NextRequest('http://localhost/api/v1/partner/payouts', {
+        method: 'POST',
+        body: JSON.stringify({ trade_id: 'TRADE-1' }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.message).toMatch(/payout method/i);
+    expect(prisma.payout.create).not.toHaveBeenCalled();
+  });
+
+  it('PUT /webhook rejects localhost URLs', async () => {
+    mockAuth(['read']);
+
+    const response = await putWebhook(
+      new NextRequest('http://localhost/api/v1/partner/webhook', {
+        method: 'PUT',
+        body: JSON.stringify({ webhook_url: 'https://127.0.0.1/hooks' }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(prisma.apiClient.update).not.toHaveBeenCalled();
   });
 });

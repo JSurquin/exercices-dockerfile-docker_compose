@@ -6,16 +6,58 @@ import {
   generateWebhookSecret,
 } from '@/lib/partner-api/key-service';
 import { verifyWebhookSignature } from '@/lib/partner-api/webhook-service';
-import { mapPayoutStatus, mapTradeStatus } from '@/lib/partner-api/response';
+import {
+  formatCreatedTradeForPartner,
+  formatInventoryForPartner,
+  formatTradeForPartner,
+  mapPayoutStatus,
+  mapTradeStatus,
+  toPartnerErrorCode,
+} from '@/lib/partner-api/response';
 import { validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 import { withPartnerApi } from '@/lib/partner-api/handler';
 import { requireApiKey } from '@/lib/partner-api/auth';
+import { partnerCreateTradeSchema, partnerEstimateSchema, partnerWebhookConfigSchema } from '@/lib/partner-api/schemas';
+import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/validation';
+import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
+import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
+import { partnerResponseExamples, partnerWebhookGuide } from '@/lib/partner-api/docs-content';
 
 jest.mock('@/lib/partner-api/auth', () => ({
   requireApiKey: jest.fn(),
 }));
 
 const mockedRequireApiKey = requireApiKey as jest.MockedFunction<typeof requireApiKey>;
+
+function sampleTrade() {
+  return {
+    id: 'TRADE-1',
+    userId: 'user-1',
+    status: 'CREATED',
+    grossCents: 125000,
+    cashoutFees: 625,
+    networkFees: 4375,
+    netCents: 120000,
+    ticketId: 'TICK-1',
+    steamId: '76561198012345678',
+    tradeUrl: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc',
+    tradeAcceptedAt: null,
+    availableAt: null,
+    createdAt: new Date('2026-07-28T12:00:00.000Z'),
+    items: [
+      {
+        id: 'item-1',
+        name: 'AK-47 | Redline',
+        marketHashName: 'AK-47 | Redline (Field-Tested)',
+        priceCents: 125000,
+        iconUrl: null,
+        exterior: 'Field-Tested',
+        statTrak: false,
+        rarity: 'Classified',
+      },
+    ],
+  };
+}
 
 describe('partner-api key-service', () => {
   it('hashApiKey is deterministic', () => {
@@ -69,21 +111,184 @@ describe('partner-api webhook signature', () => {
 
     expect(verifyWebhookSignature(secret, body, header, 300)).toBe(false);
   });
+
+  it('verifyWebhookSignature rejects malformed headers without throwing', () => {
+    expect(verifyWebhookSignature('secret', '{}', 'not-a-signature')).toBe(false);
+    expect(verifyWebhookSignature('secret', '{}', 't=abc,v1=ffff')).toBe(false);
+  });
 });
 
-describe('partner-api response', () => {
-  it('mapTradeStatus maps DB enums to French slugs', () => {
-    expect(mapTradeStatus('CREATED')).toBe('créé');
-    expect(mapTradeStatus('IN_TRADE_HOLD')).toBe('en_trade_hold');
-    expect(mapTradeStatus('PAID')).toBe('payé');
+describe('partner-api JSON contract', () => {
+  it('maps DB trade enums to English snake_case slugs', () => {
+    expect(mapTradeStatus('CREATED')).toBe('created');
+    expect(mapTradeStatus('ACCEPTED_BY_BOT')).toBe('accepted_by_bot');
+    expect(mapTradeStatus('IN_TRADE_HOLD')).toBe('in_trade_hold');
+    expect(mapTradeStatus('AVAILABLE')).toBe('available');
+    expect(mapTradeStatus('PAYOUT_PENDING')).toBe('payout_pending');
+    expect(mapTradeStatus('PAID')).toBe('paid');
   });
 
-  it('mapPayoutStatus maps DB enums to French slugs', () => {
-    expect(mapPayoutStatus('PENDING')).toBe('en_attente');
-    expect(mapPayoutStatus('VERIFICATION_REQUIRED')).toBe('vérification_requise');
-    expect(mapPayoutStatus('PAID')).toBe('payé');
-    expect(mapPayoutStatus('WHITEPAY_COMPLETE')).toBe('payé');
-    expect(mapPayoutStatus('FAILED')).toBe('échoué');
+  it('maps payout enums including provider-specific states', () => {
+    expect(mapPayoutStatus('PENDING')).toBe('pending');
+    expect(mapPayoutStatus('VERIFICATION_REQUIRED')).toBe('verification_required');
+    expect(mapPayoutStatus('PAID')).toBe('paid');
+    expect(mapPayoutStatus('WHITEPAY_COMPLETE')).toBe('paid');
+    expect(mapPayoutStatus('FAILED')).toBe('failed');
+  });
+
+  it('formatTradeForPartner uses English fields and never accented keys', () => {
+    const payload = formatTradeForPartner(sampleTrade());
+    const json = JSON.stringify(payload);
+
+    expect(payload.status).toBe('created');
+    expect(payload.gross_cents).toBe(125000);
+    expect(payload.net_cents).toBe(120000);
+    expect(payload.fees).toEqual({ cashout: 625, network: 4375 });
+    expect(payload.payment_reference).toBe('TICK-1');
+    expect(payload.items[0].price_cents).toBe(125000);
+    expect(json).not.toMatch(/statut|brut_centimes|net_centimes|prix_centimes|réseau|disponible_le|reference_paiement/);
+    expect(json).not.toMatch(/[éèàùôî]/);
+  });
+
+  it('public docs examples stay aligned with the English contract', () => {
+    const docs = `${partnerResponseExamples.estimate}${partnerResponseExamples.webhook}${partnerResponseExamples.tradeDetail}${partnerWebhookGuide}`;
+    expect(docs).toMatch(/"gross_cents"/);
+    expect(docs).toMatch(/"payment_reference"/);
+    expect(docs).not.toMatch(/brut_centimes|statut|reference_paiement|"réseau"/);
+  });
+
+  it('POST create payload maps raw Prisma status instead of leaking CREATED', () => {
+    const payload = formatCreatedTradeForPartner({
+      id: 'TRADE-1',
+      ticketId: 'TICK-1',
+      status: 'CREATED',
+      grossCents: 1000,
+      netCents: 995,
+      cashoutFees: 5,
+      networkFees: 0,
+      expiresAt: new Date('2026-08-04T12:00:00.000Z'),
+      availableAt: null,
+    });
+
+    expect(payload.status).toBe('created');
+    expect(payload.id).toBe('TRADE-1');
+    expect(payload.trade_id).toBe('TRADE-1');
+    expect(payload.gross_cents).toBe(1000);
+    expect(payload.fees.network).toBe(0);
+    expect(payload.payment_reference).toBe('TICK-1');
+  });
+
+  it('inventory formatter unwraps Skinplace envelope into the partner contract', () => {
+    const payload = formatInventoryForPartner('76561198012345678', {
+      data: {
+        items: [
+          {
+            id: 'asset-1',
+            market_hash_name: 'AK-47 | Redline (FT)',
+            price: 125000,
+            icon_url: null,
+            exterior: 'Field-Tested',
+            stat_trak: false,
+            rarity: 'Classified',
+          },
+        ],
+        total_items: 1,
+        total_value: 125000,
+      },
+    });
+
+    expect(payload).toEqual({
+      steam_id: '76561198012345678',
+      items: [
+        {
+          asset_id: 'asset-1',
+          market_hash_name: 'AK-47 | Redline (FT)',
+          price_cents: 125000,
+          icon_url: null,
+          exterior: 'Field-Tested',
+          stat_trak: false,
+          rarity: 'Classified',
+        },
+      ],
+      total_items: 1,
+      total_value_cents: 125000,
+    });
+    expect(payload).not.toHaveProperty('success');
+    expect(payload).not.toHaveProperty('data');
+  });
+
+  it('toPartnerErrorCode keeps API_ERROR and maps unknown item errors', () => {
+    expect(toPartnerErrorCode('API_ERROR')).toBe('API_ERROR');
+    expect(toPartnerErrorCode('ACCOUNT_FROZEN')).toBe('ACCOUNT_FROZEN');
+    expect(toPartnerErrorCode('ITEMS_NOT_FOUND')).toBe('VALIDATION_ERROR');
+    expect(toPartnerErrorCode('SOMETHING_ELSE')).toBe('VALIDATION_ERROR');
+  });
+});
+
+describe('partner-api pagination and validation envelope', () => {
+  it('defaults limit/offset and rejects NaN or negative values', async () => {
+    const defaults = parsePartnerPagination(new URLSearchParams());
+    expect(defaults).toEqual({ ok: true, data: { limit: 50, offset: 0 } });
+
+    const invalid = parsePartnerPagination(new URLSearchParams('limit=abc'));
+    expect(invalid.ok).toBe(false);
+    if (!invalid.ok) {
+      const body = await invalid.response.json();
+      expect(body.success).toBe(false);
+      expect(body.error.code).toBe('VALIDATION_ERROR');
+      expect(typeof body.error.message).toBe('string');
+    }
+
+    const negative = parsePartnerPagination(new URLSearchParams('offset=-1'));
+    expect(negative.ok).toBe(false);
+  });
+
+  it('Zod failures use the partner error envelope, not a flat string', async () => {
+    const parsed = safeParsePartnerJson({ items: [] }, partnerCreateTradeSchema);
+    expect(parsed.ok).toBe(false);
+    if (!parsed.ok) {
+      const body = await parsed.response.json();
+      expect(body).toEqual({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: expect.any(String),
+        },
+      });
+    }
+  });
+
+  it('rejects duplicate asset ids because they would double-count value', () => {
+    expect(
+      partnerEstimateSchema.safeParse({ asset_ids: ['1', '1'] }).success
+    ).toBe(false);
+    expect(
+      partnerCreateTradeSchema.safeParse({
+        items: [{ asset_id: '1' }, { asset_id: '1' }],
+        trade_url: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=AbCdEfGh',
+      }).success
+    ).toBe(false);
+  });
+});
+
+describe('partner-api webhook URL and payout guards', () => {
+  it('accepts a public HTTPS webhook and rejects SSRF targets', () => {
+    expect(assertPublicHttpsWebhookUrl('https://partner.example.com/hooks').ok).toBe(true);
+    expect(assertPublicHttpsWebhookUrl('http://partner.example.com/hooks').ok).toBe(false);
+    expect(assertPublicHttpsWebhookUrl('https://localhost/hooks').ok).toBe(false);
+    expect(assertPublicHttpsWebhookUrl('https://127.0.0.1/hooks').ok).toBe(false);
+    expect(assertPublicHttpsWebhookUrl('https://169.254.169.254/latest/meta-data').ok).toBe(false);
+    expect(assertPublicHttpsWebhookUrl('https://192.168.1.10/hooks').ok).toBe(false);
+    expect(assertPublicHttpsWebhookUrl('https://10.0.0.8/hooks').ok).toBe(false);
+    expect(assertPublicHttpsWebhookUrl('https://user:pass@example.com/hooks').ok).toBe(false);
+    expect(partnerWebhookConfigSchema.safeParse({ webhook_url: 'https://127.0.0.1/x' }).success).toBe(false);
+  });
+
+  it('refuses empty payment methods that would create unpaid SEPA stubs', () => {
+    expect(isUsablePartnerPaymentMethod(null)).toBe(false);
+    expect(isUsablePartnerPaymentMethod({ details: {} })).toBe(false);
+    expect(isUsablePartnerPaymentMethod({ details: [] })).toBe(false);
+    expect(isUsablePartnerPaymentMethod({ details: { iban: 'FR76' } })).toBe(true);
   });
 });
 
@@ -102,7 +307,7 @@ describe('partner-api trade URL validation', () => {
     const result = validatePartnerTradeUrl(wrongPartnerUrl, steamId, tradeLink);
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('Steam lié');
+      expect(result.error).toMatch(/Steam account/i);
     }
   });
 
@@ -111,7 +316,7 @@ describe('partner-api trade URL validation', () => {
     const result = validatePartnerTradeUrl(wrongTokenUrl, steamId, tradeLink);
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('trade link enregistré');
+      expect(result.error).toMatch(/trade link/i);
     }
   });
 });

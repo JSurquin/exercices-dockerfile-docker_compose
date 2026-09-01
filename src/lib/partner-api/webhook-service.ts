@@ -1,6 +1,7 @@
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { prisma } from '~/prisma/prisma';
-import { mapPayoutStatus, mapTradeStatus } from '@/lib/partner-api/response';
+import { formatFees, mapPayoutStatus, mapTradeStatus } from '@/lib/partner-api/response';
+import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { logger } from '@/lib/logger';
 
 const MAX_ATTEMPTS = 3;
@@ -16,13 +17,13 @@ export interface PartnerWebhookPayload {
   event_id: string;
   type: PartnerWebhookEventType;
   resource_id: string;
-  statut: string;
+  status: string;
   timestamp: string;
   user_id: string;
-  brut_centimes?: number;
-  net_centimes?: number;
-  frais?: { cashout: number; réseau: number };
-  reference_paiement?: string | null;
+  gross_cents?: number;
+  net_cents?: number;
+  fees?: { cashout: number; network: number };
+  payment_reference?: string | null;
 }
 
 function signPayload(secret: string, timestamp: number, body: string): string {
@@ -41,6 +42,11 @@ async function deliverWebhook(
   const signature = signPayload(secret, timestamp, body);
   const start = Date.now();
 
+  const urlCheck = assertPublicHttpsWebhookUrl(url);
+  if (!urlCheck.ok) {
+    return { success: false, error: urlCheck.error, durationMs: Date.now() - start };
+  }
+
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -51,6 +57,7 @@ async function deliverWebhook(
         'User-Agent': 'MoonSkin-Webhook/1.0',
       },
       body,
+      redirect: 'error',
       signal: AbortSignal.timeout(10000),
     });
 
@@ -205,11 +212,11 @@ export async function notifyTradeStatusChange(
   eventType: 'trade.created' | 'trade.status_changed' = 'trade.status_changed'
 ): Promise<void> {
   await enqueuePartnerWebhook(userId, eventType, trade.id, {
-    statut: mapTradeStatus(trade.status),
-    brut_centimes: trade.grossCents,
-    net_centimes: trade.netCents,
-    frais: { cashout: trade.cashoutFees, réseau: trade.networkFees },
-    reference_paiement: trade.ticketId,
+    status: mapTradeStatus(trade.status),
+    gross_cents: trade.grossCents,
+    net_cents: trade.netCents,
+    fees: formatFees(trade.cashoutFees, trade.networkFees),
+    payment_reference: trade.ticketId,
   });
 }
 
@@ -226,10 +233,10 @@ export async function notifyPayoutStatusChange(
     payout.status === 'PENDING' ? 'payout.created' : 'payout.status_changed';
 
   await enqueuePartnerWebhook(userId, eventType, payout.id, {
-    statut: mapPayoutStatus(payout.status),
-    brut_centimes: payout.amountCents,
-    net_centimes: payout.amountCents,
-    reference_paiement: payout.tradeId,
+    status: mapPayoutStatus(payout.status),
+    gross_cents: payout.amountCents,
+    net_cents: payout.amountCents,
+    payment_reference: payout.tradeId,
   });
 }
 
@@ -263,5 +270,10 @@ export function verifyWebhookSignature(
   const now = Math.floor(Date.now() / 1000);
   if (Math.abs(now - timestamp) > toleranceSec) return false;
   const expected = signPayload(secret, timestamp, rawBody);
-  return expected === provided;
+  if (expected.length !== provided.length) return false;
+  try {
+    return timingSafeEqual(Buffer.from(expected, 'utf8'), Buffer.from(provided, 'utf8'));
+  } catch {
+    return false;
+  }
 }

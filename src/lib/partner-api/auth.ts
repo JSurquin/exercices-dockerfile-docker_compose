@@ -60,7 +60,7 @@ export async function requireApiKey(
   if (!rawKey) {
     return {
       ok: false,
-      response: partnerError('UNAUTHORIZED', 'Clé API manquante ou invalide', 401),
+      response: partnerError('UNAUTHORIZED', 'Missing or invalid API key', 401),
     };
   }
 
@@ -68,7 +68,7 @@ export async function requireApiKey(
   if (!client) {
     return {
       ok: false,
-      response: partnerError('UNAUTHORIZED', 'Clé API invalide ou révoquée', 401),
+      response: partnerError('UNAUTHORIZED', 'Invalid or revoked API key', 401),
     };
   }
 
@@ -77,7 +77,7 @@ export async function requireApiKey(
     if (missing.length > 0) {
       return {
         ok: false,
-        response: partnerError('FORBIDDEN', `Scopes requis manquants: ${missing.join(', ')}`, 403),
+        response: partnerError('FORBIDDEN', `Missing required scopes: ${missing.join(', ')}`, 403),
       };
     }
   }
@@ -87,7 +87,7 @@ export async function requireApiKey(
   if (!rateCheck.allowed) {
     return {
       ok: false,
-      response: partnerError('RATE_LIMITED', 'Limite de requêtes atteinte', 429, {
+      response: partnerError('RATE_LIMITED', 'Rate limit exceeded', 429, {
         retry_after_seconds: Math.ceil((rateCheck.resetTime - Date.now()) / 1000),
       }),
     };

@@ -1,31 +1,41 @@
 import type { NextRequest } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { withPartnerApi } from '@/lib/partner-api/handler';
-import { partnerSuccess, partnerError, formatTradeForPartner } from '@/lib/partner-api/response';
+import {
+  partnerSuccess,
+  partnerError,
+  formatTradeForPartner,
+  formatCreatedTradeForPartner,
+  toPartnerErrorCode,
+} from '@/lib/partner-api/response';
 import { partnerCreateTradeSchema } from '@/lib/partner-api/schemas';
 import { createPartnerTrade } from '@/lib/partner-api/trade-service';
-import { safeParseJson } from '@/lib/validation/helpers';
+import { parsePartnerPagination, readPartnerJsonBody, safeParsePartnerJson } from '@/lib/partner-api/validation';
 
 export async function GET(request: NextRequest) {
   return withPartnerApi(
     request,
     { endpoint: '/api/v1/partner/trades', method: 'GET', scopes: ['read'] },
     async (req, ctx) => {
-      const { searchParams } = new URL(req.url);
-      const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 100);
-      const offset = parseInt(searchParams.get('offset') || '0', 10);
+      const pagination = parsePartnerPagination(new URL(req.url).searchParams);
+      if (!pagination.ok) return pagination.response;
+      const { limit, offset } = pagination.data;
 
-      const trades = await prisma.trade.findMany({
-        where: { userId: ctx.userId },
-        include: { items: true },
-        orderBy: { createdAt: 'desc' },
-        take: limit,
-        skip: offset,
-      });
+      const where = { userId: ctx.userId };
+      const [trades, total] = await Promise.all([
+        prisma.trade.findMany({
+          where,
+          include: { items: true },
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.trade.count({ where }),
+      ]);
 
       return partnerSuccess({
         trades: trades.map((t) => formatTradeForPartner(t)),
-        pagination: { limit, offset, count: trades.length },
+        pagination: { limit, offset, total },
       });
     }
   );
@@ -36,8 +46,10 @@ export async function POST(request: NextRequest) {
     request,
     { endpoint: '/api/v1/partner/trades', method: 'POST', scopes: ['trade'] },
     async (req, ctx) => {
-      const raw = await req.json();
-      const parsed = safeParseJson(raw, partnerCreateTradeSchema, { errorStyle: 'successFalse' });
+      const raw = await readPartnerJsonBody(req);
+      if (!raw.ok) return raw.response;
+
+      const parsed = safeParsePartnerJson(raw.data, partnerCreateTradeSchema);
       if (!parsed.ok) return parsed.response;
 
       const assetIds = parsed.data.items.map((i) => i.asset_id);
@@ -47,30 +59,10 @@ export async function POST(request: NextRequest) {
       });
 
       if (!result.ok) {
-        const code =
-          result.code === 'ACCOUNT_FROZEN'
-            ? 'ACCOUNT_FROZEN'
-            : result.code === 'RATE_LIMITED'
-              ? 'RATE_LIMITED'
-              : result.code === 'CONFIG_ERROR'
-                ? 'CONFIG_ERROR'
-                : 'VALIDATION_ERROR';
-        return partnerError(code as 'VALIDATION_ERROR', result.error, result.status);
+        return partnerError(toPartnerErrorCode(result.code), result.error, result.status);
       }
 
-      return partnerSuccess(
-        {
-          trade_id: result.trade.id,
-          ticket_id: result.trade.ticketId,
-          statut: result.trade.status,
-          brut_centimes: result.trade.grossCents,
-          net_centimes: result.trade.netCents,
-          frais: { cashout: result.trade.cashoutFees, réseau: result.trade.networkFees },
-          expires_at: result.trade.expiresAt?.toISOString() ?? null,
-          disponible_le: result.trade.availableAt?.toISOString() ?? null,
-        },
-        201
-      );
+      return partnerSuccess(formatCreatedTradeForPartner(result.trade), 201);
     }
   );
 }
