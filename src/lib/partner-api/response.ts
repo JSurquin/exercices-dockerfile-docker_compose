@@ -190,6 +190,7 @@ export function formatTradeForPartner(trade: {
 }) {
   return {
     id: trade.id,
+    trade_id: trade.id,
     user_id: trade.userId,
     status: mapTradeStatus(trade.status),
     gross_cents: trade.grossCents,

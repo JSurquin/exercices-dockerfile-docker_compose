@@ -208,6 +208,8 @@ describe('partner API HTTP routes', () => {
     expect(response.status).toBe(200);
     expect(body.data.trades).toHaveLength(1);
     expect(body.data.trades[0].status).toBe('created');
+    expect(body.data.trades[0].trade_id).toBe('TRADE-1');
+    expect(body.data.trades[0].id).toBe('TRADE-1');
     expect(body.data.trades[0]).not.toHaveProperty('statut');
     expect(body.data.pagination).toEqual({ limit: 1, offset: 0, total: 42 });
   });

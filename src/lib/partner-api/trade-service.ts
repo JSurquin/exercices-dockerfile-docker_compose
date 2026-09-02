@@ -8,7 +8,7 @@ import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 import { notifyAdminsNewTrade } from '@/lib/admin-notification-hooks';
 import { notifyTradeStatusChange } from '@/lib/partner-api/webhook-service';
 import { logger } from '@/lib/logger';
-import { validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
+import { getPartnerOperatingSteamId, validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 import { toPartnerFacingProviderError } from '@/lib/partner-api/response';
 import { assertPartnerAccountReady } from '@/lib/partner-api/account-guards';
 
@@ -70,10 +70,9 @@ export async function createPartnerTrade(
     };
   }
 
-  const steamId = user.steamId!;
   const accountTradeLink = user.tradeLink!;
 
-  const tradeUrlCheck = validatePartnerTradeUrl(params.tradeUrl, steamId, accountTradeLink);
+  const tradeUrlCheck = validatePartnerTradeUrl(params.tradeUrl, user.steamId ?? '', accountTradeLink);
   if (!tradeUrlCheck.ok) {
     return {
       ok: false,
@@ -82,6 +81,8 @@ export async function createPartnerTrade(
       status: 400,
     };
   }
+
+  const steamId = tradeUrlCheck.steamId;
 
   const verification = await verifyAndPriceItems(steamId, params.assetIds);
   if (!verification.ok) {
@@ -321,13 +322,14 @@ export async function estimatePartnerItems(
 > {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { steamId: true, bonusRatePercent: true },
+    select: { steamId: true, tradeLink: true, bonusRatePercent: true },
   });
-  if (!user?.steamId) {
+  const steamId = user ? getPartnerOperatingSteamId(user) : null;
+  if (!user || !steamId) {
     return { ok: false, error: 'Steam ID is not linked to this account', code: 'VALIDATION_ERROR', status: 400 };
   }
 
-  const verification = await verifyAndPriceItems(user.steamId, assetIds);
+  const verification = await verifyAndPriceItems(steamId, assetIds);
   if (!verification.ok) {
     return {
       ok: false,

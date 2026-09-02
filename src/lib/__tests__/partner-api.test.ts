@@ -20,14 +20,14 @@ import {
   toPartnerFacingProviderError,
   PARTNER_ERROR_CODE_LIST,
 } from '@/lib/partner-api/response';
-import { validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
+import { getPartnerOperatingSteamId, validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 import { withPartnerApi } from '@/lib/partner-api/handler';
 import { requireApiKey } from '@/lib/partner-api/auth';
 import { partnerCreateTradeSchema, partnerEstimateSchema, partnerWebhookConfigSchema } from '@/lib/partner-api/schemas';
 import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/validation';
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
-import { partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples } from '@/lib/partner-api/docs-content';
+import { PARTNER_API_BASE_URL, partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples } from '@/lib/partner-api/docs-content';
 import {
   assertPartnerAccountReady,
   assertPartnerTermsAccepted,
@@ -183,6 +183,7 @@ describe('partner-api JSON contract', () => {
     expect(payload.net_cents).toBe(120000);
     expect(payload.fees).toEqual({ cashout: 625, network: 4375 });
     expect(payload.payment_reference).toBe('TICK-1');
+    expect(payload.trade_id).toBe(payload.id);
     expect(payload.items[0].price_cents).toBe(125000);
     expect(json).not.toMatch(/statut|brut_centimes|net_centimes|prix_centimes|réseau|disponible_le|reference_paiement/);
     expect(json).not.toMatch(/[éèàùôî]/);
@@ -195,7 +196,10 @@ describe('partner-api JSON contract', () => {
     expect(docs).not.toMatch(/brut_centimes|statut|reference_paiement|"réseau"/);
     expect(partnerResponseExamples.webhook).toContain('trade.status_changed:TRADE-123:available:clxabc');
     expect(partnerWebhookGuide).toMatch(/deterministic/);
+    expect(PARTNER_API_BASE_URL).toBe('https://www.moonskin.eu');
+    expect(partnerCurlExamples).toContain('https://www.moonskin.eu/api/v1/partner/me');
     expect(partnerCurlExamples).toContain('/api/v1/partner/webhook');
+    expect(partnerCurlExamples).not.toMatch(/api\.moonskin/);
     expect(partnerCurlExamples).toMatch(/GET.*webhook|Read active webhook/i);
   });
 
@@ -432,8 +436,27 @@ describe('partner-api trade URL validation', () => {
   const token = 'AbCdEfGh';
   const tradeLink = `https://steamcommunity.com/tradeoffer/new/?partner=${partner}&token=${token}`;
 
+  it('prefers the trade-link Steam ID for inventory and sales', () => {
+    expect(
+      getPartnerOperatingSteamId({
+        steamId: '76561199040420116',
+        tradeLink,
+      })
+    ).toBe(steamId);
+    expect(getPartnerOperatingSteamId({ steamId, tradeLink: null })).toBe(steamId);
+  });
+
   it('accepts matching trade URL and account link', () => {
-    expect(validatePartnerTradeUrl(tradeLink, steamId, tradeLink)).toEqual({ ok: true });
+    expect(validatePartnerTradeUrl(tradeLink, steamId, tradeLink)).toEqual({
+      ok: true,
+      steamId,
+    });
+  });
+
+  it('accepts a saved trade link whose Steam ID differs from the login Steam ID', () => {
+    const loginSteamId = '76561199040420116';
+    const result = validatePartnerTradeUrl(tradeLink, loginSteamId, tradeLink);
+    expect(result).toEqual({ ok: true, steamId });
   });
 
   it('rejects trade URL with wrong Steam account', () => {
