@@ -294,12 +294,12 @@ La doc interactive côté site : `/api-docs`.
 | `UNAUTHORIZED` | 401 | Bearer manquant, clé copiée incomplète, clé régénérée / révoquée |
 | `FORBIDDEN` | 403 | Scope manquant, ou plafond de retrait |
 | `TERMS_REQUIRED` | 403 | CGV non acceptées |
-| `KYC_REQUIRED` | 403 | Payout sans KYC validé |
+| `KYC_REQUIRED` | 403 | Payout sans KYC validé. Peut inclure `requires_kyc: true`. |
 | `ACCOUNT_FROZEN` / `ACCOUNT_BANNED` | 403 | Compte gelé ou banni |
-| `VALIDATION_ERROR` | 400 | JSON, Trade Link, `asset_id`, ou trade pas encore `available` |
-| `RATE_LIMITED` | 429 | Plus de ~100 req/min (réglable 10–1000 par l’admin) |
+| `VALIDATION_ERROR` | 400 / 409 | JSON, Trade Link, `asset_id`, `price_cents` obsolète, ou trade pas encore `available` |
+| `RATE_LIMITED` | 429 | Plus de ~100 req/min (réglable 10–1000 par l’admin), ou 10 ventes/jour. Peut inclure `retry_after_seconds`. |
 | `NOT_FOUND` | 404 | Mauvais `trade_id` ou compte |
-| `API_ERROR` | 503 | Skinplace / inventaire amont. Peut inclure `provider_error`. Cloudflare masque les corps HTTP 502, d’où 503. |
+| `API_ERROR` | 503 | Prestataire de trade / inventaire amont. Peut inclure `provider_status` et `provider_error`. Cloudflare masque les corps HTTP 502, d’où 503. |
 
 Sans le switch développeur, `POST /api/user/developer/api-key` répond **403** « Accès réservé aux membres du programme développeur ».
 

@@ -12,12 +12,26 @@ import { resolvePartnerOperatingSteamId } from '@/lib/partner-api/trade-url-vali
 import { toPartnerFacingProviderError } from '@/lib/partner-api/response';
 import { assertPartnerAccountReady } from '@/lib/partner-api/account-guards';
 import { heapMb, partnerTrace } from '@/lib/partner-api/trace';
-import { partnerExtraFromSkinplaceProvider } from '@/lib/skinplace-instant-inventory';
+import {
+  partnerQuotedPriceMismatch,
+  type PartnerQuotedTradeItem,
+} from '@/lib/partner-api/quoted-price';
+import {
+  partnerExtraFromSkinplaceProvider,
+  skinplaceErrorFields,
+} from '@/lib/skinplace-instant-inventory';
+
+function secondsUntilNextLocalMidnight(from = new Date()): number {
+  const nextMidnight = new Date(from);
+  nextMidnight.setHours(0, 0, 0, 0);
+  nextMidnight.setDate(nextMidnight.getDate() + 1);
+  return Math.max(1, Math.ceil((nextMidnight.getTime() - from.getTime()) / 1000));
+}
 
 function verifierFailureToPartner(verification: {
   code: string;
   provider?: { status?: string; error_message?: string };
-}): { ok: false; error: string; code: string; status: number; extra?: Record<string, string> } {
+}): { ok: false; error: string; code: string; status: number; extra?: Record<string, unknown> } {
   const status =
     verification.code === 'ITEMS_NOT_FOUND' ? 400 : verification.code === 'CONFIG_ERROR' ? 500 : 503;
   return {
@@ -64,11 +78,15 @@ export type CreatePartnerTradeResult =
         vipBonusCents: number;
       };
     }
-  | { ok: false; error: string; code: string; status: number; extra?: Record<string, string> };
+  | { ok: false; error: string; code: string; status: number; extra?: Record<string, unknown> };
 
 export async function createPartnerTrade(
   userId: string,
-  params: { tradeUrl: string; assetIds: string[] }
+  params: {
+    tradeUrl: string;
+    items: PartnerQuotedTradeItem[];
+    priceCents?: number;
+  }
 ): Promise<CreatePartnerTradeResult> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
@@ -98,8 +116,9 @@ export async function createPartnerTrade(
   }
 
   const steamId = tradeUrlCheck.steamId;
+  const assetIds = params.items.map((item) => item.asset_id);
 
-  const verification = await verifyAndPriceItems(steamId, params.assetIds);
+  const verification = await verifyAndPriceItems(steamId, assetIds);
   if (!verification.ok) {
     partnerTrace('trades.skinplace.verify.fail', {
       code: verification.code,
@@ -113,6 +132,22 @@ export async function createPartnerTrade(
     (sum, item) => sum + item.price_centimes,
     0
   );
+
+  const quotedMismatch = partnerQuotedPriceMismatch(
+    params.items,
+    verification.items,
+    serverGrossCentimes,
+    params.priceCents
+  );
+  if (quotedMismatch) {
+    return {
+      ok: false,
+      error: quotedMismatch.error,
+      code: 'VALIDATION_ERROR',
+      status: 409,
+      extra: quotedMismatch.extra,
+    };
+  }
 
   if (serverGrossCentimes < 100) {
     return {
@@ -148,6 +183,7 @@ export async function createPartnerTrade(
       error: 'Daily trade limit reached (10 max)',
       code: 'RATE_LIMITED',
       status: 429,
+      extra: { retry_after_seconds: secondsUntilNextLocalMidnight() },
     };
   }
 
@@ -171,14 +207,14 @@ export async function createPartnerTrade(
     project: 'csgo',
     steamid: steamId,
     trade_token: tradeToken,
-    offers: params.assetIds,
+    offers: assetIds,
     ipn_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/skinplace/webhook`,
     order_id: orderId,
     send_offer_sync: 1,
   };
 
   const started = Date.now();
-  partnerTrace('trades.skinplace.post.start', { steamId, offerCount: params.assetIds.length, heapMb: heapMb() });
+  partnerTrace('trades.skinplace.post.start', { steamId, offerCount: assetIds.length, heapMb: heapMb() });
   const skinplaceResponse = await fetch('https://api.skin.place/api/v3/instant/inventory', {
     method: 'POST',
     headers: {
@@ -207,6 +243,7 @@ export async function createPartnerTrade(
       error: 'Trade provider rejected the request',
       code: 'API_ERROR',
       status: skinplaceResponse.status >= 500 ? 503 : 400,
+      extra: partnerExtraFromSkinplaceProvider(skinplaceErrorFields(errorData)),
     };
   }
 
@@ -220,6 +257,7 @@ export async function createPartnerTrade(
       error: 'Trade provider rejected the request',
       code: 'API_ERROR',
       status: 400,
+      extra: partnerExtraFromSkinplaceProvider(skinplaceErrorFields(skinplaceData)),
     };
   }
 
@@ -241,7 +279,7 @@ export async function createPartnerTrade(
       ? new Date()
       : undefined;
 
-  const itemsData = params.assetIds.map((assetId) => {
+  const itemsData = assetIds.map((assetId) => {
     const verified = verification.items.get(assetId)!;
     return {
       name: verified.market_hash_name,
@@ -341,7 +379,7 @@ export async function estimatePartnerItems(
         items: Array<{ asset_id: string; market_hash_name: string; price_cents: number }>;
       };
     }
-  | { ok: false; error: string; code: string; status: number; extra?: Record<string, string> }
+  | { ok: false; error: string; code: string; status: number; extra?: Record<string, unknown> }
 > {
   const user = await prisma.user.findUnique({
     where: { id: userId },

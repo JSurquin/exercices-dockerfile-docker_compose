@@ -54,7 +54,7 @@ export const partnerEndpointCatalog: PartnerEndpointCatalogItem[] = [
     path: '/api/v1/partner/trades',
     scope: 'trade',
     rateLimit: '100/min',
-    body: '{ "items": [{ "asset_id": "12345678901234567" }], "trade_url": "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh" }',
+    body: '{ "items": [{ "asset_id": "12345678901234567", "price_cents": 125000 }], "trade_url": "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh" }',
   },
   {
     id: 'listTrades',

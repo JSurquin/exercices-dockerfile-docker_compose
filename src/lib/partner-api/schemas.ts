@@ -21,13 +21,21 @@ export const partnerEstimateSchema = z.object({
   trade_url: partnerTradeUrlSchema.optional(),
 });
 
+const partnerPriceCentsSchema = z.number().int().nonnegative();
+
 export const partnerCreateTradeSchema = z.object({
   items: z
-    .array(z.object({ asset_id: z.string().min(1) }))
+    .array(
+      z.object({
+        asset_id: z.string().min(1),
+        price_cents: partnerPriceCentsSchema.optional(),
+      })
+    )
     .min(1)
     .max(50)
     .refine((items) => uniqueStrings(items.map((item) => item.asset_id)), 'Duplicate asset_id values are not allowed'),
   trade_url: partnerTradeUrlSchema,
+  price_cents: partnerPriceCentsSchema.optional(),
 });
 
 export const partnerPayoutSchema = z.object({

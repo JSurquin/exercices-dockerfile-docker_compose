@@ -72,7 +72,7 @@ const fr: PartnerDocsCopy = {
     'Configurer le webhook : PUT /api/v1/partner/webhook',
     'Inventaire : GET /api/v1/partner/inventory?trade_url=… (URL encodée). Même trade_url pour estimer puis vendre.',
     'Estimer : POST /api/v1/partner/estimate avec asset_ids et trade_url.',
-    'Créer la vente : POST /api/v1/partner/trades avec items et le même trade_url — conserver l’id renvoyé.',
+    'Créer la vente : POST /api/v1/partner/trades avec items (price_cents optionnel pour figer le devis) et le même trade_url — conserver l’id renvoyé.',
     'Recevoir un POST à chaque changement de statut (trade.* et payout.*).',
     'Secours : interroger GET /api/v1/partner/trades/{id} ou GET /api/v1/partner/payouts si un webhook a été manqué.',
   ],
@@ -96,13 +96,14 @@ const fr: PartnerDocsCopy = {
     FORBIDDEN: 'Scope manquant, ou règle métier (ex. plafond de retrait mensuel) (403).',
     NOT_FOUND: 'Compte, vente ou clé introuvable (404).',
     VALIDATION_ERROR:
-      'JSON invalide, champs manquants, Trade URL invalide, trade pas prêt pour le payout, ou solde insuffisant (400 / 409).',
+      'JSON invalide, champs manquants, Trade URL invalide, prix coté obsolète (price_cents), trade pas prêt pour le payout, ou solde insuffisant (400 / 409).',
     RATE_LIMITED: 'Quota dépassé, 100 req/min par défaut. Peut inclure retry_after_seconds (429).',
     KYC_REQUIRED: 'Retrait bloqué tant que le KYC n’est pas validé. Peut inclure requires_kyc: true (403).',
     TERMS_REQUIRED: 'CGU non acceptées sur le compte lié (403).',
     ACCOUNT_FROZEN: 'Compte MoonSkin gelé (403).',
     ACCOUNT_BANNED: 'Compte MoonSkin banni (403).',
-    API_ERROR: 'Le prestataire de trade (inventaire / création de vente) a échoué (503). Peut inclure provider_error.',
+    API_ERROR:
+      'Le prestataire de trade (inventaire / création de vente) a échoué (503). Peut inclure provider_status et provider_error.',
     CONFIG_ERROR: 'Problème de configuration serveur (500).',
     INTERNAL_ERROR: 'Erreur serveur inattendue (500).',
   },
@@ -132,7 +133,7 @@ const fr: PartnerDocsCopy = {
     },
     createTrade: {
       description:
-        'Crée une vraie vente Steam : le bot MoonSkin envoie une offre d’échange. trade_url (obligatoire) est le Trade Link du compte Steam visé, à la volée — pas besoin de l’enregistrer sur le site. Scope trade requis. Réponse HTTP 201. Minimum 100 centimes.',
+        'Crée une vraie vente Steam : le bot MoonSkin envoie une offre d’échange. trade_url (obligatoire) est le Trade Link du compte Steam visé, à la volée — pas besoin de l’enregistrer sur le site. Scope trade requis. Réponse HTTP 201. Minimum 100 centimes. price_cents optionnel (par item et/ou total, même unité que GET /inventory) pour refuser la vente si le prix a changé depuis le chargement de l’inventaire : VALIDATION_ERROR 409 avec expected_price_cents et actual_price_cents.',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },
@@ -198,7 +199,7 @@ const en: PartnerDocsCopy = {
     'Configure the webhook: PUT /api/v1/partner/webhook',
     'Inventory: GET /api/v1/partner/inventory?trade_url=… (URL-encoded). Reuse the same trade_url to estimate then sell.',
     'Estimate: POST /api/v1/partner/estimate with asset_ids and trade_url.',
-    'Create the sale: POST /api/v1/partner/trades with items and the same trade_url — keep the returned id.',
+    'Create the sale: POST /api/v1/partner/trades with items (optional price_cents to lock the quote) and the same trade_url — keep the returned id.',
     'Receive a POST on every status change (trade.* and payout.*).',
     'Fallback: poll GET /api/v1/partner/trades/{id} or GET /api/v1/partner/payouts if a webhook was missed.',
   ],
@@ -222,13 +223,14 @@ const en: PartnerDocsCopy = {
     FORBIDDEN: 'Missing required scope, or a business rule blocked the call (e.g. monthly withdrawal limit) (403).',
     NOT_FOUND: 'Account, trade or API key not found (404).',
     VALIDATION_ERROR:
-      'Invalid JSON, missing fields, invalid trade URL, trade not ready for payout, or insufficient balance (400 / 409).',
+      'Invalid JSON, missing fields, invalid trade URL, stale quoted price (price_cents), trade not ready for payout, or insufficient balance (400 / 409).',
     RATE_LIMITED: 'Quota exceeded, default 100 req/min. May include retry_after_seconds (429).',
     KYC_REQUIRED: 'Payout blocked until KYC is approved. May include requires_kyc: true (403).',
     TERMS_REQUIRED: 'Terms of service have not been accepted on the linked account (403).',
     ACCOUNT_FROZEN: 'Linked MoonSkin account is frozen (403).',
     ACCOUNT_BANNED: 'Linked MoonSkin account is banned (403).',
-    API_ERROR: 'Upstream trade provider failed (inventory or sale creation) (503). May include provider_error.',
+    API_ERROR:
+      'Upstream trade provider failed (inventory or sale creation) (503). May include provider_status and provider_error.',
     CONFIG_ERROR: 'Server-side configuration issue (500).',
     INTERNAL_ERROR: 'Unexpected server error (500).',
   },
@@ -258,7 +260,7 @@ const en: PartnerDocsCopy = {
     },
     createTrade: {
       description:
-        'Creates a real Steam sale: the MoonSkin bot sends a trade offer. Required trade_url is the target Steam Trade Link, passed per request — no need to save it in Settings. Requires trade scope. HTTP 201. Minimum 100 cents.',
+        'Creates a real Steam sale: the MoonSkin bot sends a trade offer. Required trade_url is the target Steam Trade Link, passed per request — no need to save it in Settings. Requires trade scope. HTTP 201. Minimum 100 cents. Optional price_cents (per item and/or total, same unit as GET /inventory) rejects the sale if the live price changed since inventory was loaded: VALIDATION_ERROR 409 with expected_price_cents and actual_price_cents.',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },
@@ -323,7 +325,7 @@ const cn: PartnerDocsCopy = {
     '配置 webhook：PUT /api/v1/partner/webhook',
     '库存：GET /api/v1/partner/inventory?trade_url=…（需 URL 编码）。估价和销售使用同一个 trade_url。',
     '估价：POST /api/v1/partner/estimate，传入 asset_ids 和 trade_url。',
-    '创建销售：POST /api/v1/partner/trades，传入 items 和同一个 trade_url — 保存返回的 id。',
+    '创建销售：POST /api/v1/partner/trades，传入 items（可选 price_cents 锁定报价）和同一个 trade_url — 保存返回的 id。',
     '每次状态变化会收到 POST（trade.* 与 payout.*）。',
     '备用：若漏收 webhook，轮询 GET /api/v1/partner/trades/{id} 或 GET /api/v1/partner/payouts。',
   ],
@@ -344,13 +346,14 @@ const cn: PartnerDocsCopy = {
     UNAUTHORIZED: '缺少、无效或已吊销的 API 密钥（401）。',
     FORBIDDEN: '缺少所需 scope，或业务规则拦截（例如月度提现限额）（403）。',
     NOT_FOUND: '找不到账户、销售或密钥（404）。',
-    VALIDATION_ERROR: 'JSON 无效、缺字段、Trade URL 无效、销售尚未可提现，或余额不足（400 / 409）。',
+    VALIDATION_ERROR:
+      'JSON 无效、缺字段、Trade URL 无效、报价已过期（price_cents）、销售尚未可提现，或余额不足（400 / 409）。',
     RATE_LIMITED: '超出配额，默认每分钟 100 次。可能包含 retry_after_seconds（429）。',
     KYC_REQUIRED: 'KYC 通过前无法提现。可能包含 requires_kyc: true（403）。',
     TERMS_REQUIRED: '关联账户尚未接受服务条款（403）。',
     ACCOUNT_FROZEN: '关联 MoonSkin 账户已冻结（403）。',
     ACCOUNT_BANNED: '关联 MoonSkin 账户已封禁（403）。',
-    API_ERROR: '上游交易服务失败（库存或创建销售）（503）。可能包含 provider_error。',
+    API_ERROR: '上游交易服务失败（库存或创建销售）（503）。可能包含 provider_status 和 provider_error。',
     CONFIG_ERROR: '服务器配置问题（500）。',
     INTERNAL_ERROR: '意外的服务器错误（500）。',
   },
@@ -380,7 +383,7 @@ const cn: PartnerDocsCopy = {
     },
     createTrade: {
       description:
-        '创建真实的 Steam 销售：MoonSkin 机器人会发送报价。必填 trade_url 是目标 Steam Trade Link，每次请求传入，无需先保存到网站。需要 trade scope。HTTP 201。最低 100 分。',
+        '创建真实的 Steam 销售：MoonSkin 机器人会发送报价。必填 trade_url 是目标 Steam Trade Link，每次请求传入，无需先保存到网站。需要 trade scope。HTTP 201。最低 100 分。可选 price_cents（按物品和/或总额，单位与 GET /inventory 相同）用于在库存加载后价格变动时拒绝销售：VALIDATION_ERROR 409，包含 expected_price_cents 和 actual_price_cents。',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },

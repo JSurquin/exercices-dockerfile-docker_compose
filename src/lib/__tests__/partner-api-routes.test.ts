@@ -378,6 +378,7 @@ describe('partner API HTTP routes', () => {
       error: 'Trade provider rejected the request',
       code: 'API_ERROR',
       status: 502,
+      extra: { provider_status: 'error', provider_error: 'need_auth' },
     });
 
     const failed = await postTrades(
@@ -393,6 +394,47 @@ describe('partner API HTTP routes', () => {
     const failedBody = await failed.json();
     expect(failed.status).toBe(502);
     expect(failedBody.error.code).toBe('API_ERROR');
+    expect(failedBody.error.provider_status).toBe('error');
+    expect(failedBody.error.provider_error).toBe('need_auth');
+  });
+
+  it('POST /trades forwards optional quoted price_cents for live validation', async () => {
+    mockAuth(['read', 'trade']);
+    (createPartnerTrade as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      error: 'Quoted item price no longer matches the live price',
+      code: 'VALIDATION_ERROR',
+      status: 409,
+      extra: {
+        asset_id: 'asset-1',
+        expected_price_cents: 2000,
+        actual_price_cents: 1900,
+      },
+    });
+
+    const tradeUrl = 'https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh';
+    const response = await postTrades(
+      new NextRequest('http://localhost/api/v1/partner/trades', {
+        method: 'POST',
+        body: JSON.stringify({
+          items: [{ asset_id: 'asset-1', price_cents: 2000 }],
+          trade_url: tradeUrl,
+          price_cents: 2000,
+        }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const body = await response.json();
+
+    expect(createPartnerTrade).toHaveBeenCalledWith('user-1', {
+      tradeUrl,
+      items: [{ asset_id: 'asset-1', price_cents: 2000 }],
+      priceCents: 2000,
+    });
+    expect(response.status).toBe(409);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.expected_price_cents).toBe(2000);
+    expect(body.error.actual_price_cents).toBe(1900);
   });
 
   it('POST /trades returns VALIDATION_ERROR envelope on invalid JSON', async () => {

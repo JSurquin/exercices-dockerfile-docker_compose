@@ -56,11 +56,17 @@ export async function POST(request: NextRequest) {
         const parsed = safeParsePartnerJson(raw.data, partnerCreateTradeSchema);
         if (!parsed.ok) return parsed.response;
 
-        const assetIds = parsed.data.items.map((i) => i.asset_id);
-        partnerTrace('trades.create.start', { userId: ctx.userId, assetCount: assetIds.length });
+        partnerTrace('trades.create.start', {
+          userId: ctx.userId,
+          assetCount: parsed.data.items.length,
+          hasQuotedPrices:
+            parsed.data.items.some((item) => item.price_cents !== undefined) ||
+            parsed.data.price_cents !== undefined,
+        });
         const result = await createPartnerTrade(ctx.userId, {
           tradeUrl: parsed.data.trade_url,
-          assetIds,
+          items: parsed.data.items,
+          priceCents: parsed.data.price_cents,
         });
 
         if (!result.ok) {

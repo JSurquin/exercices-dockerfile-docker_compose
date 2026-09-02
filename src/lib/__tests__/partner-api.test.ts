@@ -29,6 +29,7 @@ import { withPartnerApi } from '@/lib/partner-api/handler';
 import { requireApiKey } from '@/lib/partner-api/auth';
 import { partnerCreateApiClientSchema, partnerCreateTradeSchema, partnerEstimateSchema, partnerWebhookConfigSchema } from '@/lib/partner-api/schemas';
 import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/validation';
+import { partnerQuotedPriceMismatch } from '@/lib/partner-api/quoted-price';
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
 import { PARTNER_API_BASE_URL, PARTNER_API_SUPPORT_EMAIL, partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples, partnerEndpointCatalog, partnerPostmanCollection, partnerInsomniaExport, partnerBrunoEnvironment, buildPartnerEndpointBruno, buildPartnerEndpointPostman, buildPartnerEndpointInsomnia } from '@/lib/partner-api/docs-content';
@@ -294,6 +295,7 @@ describe('partner-api JSON contract', () => {
     expect(buildPartnerEndpointPostman(estimate!)).toContain('asset_ids');
     expect(buildPartnerEndpointInsomnia(me!)).toContain('__export_format');
     expect(partnerPostmanCollection).toContain('/api/v1/partner/trades');
+    expect(partnerPostmanCollection).toContain('price_cents');
     expect(partnerPostmanCollection).toContain('/api/v1/partner/payouts');
     expect(partnerEndpointCatalog.some((endpoint) => endpoint.id === 'listPayouts' && endpoint.method === 'GET')).toBe(
       true
@@ -334,6 +336,11 @@ describe('partner-api JSON contract', () => {
       expect(copy.endpoints.inventory.description).toMatch(/trade_url/i);
       expect(copy.endpoints.estimate.description).toMatch(/trade_url/i);
       expect(copy.endpoints.createTrade.description).toMatch(/trade_url/i);
+      expect(copy.endpoints.createTrade.description).toMatch(/price_cents/i);
+      expect(copy.errorCodes.VALIDATION_ERROR).toMatch(/price_cents/i);
+      expect(copy.errorCodes.API_ERROR).toMatch(/provider_status/);
+      expect(copy.errorCodes.KYC_REQUIRED).toMatch(/requires_kyc/);
+      expect(copy.errorCodes.RATE_LIMITED).toMatch(/retry_after_seconds/);
       expect(copy.endpoints.listPayouts.description).toMatch(/payout/i);
       expect(copy.endpoints.listPayouts.response).toMatch(/pagination/i);
       expect(copy.prerequisitesItems.join(' ')).toMatch(/KYC/i);
@@ -538,6 +545,36 @@ describe('partner-api pagination and validation envelope', () => {
     ).toBe(false);
   });
 
+  it('accepts optional quoted price_cents on POST /trades items and total', () => {
+    const tradeUrl = 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=AbCdEfGh';
+    expect(
+      partnerCreateTradeSchema.safeParse({
+        items: [{ asset_id: '1' }],
+        trade_url: tradeUrl,
+      }).success
+    ).toBe(true);
+    expect(
+      partnerCreateTradeSchema.safeParse({
+        items: [{ asset_id: '1', price_cents: 125000 }],
+        trade_url: tradeUrl,
+        price_cents: 125000,
+      }).success
+    ).toBe(true);
+    expect(
+      partnerCreateTradeSchema.safeParse({
+        items: [{ asset_id: '1', price_cents: 12.5 }],
+        trade_url: tradeUrl,
+      }).success
+    ).toBe(false);
+    expect(
+      partnerCreateTradeSchema.safeParse({
+        items: [{ asset_id: '1' }],
+        trade_url: tradeUrl,
+        price_cents: -1,
+      }).success
+    ).toBe(false);
+  });
+
   it('requires at least one explicit scope when creating an API client', () => {
     const base = { name: 'Acme', user_id: 'user-1' };
     expect(partnerCreateApiClientSchema.safeParse(base).success).toBe(false);
@@ -545,6 +582,41 @@ describe('partner-api pagination and validation envelope', () => {
     expect(
       partnerCreateApiClientSchema.safeParse({ ...base, scopes: ['read'] }).success
     ).toBe(true);
+  });
+});
+
+describe('partner quoted price lock', () => {
+  const live = new Map([['asset-1', { price_centimes: 125000 }]]);
+
+  it('skips validation when no quoted prices are sent', () => {
+    expect(partnerQuotedPriceMismatch([{ asset_id: 'asset-1' }], live, 125000)).toBeNull();
+  });
+
+  it('accepts matching per-item and total quotes', () => {
+    expect(
+      partnerQuotedPriceMismatch([{ asset_id: 'asset-1', price_cents: 125000 }], live, 125000, 125000)
+    ).toBeNull();
+  });
+
+  it('rejects a stale per-item quote with expected vs actual cents', () => {
+    expect(partnerQuotedPriceMismatch([{ asset_id: 'asset-1', price_cents: 120000 }], live, 125000)).toEqual({
+      error: 'Quoted item price no longer matches the live price',
+      extra: {
+        asset_id: 'asset-1',
+        expected_price_cents: 120000,
+        actual_price_cents: 125000,
+      },
+    });
+  });
+
+  it('rejects a stale total quote', () => {
+    expect(partnerQuotedPriceMismatch([{ asset_id: 'asset-1' }], live, 125000, 130000)).toEqual({
+      error: 'Quoted total price no longer matches the live price',
+      extra: {
+        expected_price_cents: 130000,
+        actual_price_cents: 125000,
+      },
+    });
   });
 });
 
