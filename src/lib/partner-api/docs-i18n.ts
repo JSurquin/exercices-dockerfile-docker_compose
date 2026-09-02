@@ -122,18 +122,18 @@ const fr: PartnerDocsCopy = {
     },
     inventory: {
       description:
-        'Skins CS2 rachetables (même source que la page Vendre). Passez ?trade_url= (URL encodée) pour viser un compte Steam sans passer par Paramètres ; sinon le Trade Link enregistré est utilisé. Les items lockés / non rachetables sont omis. Un tableau vide avec success: true signifie « rien à vendre », pas une erreur.',
+        'Skins CS2 rachetables (même source que la page Vendre). Passez ?trade_url= (URL encodée) pour viser un compte Steam sans passer par Paramètres ; sinon le Trade Link enregistré est utilisé. Les items lockés / non rachetables sont omis. Un tableau vide avec success: true signifie « rien à vendre », pas une erreur. Prix source en USD. ?currency=USD|EUR|CNY (défaut USD) convertit les price_cents à chaque requête — changer la devise change les cents.',
       response:
-        '{ steam_id, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
+        '{ steam_id, currency, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
     },
     estimate: {
       description:
-        'Estimation brut, bonus VIP et net. trade_url optionnel : même lien que pour l’inventaire / la vente. Les frais cashout/réseau de la vente sont 0 ; les frais plateforme s’appliquent au payout. 1 à 50 asset_id, sans doublon.',
-      response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, items }',
+        'Estimation brut, bonus VIP et net. trade_url optionnel : même lien que pour l’inventaire / la vente. currency optionnel (USD, EUR, CNY ; défaut USD), même unité que GET /inventory. Les frais cashout/réseau de la vente sont 0 ; les frais plateforme s’appliquent au payout. 1 à 50 asset_id, sans doublon.',
+      response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, currency, items }',
     },
     createTrade: {
       description:
-        'Crée une vraie vente Steam : le bot MoonSkin envoie une offre d’échange. trade_url (obligatoire) est le Trade Link du compte Steam visé, à la volée — pas besoin de l’enregistrer sur le site. Scope trade requis. Réponse HTTP 201. Minimum 100 centimes. price_cents optionnel (par item et/ou total, même unité que GET /inventory) pour refuser la vente si le prix a changé depuis le chargement de l’inventaire : VALIDATION_ERROR 409 avec expected_price_cents et actual_price_cents.',
+        'Crée une vraie vente Steam : le bot MoonSkin envoie une offre d’échange. trade_url (obligatoire) est le Trade Link du compte Steam visé, à la volée — pas besoin de l’enregistrer sur le site. Scope trade requis. Réponse HTTP 201. Minimum 100 centimes. price_cents optionnel (par item et/ou total) pour refuser la vente si le prix a changé depuis le chargement de l’inventaire : VALIDATION_ERROR 409 avec expected_price_cents et actual_price_cents. Passez currency (USD, EUR, CNY) si le devis vient de GET /inventory?currency=… — les montants renvoyés à la création restent en USD.',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },
@@ -249,18 +249,18 @@ const en: PartnerDocsCopy = {
     },
     inventory: {
       description:
-        'Sellable CS2 items (same source as the Sell page). Pass ?trade_url= (URL-encoded) to target a Steam account without using Settings; otherwise the saved Trade Link is used. Locked / unsellable items are omitted. An empty array with success: true means nothing is sellable, not an error.',
+        'Sellable CS2 items (same source as the Sell page). Pass ?trade_url= (URL-encoded) to target a Steam account without using Settings; otherwise the saved Trade Link is used. Locked / unsellable items are omitted. An empty array with success: true means nothing is sellable, not an error. Source prices are USD. ?currency=USD|EUR|CNY (default USD) converts price_cents on every request — changing currency changes the cents.',
       response:
-        '{ steam_id, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
+        '{ steam_id, currency, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
     },
     estimate: {
       description:
-        'Estimate gross, VIP bonus and net. Optional trade_url: same link as inventory / sale. Sale cashout/network fees are 0; platform fees apply at payout. 1–50 unique asset_ids.',
-      response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, items }',
+        'Estimate gross, VIP bonus and net. Optional trade_url: same link as inventory / sale. Optional currency (USD, EUR, CNY; default USD), same unit as GET /inventory. Sale cashout/network fees are 0; platform fees apply at payout. 1–50 unique asset_ids.',
+      response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, currency, items }',
     },
     createTrade: {
       description:
-        'Creates a real Steam sale: the MoonSkin bot sends a trade offer. Required trade_url is the target Steam Trade Link, passed per request — no need to save it in Settings. Requires trade scope. HTTP 201. Minimum 100 cents. Optional price_cents (per item and/or total, same unit as GET /inventory) rejects the sale if the live price changed since inventory was loaded: VALIDATION_ERROR 409 with expected_price_cents and actual_price_cents.',
+        'Creates a real Steam sale: the MoonSkin bot sends a trade offer. Required trade_url is the target Steam Trade Link, passed per request — no need to save it in Settings. Requires trade scope. HTTP 201. Minimum 100 cents. Optional price_cents (per item and/or total) rejects the sale if the live price changed since inventory was loaded: VALIDATION_ERROR 409 with expected_price_cents and actual_price_cents. Pass currency (USD, EUR, CNY) when the quote comes from GET /inventory?currency=… — created sale amounts stay in USD.',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },
@@ -372,18 +372,18 @@ const cn: PartnerDocsCopy = {
     },
     inventory: {
       description:
-        '可回购的 CS2 皮肤（与「出售」页同一数据源）。传入 ?trade_url=（需 URL 编码）可指定 Steam 账户，无需改设置；省略时使用已保存的 Trade Link。锁定/不可售物品会被省略。success: true 且空数组表示没有可售物品，不是错误。',
+        '可回购的 CS2 皮肤（与「出售」页同一数据源）。传入 ?trade_url=（需 URL 编码）可指定 Steam 账户，无需改设置；省略时使用已保存的 Trade Link。锁定/不可售物品会被省略。success: true 且空数组表示没有可售物品，不是错误。源价格为 USD。?currency=USD|EUR|CNY（默认 USD）会在每次请求转换 price_cents — 更换货币会改变分值。',
       response:
-        '{ steam_id, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
+        '{ steam_id, currency, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
     },
     estimate: {
       description:
-        '估算毛额、VIP 加成和净额。可选 trade_url：与库存/销售使用同一链接。销售的 cashout/网络费用为 0；平台费用在提现时收取。1–50 个不重复的 asset_id。',
-      response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, items }',
+        '估算毛额、VIP 加成和净额。可选 trade_url：与库存/销售使用同一链接。可选 currency（USD、EUR、CNY；默认 USD），单位与 GET /inventory 相同。销售的 cashout/网络费用为 0；平台费用在提现时收取。1–50 个不重复的 asset_id。',
+      response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, currency, items }',
     },
     createTrade: {
       description:
-        '创建真实的 Steam 销售：MoonSkin 机器人会发送报价。必填 trade_url 是目标 Steam Trade Link，每次请求传入，无需先保存到网站。需要 trade scope。HTTP 201。最低 100 分。可选 price_cents（按物品和/或总额，单位与 GET /inventory 相同）用于在库存加载后价格变动时拒绝销售：VALIDATION_ERROR 409，包含 expected_price_cents 和 actual_price_cents。',
+        '创建真实的 Steam 销售：MoonSkin 机器人会发送报价。必填 trade_url 是目标 Steam Trade Link，每次请求传入，无需先保存到网站。需要 trade scope。HTTP 201。最低 100 分。可选 price_cents（按物品和/或总额）用于在库存加载后价格变动时拒绝销售：VALIDATION_ERROR 409，包含 expected_price_cents 和 actual_price_cents。若报价来自 GET /inventory?currency=…，请传入相同的 currency（USD、EUR、CNY）— 创建销售返回的金额仍为 USD。',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },

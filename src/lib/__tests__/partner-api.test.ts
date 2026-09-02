@@ -30,6 +30,11 @@ import { requireApiKey } from '@/lib/partner-api/auth';
 import { partnerCreateApiClientSchema, partnerCreateTradeSchema, partnerEstimateSchema, partnerWebhookConfigSchema } from '@/lib/partner-api/schemas';
 import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/validation';
 import { partnerQuotedPriceMismatch } from '@/lib/partner-api/quoted-price';
+import {
+  applyUsdCentsToCurrency,
+  convertPartnerInventoryCurrency,
+  normalizePartnerCurrency,
+} from '@/lib/partner-api/currency';
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
 import { PARTNER_API_BASE_URL, PARTNER_API_SUPPORT_EMAIL, partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples, partnerEndpointCatalog, partnerPostmanCollection, partnerInsomniaExport, partnerBrunoEnvironment, buildPartnerEndpointBruno, buildPartnerEndpointPostman, buildPartnerEndpointInsomnia } from '@/lib/partner-api/docs-content';
@@ -334,7 +339,9 @@ describe('partner-api JSON contract', () => {
       }
       expect(copy.endpoints.createTrade.description.length).toBeGreaterThan(20);
       expect(copy.endpoints.inventory.description).toMatch(/trade_url/i);
+      expect(copy.endpoints.inventory.description).toMatch(/currency/i);
       expect(copy.endpoints.estimate.description).toMatch(/trade_url/i);
+      expect(copy.endpoints.estimate.description).toMatch(/currency/i);
       expect(copy.endpoints.createTrade.description).toMatch(/trade_url/i);
       expect(copy.endpoints.createTrade.description).toMatch(/price_cents/i);
       expect(copy.errorCodes.VALIDATION_ERROR).toMatch(/price_cents/i);
@@ -582,6 +589,30 @@ describe('partner-api pagination and validation envelope', () => {
     expect(
       partnerCreateApiClientSchema.safeParse({ ...base, scopes: ['read'] }).success
     ).toBe(true);
+  });
+});
+
+describe('partner inventory currency', () => {
+  it('defaults omitted currency to USD and rejects unknown codes', () => {
+    expect(normalizePartnerCurrency(undefined)).toBe('USD');
+    expect(normalizePartnerCurrency('')).toBe('USD');
+    expect(normalizePartnerCurrency('eur')).toBe('EUR');
+    expect(normalizePartnerCurrency('GBP')).toBeNull();
+  });
+
+  it('converts inventory cents with a single FX rate so currency is part of the quote', async () => {
+    expect(applyUsdCentsToCurrency(1250, 0.85)).toBe(1063);
+    const converted = await convertPartnerInventoryCurrency(
+      {
+        steam_id: '1',
+        items: [{ price_cents: 1250 }, { price_cents: 2000 }],
+        total_value_cents: 3250,
+      },
+      'USD'
+    );
+    expect(converted.currency).toBe('USD');
+    expect(converted.items[0].price_cents).toBe(1250);
+    expect(converted.total_value_cents).toBe(3250);
   });
 });
 

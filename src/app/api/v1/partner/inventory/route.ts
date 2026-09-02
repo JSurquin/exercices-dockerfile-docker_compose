@@ -7,7 +7,8 @@ import {
   mapSkinplaceInventoryFailure,
 } from '@/lib/skinplace-instant-inventory';
 import { resolvePartnerOperatingSteamId } from '@/lib/partner-api/trade-url-validation';
-import { parseOptionalPartnerTradeUrl } from '@/lib/partner-api/validation';
+import { parseOptionalPartnerTradeUrl, parsePartnerCurrencyParam } from '@/lib/partner-api/validation';
+import { convertPartnerInventoryCurrency } from '@/lib/partner-api/currency';
 import { partnerTrace, withPartnerTrace } from '@/lib/partner-api/trace';
 import { prisma } from '~/prisma/prisma';
 
@@ -17,8 +18,11 @@ export async function GET(request: NextRequest) {
       request,
       { endpoint: '/api/v1/partner/inventory', method: 'GET', scopes: ['read'] },
       async (req, ctx) => {
-        const tradeUrl = parseOptionalPartnerTradeUrl(new URL(req.url).searchParams);
+        const searchParams = new URL(req.url).searchParams;
+        const tradeUrl = parseOptionalPartnerTradeUrl(searchParams);
         if (!tradeUrl.ok) return tradeUrl.response;
+        const currency = parsePartnerCurrencyParam(searchParams);
+        if (!currency.ok) return currency.response;
 
         partnerTrace('inventory.user.lookup', { userId: ctx.userId, hasTradeUrl: Boolean(tradeUrl.data) });
         const user = await prisma.user.findUnique({
@@ -49,8 +53,13 @@ export async function GET(request: NextRequest) {
         partnerTrace('inventory.format', {
           raw: fetched.inventory.length,
           sellable: sellable.length,
+          currency: currency.data,
         });
-        return partnerSuccess(formatInventoryForPartner(resolved.steamId, { inventory: sellable }));
+        const inventory = await convertPartnerInventoryCurrency(
+          formatInventoryForPartner(resolved.steamId, { inventory: sellable }),
+          currency.data
+        );
+        return partnerSuccess(inventory);
       }
     )
   );

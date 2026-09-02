@@ -44,6 +44,16 @@ jest.mock('@/lib/skinplace-instant-inventory', () => {
   };
 });
 
+jest.mock('@/lib/currency-converter', () => ({
+  currencyConverter: {
+    getExchangeRate: jest.fn(async (from: string, to: string) => {
+      if (from === 'USD' && to === 'EUR') return 0.85;
+      if (from === 'USD' && to === 'CNY') return 7.25;
+      return 1;
+    }),
+  },
+}));
+
 import { prisma } from '~/prisma/prisma';
 import { requireApiKey } from '@/lib/partner-api/auth';
 import { createPartnerTrade, estimatePartnerItems } from '@/lib/partner-api/trade-service';
@@ -186,6 +196,55 @@ describe('partner API HTTP routes', () => {
         price_cents: 1250,
       }),
     ]);
+    expect(body.data.currency).toBe('USD');
+  });
+
+  it('GET /inventory converts cents when currency differs from the USD source', async () => {
+    mockAuth(['read']);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({ steamId: '76561198012345678' });
+    (fetchSkinplaceInstantInventory as jest.Mock).mockResolvedValue({
+      ok: true,
+      inventory: [
+        {
+          assetid: 'sellable-1',
+          market_hash_name: 'AK-47 | Redline (FT)',
+          price: 12.5,
+          icon_url: 'abc',
+          exterior: 'Field-Tested',
+          is_stattrak: 0,
+          is_souvenir: 0,
+          rarity: 'Classified',
+          untouchable: false,
+        },
+      ],
+    });
+
+    const eur = await getInventory(
+      new NextRequest('http://localhost/api/v1/partner/inventory?currency=EUR')
+    );
+    const eurBody = await eur.json();
+    expect(eur.status).toBe(200);
+    expect(eurBody.data.currency).toBe('EUR');
+    expect(eurBody.data.items[0].price_cents).toBe(1063);
+    expect(eurBody.data.total_value_cents).toBe(1063);
+
+    const usd = await getInventory(
+      new NextRequest('http://localhost/api/v1/partner/inventory?currency=usd')
+    );
+    const usdBody = await usd.json();
+    expect(usdBody.data.currency).toBe('USD');
+    expect(usdBody.data.items[0].price_cents).toBe(1250);
+  });
+
+  it('GET /inventory rejects an unsupported currency instead of reusing a previous quote', async () => {
+    mockAuth(['read']);
+    const response = await getInventory(
+      new NextRequest('http://localhost/api/v1/partner/inventory?currency=GBP')
+    );
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(fetchSkinplaceInstantInventory).not.toHaveBeenCalled();
   });
 
   it('GET /inventory uses trade_url Steam ID instead of the saved account', async () => {
@@ -430,6 +489,7 @@ describe('partner API HTTP routes', () => {
       tradeUrl,
       items: [{ asset_id: 'asset-1', price_cents: 2000 }],
       priceCents: 2000,
+      currency: undefined,
     });
     expect(response.status).toBe(409);
     expect(body.error.code).toBe('VALIDATION_ERROR');
@@ -506,7 +566,7 @@ describe('partner API HTTP routes', () => {
     );
 
     expect(response.status).toBe(200);
-    expect(estimatePartnerItems).toHaveBeenCalledWith('user-1', ['1'], tradeUrl);
+    expect(estimatePartnerItems).toHaveBeenCalledWith('user-1', ['1'], tradeUrl, 'USD');
   });
 
   it('GET /payouts lists English statuses and returns total, not page length as count', async () => {

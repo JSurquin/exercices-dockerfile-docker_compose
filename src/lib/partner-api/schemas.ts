@@ -1,5 +1,12 @@
 import { z } from 'zod';
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
+import { PARTNER_CURRENCIES } from '@/lib/partner-api/currency';
+
+export const partnerCurrencySchema = z
+  .string()
+  .trim()
+  .transform((value) => value.toUpperCase())
+  .pipe(z.enum(PARTNER_CURRENCIES));
 
 export const partnerTradeUrlSchema = z
   .string()
@@ -19,6 +26,7 @@ export const partnerEstimateSchema = z.object({
     .max(50)
     .refine(uniqueStrings, 'Duplicate asset_ids are not allowed'),
   trade_url: partnerTradeUrlSchema.optional(),
+  currency: partnerCurrencySchema.optional(),
 });
 
 const partnerPriceCentsSchema = z.number().int().nonnegative();
@@ -36,6 +44,7 @@ export const partnerCreateTradeSchema = z.object({
     .refine((items) => uniqueStrings(items.map((item) => item.asset_id)), 'Duplicate asset_id values are not allowed'),
   trade_url: partnerTradeUrlSchema,
   price_cents: partnerPriceCentsSchema.optional(),
+  currency: partnerCurrencySchema.optional(),
 });
 
 export const partnerPayoutSchema = z.object({

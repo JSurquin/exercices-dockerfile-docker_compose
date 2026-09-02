@@ -2,6 +2,7 @@ import type { NextRequest, NextResponse } from 'next/server';
 import type { ZodType } from 'zod';
 import { partnerError } from '@/lib/partner-api/response';
 import { partnerTradeUrlSchema } from '@/lib/partner-api/schemas';
+import { normalizePartnerCurrency, type PartnerCurrency } from '@/lib/partner-api/currency';
 
 export type PartnerParseResult<T> =
   | { ok: true; data: T }
@@ -74,4 +75,17 @@ export function parseOptionalPartnerTradeUrl(
     };
   }
   return { ok: true, data: parsed.data };
+}
+
+export function parsePartnerCurrencyParam(
+  searchParams: URLSearchParams
+): PartnerParseResult<PartnerCurrency> {
+  const parsed = normalizePartnerCurrency(searchParams.get('currency'));
+  if (!parsed) {
+    return {
+      ok: false,
+      response: partnerError('VALIDATION_ERROR', 'currency must be USD, EUR or CNY', 400),
+    };
+  }
+  return { ok: true, data: parsed };
 }

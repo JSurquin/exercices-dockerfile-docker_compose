@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
           tradeUrl: parsed.data.trade_url,
           items: parsed.data.items,
           priceCents: parsed.data.price_cents,
+          currency: parsed.data.currency,
         });
 
         if (!result.ok) {

@@ -17,6 +17,11 @@ import {
   type PartnerQuotedTradeItem,
 } from '@/lib/partner-api/quoted-price';
 import {
+  applyUsdCentsToCurrency,
+  getPartnerUsdFxRate,
+  type PartnerCurrency,
+} from '@/lib/partner-api/currency';
+import {
   partnerExtraFromSkinplaceProvider,
   skinplaceErrorFields,
 } from '@/lib/skinplace-instant-inventory';
@@ -86,6 +91,7 @@ export async function createPartnerTrade(
     tradeUrl: string;
     items: PartnerQuotedTradeItem[];
     priceCents?: number;
+    currency?: PartnerCurrency;
   }
 ): Promise<CreatePartnerTradeResult> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -133,10 +139,20 @@ export async function createPartnerTrade(
     0
   );
 
+  const quoteFxRate = await getPartnerUsdFxRate(params.currency ?? 'USD');
+  const quotedLiveItems =
+    quoteFxRate === 1
+      ? verification.items
+      : new Map(
+          Array.from(verification.items.entries()).map(([assetId, item]) => [
+            assetId,
+            { price_centimes: applyUsdCentsToCurrency(item.price_centimes, quoteFxRate) },
+          ])
+        );
   const quotedMismatch = partnerQuotedPriceMismatch(
     params.items,
-    verification.items,
-    serverGrossCentimes,
+    quotedLiveItems,
+    applyUsdCentsToCurrency(serverGrossCentimes, quoteFxRate),
     params.priceCents
   );
   if (quotedMismatch) {
@@ -367,7 +383,8 @@ export async function createPartnerTrade(
 export async function estimatePartnerItems(
   userId: string,
   assetIds: string[],
-  tradeUrl?: string
+  tradeUrl?: string,
+  currency: PartnerCurrency = 'USD'
 ): Promise<
   | {
       ok: true;
@@ -376,6 +393,7 @@ export async function estimatePartnerItems(
         fees: { cashout: number; network: number };
         net_cents: number;
         vip_bonus_cents: number;
+        currency: PartnerCurrency;
         items: Array<{ asset_id: string; market_hash_name: string; price_cents: number }>;
       };
     }
@@ -411,17 +429,26 @@ export async function estimatePartnerItems(
   const cashoutFeeRate = await getCashoutFeeRate();
   const ledger = computeTradeLedgerFromGross(gross, cashoutFeeRate);
   const vipBonusCents = Math.round(gross * (user.bonusRatePercent ?? 0) / 100);
+  const fxRate = await getPartnerUsdFxRate(currency);
 
   return {
     ok: true,
     data: {
-      gross_cents: gross,
-      fees: { cashout: ledger.cashoutFees, network: ledger.networkFees },
-      net_cents: ledger.netCents + vipBonusCents,
-      vip_bonus_cents: vipBonusCents,
+      gross_cents: applyUsdCentsToCurrency(gross, fxRate),
+      fees: {
+        cashout: applyUsdCentsToCurrency(ledger.cashoutFees, fxRate),
+        network: applyUsdCentsToCurrency(ledger.networkFees, fxRate),
+      },
+      net_cents: applyUsdCentsToCurrency(ledger.netCents + vipBonusCents, fxRate),
+      vip_bonus_cents: applyUsdCentsToCurrency(vipBonusCents, fxRate),
+      currency,
       items: assetIds.map((id) => {
         const v = verification.items.get(id)!;
-        return { asset_id: id, market_hash_name: v.market_hash_name, price_cents: v.price_centimes };
+        return {
+          asset_id: id,
+          market_hash_name: v.market_hash_name,
+          price_cents: applyUsdCentsToCurrency(v.price_centimes, fxRate),
+        };
       }),
     },
   };

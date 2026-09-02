@@ -39,14 +39,14 @@ export type PartnerEndpointCatalogItem = {
 export const partnerEndpointCatalog: PartnerEndpointCatalogItem[] = [
   { id: 'me', method: 'GET', path: '/api/v1/partner/me', scope: 'read', rateLimit: '100/min' },
   { id: 'balance', method: 'GET', path: '/api/v1/partner/balance', scope: 'read', rateLimit: '100/min' },
-  { id: 'inventory', method: 'GET', path: '/api/v1/partner/inventory', scope: 'read', rateLimit: '100/min', query: '?trade_url=https%3A%2F%2Fsteamcommunity.com%2Ftradeoffer%2Fnew%2F%3Fpartner%3D123456789%26token%3DAbCdEfGh' },
+  { id: 'inventory', method: 'GET', path: '/api/v1/partner/inventory', scope: 'read', rateLimit: '100/min', query: '?currency=EUR&trade_url=https%3A%2F%2Fsteamcommunity.com%2Ftradeoffer%2Fnew%2F%3Fpartner%3D123456789%26token%3DAbCdEfGh' },
   {
     id: 'estimate',
     method: 'POST',
     path: '/api/v1/partner/estimate',
     scope: 'read',
     rateLimit: '100/min',
-    body: '{ "asset_ids": ["12345678901234567"], "trade_url": "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh" }',
+    body: '{ "asset_ids": ["12345678901234567"], "trade_url": "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh", "currency": "EUR" }',
   },
   {
     id: 'createTrade',
@@ -54,7 +54,7 @@ export const partnerEndpointCatalog: PartnerEndpointCatalogItem[] = [
     path: '/api/v1/partner/trades',
     scope: 'trade',
     rateLimit: '100/min',
-    body: '{ "items": [{ "asset_id": "12345678901234567", "price_cents": 125000 }], "trade_url": "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh" }',
+    body: '{ "items": [{ "asset_id": "12345678901234567", "price_cents": 106250 }], "trade_url": "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh", "currency": "EUR" }',
   },
   {
     id: 'listTrades',
@@ -276,12 +276,13 @@ export const partnerResponseExamples = {
   estimate: `{
   "success": true,
   "data": {
-    "gross_cents": 125000,
+    "gross_cents": 106250,
     "fees": { "cashout": 0, "network": 0 },
-    "net_cents": 126250,
-    "vip_bonus_cents": 1250,
+    "net_cents": 107313,
+    "vip_bonus_cents": 1063,
+    "currency": "EUR",
     "items": [
-      { "asset_id": "123", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 125000 }
+      { "asset_id": "123", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 106250 }
     ]
   }
 }`,
@@ -350,11 +351,12 @@ export const partnerResponseExamples = {
   "success": true,
   "data": {
     "steam_id": "76561198012345678",
+    "currency": "EUR",
     "items": [
-      { "asset_id": "12345678901234567", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 125000, "icon_url": null, "exterior": "Field-Tested", "stat_trak": false, "rarity": "Classified" }
+      { "asset_id": "12345678901234567", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 106250, "icon_url": null, "exterior": "Field-Tested", "stat_trak": false, "rarity": "Classified" }
     ],
     "total_items": 1,
-    "total_value_cents": 125000
+    "total_value_cents": 106250
   }
 }`,
   createTrade: `{

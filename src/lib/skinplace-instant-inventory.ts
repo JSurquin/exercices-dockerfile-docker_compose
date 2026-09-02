@@ -194,6 +194,7 @@ async function fetchSkinplaceInstantInventoryOnce(
         'User-Agent': 'MoonSkin/1.0',
         Accept: 'application/json',
       },
+      cache: 'no-store',
       signal: AbortSignal.timeout(15000),
     });
 
