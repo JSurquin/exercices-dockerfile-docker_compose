@@ -47,6 +47,7 @@ export async function GET(
         bonusRatePercent: true,
         userTag: true,
         instantCreditEnabled: true,
+        developerProgramEnabled: true,
         affiliateRewardsBlocked: true,
         xpRewardsBlocked: true,
         referredByAffiliateId: true,

@@ -37,6 +37,7 @@ import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { PageLoading } from '@/components/ui/page-loading';
 import TradeLinkConfig from "@/components/settings/trade-link-config";
 import SteamIdConfig from "@/components/settings/steam-id-config";
+import DeveloperApiKeyConfig from "@/components/settings/developer-api-key-config";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -197,10 +198,11 @@ export default function SettingsPage() {
           transition={{ duration: 0.6, delay: 0.1 }}
         >
           <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 h-auto">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-2 h-auto">
               <TabsTrigger value="profile">{messages.settings.tabs.profile}</TabsTrigger>
               <TabsTrigger value="security">{messages.settings.tabs.security}</TabsTrigger>
               <TabsTrigger value="notifications">{messages.settings.tabs.notifications}</TabsTrigger>
+              <TabsTrigger value="developer">{messages.settings.tabs.developer}</TabsTrigger>
               <TabsTrigger value="preferences">{messages.settings.tabs.preferences}</TabsTrigger>
             </TabsList>
 
@@ -575,6 +577,11 @@ export default function SettingsPage() {
                   </Button>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Developer Tab */}
+            <TabsContent value="developer">
+              <DeveloperApiKeyConfig />
             </TabsContent>
 
             {/* Preferences Tab */}
