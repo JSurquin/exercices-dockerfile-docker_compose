@@ -61,6 +61,11 @@ export function partnerExtraFromSkinplaceProvider(provider?: {
   return Object.keys(extra).length ? extra : undefined;
 }
 
+export function isRetryableSkinplaceInventoryError(errorMessage?: string): boolean {
+  const msg = (errorMessage ?? '').toLowerCase().replace(/-/g, '_');
+  return msg === 'empty_inventory' || msg === 'parse_inventory' || msg === 'steam_down';
+}
+
 export function mapSkinplaceInventoryFailure(
   fetched: Extract<FetchSkinplaceInstantInventoryResult, { ok: false }>
 ): {
@@ -80,6 +85,14 @@ export function mapSkinplaceInventoryFailure(
       code: 'VALIDATION_ERROR',
       message: 'Steam inventory is private or inaccessible',
       httpStatus: 400,
+      extra,
+    };
+  }
+  if (msg === 'empty_inventory') {
+    return {
+      code: 'API_ERROR',
+      message: 'Trade provider could not load the Steam inventory',
+      httpStatus: 503,
       extra,
     };
   }
@@ -148,23 +161,52 @@ export async function fetchSkinplaceInstantInventory(
   params.append('signature', signature);
   params.append('project', 'csgo');
   params.append('public key', publicKey);
+  const url = `https://api.skin.place/api/v3/instant/inventory?${params.toString()}`;
 
   const started = Date.now();
   partnerTrace('skinplace.inventory.fetch.start', { steamId, heapMb: heapMb() });
+
+  const maxAttempts = 3;
+  let lastFail: Extract<FetchSkinplaceInstantInventoryResult, { ok: false }> | null = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const result = await fetchSkinplaceInstantInventoryOnce(url, started, attempt);
+    if (result.ok) return result;
+    lastFail = result;
+    if (!isRetryableSkinplaceInventoryError(result.provider?.error_message) || attempt === maxAttempts) {
+      break;
+    }
+    partnerTrace('skinplace.inventory.fetch.retry', {
+      attempt,
+      providerError: result.provider?.error_message,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 700 * attempt));
+  }
+
+  return lastFail ?? {
+    ok: false,
+    code: 'API_ERROR',
+    error: 'Unable to fetch inventory from the trade provider',
+  };
+}
+
+async function fetchSkinplaceInstantInventoryOnce(
+  url: string,
+  started: number,
+  attempt: number
+): Promise<FetchSkinplaceInstantInventoryResult> {
   try {
-    const response = await fetch(
-      `https://api.skin.place/api/v3/instant/inventory?${params.toString()}`,
-      {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'MoonSkin/1.0',
-          Accept: 'application/json',
-        },
-        signal: AbortSignal.timeout(15000),
-      }
-    );
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'MoonSkin/1.0',
+        Accept: 'application/json',
+      },
+      signal: AbortSignal.timeout(15000),
+    });
 
     partnerTrace('skinplace.inventory.fetch.headers', {
+      attempt,
       status: response.status,
       elapsedMs: Date.now() - started,
       contentType: response.headers.get('content-type'),
@@ -172,7 +214,7 @@ export async function fetchSkinplaceInstantInventory(
     });
 
     if (!response.ok) {
-      partnerTrace('skinplace.inventory.fetch.http-error', { status: response.status });
+      partnerTrace('skinplace.inventory.fetch.http-error', { attempt, status: response.status });
       return {
         ok: false,
         code: 'API_ERROR',
@@ -184,6 +226,7 @@ export async function fetchSkinplaceInstantInventory(
     const items = extractSkinplaceInventoryItems(payload);
     const provider = skinplaceErrorFields(payload);
     partnerTrace('skinplace.inventory.fetch.body', {
+      attempt,
       elapsedMs: Date.now() - started,
       itemCount: items?.length ?? -1,
       keys: jsonRootKeys(payload),
@@ -193,13 +236,11 @@ export async function fetchSkinplaceInstantInventory(
     });
     if (!items) {
       partnerTrace('skinplace.inventory.fetch.shape-mismatch', {
+        attempt,
         keys: jsonRootKeys(payload),
         providerStatus: provider.status,
         providerError: provider.error_message,
       });
-      if ((provider.error_message ?? '').toLowerCase().replace(/-/g, '_') === 'empty_inventory') {
-        return { ok: true, inventory: [] };
-      }
       return {
         ok: false,
         code: 'API_ERROR',
@@ -211,6 +252,7 @@ export async function fetchSkinplaceInstantInventory(
     return { ok: true, inventory: items };
   } catch (err) {
     partnerTrace('skinplace.inventory.fetch.throw', {
+      attempt,
       elapsedMs: Date.now() - started,
       error: err instanceof Error ? `${err.name}: ${err.message}` : String(err),
       heapMb: heapMb(),
