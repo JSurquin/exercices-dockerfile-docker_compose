@@ -39,7 +39,9 @@ import {
   partnerWebhookSignatureExamples,
 } from '@/lib/partner-api/docs-snippets';
 import { getPartnerDocsCopy } from '@/lib/partner-api/docs-i18n';
+import { highlightCode, type HighlightLanguage } from '@/lib/highlight-code';
 import { cn } from '@/lib/utils';
+import './code-highlight.css';
 
 const BASE_PATH = `${PARTNER_API_BASE_URL}/api/v1/partner`;
 
@@ -176,11 +178,13 @@ function CodePanel({
   copyLabel,
   copiedLabel,
   label,
+  language = 'plaintext',
 }: {
   code: string;
   copyLabel: string;
   copiedLabel: string;
   label?: string;
+  language?: HighlightLanguage;
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-zinc-950 text-zinc-100">
@@ -195,8 +199,11 @@ function CodePanel({
           className="text-zinc-300 hover:text-white hover:bg-white/10"
         />
       </div>
-      <pre className="overflow-x-auto p-4 text-[13px] leading-relaxed text-zinc-100">
-        <code>{code}</code>
+      <pre className="api-docs-code overflow-x-auto p-4 font-mono text-[13px] leading-relaxed">
+        <code
+          className={`language-${language}`}
+          dangerouslySetInnerHTML={{ __html: highlightCode(code, language) }}
+        />
       </pre>
     </div>
   );
@@ -288,31 +295,85 @@ function EndpointBlock({
           </TabsTrigger>
         </TabsList>
         <TabsContent value="javascript">
-          <CodePanel code={javascript} label="fetch" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel
+            code={javascript}
+            language="javascript"
+            label="fetch"
+            copyLabel={copyLabel}
+            copiedLabel={copiedLabel}
+          />
         </TabsContent>
         <TabsContent value="python">
-          <CodePanel code={python} label="requests" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel
+            code={python}
+            language="python"
+            label="requests"
+            copyLabel={copyLabel}
+            copiedLabel={copiedLabel}
+          />
         </TabsContent>
         <TabsContent value="php">
-          <CodePanel code={php} label="cURL" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel
+            code={php}
+            language="php"
+            label="cURL"
+            copyLabel={copyLabel}
+            copiedLabel={copiedLabel}
+          />
         </TabsContent>
         <TabsContent value="go">
-          <CodePanel code={go} label="net/http" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel
+            code={go}
+            language="go"
+            label="net/http"
+            copyLabel={copyLabel}
+            copiedLabel={copiedLabel}
+          />
         </TabsContent>
         <TabsContent value="curl">
-          <CodePanel code={curl} label="cURL" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel
+            code={curl}
+            language="bash"
+            label="cURL"
+            copyLabel={copyLabel}
+            copiedLabel={copiedLabel}
+          />
         </TabsContent>
         <TabsContent value="postman">
-          <CodePanel code={postman} label="Postman v2.1" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel
+            code={postman}
+            language="json"
+            label="Postman v2.1"
+            copyLabel={copyLabel}
+            copiedLabel={copiedLabel}
+          />
         </TabsContent>
         <TabsContent value="bruno">
-          <CodePanel code={bruno} label=".bru" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel
+            code={bruno}
+            language="bruno"
+            label=".bru"
+            copyLabel={copyLabel}
+            copiedLabel={copiedLabel}
+          />
         </TabsContent>
         <TabsContent value="insomnia">
-          <CodePanel code={insomnia} label="Insomnia v4" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel
+            code={insomnia}
+            language="json"
+            label="Insomnia v4"
+            copyLabel={copyLabel}
+            copiedLabel={copiedLabel}
+          />
         </TabsContent>
         <TabsContent value="response">
-          <CodePanel code={response} label="JSON" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel
+            code={response}
+            language="json"
+            label="JSON"
+            copyLabel={copyLabel}
+            copiedLabel={copiedLabel}
+          />
         </TabsContent>
       </Tabs>
     </article>
@@ -476,6 +537,7 @@ export default function ApiDocsPage() {
               <p className="text-[15px] leading-7 text-foreground max-w-2xl mb-4">{t.authDescription}</p>
               <CodePanel
                 code="Authorization: Bearer msk_live_YOUR_KEY"
+                language="http"
                 label="Header"
                 copyLabel={t.copy}
                 copiedLabel={t.copied}
@@ -505,6 +567,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="javascript">
                   <CodePanel
                     code={buildPartnerEndpointJavaScript(partnerEndpointCatalog[0])}
+                    language="javascript"
                     label="fetch — GET /me"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -513,6 +576,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="python">
                   <CodePanel
                     code={buildPartnerEndpointPython(partnerEndpointCatalog[0])}
+                    language="python"
                     label="requests — GET /me"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -521,6 +585,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="php">
                   <CodePanel
                     code={buildPartnerEndpointPhp(partnerEndpointCatalog[0])}
+                    language="php"
                     label="cURL — GET /me"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -529,6 +594,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="go">
                   <CodePanel
                     code={buildPartnerEndpointGo(partnerEndpointCatalog[0])}
+                    language="go"
                     label="net/http — GET /me"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -537,6 +603,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="curl">
                   <CodePanel
                     code={buildPartnerEndpointCurl(partnerEndpointCatalog[0])}
+                    language="bash"
                     label="cURL — GET /me"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -568,6 +635,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="postman">
                   <CodePanel
                     code={partnerPostmanCollection}
+                    language="json"
                     label="Collection v2.1"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -576,6 +644,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="bruno">
                   <CodePanel
                     code={partnerBrunoEnvironment}
+                    language="bruno"
                     label="environments/dev.bru"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -584,6 +653,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="insomnia">
                   <CodePanel
                     code={partnerInsomniaExport}
+                    language="json"
                     label="Export v4"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -641,6 +711,7 @@ export default function ApiDocsPage() {
               <p className="text-[15px] leading-7 text-foreground">{copy.webhookSecretHint}</p>
               <CodePanel
                 code={partnerResponseExamples.webhook}
+                language="json"
                 label="JSON"
                 copyLabel={t.copy}
                 copiedLabel={t.copied}
@@ -656,6 +727,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="node">
                   <CodePanel
                     code={partnerWebhookSignatureExamples.node}
+                    language="javascript"
                     label="Node.js"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -664,6 +736,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="python">
                   <CodePanel
                     code={partnerWebhookSignatureExamples.python}
+                    language="python"
                     label="Python"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -672,6 +745,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="php">
                   <CodePanel
                     code={partnerWebhookSignatureExamples.php}
+                    language="php"
                     label="PHP"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}
@@ -680,6 +754,7 @@ export default function ApiDocsPage() {
                 <TabsContent value="go">
                   <CodePanel
                     code={partnerWebhookSignatureExamples.go}
+                    language="go"
                     label="Go"
                     copyLabel={t.copy}
                     copiedLabel={t.copied}

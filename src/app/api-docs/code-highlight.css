@@ -1,0 +1,82 @@
+.api-docs-code {
+  tab-size: 2;
+  color: #e4e4e7;
+}
+
+.api-docs-code .hljs-comment,
+.api-docs-code .hljs-quote {
+  color: #71717a;
+  font-style: italic;
+}
+
+.api-docs-code .hljs-keyword,
+.api-docs-code .hljs-selector-tag,
+.api-docs-code .hljs-addition {
+  color: #c4b5fd;
+}
+
+.api-docs-code .hljs-string,
+.api-docs-code .hljs-regexp,
+.api-docs-code .hljs-symbol {
+  color: #86efac;
+}
+
+.api-docs-code .hljs-number,
+.api-docs-code .hljs-literal,
+.api-docs-code .hljs-bullet {
+  color: #fdba74;
+}
+
+.api-docs-code .hljs-title,
+.api-docs-code .hljs-title.function_,
+.api-docs-code .hljs-section {
+  color: #93c5fd;
+}
+
+.api-docs-code .hljs-built_in,
+.api-docs-code .hljs-class .hljs-title,
+.api-docs-code .hljs-title.class_ {
+  color: #5eead4;
+}
+
+.api-docs-code .hljs-attr,
+.api-docs-code .hljs-attribute,
+.api-docs-code .hljs-property,
+.api-docs-code .hljs-variable,
+.api-docs-code .hljs-template-variable {
+  color: #7eb3e8;
+}
+
+.api-docs-code .hljs-type,
+.api-docs-code .hljs-selector-class,
+.api-docs-code .hljs-selector-attr,
+.api-docs-code .hljs-selector-pseudo,
+.api-docs-code .hljs-function {
+  color: #67e8f9;
+}
+
+.api-docs-code .hljs-meta,
+.api-docs-code .hljs-meta .hljs-keyword,
+.api-docs-code .hljs-doctag {
+  color: #a1a1aa;
+}
+
+.api-docs-code .hljs-params {
+  color: #e4e4e7;
+}
+
+.api-docs-code .hljs-subst,
+.api-docs-code .hljs-operator,
+.api-docs-code .hljs-punctuation {
+  color: #d4d4d8;
+}
+
+.api-docs-code .hljs-deletion {
+  color: #fca5a5;
+}
+
+.api-docs-code .hljs-name,
+.api-docs-code .hljs-selector-id,
+.api-docs-code .hljs-tag {
+  color: #fda4af;
+}
