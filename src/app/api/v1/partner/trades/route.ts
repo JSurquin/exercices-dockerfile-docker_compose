@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
         if (!result.ok) {
           partnerTrace('trades.create.fail', { code: result.code, status: result.status });
-          return partnerError(toPartnerErrorCode(result.code), result.error, result.status);
+          return partnerError(toPartnerErrorCode(result.code), result.error, result.status, result.extra);
         }
 
         partnerTrace('trades.create.ok', { tradeId: result.trade.id });

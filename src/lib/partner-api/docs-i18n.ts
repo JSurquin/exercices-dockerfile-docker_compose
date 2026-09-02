@@ -49,7 +49,7 @@ const fr: PartnerDocsCopy = {
     'Montants en centimes entiers (*_cents), jamais de flottants.',
     'Statuts en snake_case anglais : created, accepted_by_bot, in_trade_hold, available, payout_pending, paid, failed, cancelled.',
     'Codes d’erreur en MAJUSCULES : UNAUTHORIZED, KYC_REQUIRED, RATE_LIMITED, …',
-    'HTTP : 200, 201 (création de vente), 400, 401, 403, 404, 409, 429, 502, 500.',
+    'HTTP : 200, 201 (création de vente), 400, 401, 403, 404, 409, 429, 503, 500.',
   ],
   scopesItems: [
     'read — profil, solde, inventaire, estimation, liste et détail des ventes, lecture du webhook.',
@@ -100,12 +100,13 @@ const fr: PartnerDocsCopy = {
     TERMS_REQUIRED: 'CGU non acceptées sur le compte lié (403).',
     ACCOUNT_FROZEN: 'Compte MoonSkin gelé (403).',
     ACCOUNT_BANNED: 'Compte MoonSkin banni (403).',
-    API_ERROR: 'Le prestataire de trade (inventaire / création de vente) a échoué (502).',
+    API_ERROR: 'Le prestataire de trade (inventaire / création de vente) a échoué (503). Peut inclure provider_error.',
     CONFIG_ERROR: 'Problème de configuration serveur (500).',
     INTERNAL_ERROR: 'Erreur serveur inattendue (500).',
   },
   errorEnvelope,
-  errorExtras: 'RATE_LIMITED peut inclure retry_after_seconds. KYC_REQUIRED peut inclure requires_kyc: true.',
+  errorExtras:
+    'RATE_LIMITED peut inclure retry_after_seconds. KYC_REQUIRED peut inclure requires_kyc: true. API_ERROR peut inclure provider_status et provider_error (code Skinplace).',
   endpoints: {
     me: {
       description: 'Compte MoonSkin lié à la clé : Steam, KYC, Trade Link, gel du compte.',
@@ -168,7 +169,7 @@ const en: PartnerDocsCopy = {
     'Amounts are integer cents (*_cents), never floats.',
     'Statuses use English snake_case: created, accepted_by_bot, in_trade_hold, available, payout_pending, paid, failed, cancelled.',
     'Error codes are uppercase: UNAUTHORIZED, KYC_REQUIRED, RATE_LIMITED, …',
-    'HTTP: 200, 201 (sale created), 400, 401, 403, 404, 409, 429, 502, 500.',
+    'HTTP: 200, 201 (sale created), 400, 401, 403, 404, 409, 429, 503, 500.',
   ],
   scopesItems: [
     'read — profile, balance, inventory, estimate, trade list/detail, GET webhook.',
@@ -219,12 +220,13 @@ const en: PartnerDocsCopy = {
     TERMS_REQUIRED: 'Terms of service have not been accepted on the linked account (403).',
     ACCOUNT_FROZEN: 'Linked MoonSkin account is frozen (403).',
     ACCOUNT_BANNED: 'Linked MoonSkin account is banned (403).',
-    API_ERROR: 'Upstream trade provider failed (inventory or sale creation) (502).',
+    API_ERROR: 'Upstream trade provider failed (inventory or sale creation) (503). May include provider_error.',
     CONFIG_ERROR: 'Server-side configuration issue (500).',
     INTERNAL_ERROR: 'Unexpected server error (500).',
   },
   errorEnvelope,
-  errorExtras: 'RATE_LIMITED may include retry_after_seconds. KYC_REQUIRED may include requires_kyc: true.',
+  errorExtras:
+    'RATE_LIMITED may include retry_after_seconds. KYC_REQUIRED may include requires_kyc: true. API_ERROR may include provider_status and provider_error (Skinplace code).',
   endpoints: {
     me: {
       description: 'MoonSkin account linked to the API key: Steam, KYC, Trade Link, freeze status.',
@@ -287,7 +289,7 @@ const cn: PartnerDocsCopy = {
     '金额为整数分 (*_cents)，禁止浮点数。',
     '状态使用英文 snake_case：created, accepted_by_bot, in_trade_hold, available, payout_pending, paid, failed, cancelled。',
     '错误码为大写：UNAUTHORIZED, KYC_REQUIRED, RATE_LIMITED, …',
-    'HTTP：200、201（创建销售）、400、401、403、404、409、429、502、500。',
+    'HTTP：200、201（创建销售）、400、401、403、404、409、429、503、500。',
   ],
   scopesItems: [
     'read — 资料、余额、库存、估价、销售列表/详情、读取 webhook。',
@@ -334,12 +336,13 @@ const cn: PartnerDocsCopy = {
     TERMS_REQUIRED: '关联账户尚未接受服务条款（403）。',
     ACCOUNT_FROZEN: '关联 MoonSkin 账户已冻结（403）。',
     ACCOUNT_BANNED: '关联 MoonSkin 账户已封禁（403）。',
-    API_ERROR: '上游交易服务失败（库存或创建销售）（502）。',
+    API_ERROR: '上游交易服务失败（库存或创建销售）（503）。可能包含 provider_error。',
     CONFIG_ERROR: '服务器配置问题（500）。',
     INTERNAL_ERROR: '意外的服务器错误（500）。',
   },
   errorEnvelope,
-  errorExtras: 'RATE_LIMITED 可能包含 retry_after_seconds。KYC_REQUIRED 可能包含 requires_kyc: true。',
+  errorExtras:
+    'RATE_LIMITED 可能包含 retry_after_seconds。KYC_REQUIRED 可能包含 requires_kyc: true。API_ERROR 可能包含 provider_status 和 provider_error（Skinplace 错误码）。',
   endpoints: {
     me: {
       description: '密钥绑定的 MoonSkin 账户：Steam、KYC、Trade Link、冻结状态。',

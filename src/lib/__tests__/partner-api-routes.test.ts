@@ -36,11 +36,13 @@ jest.mock('@/lib/partner-api/webhook-service', () => ({
   notifyTradeStatusChange: jest.fn(),
 }));
 
-jest.mock('@/lib/skinplace-instant-inventory', () => ({
-  fetchSkinplaceInstantInventory: jest.fn(),
-  isSkinplaceItemSellable: (item: { assetid?: string; untouchable?: boolean; skip_reason?: string }) =>
-    Boolean(item.assetid) && !item.untouchable && !item.skip_reason,
-}));
+jest.mock('@/lib/skinplace-instant-inventory', () => {
+  const actual = jest.requireActual('@/lib/skinplace-instant-inventory') as typeof import('@/lib/skinplace-instant-inventory');
+  return {
+    ...actual,
+    fetchSkinplaceInstantInventory: jest.fn(),
+  };
+});
 
 import { prisma } from '~/prisma/prisma';
 import { requireApiKey } from '@/lib/partner-api/auth';
@@ -184,6 +186,25 @@ describe('partner API HTTP routes', () => {
         price_cents: 1250,
       }),
     ]);
+  });
+
+  it('GET /inventory returns 503 JSON with provider_error instead of 502', async () => {
+    mockAuth(['read']);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({ steamId: '76561198012345678' });
+    (fetchSkinplaceInstantInventory as jest.Mock).mockResolvedValue({
+      ok: false,
+      code: 'API_ERROR',
+      error: 'Unable to fetch inventory from the trade provider',
+      provider: { status: 'error', error_message: 'need_auth' },
+    });
+
+    const response = await getInventory(new NextRequest('http://localhost/api/v1/partner/inventory'));
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body.error.code).toBe('API_ERROR');
+    expect(body.error.provider_error).toBe('need_auth');
+    expect(body.error.provider_status).toBe('error');
   });
 
   it('GET /me is blocked for trade-only scope', async () => {

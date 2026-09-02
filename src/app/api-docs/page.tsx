@@ -635,7 +635,7 @@ export default function ApiDocsPage() {
                       <span className="text-foreground">{t.statusCodesLabels.tooManyRequests}</span>
                     </li>
                     <li className="flex justify-between gap-4">
-                      <span className="font-mono">502</span>
+                      <span className="font-mono">503</span>
                       <span className="text-foreground">{t.statusCodesLabels.badGateway}</span>
                     </li>
                     <li className="flex justify-between gap-4">

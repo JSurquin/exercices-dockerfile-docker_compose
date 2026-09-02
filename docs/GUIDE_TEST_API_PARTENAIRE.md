@@ -277,7 +277,7 @@ La doc interactive côté site : `/api-docs`.
 | `VALIDATION_ERROR` | 400 | JSON, Trade Link, `asset_id`, ou trade pas encore `available` |
 | `RATE_LIMITED` | 429 | Plus de ~100 req/min (réglable 10–1000 par l’admin) |
 | `NOT_FOUND` | 404 | Mauvais `trade_id` ou compte |
-| `API_ERROR` | 502 | Skinplace / inventaire amont |
+| `API_ERROR` | 503 | Skinplace / inventaire amont. Peut inclure `provider_error`. Cloudflare masque les corps HTTP 502, d’où 503. |
 
 Sans le switch développeur, `POST /api/user/developer/api-key` répond **403** « Accès réservé aux membres du programme développeur ».
 

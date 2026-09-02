@@ -19,11 +19,77 @@ export type SkinplaceInstantInventoryItem = {
 
 export type FetchSkinplaceInstantInventoryResult =
   | { ok: true; inventory: SkinplaceInstantInventoryItem[] }
-  | { ok: false; code: 'CONFIG_ERROR' | 'API_ERROR'; error: string };
+  | {
+      ok: false;
+      code: 'CONFIG_ERROR' | 'API_ERROR';
+      error: string;
+      provider?: { status?: string; error_message?: string };
+    };
+
+function sanitizeProviderToken(value: string): string | undefined {
+  const token = value.replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 64);
+  return token || undefined;
+}
+
+export function skinplaceErrorFields(payload: unknown): { status?: string; error_message?: string } {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return {};
+  const root = payload as Record<string, unknown>;
+  const status = typeof root.status === 'string' ? sanitizeProviderToken(root.status) : undefined;
+  const raw =
+    typeof root.error_message === 'string'
+      ? root.error_message
+      : typeof root.error === 'string'
+        ? root.error
+        : undefined;
+  const error_message = raw ? sanitizeProviderToken(raw.slice(0, 120)) : undefined;
+  return { status, error_message };
+}
 
 function jsonRootKeys(payload: unknown): string[] | null {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null;
   return Object.keys(payload as object).slice(0, 24);
+}
+
+export function partnerExtraFromSkinplaceProvider(provider?: {
+  status?: string;
+  error_message?: string;
+}): Record<string, string> | undefined {
+  if (!provider) return undefined;
+  const extra: Record<string, string> = {};
+  if (provider.status) extra.provider_status = provider.status;
+  if (provider.error_message) extra.provider_error = provider.error_message;
+  return Object.keys(extra).length ? extra : undefined;
+}
+
+export function mapSkinplaceInventoryFailure(
+  fetched: Extract<FetchSkinplaceInstantInventoryResult, { ok: false }>
+): {
+  code: 'API_ERROR' | 'VALIDATION_ERROR' | 'CONFIG_ERROR';
+  message: string;
+  httpStatus: number;
+  extra?: Record<string, string>;
+} {
+  if (fetched.code === 'CONFIG_ERROR') {
+    return { code: 'CONFIG_ERROR', message: fetched.error, httpStatus: 500 };
+  }
+
+  const extra = partnerExtraFromSkinplaceProvider(fetched.provider);
+  const msg = (fetched.provider?.error_message ?? '').toLowerCase().replace(/-/g, '_');
+  if (msg === 'private_inventory') {
+    return {
+      code: 'VALIDATION_ERROR',
+      message: 'Steam inventory is private or inaccessible',
+      httpStatus: 400,
+      extra,
+    };
+  }
+
+  return {
+    code: 'API_ERROR',
+    message: fetched.error,
+    httpStatus: 503,
+    extra,
+  };
 }
 
 /** Skinplace sometimes wraps items in `inventory`, `data.inventory` or `data.items`. */
@@ -116,20 +182,29 @@ export async function fetchSkinplaceInstantInventory(
 
     const payload: unknown = await response.json();
     const items = extractSkinplaceInventoryItems(payload);
+    const provider = skinplaceErrorFields(payload);
     partnerTrace('skinplace.inventory.fetch.body', {
       elapsedMs: Date.now() - started,
       itemCount: items?.length ?? -1,
       keys: jsonRootKeys(payload),
+      providerStatus: provider.status,
+      providerError: provider.error_message,
       heapMb: heapMb(),
     });
     if (!items) {
       partnerTrace('skinplace.inventory.fetch.shape-mismatch', {
         keys: jsonRootKeys(payload),
+        providerStatus: provider.status,
+        providerError: provider.error_message,
       });
+      if ((provider.error_message ?? '').toLowerCase().replace(/-/g, '_') === 'empty_inventory') {
+        return { ok: true, inventory: [] };
+      }
       return {
         ok: false,
         code: 'API_ERROR',
         error: 'Unable to fetch inventory from the trade provider',
+        provider,
       };
     }
 

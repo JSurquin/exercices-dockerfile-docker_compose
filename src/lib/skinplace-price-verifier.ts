@@ -18,7 +18,12 @@ export interface VerifiedItem {
 
 type VerifyResult =
   | { ok: true; items: Map<string, VerifiedItem> }
-  | { ok: false; error: string; code: 'API_ERROR' | 'ITEMS_NOT_FOUND' | 'CONFIG_ERROR' };
+  | {
+      ok: false;
+      error: string;
+      code: 'API_ERROR' | 'ITEMS_NOT_FOUND' | 'CONFIG_ERROR';
+      provider?: { status?: string; error_message?: string };
+    };
 
 function toVerifiedItem(inv: SkinplaceInstantInventoryItem): VerifiedItem {
   const icon = inv.icon_url?.startsWith('http')
@@ -50,7 +55,11 @@ export async function verifyAndPriceItems(
   partnerTrace('price-verifier.start', { steamId, assetCount: assetIds.length });
   const fetched = await fetchSkinplaceInstantInventory(steamId);
   if (!fetched.ok) {
-    partnerTrace('price-verifier.fail', { code: fetched.code });
+    partnerTrace('price-verifier.fail', {
+      code: fetched.code,
+      providerStatus: fetched.provider?.status,
+      providerError: fetched.provider?.error_message,
+    });
     if (fetched.code === 'CONFIG_ERROR') {
       return { ok: false, error: 'Configuration API manquante', code: 'CONFIG_ERROR' };
     }
@@ -58,6 +67,7 @@ export async function verifyAndPriceItems(
       ok: false,
       error: 'Impossible de contacter notre API pour vérifier les prix',
       code: 'API_ERROR',
+      provider: fetched.provider,
     };
   }
 

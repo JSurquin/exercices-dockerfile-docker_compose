@@ -4,6 +4,7 @@ import { formatInventoryForPartner, partnerSuccess, partnerError } from '@/lib/p
 import {
   fetchSkinplaceInstantInventory,
   isSkinplaceItemSellable,
+  mapSkinplaceInventoryFailure,
 } from '@/lib/skinplace-instant-inventory';
 import { getPartnerOperatingSteamId } from '@/lib/partner-api/trade-url-validation';
 import { partnerTrace, withPartnerTrace } from '@/lib/partner-api/trace';
@@ -30,8 +31,14 @@ export async function GET(request: NextRequest) {
         partnerTrace('inventory.steam', { steamId });
         const fetched = await fetchSkinplaceInstantInventory(steamId);
         if (!fetched.ok) {
-          partnerTrace('inventory.skinplace.fail', { code: fetched.code });
-          return partnerError(fetched.code, fetched.error, 502);
+          const mapped = mapSkinplaceInventoryFailure(fetched);
+          partnerTrace('inventory.skinplace.fail', {
+            code: mapped.code,
+            status: mapped.httpStatus,
+            providerStatus: fetched.provider?.status,
+            providerError: fetched.provider?.error_message,
+          });
+          return partnerError(mapped.code, mapped.message, mapped.httpStatus, mapped.extra);
         }
 
         const sellable = fetched.inventory.filter(isSkinplaceItemSellable);
