@@ -44,6 +44,7 @@ import {
   partnerCallLabel,
   partnerEventLabel,
   partnerHttpResultLabel,
+  partnerScopeHelp,
   partnerScopeLabel,
   partnerStatusLabel,
   partnerStatusTone,
@@ -51,6 +52,7 @@ import {
 import type { Locale } from '@/lib/i18n';
 
 const ALL_SCOPES = ['read', 'trade', 'payout'] as const;
+const DEFAULT_SCOPES = [...ALL_SCOPES];
 
 interface ApiClientRow {
   id: string;
@@ -163,7 +165,7 @@ export default function AdminApiClientsPage() {
     name: '',
     user_id: '',
     rate_limit: '100',
-    scopes: ['read'] as string[],
+    scopes: DEFAULT_SCOPES,
   });
   const [rateLimitEdits, setRateLimitEdits] = useState<Record<string, string>>({});
   const [savingRateLimit, setSavingRateLimit] = useState<string | null>(null);
@@ -215,7 +217,7 @@ export default function AdminApiClientsPage() {
       const data = await res.json();
       if (res.ok) {
         setNewKey({ api_key: data.api_key, webhook_secret: data.webhook_secret });
-        setForm({ name: '', user_id: '', rate_limit: '100', scopes: ['read'] });
+        setForm({ name: '', user_id: '', rate_limit: '100', scopes: DEFAULT_SCOPES });
         await load();
       } else {
         toast({
@@ -345,26 +347,47 @@ export default function AdminApiClientsPage() {
             </div>
             <div>
               <Label>{t.scopesLabel}</Label>
-              <p className="text-xs text-muted-foreground mt-1 mb-2">{t.scopesHint}</p>
-              <div className="flex flex-wrap gap-3">
-                {ALL_SCOPES.map((scope) => (
-                  <label key={scope} className="flex items-center gap-2 text-sm">
-                    <Checkbox
-                      checked={form.scopes.includes(scope)}
-                      onCheckedChange={(checked) => {
-                        setForm((f) => ({
-                          ...f,
-                          scopes:
-                            checked === true
-                              ? [...f.scopes.filter((s) => s !== scope), scope]
-                              : f.scopes.filter((s) => s !== scope),
-                        }));
-                      }}
-                      disabled={creating}
-                    />
-                    {partnerScopeLabel(scope, locale)}
-                  </label>
-                ))}
+              <p className="text-xs text-muted-foreground mt-1 mb-3">{t.scopesHint}</p>
+              <div className="space-y-2">
+                {ALL_SCOPES.map((scope) => {
+                  const checked = form.scopes.includes(scope);
+                  const id = `partner-scope-${scope}`;
+                  return (
+                    <div
+                      key={scope}
+                      className={cn(
+                        'flex items-start gap-3 rounded-lg border p-3 transition-colors',
+                        checked
+                          ? 'border-theme-accent/30 bg-theme-accent/8'
+                          : 'border-border/50 bg-background/20'
+                      )}
+                    >
+                      <Checkbox
+                        id={id}
+                        className="mt-0.5"
+                        checked={checked}
+                        onCheckedChange={(next) => {
+                          setForm((f) => ({
+                            ...f,
+                            scopes:
+                              next === true
+                                ? [...f.scopes.filter((s) => s !== scope), scope]
+                                : f.scopes.filter((s) => s !== scope),
+                          }));
+                        }}
+                        disabled={creating}
+                      />
+                      <label htmlFor={id} className="min-w-0 cursor-pointer">
+                        <span className="block text-sm font-medium">
+                          {partnerScopeLabel(scope, locale)}
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                          {partnerScopeHelp(scope, locale)}
+                        </span>
+                      </label>
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <Button
@@ -414,7 +437,7 @@ export default function AdminApiClientsPage() {
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {c.scopes.map((scope) => (
-                        <Badge key={scope} variant="outline">
+                        <Badge key={scope} variant="outline" title={partnerScopeHelp(scope, locale)}>
                           {partnerScopeLabel(scope, locale)}
                         </Badge>
                       ))}

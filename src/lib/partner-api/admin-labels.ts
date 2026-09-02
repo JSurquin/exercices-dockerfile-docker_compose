@@ -4,6 +4,7 @@ type Copy = {
   event: Record<string, string>;
   status: Record<string, string>;
   scope: Record<string, string>;
+  scopeHelp: Record<string, string>;
   endpoint: Record<string, string>;
   method: Record<string, string>;
   call: Record<string, string>;
@@ -40,6 +41,11 @@ const FR: Copy = {
     read: 'Lecture',
     trade: 'Ventes',
     payout: 'Retraits',
+  },
+  scopeHelp: {
+    read: 'Voir le profil, le solde, l’inventaire, estimer un lot et suivre les ventes. Sans ça, la clé ne sert à rien.',
+    trade: 'Créer une vente : le bot récupère les skins. Décochez seulement si le partenaire ne doit pas vendre.',
+    payout: 'Demander un virement (SEPA ou crypto). Décochez si l’argent doit rester sur MoonSkin.',
   },
   endpoint: {
     '/api/v1/partner/me': 'Profil',
@@ -105,6 +111,11 @@ const EN: Copy = {
     trade: 'Sales',
     payout: 'Payouts',
   },
+  scopeHelp: {
+    read: 'See profile, balance, inventory, estimates and sales. Without this the key cannot do much.',
+    trade: 'Create a sale so the bot can collect skins. Untick only if they must not sell.',
+    payout: 'Request a SEPA or crypto payout. Untick if funds should stay on MoonSkin.',
+  },
   endpoint: {
     '/api/v1/partner/me': 'Profile',
     '/api/v1/partner/balance': 'Balance',
@@ -169,6 +180,11 @@ const CN: Copy = {
     trade: '销售',
     payout: '提现',
   },
+  scopeHelp: {
+    read: '查看资料、余额、库存、估价和销售。没有它密钥几乎无法使用。',
+    trade: '创建销售，由机器人收取皮肤。仅在不允许销售时取消勾选。',
+    payout: '申请 SEPA 或加密货币提现。若资金应留在 MoonSkin，请取消勾选。',
+  },
   endpoint: {
     '/api/v1/partner/me': '资料',
     '/api/v1/partner/balance': '余额',
@@ -218,6 +234,10 @@ export function partnerStatusLabel(status: string, locale: Locale): string {
 
 export function partnerScopeLabel(scope: string, locale: Locale): string {
   return copyFor(locale).scope[scope] ?? scope;
+}
+
+export function partnerScopeHelp(scope: string, locale: Locale): string {
+  return copyFor(locale).scopeHelp[scope] ?? '';
 }
 
 export function partnerEndpointLabel(endpoint: string, locale: Locale): string {
@@ -369,7 +389,7 @@ const PAGE_FR: PageCopy = {
   userPlaceholder: 'Rechercher un pseudo, un email ou un Steam ID…',
   rateLabel: 'Limite / minute',
   scopesLabel: 'Droits',
-  scopesHint: 'Cochez seulement ce dont il a besoin. Les clés déjà créées ne bougent pas.',
+  scopesHint: 'Les trois sont cochés par défaut. Décochez seulement si vous voulez limiter la clé — une fois créée, ça ne se change plus.',
   generate: 'Générer la clé',
   generating: 'Création…',
   copyTitle: 'Copiez ces identifiants maintenant',
@@ -420,7 +440,7 @@ const PAGE_EN: PageCopy = {
   userPlaceholder: 'Search by username, email or Steam ID…',
   rateLabel: 'Limit / minute',
   scopesLabel: 'Permissions',
-  scopesHint: 'Tick only what they need. Existing keys are left unchanged.',
+  scopesHint: 'All three are on by default. Untick only if you want to limit the key — this cannot be changed later.',
   generate: 'Generate key',
   generating: 'Creating…',
   copyTitle: 'Copy these credentials now',
@@ -471,7 +491,7 @@ const PAGE_CN: PageCopy = {
   userPlaceholder: '按用户名、邮箱或 Steam ID 搜索…',
   rateLabel: '每分钟限额',
   scopesLabel: '权限',
-  scopesHint: '只勾选所需权限。已有密钥不会改动。',
+  scopesHint: '默认全选。仅在需要限制密钥时取消勾选 — 创建后无法再改。',
   generate: '生成密钥',
   generating: '创建中…',
   copyTitle: '请立即复制这些凭据',

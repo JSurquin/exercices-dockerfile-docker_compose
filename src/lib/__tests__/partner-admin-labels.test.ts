@@ -4,6 +4,7 @@ import {
   partnerEndpointLabel,
   partnerEventLabel,
   partnerHttpResultLabel,
+  partnerScopeHelp,
   partnerStatusLabel,
 } from '@/lib/partner-api/admin-labels';
 
@@ -34,6 +35,12 @@ describe('partner admin labels', () => {
     expect(partnerHttpResultLabel(200, 'fr')).toBe('OK');
     expect(partnerHttpResultLabel(401, 'fr')).toBe('Refusé');
     expect(partnerHttpResultLabel(503, 'fr')).toBe('Erreur');
+  });
+
+  it('explains each admin scope in French', () => {
+    expect(partnerScopeHelp('read', 'fr')).toMatch(/inventaire/i);
+    expect(partnerScopeHelp('trade', 'fr')).toMatch(/vente/i);
+    expect(partnerScopeHelp('payout', 'fr')).toMatch(/virement/i);
   });
 
   it('reads the status from a webhook event id', () => {
