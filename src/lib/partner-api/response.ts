@@ -13,7 +13,7 @@ export type PartnerErrorCode =
   | 'CONFIG_ERROR'
   | 'API_ERROR';
 
-const PARTNER_ERROR_CODES = new Set<PartnerErrorCode>([
+export const PARTNER_ERROR_CODE_LIST: PartnerErrorCode[] = [
   'UNAUTHORIZED',
   'FORBIDDEN',
   'NOT_FOUND',
@@ -25,7 +25,9 @@ const PARTNER_ERROR_CODES = new Set<PartnerErrorCode>([
   'INTERNAL_ERROR',
   'CONFIG_ERROR',
   'API_ERROR',
-]);
+];
+
+const PARTNER_ERROR_CODES = new Set<PartnerErrorCode>(PARTNER_ERROR_CODE_LIST);
 
 export function toPartnerErrorCode(code: string): PartnerErrorCode {
   if (PARTNER_ERROR_CODES.has(code as PartnerErrorCode)) {

@@ -2,16 +2,32 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { prisma } from '~/prisma/prisma';
 import { formatFees, mapPayoutStatus, mapTradeStatus } from '@/lib/partner-api/response';
 import { assertSafeWebhookDeliveryUrl } from '@/lib/partner-api/webhook-url';
+import { markWebhookProcessed } from '@/lib/webhook-idempotency';
 import { logger } from '@/lib/logger';
 
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAYS_MS = [1000, 5000, 15000];
+const PARTNER_WEBHOOK_HANDLER = 'partner_outgoing';
 
 export type PartnerWebhookEventType =
   | 'trade.created'
   | 'trade.status_changed'
   | 'payout.created'
   | 'payout.status_changed';
+
+function isUniqueConstraintError(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === 'P2002';
+}
+
+/** Identifiant d'événement stable : un même statut sur une même ressource n'est envoyé qu'une fois. */
+export function buildPartnerWebhookEventId(
+  eventType: PartnerWebhookEventType,
+  resourceId: string,
+  status: string,
+  apiClientId: string
+): string {
+  return `${eventType}:${resourceId}:${status}:${apiClientId}`;
+}
 
 export interface PartnerWebhookPayload {
   event_id: string;
@@ -29,6 +45,58 @@ export interface PartnerWebhookPayload {
 function signPayload(secret: string, timestamp: number, body: string): string {
   const signed = `${timestamp}.${body}`;
   return createHmac('sha256', secret).update(signed).digest('hex');
+}
+
+async function recordTerminalDelivery(
+  params: {
+    userId: string;
+    eventId: string;
+    deliveryId: string;
+    eventType: string;
+    resourceId: string;
+    apiClientId: string;
+    status: 'success' | 'failed';
+    httpStatus?: number | null;
+    attempts: number;
+    durationMs?: number | null;
+    errorMessage?: string | null;
+  }
+): Promise<void> {
+  try {
+    await Promise.all([
+      prisma.auditLog.create({
+        data: {
+          userId: params.userId,
+          action: 'PARTNER_WEBHOOK_DELIVERY',
+          details: {
+            type: 'partner_webhook_delivery',
+            deliveryId: params.deliveryId,
+            eventId: params.eventId,
+            eventType: params.eventType,
+            resourceId: params.resourceId,
+            apiClientId: params.apiClientId,
+            status: params.status,
+            httpStatus: params.httpStatus ?? null,
+            attempts: params.attempts,
+            durationMs: params.durationMs ?? null,
+            errorMessage: params.errorMessage ?? null,
+          },
+        },
+      }),
+      markWebhookProcessed(params.eventId, PARTNER_WEBHOOK_HANDLER, {
+        success: params.status === 'success',
+        error: params.errorMessage ?? undefined,
+        data: {
+          deliveryId: params.deliveryId,
+          httpStatus: params.httpStatus ?? null,
+          attempts: params.attempts,
+          durationMs: params.durationMs ?? null,
+        },
+      }),
+    ]);
+  } catch {
+    /* non bloquant */
+  }
 }
 
 async function deliverWebhook(
@@ -78,38 +146,60 @@ async function deliverWebhook(
   }
 }
 
-async function scheduleRetry(deliveryId: string, attempt: number, error: string, httpStatus?: number) {
+async function scheduleRetry(
+  delivery: { id: string; eventId: string; eventType: string; resourceId: string; apiClientId: string },
+  userId: string,
+  attempt: number,
+  error: string,
+  httpStatus?: number,
+  durationMs?: number
+) {
   const nextAttempt = attempt + 1;
   if (nextAttempt >= MAX_ATTEMPTS) {
     await prisma.partnerWebhookDelivery.update({
-      where: { id: deliveryId },
+      where: { id: delivery.id },
       data: {
         status: 'failed',
         attempts: nextAttempt,
         errorMessage: error,
         httpStatus: httpStatus ?? null,
+        durationMs: durationMs ?? null,
         lastAttemptAt: new Date(),
         nextRetryAt: null,
       },
+    });
+    await recordTerminalDelivery({
+      userId,
+      eventId: delivery.eventId,
+      deliveryId: delivery.id,
+      eventType: delivery.eventType,
+      resourceId: delivery.resourceId,
+      apiClientId: delivery.apiClientId,
+      status: 'failed',
+      httpStatus,
+      attempts: nextAttempt,
+      durationMs,
+      errorMessage: error,
     });
     return;
   }
 
   const delay = RETRY_DELAYS_MS[nextAttempt - 1] ?? 15000;
   await prisma.partnerWebhookDelivery.update({
-    where: { id: deliveryId },
+    where: { id: delivery.id },
     data: {
       status: 'pending',
       attempts: nextAttempt,
       errorMessage: error,
       httpStatus: httpStatus ?? null,
+      durationMs: durationMs ?? null,
       lastAttemptAt: new Date(),
       nextRetryAt: new Date(Date.now() + delay),
     },
   });
 
   setTimeout(() => {
-    void processDelivery(deliveryId);
+    void processDelivery(delivery.id);
   }, delay);
 }
 
@@ -122,9 +212,21 @@ async function processDelivery(deliveryId: string): Promise<void> {
   if (!delivery || delivery.status === 'success') return;
   const client = delivery.apiClient;
   if (!client.webhookUrl || client.status !== 'ACTIVE') {
+    const errorMessage = 'Webhook URL is not configured or the API key was revoked';
     await prisma.partnerWebhookDelivery.update({
       where: { id: deliveryId },
-      data: { status: 'failed', errorMessage: 'Webhook URL is not configured or the API key was revoked' },
+      data: { status: 'failed', errorMessage },
+    });
+    await recordTerminalDelivery({
+      userId: client.userId,
+      eventId: delivery.eventId,
+      deliveryId: delivery.id,
+      eventType: delivery.eventType,
+      resourceId: delivery.resourceId,
+      apiClientId: delivery.apiClientId,
+      status: 'failed',
+      attempts: delivery.attempts,
+      errorMessage,
     });
     return;
   }
@@ -133,26 +235,41 @@ async function processDelivery(deliveryId: string): Promise<void> {
   const result = await deliverWebhook(deliveryId, client.webhookUrl, client.webhookSecret, payload);
 
   if (result.success) {
+    const attempts = delivery.attempts + 1;
     await prisma.partnerWebhookDelivery.update({
       where: { id: deliveryId },
       data: {
         status: 'success',
         httpStatus: result.httpStatus,
-        attempts: delivery.attempts + 1,
+        attempts,
         lastAttemptAt: new Date(),
         durationMs: result.durationMs,
         nextRetryAt: null,
         errorMessage: null,
       },
     });
+    await recordTerminalDelivery({
+      userId: client.userId,
+      eventId: delivery.eventId,
+      deliveryId: delivery.id,
+      eventType: delivery.eventType,
+      resourceId: delivery.resourceId,
+      apiClientId: delivery.apiClientId,
+      status: 'success',
+      httpStatus: result.httpStatus,
+      attempts,
+      durationMs: result.durationMs,
+    });
     return;
   }
 
   await scheduleRetry(
-    deliveryId,
+    delivery,
+    client.userId,
     delivery.attempts,
     result.error ?? 'Delivery failed',
-    result.httpStatus
+    result.httpStatus,
+    result.durationMs
   );
 }
 
@@ -170,7 +287,8 @@ export async function enqueuePartnerWebhook(
     if (clients.length === 0) return;
 
     for (const client of clients) {
-      const eventId = `${eventType}:${resourceId}:${Date.now()}:${client.id}`;
+      const status = payload.status;
+      const eventId = buildPartnerWebhookEventId(eventType, resourceId, status, client.id);
       const fullPayload: PartnerWebhookPayload = {
         event_id: eventId,
         type: eventType,
@@ -180,18 +298,45 @@ export async function enqueuePartnerWebhook(
         ...payload,
       };
 
-      const delivery = await prisma.partnerWebhookDelivery.create({
-        data: {
-          apiClientId: client.id,
-          eventType,
-          resourceId,
-          eventId,
-          payload: fullPayload as object,
-          status: 'pending',
-        },
-      });
+      try {
+        const delivery = await prisma.partnerWebhookDelivery.create({
+          data: {
+            apiClientId: client.id,
+            eventType,
+            resourceId,
+            eventId,
+            payload: fullPayload as object,
+            status: 'pending',
+          },
+        });
 
-      void processDelivery(delivery.id);
+        await prisma.webhookEvent
+          .create({
+            data: {
+              webhookId: eventId,
+              handler: PARTNER_WEBHOOK_HANDLER,
+              status: 'processing',
+              metadata: {
+                apiClientId: client.id,
+                eventType,
+                resourceId,
+                status,
+              },
+            },
+          })
+          .catch((err) => {
+            if (!isUniqueConstraintError(err)) {
+              logger.error('[PartnerWebhook] WebhookEvent record failed', err);
+            }
+          });
+
+        void processDelivery(delivery.id);
+      } catch (err) {
+        if (isUniqueConstraintError(err)) {
+          continue;
+        }
+        logger.error('[PartnerWebhook] enqueue delivery failed', err);
+      }
     }
   } catch (err) {
     logger.error('[PartnerWebhook] enqueue failed', err);

@@ -56,7 +56,11 @@ curl -s -X POST "${PARTNER_API_BASE_URL}/api/v1/partner/payouts" \\
 curl -s -X PUT "${PARTNER_API_BASE_URL}/api/v1/partner/webhook" \\
   -H "Authorization: Bearer msk_live_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"webhook_url":"https://your-server.com/webhooks/moonskin"}'`;
+  -d '{"webhook_url":"https://your-server.com/webhooks/moonskin"}'
+
+# Read active webhook config
+curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/webhook" \\
+  -H "Authorization: Bearer msk_live_YOUR_KEY"`;
 
 export const partnerWebhookGuide = `MoonSkin sends POST notifications to the HTTPS URL configured via PUT /api/v1/partner/webhook.
 
@@ -67,7 +71,7 @@ HTTP headers:
 
 JSON body (trade example):
 {
-  "event_id": "trade.status_changed:TRADE-123:...",
+  "event_id": "trade.status_changed:TRADE-123:in_trade_hold:clxabc",
   "type": "trade.status_changed",
   "resource_id": "TRADE-123",
   "status": "in_trade_hold",
@@ -80,6 +84,7 @@ JSON body (trade example):
 }
 
 Event types: trade.created, trade.status_changed, payout.created, payout.status_changed
+event_id is deterministic (type + resource + status + API key) so the same status change is never delivered twice.
 
 Signature verification (Node.js):
 const crypto = require('crypto');
@@ -220,7 +225,7 @@ export const partnerResponseExamples = {
   }
 }`,
   webhook: `{
-  "event_id": "trade.status_changed:TRADE-123:1720872000000:clxabc",
+  "event_id": "trade.status_changed:TRADE-123:available:clxabc",
   "type": "trade.status_changed",
   "resource_id": "TRADE-123",
   "status": "available",
@@ -257,3 +262,21 @@ export const partnerResponseExamples = {
   }
 }`,
 };
+
+export const partnerErrorCodesGuide = `Standard partner API error codes:
+• UNAUTHORIZED (401) — Missing, invalid or revoked API key
+• FORBIDDEN (403) — Missing required scope, or a business rule blocked the call (e.g. monthly withdrawal limit)
+• NOT_FOUND (404) — Account, trade or API key not found
+• VALIDATION_ERROR (400) — Invalid JSON, missing fields, invalid trade URL, or the trade is not ready for payout
+• RATE_LIMITED (429) — Quota exceeded (default 100 requests/minute per key, adjustable by admin)
+• KYC_REQUIRED (403) — Payout blocked until KYC is approved
+• ACCOUNT_FROZEN (403) — The linked MoonSkin account is frozen
+• ACCOUNT_BANNED (403) — The linked MoonSkin account is banned
+• API_ERROR (502) — Upstream trade provider failed (inventory or sale creation)
+• CONFIG_ERROR (500) — Server-side configuration issue
+• INTERNAL_ERROR (500) — Unexpected server error
+
+Error envelope:
+{ "success": false, "error": { "code": "VALIDATION_ERROR", "message": "..." } }
+
+RATE_LIMITED may also include retry_after_seconds. KYC_REQUIRED may include requires_kyc: true.`;

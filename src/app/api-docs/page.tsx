@@ -24,6 +24,7 @@ import {
   partnerApiConventionGuide,
   partnerCurlExamples,
   partnerEndpointDetails,
+  partnerErrorCodesGuide,
   partnerPollingGuide,
   partnerResponseExamples,
   partnerScopesGuide,
@@ -598,6 +599,17 @@ export default function ApiDocsPage() {
                   <CardContent>
                     <pre className="text-sm whitespace-pre-wrap overflow-x-auto bg-muted rounded-lg p-4">
                       {partnerWebhookGuide}
+                    </pre>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-orange-600">Codes d&apos;erreur standardisés</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="text-sm whitespace-pre-wrap overflow-x-auto bg-muted rounded-lg p-4">
+                      {partnerErrorCodesGuide}
                     </pre>
                   </CardContent>
                 </Card>

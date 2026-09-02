@@ -45,7 +45,7 @@ import { GET as getTrades, POST as postTrades } from '@/app/api/v1/partner/trade
 import { GET as getTradeById } from '@/app/api/v1/partner/trades/[id]/route';
 import { POST as postEstimate } from '@/app/api/v1/partner/estimate/route';
 import { POST as postPayouts } from '@/app/api/v1/partner/payouts/route';
-import { PUT as putWebhook } from '@/app/api/v1/partner/webhook/route';
+import { PUT as putWebhook, GET as getWebhook } from '@/app/api/v1/partner/webhook/route';
 
 const mockedRequireApiKey = requireApiKey as jest.MockedFunction<typeof requireApiKey>;
 
@@ -389,5 +389,20 @@ describe('partner API HTTP routes', () => {
     expect(response.status).toBe(403);
     expect(body.error.code).toBe('FORBIDDEN');
     expect(prisma.apiClient.update).not.toHaveBeenCalled();
+  });
+
+  it('GET /webhook returns the active config without the signing secret', async () => {
+    mockAuth(['read']);
+    (prisma.apiClient.findUnique as jest.Mock).mockResolvedValue({
+      webhookUrl: 'https://partner.example.com/hooks',
+    });
+
+    const response = await getWebhook(new NextRequest('http://localhost/api/v1/partner/webhook'));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.webhook_url).toBe('https://partner.example.com/hooks');
+    expect(body.data.signature_header).toBe('X-MoonSkin-Signature');
+    expect(JSON.stringify(body.data)).not.toMatch(/webhookSecret|webhook_secret/);
   });
 });

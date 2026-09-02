@@ -5,7 +5,7 @@ import {
   generateApiKey,
   generateWebhookSecret,
 } from '@/lib/partner-api/key-service';
-import { verifyWebhookSignature } from '@/lib/partner-api/webhook-service';
+import { buildPartnerWebhookEventId, verifyWebhookSignature } from '@/lib/partner-api/webhook-service';
 import {
   formatCreatedTradeForPartner,
   formatInventoryForPartner,
@@ -18,6 +18,7 @@ import {
   partnerInventoryFetchFailed,
   toPartnerErrorCode,
   toPartnerFacingProviderError,
+  PARTNER_ERROR_CODE_LIST,
 } from '@/lib/partner-api/response';
 import { validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 import { withPartnerApi } from '@/lib/partner-api/handler';
@@ -26,7 +27,7 @@ import { partnerCreateTradeSchema, partnerEstimateSchema, partnerWebhookConfigSc
 import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/validation';
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
-import { partnerResponseExamples, partnerWebhookGuide } from '@/lib/partner-api/docs-content';
+import { partnerErrorCodesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples } from '@/lib/partner-api/docs-content';
 
 jest.mock('@/lib/partner-api/auth', () => ({
   requireApiKey: jest.fn(),
@@ -123,6 +124,33 @@ describe('partner-api webhook signature', () => {
   });
 });
 
+describe('partner-api webhook event idempotence', () => {
+  it('buildPartnerWebhookEventId is stable for the same status change', () => {
+    const first = buildPartnerWebhookEventId(
+      'trade.status_changed',
+      'TRADE-123',
+      'in_trade_hold',
+      'client-1'
+    );
+    const second = buildPartnerWebhookEventId(
+      'trade.status_changed',
+      'TRADE-123',
+      'in_trade_hold',
+      'client-1'
+    );
+    expect(first).toBe('trade.status_changed:TRADE-123:in_trade_hold:client-1');
+    expect(first).toBe(second);
+  });
+
+  it('buildPartnerWebhookEventId changes when status or resource changes', () => {
+    const hold = buildPartnerWebhookEventId('trade.status_changed', 'TRADE-123', 'in_trade_hold', 'c1');
+    const available = buildPartnerWebhookEventId('trade.status_changed', 'TRADE-123', 'available', 'c1');
+    const otherTrade = buildPartnerWebhookEventId('trade.status_changed', 'TRADE-999', 'in_trade_hold', 'c1');
+    expect(hold).not.toBe(available);
+    expect(hold).not.toBe(otherTrade);
+  });
+});
+
 describe('partner-api JSON contract', () => {
   it('maps DB trade enums to English snake_case slugs', () => {
     expect(mapTradeStatus('CREATED')).toBe('created');
@@ -160,6 +188,17 @@ describe('partner-api JSON contract', () => {
     expect(docs).toMatch(/"gross_cents"/);
     expect(docs).toMatch(/"payment_reference"/);
     expect(docs).not.toMatch(/brut_centimes|statut|reference_paiement|"réseau"/);
+    expect(partnerResponseExamples.webhook).toContain('trade.status_changed:TRADE-123:available:clxabc');
+    expect(partnerWebhookGuide).toMatch(/deterministic/);
+    expect(partnerCurlExamples).toContain('/api/v1/partner/webhook');
+    expect(partnerCurlExamples).toMatch(/GET.*webhook|Read active webhook/i);
+  });
+
+  it('documents every standard partner error code', () => {
+    for (const code of PARTNER_ERROR_CODE_LIST) {
+      expect(partnerErrorCodesGuide).toContain(code);
+    }
+    expect(partnerErrorCodesGuide).toMatch(/"success": false/);
   });
 
   it('POST create payload maps raw Prisma status instead of leaking CREATED', () => {
