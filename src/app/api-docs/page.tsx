@@ -29,9 +29,15 @@ import {
   partnerInsomniaExport,
   partnerPostmanCollection,
   partnerResponseExamples,
-  partnerWebhookSignatureExample,
   type PartnerEndpointCatalogItem,
 } from '@/lib/partner-api/docs-content';
+import {
+  buildPartnerEndpointGo,
+  buildPartnerEndpointJavaScript,
+  buildPartnerEndpointPhp,
+  buildPartnerEndpointPython,
+  partnerWebhookSignatureExamples,
+} from '@/lib/partner-api/docs-snippets';
 import { getPartnerDocsCopy } from '@/lib/partner-api/docs-i18n';
 import { cn } from '@/lib/utils';
 
@@ -216,6 +222,10 @@ function EndpointBlock({
   copiedLabel: string;
 }) {
   const curl = buildPartnerEndpointCurl(endpoint);
+  const javascript = buildPartnerEndpointJavaScript(endpoint);
+  const python = buildPartnerEndpointPython(endpoint);
+  const php = buildPartnerEndpointPhp(endpoint);
+  const go = buildPartnerEndpointGo(endpoint);
   const postman = buildPartnerEndpointPostman(endpoint);
   const bruno = buildPartnerEndpointBruno(endpoint);
   const insomnia = buildPartnerEndpointInsomnia(endpoint);
@@ -247,8 +257,20 @@ function EndpointBlock({
         {responseLabel}:{' '}
         <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[13px] break-all">{responseShape}</code>
       </p>
-      <Tabs defaultValue="curl" className="w-full">
+      <Tabs defaultValue="javascript" className="w-full">
         <TabsList className="mb-3 h-auto w-full flex-wrap justify-start gap-1">
+          <TabsTrigger value="javascript" className="flex-none">
+            JavaScript
+          </TabsTrigger>
+          <TabsTrigger value="python" className="flex-none">
+            Python
+          </TabsTrigger>
+          <TabsTrigger value="php" className="flex-none">
+            PHP
+          </TabsTrigger>
+          <TabsTrigger value="go" className="flex-none">
+            Go
+          </TabsTrigger>
           <TabsTrigger value="curl" className="flex-none">
             cURL
           </TabsTrigger>
@@ -265,6 +287,18 @@ function EndpointBlock({
             {responseLabel}
           </TabsTrigger>
         </TabsList>
+        <TabsContent value="javascript">
+          <CodePanel code={javascript} label="fetch" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+        </TabsContent>
+        <TabsContent value="python">
+          <CodePanel code={python} label="requests" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+        </TabsContent>
+        <TabsContent value="php">
+          <CodePanel code={php} label="cURL" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+        </TabsContent>
+        <TabsContent value="go">
+          <CodePanel code={go} label="net/http" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+        </TabsContent>
         <TabsContent value="curl">
           <CodePanel code={curl} label="cURL" copyLabel={copyLabel} copiedLabel={copiedLabel} />
         </TabsContent>
@@ -460,6 +494,55 @@ export default function ApiDocsPage() {
                 <h2 className="text-2xl font-semibold tracking-tight mb-3">{t.clientsTitle}</h2>
                 <p className="text-[15px] leading-7 text-foreground max-w-2xl">{t.clientsIntro}</p>
               </div>
+              <Tabs defaultValue="javascript" className="w-full">
+                <TabsList className="mb-3 h-auto w-full flex-wrap justify-start gap-1">
+                  <TabsTrigger value="javascript" className="flex-none">JavaScript</TabsTrigger>
+                  <TabsTrigger value="python" className="flex-none">Python</TabsTrigger>
+                  <TabsTrigger value="php" className="flex-none">PHP</TabsTrigger>
+                  <TabsTrigger value="go" className="flex-none">Go</TabsTrigger>
+                  <TabsTrigger value="curl" className="flex-none">cURL</TabsTrigger>
+                </TabsList>
+                <TabsContent value="javascript">
+                  <CodePanel
+                    code={buildPartnerEndpointJavaScript(partnerEndpointCatalog[0])}
+                    label="fetch — GET /me"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+                <TabsContent value="python">
+                  <CodePanel
+                    code={buildPartnerEndpointPython(partnerEndpointCatalog[0])}
+                    label="requests — GET /me"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+                <TabsContent value="php">
+                  <CodePanel
+                    code={buildPartnerEndpointPhp(partnerEndpointCatalog[0])}
+                    label="cURL — GET /me"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+                <TabsContent value="go">
+                  <CodePanel
+                    code={buildPartnerEndpointGo(partnerEndpointCatalog[0])}
+                    label="net/http — GET /me"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+                <TabsContent value="curl">
+                  <CodePanel
+                    code={buildPartnerEndpointCurl(partnerEndpointCatalog[0])}
+                    label="cURL — GET /me"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+              </Tabs>
               <ul className="grid gap-3 sm:grid-cols-3">
                 {[t.clientsPostmanHint, t.clientsBrunoHint, t.clientsInsomniaHint].map((hint) => (
                   <li
@@ -563,12 +646,46 @@ export default function ApiDocsPage() {
                 copiedLabel={t.copied}
               />
               <h3 className="font-semibold">{t.webhookSignatureTitle}</h3>
-              <CodePanel
-                code={partnerWebhookSignatureExample}
-                label="Node.js"
-                copyLabel={t.copy}
-                copiedLabel={t.copied}
-              />
+              <Tabs defaultValue="node" className="w-full">
+                <TabsList className="mb-3 h-auto w-full flex-wrap justify-start gap-1">
+                  <TabsTrigger value="node" className="flex-none">Node.js</TabsTrigger>
+                  <TabsTrigger value="python" className="flex-none">Python</TabsTrigger>
+                  <TabsTrigger value="php" className="flex-none">PHP</TabsTrigger>
+                  <TabsTrigger value="go" className="flex-none">Go</TabsTrigger>
+                </TabsList>
+                <TabsContent value="node">
+                  <CodePanel
+                    code={partnerWebhookSignatureExamples.node}
+                    label="Node.js"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+                <TabsContent value="python">
+                  <CodePanel
+                    code={partnerWebhookSignatureExamples.python}
+                    label="Python"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+                <TabsContent value="php">
+                  <CodePanel
+                    code={partnerWebhookSignatureExamples.php}
+                    label="PHP"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+                <TabsContent value="go">
+                  <CodePanel
+                    code={partnerWebhookSignatureExamples.go}
+                    label="Go"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+              </Tabs>
             </section>
 
             <section id="errors" className="scroll-mt-28 py-12 space-y-8">

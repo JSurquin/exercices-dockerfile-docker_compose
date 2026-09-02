@@ -32,6 +32,13 @@ import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
 import { PARTNER_API_BASE_URL, PARTNER_API_SUPPORT_EMAIL, partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples, partnerEndpointCatalog, partnerPostmanCollection, partnerInsomniaExport, partnerBrunoEnvironment, buildPartnerEndpointBruno, buildPartnerEndpointPostman, buildPartnerEndpointInsomnia } from '@/lib/partner-api/docs-content';
+import {
+  buildPartnerEndpointGo,
+  buildPartnerEndpointJavaScript,
+  buildPartnerEndpointPhp,
+  buildPartnerEndpointPython,
+  partnerWebhookSignatureExamples,
+} from '@/lib/partner-api/docs-snippets';
 import { formatPartnerErrorCodesGuide, getPartnerDocsCopy } from '@/lib/partner-api/docs-i18n';
 import { locales } from '@/lib/i18n';
 import {
@@ -252,6 +259,28 @@ describe('partner-api JSON contract', () => {
     expect(partnerCurlExamples).not.toMatch(/api\.moonskin/);
     expect(partnerCurlExamples).toMatch(/GET.*webhook|Read active webhook/i);
     expect(partnerCurlExamples).not.toMatch(/@moonskin\/sdk|moonskin-sdk/);
+  });
+
+  it('exposes JavaScript, Python, PHP and Go snippets without an SDK', () => {
+    const me = partnerEndpointCatalog.find((endpoint) => endpoint.id === 'me')!;
+    const estimate = partnerEndpointCatalog.find((endpoint) => endpoint.id === 'estimate')!;
+    const js = buildPartnerEndpointJavaScript(me);
+    const py = buildPartnerEndpointPython(estimate);
+    const php = buildPartnerEndpointPhp(me);
+    const go = buildPartnerEndpointGo(estimate);
+
+    expect(js).toContain('fetch(');
+    expect(js).toContain(`${PARTNER_API_BASE_URL}/api/v1/partner/me`);
+    expect(js).toContain('Authorization');
+    expect(py).toContain('import requests');
+    expect(py).toContain('asset_ids');
+    expect(php).toContain('curl_init');
+    expect(go).toContain('http.NewRequest');
+    expect(go).toContain('http.MethodPost');
+    expect(`${js}${py}${php}${go}`).not.toMatch(/@moonskin\/sdk|moonskin-sdk/);
+    expect(partnerWebhookSignatureExamples.python).toContain('hmac.new');
+    expect(partnerWebhookSignatureExamples.php).toContain('hash_hmac');
+    expect(partnerWebhookSignatureExamples.go).toContain('crypto/hmac');
   });
 
   it('exposes Postman, Bruno and Insomnia import snippets', () => {

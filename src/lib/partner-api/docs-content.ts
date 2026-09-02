@@ -4,6 +4,7 @@ import {
   formatPartnerWebhookProse,
   type PartnerEndpointId,
 } from '@/lib/partner-api/docs-i18n';
+import { partnerWebhookSignatureExamples } from '@/lib/partner-api/docs-snippets';
 
 export const PARTNER_API_BASE_URL = 'https://www.moonskin.eu';
 
@@ -246,20 +247,7 @@ export const partnerCurlExamples = partnerEndpointCatalog
   .map((endpoint) => `# ${endpoint.method} ${endpoint.path}\n${buildPartnerEndpointCurl(endpoint)}`)
   .join('\n\n');
 
-export const partnerWebhookSignatureExample = `const crypto = require('crypto');
-const header = req.headers['x-moonskin-signature']; // t=123,v1=abc...
-const rawBody = req.rawBody; // raw unparsed body
-const match = header.match(/t=(\\d+),v1=([a-f0-9]+)/);
-const timestamp = parseInt(match[1], 10);
-const provided = match[2];
-const expected = crypto.createHmac('sha256', WEBHOOK_SECRET)
-  .update(\`\${timestamp}.\${rawBody}\`)
-  .digest('hex');
-if (expected.length !== provided.length ||
-    !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided))) {
-  throw new Error('Invalid signature');
-}
-// Reject if |now - timestamp| > 300 seconds`;
+export const partnerWebhookSignatureExample = partnerWebhookSignatureExamples.node;
 
 export const partnerResponseExamples = {
   me: `{
