@@ -16,16 +16,24 @@ jest.mock('~/prisma/prisma', () => ({
   },
 }));
 
-jest.mock('@/lib/security/rate-limiter', () => ({
-  RateLimiter: class {
-    checkLimit = jest.fn().mockResolvedValue({
-      allowed: true,
-      remaining: 99,
-      resetTime: Date.now() + 60_000,
-      blocked: false,
-    });
-  },
-}));
+jest.mock('@/lib/security/rate-limiter', () => {
+  const checkLimit = jest.fn().mockResolvedValue({
+    allowed: true,
+    remaining: 99,
+    resetTime: Date.now() + 60_000,
+    blocked: false,
+  });
+  return {
+    RateLimiter: class {
+      checkLimit = checkLimit;
+    },
+    __checkLimit: checkLimit,
+  };
+});
+
+const { __checkLimit: mockedCheckLimit } = jest.requireMock('@/lib/security/rate-limiter') as {
+  __checkLimit: jest.Mock;
+};
 
 const mockedFind = findApiClientByKey as jest.MockedFunction<typeof findApiClientByKey>;
 
@@ -63,6 +71,12 @@ describe('partner-api requireApiKey', () => {
     (prisma.apiClient.update as jest.Mock).mockResolvedValue({});
     (prisma.auditLog.create as jest.Mock).mockResolvedValue({});
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({ banned: false, banExpires: null });
+    mockedCheckLimit.mockResolvedValue({
+      allowed: true,
+      remaining: 99,
+      resetTime: Date.now() + 60_000,
+      blocked: false,
+    });
   });
 
   it('rejects missing bearer without logging (no client)', async () => {
@@ -78,6 +92,44 @@ describe('partner-api requireApiKey', () => {
       expect(result.logApiCall).toBeUndefined();
     }
     expect(mockedFind).not.toHaveBeenCalled();
+  });
+
+  it('rate-limits repeated missing or invalid API keys', async () => {
+    mockedCheckLimit.mockResolvedValueOnce({
+      allowed: false,
+      remaining: 0,
+      resetTime: Date.now() + 60_000,
+      blocked: true,
+    });
+
+    const result = await requireApiKey(new NextRequest('http://localhost/api/v1/partner/me'), {
+      endpoint: '/api/v1/partner/me',
+      method: 'GET',
+      requiredScopes: ['read'],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      const body = await result.response.json();
+      expect(result.response.status).toBe(429);
+      expect(body.error.code).toBe('RATE_LIMITED');
+    }
+  });
+
+  it('rejects invalid keys without logging a client', async () => {
+    mockedFind.mockResolvedValue(null);
+
+    const result = await requireApiKey(bearerRequest('/api/v1/partner/me', 'msk_live_bad'), {
+      endpoint: '/api/v1/partner/me',
+      method: 'GET',
+      requiredScopes: ['read'],
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.response.status).toBe(401);
+      expect(result.logApiCall).toBeUndefined();
+    }
   });
 
   it('rejects banned accounts and exposes a logger', async () => {

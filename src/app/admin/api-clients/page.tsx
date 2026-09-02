@@ -8,7 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Key, Trash2, Webhook, Plus, Activity, Save } from 'lucide-react';
 import { AdminUserCombobox } from '@/components/admin/admin-user-combobox';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SecretValueField } from '@/components/ui/secret-value-field';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
+const ALL_SCOPES = ['read', 'trade', 'payout'] as const;
 
 interface ApiClientRow {
   id: string;
@@ -19,8 +30,6 @@ interface ApiClientRow {
   rate_limit_per_min: number;
   webhook_url: string | null;
   key_prefix: string;
-  api_key: string | null;
-  webhook_secret: string | null;
   user: { steam_username: string | null; steam_id: string | null; email: string };
   stats: { api_calls: number; webhook_deliveries: number };
 }
@@ -55,7 +64,12 @@ export default function AdminApiClientsPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newKey, setNewKey] = useState<{ api_key: string; webhook_secret: string } | null>(null);
-  const [form, setForm] = useState({ name: '', user_id: '', rate_limit: '100' });
+  const [form, setForm] = useState({
+    name: '',
+    user_id: '',
+    rate_limit: '100',
+    scopes: ['read'] as string[],
+  });
   const [rateLimitEdits, setRateLimitEdits] = useState<Record<string, string>>({});
   const [savingRateLimit, setSavingRateLimit] = useState<string | null>(null);
 
@@ -89,7 +103,7 @@ export default function AdminApiClientsPage() {
   }, [load]);
 
   const handleCreate = async () => {
-    if (!form.name.trim() || !form.user_id.trim()) return;
+    if (!form.name.trim() || !form.user_id.trim() || form.scopes.length === 0) return;
     setCreating(true);
     setNewKey(null);
     try {
@@ -100,12 +114,13 @@ export default function AdminApiClientsPage() {
           name: form.name.trim(),
           user_id: form.user_id.trim(),
           rate_limit_per_min: parseInt(form.rate_limit, 10) || 100,
+          scopes: form.scopes,
         }),
       });
       const data = await res.json();
       if (res.ok) {
         setNewKey({ api_key: data.api_key, webhook_secret: data.webhook_secret });
-        setForm({ name: '', user_id: '', rate_limit: '100' });
+        setForm({ name: '', user_id: '', rate_limit: '100', scopes: ['read'] });
         await load();
       } else {
         alert(data.error || 'Erreur création');
@@ -198,29 +213,74 @@ export default function AdminApiClientsPage() {
               />
             </div>
           </div>
+          <div>
+            <Label>Droits (scopes)</Label>
+            <p className="text-xs text-muted-foreground mt-1 mb-2">
+              Cochez uniquement ce dont le partenaire a besoin. Les clés existantes ne sont pas modifiées.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              {ALL_SCOPES.map((scope) => (
+                <label key={scope} className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={form.scopes.includes(scope)}
+                    onCheckedChange={(checked) => {
+                      setForm((f) => ({
+                        ...f,
+                        scopes: checked === true
+                          ? [...f.scopes.filter((s) => s !== scope), scope]
+                          : f.scopes.filter((s) => s !== scope),
+                      }));
+                    }}
+                    disabled={creating}
+                  />
+                  {scope}
+                </label>
+              ))}
+            </div>
+          </div>
           <Button
             onClick={handleCreate}
-            disabled={creating || !form.name.trim() || !form.user_id}
+            disabled={creating || !form.name.trim() || !form.user_id || form.scopes.length === 0}
           >
             {creating ? 'Création…' : 'Générer la clé'}
           </Button>
-          {newKey && (
-            <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-sm space-y-2">
-              <p className="font-semibold text-amber-700 dark:text-amber-300">
-                Clé générée — elle reste visible ci-dessous et sur la fiche utilisateur.
-              </p>
-              <p>
-                <span className="text-muted-foreground">Clé API :</span>{' '}
-                <code className="break-all">{newKey.api_key}</code>
-              </p>
-              <p>
-                <span className="text-muted-foreground">Secret webhook :</span>{' '}
-                <code className="break-all">{newKey.webhook_secret}</code>
-              </p>
-            </div>
-          )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!newKey} onOpenChange={(open) => { if (!open) setNewKey(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Copiez ces identifiants maintenant</DialogTitle>
+            <DialogDescription>
+              La clé API et le secret webhook ne seront plus réaffichés. Transmettez-les au partenaire
+              (compte développeur) une seule fois.
+            </DialogDescription>
+          </DialogHeader>
+          {newKey && (
+            <div className="space-y-4">
+              <SecretValueField
+                label="Clé API"
+                value={newKey.api_key}
+                showLabel="Afficher"
+                hideLabel="Masquer"
+                copyLabel="Copier"
+                copiedLabel="Copié"
+              />
+              <SecretValueField
+                label="Secret webhook"
+                value={newKey.webhook_secret}
+                showLabel="Afficher"
+                hideLabel="Masquer"
+                copyLabel="Copier"
+                copiedLabel="Copié"
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setNewKey(null)}>J’ai copié</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
@@ -243,26 +303,9 @@ export default function AdminApiClientsPage() {
                     <p className="text-sm text-muted-foreground">
                       {c.user.steam_username || c.user.email}
                     </p>
-                    <div className="mt-3 space-y-3 max-w-xl">
-                      <SecretValueField
-                        label="Clé API"
-                        value={c.api_key}
-                        emptyHint={`${c.key_prefix}… — régénérer pour afficher la clé complète`}
-                        showLabel="Afficher"
-                        hideLabel="Masquer"
-                        copyLabel="Copier"
-                        copiedLabel="Copié"
-                      />
-                      <SecretValueField
-                        label="Secret webhook"
-                        value={c.webhook_secret}
-                        emptyHint="Aucun secret webhook"
-                        showLabel="Afficher"
-                        hideLabel="Masquer"
-                        copyLabel="Copier"
-                        copiedLabel="Copié"
-                      />
-                    </div>
+                    <p className="text-xs font-mono text-muted-foreground mt-1">
+                      {c.key_prefix}…
+                    </p>
                     <div className="flex gap-2 mt-1 flex-wrap">
                       <Badge variant={c.status === 'ACTIVE' ? 'default' : 'secondary'}>{c.status}</Badge>
                       {c.scopes.map((scope) => (

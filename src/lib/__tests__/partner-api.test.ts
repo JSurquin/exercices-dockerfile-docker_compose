@@ -27,7 +27,7 @@ import {
 import { getPartnerOperatingSteamId, validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 import { withPartnerApi } from '@/lib/partner-api/handler';
 import { requireApiKey } from '@/lib/partner-api/auth';
-import { partnerCreateTradeSchema, partnerEstimateSchema, partnerWebhookConfigSchema } from '@/lib/partner-api/schemas';
+import { partnerCreateApiClientSchema, partnerCreateTradeSchema, partnerEstimateSchema, partnerWebhookConfigSchema } from '@/lib/partner-api/schemas';
 import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/validation';
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
@@ -94,7 +94,7 @@ describe('partner-api key-service', () => {
     expect(generateWebhookSecret()).toMatch(/^[a-f0-9]{64}$/);
   });
 
-  it('stores and restores the raw API key for the owner view', () => {
+  it('encrypts a raw API key when ENCRYPTION_KEY is set', () => {
     const previous = process.env.ENCRYPTION_KEY;
     process.env.ENCRYPTION_KEY = 'a'.repeat(64);
     try {
@@ -107,7 +107,7 @@ describe('partner-api key-service', () => {
     }
   });
 
-  it('owner view exposes secrets while sanitizeApiClient hides them', () => {
+  it('never re-exposes secrets on GET views', () => {
     const client = {
       id: 'client-1',
       name: 'Acme',
@@ -131,8 +131,8 @@ describe('partner-api key-service', () => {
     expect(sanitized).not.toMatch(/msk_live_full_key|whsec-secret|encryptedKey/);
     expect(toOwnerApiClientView(client)).toEqual(
       expect.objectContaining({
-        api_key: 'msk_live_full_key',
-        webhook_secret: 'whsec-secret',
+        api_key: null,
+        webhook_secret: null,
         key_prefix: 'msk_live_abcdef',
       })
     );
@@ -468,6 +468,15 @@ describe('partner-api pagination and validation envelope', () => {
         trade_url: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=AbCdEfGh',
       }).success
     ).toBe(false);
+  });
+
+  it('requires at least one explicit scope when creating an API client', () => {
+    const base = { name: 'Acme', user_id: 'user-1' };
+    expect(partnerCreateApiClientSchema.safeParse(base).success).toBe(false);
+    expect(partnerCreateApiClientSchema.safeParse({ ...base, scopes: [] }).success).toBe(false);
+    expect(
+      partnerCreateApiClientSchema.safeParse({ ...base, scopes: ['read'] }).success
+    ).toBe(true);
   });
 });
 

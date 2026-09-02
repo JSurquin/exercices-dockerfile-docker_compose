@@ -4,7 +4,7 @@ import { getRequestContext, logUnauthorizedAccess } from '@/lib/security/audit-h
 import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { CREDITED_TRADE_STATUSES } from '@/lib/trade-volume';
-import { getActiveApiClientForUser, toOwnerApiClientView } from '@/lib/partner-api/key-service';
+import { getActiveApiClientForUser, sanitizeApiClient } from '@/lib/partner-api/key-service';
 
 export async function GET(
   request: NextRequest,
@@ -134,7 +134,7 @@ export async function GET(
         endedAt: h.endedAt,
         isActive: h.isActive,
       })),
-      apiClient: apiClient ? toOwnerApiClientView(apiClient) : null,
+      apiClient: apiClient ? sanitizeApiClient(apiClient) : null,
     });
   } catch (err) {
     console.error('[admin/users/[userId]]', err);

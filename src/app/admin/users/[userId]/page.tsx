@@ -34,7 +34,6 @@ import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import { useLocale } from '@/components/providers/locale-provider';
 import { UserRewardsBlockControls } from '@/components/admin/user-rewards-block-controls';
 import { UserBanManagement } from '@/components/admin/user-ban-management';
-import { SecretValueField } from '@/components/ui/secret-value-field';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { SteamIcon } from '@/components/ui/cs2-icons';
 import { getSteamProfileUrl } from '@/lib/steam-id';
@@ -79,8 +78,6 @@ interface UserDetail {
     id: string;
     status: string;
     key_prefix: string;
-    api_key: string | null;
-    webhook_secret: string | null;
     scopes: string[];
     rate_limit_per_min: number;
   } | null;
@@ -505,28 +502,23 @@ export default function AdminUserDetailPage() {
                 <p className="text-sm text-theme-highlight">{t.developerProgramActiveWarning}</p>
               )}
               {user.apiClient ? (
-                <div className="space-y-4 rounded-lg border border-slate-700 bg-slate-900/30 p-4">
+                <div className="space-y-3 rounded-lg border border-slate-700 bg-slate-900/30 p-4">
                   <Badge variant={user.apiClient.status === 'ACTIVE' ? 'default' : 'secondary'}>
                     {user.apiClient.status}
                   </Badge>
-                  <SecretValueField
-                    label={t.partnerApiKeyLabel}
-                    value={user.apiClient.api_key}
-                    emptyHint={`${user.apiClient.key_prefix}… — ${t.partnerApiKeyUnavailable}`}
-                    showLabel={t.show}
-                    hideLabel={t.hide}
-                    copyLabel={t.copy}
-                    copiedLabel={t.copied}
-                  />
-                  <SecretValueField
-                    label={t.partnerWebhookSecretLabel}
-                    value={user.apiClient.webhook_secret}
-                    emptyHint={t.partnerApiNoKey}
-                    showLabel={t.show}
-                    hideLabel={t.hide}
-                    copyLabel={t.copy}
-                    copiedLabel={t.copied}
-                  />
+                  <p className="text-sm text-slate-300">
+                    {t.partnerApiKeyLabel}:{' '}
+                    <code className="font-mono">{user.apiClient.key_prefix}…</code>
+                  </p>
+                  <p className="text-xs text-slate-400">{t.partnerApiKeyUnavailable}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {user.apiClient.scopes.map((scope: string) => (
+                      <Badge key={scope} variant="outline">
+                        {scope}
+                      </Badge>
+                    ))}
+                    <Badge variant="outline">{user.apiClient.rate_limit_per_min} req/min</Badge>
+                  </div>
                 </div>
               ) : (
                 <p className="text-sm text-slate-400">{t.partnerApiNoKey}</p>

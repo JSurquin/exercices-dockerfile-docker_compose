@@ -49,7 +49,7 @@ export const partnerCreateApiClientSchema = z.object({
   name: z.string().min(2).max(100),
   user_id: z.string().min(1),
   rate_limit_per_min: z.number().int().min(10).max(1000).optional(),
-  scopes: z.array(z.enum(['read', 'trade', 'payout'])).optional(),
+  scopes: z.array(z.enum(['read', 'trade', 'payout'])).min(1),
   expires_at: z.string().datetime().optional().nullable(),
 });
 

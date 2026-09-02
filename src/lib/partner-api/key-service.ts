@@ -79,7 +79,7 @@ export async function createApiClient(params: {
       userId: params.userId,
       keyPrefix,
       keyHash,
-      encryptedKey: encryptApiKeyForStorage(rawKey),
+      encryptedKey: null,
       webhookSecret,
       createdBy: params.createdBy,
       rateLimitPerMin: params.rateLimitPerMin ?? 100,
@@ -116,7 +116,7 @@ export async function regenerateApiClientCredentials(
     data: {
       keyPrefix,
       keyHash,
-      encryptedKey: encryptApiKeyForStorage(rawKey),
+      encryptedKey: null,
       webhookSecret,
       status: 'ACTIVE',
     },
@@ -157,7 +157,7 @@ export function sanitizeApiClient(client: ApiClient) {
 export function toOwnerApiClientView(client: ApiClient) {
   return {
     ...sanitizeApiClient(client),
-    api_key: decryptStoredApiKey(client.encryptedKey),
-    webhook_secret: client.webhookSecret,
+    api_key: null as string | null,
+    webhook_secret: null as string | null,
   };
 }

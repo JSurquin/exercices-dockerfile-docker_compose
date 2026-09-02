@@ -13,6 +13,10 @@ export interface PartnerApiContext {
 }
 
 const partnerRateLimiters = new Map<number, RateLimiter>();
+const invalidAuthLimiter = new RateLimiter('PARTNER_API_INVALID_AUTH', {
+  windowMs: 60 * 1000,
+  maxRequests: 30,
+});
 
 function getPartnerRateLimiter(limitPerMin: number): RateLimiter {
   let limiter = partnerRateLimiters.get(limitPerMin);
@@ -54,6 +58,25 @@ type PartnerAuthFailure = {
   startMs?: number;
 };
 
+async function rejectUnauthorized(
+  request: NextRequest,
+  message: string
+): Promise<PartnerAuthFailure> {
+  const rate = await invalidAuthLimiter.checkLimit(request);
+  if (!rate.allowed) {
+    return {
+      ok: false,
+      response: partnerError('RATE_LIMITED', 'Rate limit exceeded', 429, {
+        retry_after_seconds: Math.ceil((rate.resetTime - Date.now()) / 1000),
+      }),
+    };
+  }
+  return {
+    ok: false,
+    response: partnerError('UNAUTHORIZED', message, 401),
+  };
+}
+
 export async function requireApiKey(
   request: NextRequest,
   options: {
@@ -70,18 +93,12 @@ export async function requireApiKey(
   const rawKey = extractBearerToken(request);
 
   if (!rawKey) {
-    return {
-      ok: false,
-      response: partnerError('UNAUTHORIZED', 'Missing or invalid API key', 401),
-    };
+    return rejectUnauthorized(request, 'Missing or invalid API key');
   }
 
   const client = await findApiClientByKey(rawKey);
   if (!client) {
-    return {
-      ok: false,
-      response: partnerError('UNAUTHORIZED', 'Invalid or revoked API key', 401),
-    };
+    return rejectUnauthorized(request, 'Invalid or revoked API key');
   }
 
   const ip = getClientIp(request);

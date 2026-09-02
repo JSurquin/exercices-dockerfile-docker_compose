@@ -13,7 +13,7 @@ Tout est décrit **étape par étape**, dans l’ordre réel.
 - Le site qui tourne :
   - en local : `pnpm dev` puis base `http://localhost:3000`
   - en recette / prod : l’URL du site (ex. `https://www.moonskin.eu`). L’API partenaire est sur le même host : `https://www.moonskin.eu/api/v1/partner`.
-- La **clé API** et le **secret webhook** restent visibles dans Paramètres → Développeur (et sur la fiche admin).
+- La **clé API** et le **secret webhook** s’affichent **une seule fois** (pop-up admin à la création, ou pop-up Paramètres → Développeur). Ils ne restent plus visibles ensuite.
 
 **Attention :** `POST /api/v1/partner/trades` crée une **vraie vente Skinplace / Steam**. En prod, ne le lance que si tu acceptes de vendre un skin du compte de test.
 
@@ -58,9 +58,9 @@ Si tu ne veux pas passer par le self-service client :
    - Nom partenaire (ex. `Test Client API`)
    - **ID utilisateur lié** = le cuid copié à l’étape 5
    - Limite req/min = `100` (défaut)
+   - **Scopes** : cochez uniquement ce dont le partenaire a besoin (`read` par défaut ; `trade` / `payout` si besoin). Les clés déjà créées ne sont pas modifiées.
 3. Clique **Générer la clé**.
-4. La clé (`msk_live_…`) et le secret webhook restent visibles sur `/admin/api-clients` et sur la fiche utilisateur.
-5. La clé part avec les scopes `read`, `trade`, `payout` par défaut.
+4. Une pop-up affiche la clé (`msk_live_…`) et le secret webhook **une seule fois**. Copiez-les pour le partenaire — ils ne seront plus réaffichés (ni sur la fiche utilisateur).
 
 Les deux chemins sont valides. Le parcours « vrai client » est celui du § 3 (switch) + § 4 et 5.
 
@@ -95,10 +95,10 @@ Pour quitter : bouton **Quitter l’impersonation** sur la bannière.
 2. Ouvre l’onglet **Développeur**.
 3. Si le programme n’est pas activé, tu vois un message du type « réservé aux membres du programme développeur ». Retourne au § 3.
 4. Clique **Créer / générer la clé** (confirme la boîte de dialogue).
-5. La page affiche en entier :
+5. Une pop-up affiche en entier :
    - `api_key` : commence par `msk_live_`
    - `webhook_secret` : hex 64 caractères
-6. Les identifiants restent visibles dans cet onglet (bouton copier).
+6. Copie-les tout de suite : ils ne seront plus réaffichés dans cet onglet (seulement le préfixe).
 
 **Régénérer** invalide **immédiatement** l’ancienne clé. Tous les appels avec l’ancienne Bearer échouent en 401.
 

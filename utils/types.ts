@@ -1159,6 +1159,10 @@ export interface Messages {
       regenerateSuccess: string;
       credentialsWarning: string;
       credentialsStayVisible: string;
+      copyNowTitle: string;
+      copyNowDescription: string;
+      copiedConfirm: string;
+      prefixLabel: string;
       apiKeyLabel: string;
       webhookSecretLabel: string;
       apiKeyUnavailable: string;

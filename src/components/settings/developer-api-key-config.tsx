@@ -8,6 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { KeyIcon, ArrowPathIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
 import { SecretValueField } from '@/components/ui/secret-value-field';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 interface ApiClientInfo {
@@ -20,8 +28,11 @@ interface ApiClientInfo {
   webhook_url: string | null;
   last_used_at: string | null;
   created_at: string;
-  api_key: string | null;
-  webhook_secret: string | null;
+}
+
+interface RevealedCredentials {
+  api_key: string;
+  webhook_secret: string;
 }
 
 export default function DeveloperApiKeyConfig() {
@@ -32,6 +43,7 @@ export default function DeveloperApiKeyConfig() {
   const [eligible, setEligible] = useState(false);
   const [client, setClient] = useState<ApiClientInfo | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [revealed, setRevealed] = useState<RevealedCredentials | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -63,6 +75,9 @@ export default function DeveloperApiKeyConfig() {
         return;
       }
       setClient(data.client ?? null);
+      if (data.api_key && data.webhook_secret) {
+        setRevealed({ api_key: data.api_key, webhook_secret: data.webhook_secret });
+      }
       toast.success(client ? t.regenerateSuccess : t.createSuccess);
     } finally {
       setGenerating(false);
@@ -110,24 +125,10 @@ export default function DeveloperApiKeyConfig() {
               </Badge>
             </div>
             <p className="text-muted-foreground">{t.credentialsStayVisible}</p>
-            <SecretValueField
-              label={t.apiKeyLabel}
-              value={client.api_key}
-              emptyHint={`${client.key_prefix}… — ${t.apiKeyUnavailable}`}
-              showLabel={t.show}
-              hideLabel={t.hide}
-              copyLabel={t.copy}
-              copiedLabel={t.copied}
-            />
-            <SecretValueField
-              label={t.webhookSecretLabel}
-              value={client.webhook_secret}
-              emptyHint={t.webhookSecretUnavailable}
-              showLabel={t.show}
-              hideLabel={t.hide}
-              copyLabel={t.copy}
-              copiedLabel={t.copied}
-            />
+            <p>
+              <span className="text-muted-foreground">{t.prefixLabel}: </span>
+              <code className="font-mono">{client.key_prefix}…</code>
+            </p>
             <p>
               <span className="text-muted-foreground">{t.scopesLabel}: </span>
               {client.scopes.join(', ')}
@@ -171,6 +172,38 @@ export default function DeveloperApiKeyConfig() {
           </Button>
         </div>
       </CardContent>
+
+      <Dialog open={!!revealed} onOpenChange={(open) => { if (!open) setRevealed(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.copyNowTitle}</DialogTitle>
+            <DialogDescription>{t.copyNowDescription}</DialogDescription>
+          </DialogHeader>
+          {revealed && (
+            <div className="space-y-4">
+              <SecretValueField
+                label={t.apiKeyLabel}
+                value={revealed.api_key}
+                showLabel={t.show}
+                hideLabel={t.hide}
+                copyLabel={t.copy}
+                copiedLabel={t.copied}
+              />
+              <SecretValueField
+                label={t.webhookSecretLabel}
+                value={revealed.webhook_secret}
+                showLabel={t.show}
+                hideLabel={t.hide}
+                copyLabel={t.copy}
+                copiedLabel={t.copied}
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setRevealed(null)}>{t.copiedConfirm}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
