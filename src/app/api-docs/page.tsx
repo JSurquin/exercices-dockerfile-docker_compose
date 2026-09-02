@@ -18,9 +18,16 @@ import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
 import {
   PARTNER_API_BASE_URL,
+  PARTNER_API_SUPPORT_EMAIL,
+  buildPartnerEndpointBruno,
   buildPartnerEndpointCurl,
+  buildPartnerEndpointInsomnia,
+  buildPartnerEndpointPostman,
+  partnerBrunoEnvironment,
   partnerEndpointCatalog,
   partnerEndpointResponseExamples,
+  partnerInsomniaExport,
+  partnerPostmanCollection,
   partnerResponseExamples,
   partnerWebhookSignatureExample,
   type PartnerEndpointCatalogItem,
@@ -162,14 +169,19 @@ function CodePanel({
   code,
   copyLabel,
   copiedLabel,
+  label,
 }: {
   code: string;
   copyLabel: string;
   copiedLabel: string;
+  label?: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/70 bg-zinc-950 text-zinc-100">
-      <div className="absolute right-2 top-2 z-10">
+    <div className="overflow-hidden rounded-xl border border-border bg-zinc-950 text-zinc-100">
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+          {label ?? 'code'}
+        </span>
         <CopyButton
           value={code}
           copyLabel={copyLabel}
@@ -177,7 +189,7 @@ function CodePanel({
           className="text-zinc-300 hover:text-white hover:bg-white/10"
         />
       </div>
-      <pre className="overflow-x-auto p-4 pr-24 text-[13px] leading-relaxed">
+      <pre className="overflow-x-auto p-4 text-[13px] leading-relaxed text-zinc-100">
         <code>{code}</code>
       </pre>
     </div>
@@ -188,7 +200,8 @@ function EndpointBlock({
   endpoint,
   description,
   responseShape,
-  requestLabel,
+  bodyLabel,
+  queryLabel,
   responseLabel,
   copyLabel,
   copiedLabel,
@@ -196,48 +209,76 @@ function EndpointBlock({
   endpoint: PartnerEndpointCatalogItem;
   description: string;
   responseShape: string;
-  requestLabel: string;
+  bodyLabel: string;
+  queryLabel: string;
   responseLabel: string;
   copyLabel: string;
   copiedLabel: string;
 }) {
   const curl = buildPartnerEndpointCurl(endpoint);
+  const postman = buildPartnerEndpointPostman(endpoint);
+  const bruno = buildPartnerEndpointBruno(endpoint);
+  const insomnia = buildPartnerEndpointInsomnia(endpoint);
   const response = partnerEndpointResponseExamples[endpoint.id];
 
   return (
     <article id={`route-${endpoint.id}`} className="scroll-mt-28 border-b border-border/60 py-10 last:border-b-0">
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <MethodBadge method={endpoint.method} />
-        <code className="font-mono text-sm break-all">{endpoint.path}</code>
+        <code className="font-mono text-sm font-medium break-all text-foreground">{endpoint.path}</code>
         <Badge variant="outline" className="font-mono text-[10px]">
           {endpoint.scope}
         </Badge>
-        <span className="text-xs text-muted-foreground">{endpoint.rateLimit}</span>
+        <span className="text-xs text-foreground/70">{endpoint.rateLimit}</span>
       </div>
-      <p className="text-sm text-muted-foreground mb-4 max-w-2xl">{description}</p>
+      <p className="text-[15px] leading-7 text-foreground mb-4 max-w-2xl">{description}</p>
       {endpoint.body && (
-        <p className="text-xs text-muted-foreground mb-3">
-          Body <code className="break-all">{endpoint.body}</code>
+        <p className="text-sm leading-6 text-foreground mb-3">
+          {bodyLabel}{' '}
+          <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[13px] break-all">{endpoint.body}</code>
         </p>
       )}
       {endpoint.query && (
-        <p className="text-xs text-muted-foreground mb-3">
-          Query <code>{endpoint.query}</code>
+        <p className="text-sm leading-6 text-foreground mb-3">
+          {queryLabel} <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[13px]">{endpoint.query}</code>
         </p>
       )}
-      <p className="text-xs text-muted-foreground mb-4">
-        {responseLabel}: <code className="break-all">{responseShape}</code>
+      <p className="text-sm leading-6 text-foreground/85 mb-4">
+        {responseLabel}:{' '}
+        <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[13px] break-all">{responseShape}</code>
       </p>
-      <Tabs defaultValue="request" className="w-full">
-        <TabsList className="mb-3">
-          <TabsTrigger value="request">{requestLabel}</TabsTrigger>
-          <TabsTrigger value="response">{responseLabel}</TabsTrigger>
+      <Tabs defaultValue="curl" className="w-full">
+        <TabsList className="mb-3 h-auto w-full flex-wrap justify-start gap-1">
+          <TabsTrigger value="curl" className="flex-none">
+            cURL
+          </TabsTrigger>
+          <TabsTrigger value="postman" className="flex-none">
+            Postman
+          </TabsTrigger>
+          <TabsTrigger value="bruno" className="flex-none">
+            Bruno
+          </TabsTrigger>
+          <TabsTrigger value="insomnia" className="flex-none">
+            Insomnia
+          </TabsTrigger>
+          <TabsTrigger value="response" className="flex-none">
+            {responseLabel}
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="request">
-          <CodePanel code={curl} copyLabel={copyLabel} copiedLabel={copiedLabel} />
+        <TabsContent value="curl">
+          <CodePanel code={curl} label="cURL" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+        </TabsContent>
+        <TabsContent value="postman">
+          <CodePanel code={postman} label="Postman v2.1" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+        </TabsContent>
+        <TabsContent value="bruno">
+          <CodePanel code={bruno} label=".bru" copyLabel={copyLabel} copiedLabel={copiedLabel} />
+        </TabsContent>
+        <TabsContent value="insomnia">
+          <CodePanel code={insomnia} label="Insomnia v4" copyLabel={copyLabel} copiedLabel={copiedLabel} />
         </TabsContent>
         <TabsContent value="response">
-          <CodePanel code={response} copyLabel={copyLabel} copiedLabel={copiedLabel} />
+          <CodePanel code={response} label="JSON" copyLabel={copyLabel} copiedLabel={copiedLabel} />
         </TabsContent>
       </Tabs>
     </article>
@@ -284,6 +325,7 @@ export default function ApiDocsPage() {
   const toc = [
     { href: '#start', label: t.tocStart },
     { href: '#auth', label: t.tocAuth },
+    { href: '#clients', label: t.tocClients },
     { href: '#routes', label: t.tocRoutes },
     { href: '#flow', label: t.tocFlow },
     { href: '#webhooks', label: t.tocWebhooks },
@@ -296,11 +338,11 @@ export default function ApiDocsPage() {
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-theme-accent mb-3">{t.version}</p>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">{t.title}</h1>
-          <p className="text-muted-foreground max-w-2xl mb-6">{t.subtitle}</p>
+          <p className="text-lg leading-8 text-foreground/90 max-w-2xl mb-6">{t.subtitle}</p>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/80 px-3 py-2 font-mono text-xs">
-              <span className="text-muted-foreground">{t.baseUrlLabel}</span>
-              <span>{BASE_PATH}</span>
+            <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs">
+              <span className="text-foreground/70">{t.baseUrlLabel}</span>
+              <span className="font-medium text-foreground">{BASE_PATH}</span>
               <CopyButton value={BASE_PATH} copyLabel={t.copy} copiedLabel={t.copied} />
             </div>
             <Button variant="outline" size="sm" asChild>
@@ -326,13 +368,13 @@ export default function ApiDocsPage() {
         <div className="lg:grid lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-12">
           <nav className="hidden lg:block">
             <div className="sticky top-24 space-y-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t.onThisPage}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-foreground/70">{t.onThisPage}</p>
               <ul className="space-y-1 border-l border-border">
                 {toc.map((item) => (
                   <li key={item.href}>
                     <a
                       href={item.href}
-                      className="block border-l-2 border-transparent -ml-px py-1 pl-4 text-sm text-muted-foreground hover:border-theme-accent hover:text-foreground"
+                      className="block border-l-2 border-transparent -ml-px py-1 pl-4 text-sm text-foreground/80 hover:border-theme-accent hover:text-foreground"
                     >
                       {item.label}
                     </a>
@@ -368,7 +410,7 @@ export default function ApiDocsPage() {
                     <li key={step.title} className="rounded-2xl border border-border/70 bg-card/50 p-5">
                       <p className="text-xs font-mono text-theme-accent mb-2">0{index + 1}</p>
                       <h3 className="font-semibold mb-2">{step.title.replace(/^\d+\.\s*/, '')}</h3>
-                      <p className="text-sm text-muted-foreground">{step.body}</p>
+                      <p className="text-[15px] leading-6 text-foreground/90">{step.body}</p>
                     </li>
                   ))}
                 </ol>
@@ -377,7 +419,7 @@ export default function ApiDocsPage() {
               <div className="grid gap-8 md:grid-cols-2">
                 <div>
                   <h3 className="font-semibold mb-3">{t.prerequisitesTitle}</h3>
-                  <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                  <ul className="list-disc pl-5 space-y-2 text-[15px] leading-7 text-foreground">
                     {copy.prerequisitesItems.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
@@ -385,34 +427,92 @@ export default function ApiDocsPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold mb-3">{t.scopesTitle}</h3>
-                  <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                  <ul className="list-disc pl-5 space-y-2 text-[15px] leading-7 text-foreground">
                     {copy.scopesItems.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
-                  <p className="text-sm text-muted-foreground mt-3">{copy.scopesReadOnly}</p>
+                  <p className="text-[15px] leading-7 text-foreground mt-3">{copy.scopesReadOnly}</p>
                 </div>
               </div>
             </section>
 
             <section id="auth" className="scroll-mt-28 py-12 border-b border-border/60">
-              <h2 className="text-2xl font-semibold mb-4">{t.authentication}</h2>
-              <p className="text-sm text-muted-foreground max-w-2xl mb-4">{t.authDescription}</p>
+              <h2 className="text-2xl font-semibold tracking-tight mb-4">{t.authentication}</h2>
+              <p className="text-[15px] leading-7 text-foreground max-w-2xl mb-4">{t.authDescription}</p>
               <CodePanel
                 code="Authorization: Bearer msk_live_YOUR_KEY"
+                label="Header"
                 copyLabel={t.copy}
                 copiedLabel={t.copied}
               />
-              <p className="text-sm text-muted-foreground mt-4">
-                {t.authHostNote} <code className="font-mono text-xs">{BASE_PATH}/</code>
+              <p className="text-[15px] leading-7 text-foreground mt-4">
+                {t.authHostNote}{' '}
+                <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[13px]">{BASE_PATH}/</code>
               </p>
-              <p className="text-sm text-amber-700 dark:text-amber-400 mt-4">{t.securityWarning}</p>
+              <p className="text-[15px] leading-7 font-medium text-amber-800 dark:text-amber-300 mt-4">
+                {t.securityWarning}
+              </p>
+            </section>
+
+            <section id="clients" className="scroll-mt-28 py-12 border-b border-border/60 space-y-6">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight mb-3">{t.clientsTitle}</h2>
+                <p className="text-[15px] leading-7 text-foreground max-w-2xl">{t.clientsIntro}</p>
+              </div>
+              <ul className="grid gap-3 sm:grid-cols-3">
+                {[t.clientsPostmanHint, t.clientsBrunoHint, t.clientsInsomniaHint].map((hint) => (
+                  <li
+                    key={hint}
+                    className="rounded-xl border border-border bg-card p-4 text-[15px] leading-6 text-foreground"
+                  >
+                    {hint}
+                  </li>
+                ))}
+              </ul>
+              <Tabs defaultValue="postman" className="w-full">
+                <TabsList className="mb-3 h-auto w-full flex-wrap justify-start gap-1">
+                  <TabsTrigger value="postman" className="flex-none">
+                    Postman
+                  </TabsTrigger>
+                  <TabsTrigger value="bruno" className="flex-none">
+                    Bruno
+                  </TabsTrigger>
+                  <TabsTrigger value="insomnia" className="flex-none">
+                    Insomnia
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="postman">
+                  <CodePanel
+                    code={partnerPostmanCollection}
+                    label="Collection v2.1"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+                <TabsContent value="bruno">
+                  <CodePanel
+                    code={partnerBrunoEnvironment}
+                    label="environments/dev.bru"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+                <TabsContent value="insomnia">
+                  <CodePanel
+                    code={partnerInsomniaExport}
+                    label="Export v4"
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </TabsContent>
+              </Tabs>
             </section>
 
             <section id="routes" className="scroll-mt-28 py-4">
-              <h2 className="text-2xl font-semibold pt-8">{t.availableEndpoints}</h2>
-              <p className="text-sm text-muted-foreground mt-2 mb-2">{t.conventionTitle}</p>
-              <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground mb-2">
+              <h2 className="text-2xl font-semibold tracking-tight pt-8">{t.availableEndpoints}</h2>
+              <p className="text-[15px] leading-7 font-medium text-foreground mt-3 mb-2">{t.conventionTitle}</p>
+              <ul className="list-disc pl-5 space-y-2 text-[15px] leading-7 text-foreground mb-2">
                 {copy.conventionItems.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
@@ -423,7 +523,8 @@ export default function ApiDocsPage() {
                   endpoint={endpoint}
                   description={copy.endpoints[endpoint.id].description}
                   responseShape={copy.endpoints[endpoint.id].response}
-                  requestLabel={t.requestTab}
+                  bodyLabel={t.bodyLabel}
+                  queryLabel={t.queryLabel}
                   responseLabel={t.responseLabel}
                   copyLabel={t.copy}
                   copiedLabel={t.copied}
@@ -432,8 +533,8 @@ export default function ApiDocsPage() {
             </section>
 
             <section id="flow" className="scroll-mt-28 py-12 border-b border-border/60">
-              <h2 className="text-2xl font-semibold mb-4">{t.flowTitle}</h2>
-              <ol className="list-decimal pl-5 space-y-3 text-sm text-muted-foreground">
+              <h2 className="text-2xl font-semibold tracking-tight mb-4">{t.flowTitle}</h2>
+              <ol className="list-decimal pl-5 space-y-3 text-[15px] leading-7 text-foreground">
                 {copy.flowItems.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
@@ -441,108 +542,119 @@ export default function ApiDocsPage() {
             </section>
 
             <section id="webhooks" className="scroll-mt-28 py-12 border-b border-border/60 space-y-4">
-              <h2 className="text-2xl font-semibold">{t.webhooksTitle}</h2>
-              <p className="text-sm text-muted-foreground">{copy.webhookIntro}</p>
+              <h2 className="text-2xl font-semibold tracking-tight">{t.webhooksTitle}</h2>
+              <p className="text-[15px] leading-7 text-foreground">{copy.webhookIntro}</p>
               <div>
-                <h3 className="font-semibold mb-2 text-sm">{t.webhookHeadersTitle}</h3>
-                <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                <h3 className="font-semibold mb-2">{t.webhookHeadersTitle}</h3>
+                <ul className="list-disc pl-5 space-y-2 text-[15px] leading-7 text-foreground">
                   {copy.webhookHeaders.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
               </div>
-              <p className="text-sm text-muted-foreground">{copy.webhookEvents}</p>
-              <p className="text-sm text-muted-foreground">{copy.webhookIdempotence}</p>
-              <p className="text-sm text-muted-foreground">{copy.webhookRetries}</p>
-              <p className="text-sm text-muted-foreground">{copy.webhookSecretHint}</p>
-              <CodePanel code={partnerResponseExamples.webhook} copyLabel={t.copy} copiedLabel={t.copied} />
-              <h3 className="font-semibold text-sm">{t.webhookSignatureTitle}</h3>
-              <CodePanel code={partnerWebhookSignatureExample} copyLabel={t.copy} copiedLabel={t.copied} />
+              <p className="text-[15px] leading-7 text-foreground">{copy.webhookEvents}</p>
+              <p className="text-[15px] leading-7 text-foreground">{copy.webhookIdempotence}</p>
+              <p className="text-[15px] leading-7 text-foreground">{copy.webhookRetries}</p>
+              <p className="text-[15px] leading-7 text-foreground">{copy.webhookSecretHint}</p>
+              <CodePanel
+                code={partnerResponseExamples.webhook}
+                label="JSON"
+                copyLabel={t.copy}
+                copiedLabel={t.copied}
+              />
+              <h3 className="font-semibold">{t.webhookSignatureTitle}</h3>
+              <CodePanel
+                code={partnerWebhookSignatureExample}
+                label="Node.js"
+                copyLabel={t.copy}
+                copiedLabel={t.copied}
+              />
             </section>
 
             <section id="errors" className="scroll-mt-28 py-12 space-y-8">
               <div>
-                <h2 className="text-2xl font-semibold mb-4">{t.errorsTitle}</h2>
-                <p className="text-sm text-muted-foreground mb-4">{copy.errorIntro}</p>
-                <ul className="space-y-2 text-sm">
+                <h2 className="text-2xl font-semibold tracking-tight mb-4">{t.errorsTitle}</h2>
+                <p className="text-[15px] leading-7 text-foreground mb-4">{copy.errorIntro}</p>
+                <ul className="space-y-2 text-[15px]">
                   {(Object.entries(copy.errorCodes) as [string, string][]).map(([code, text]) => (
                     <li key={code} className="flex flex-col sm:flex-row sm:gap-3 border-b border-border/40 py-2">
-                      <code className="font-mono text-xs shrink-0 text-theme-accent">{code}</code>
-                      <span className="text-muted-foreground">{text}</span>
+                      <code className="font-mono text-xs shrink-0 text-theme-accent font-semibold">{code}</code>
+                      <span className="text-foreground leading-7">{text}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="text-xs text-muted-foreground mt-4">
-                  {t.errorEnvelopeLabel}: <code>{copy.errorEnvelope}</code>
+                <p className="text-sm leading-6 text-foreground mt-4">
+                  {t.errorEnvelopeLabel}:{' '}
+                  <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[13px]">{copy.errorEnvelope}</code>
                 </p>
-                <p className="text-sm text-muted-foreground mt-2">{copy.errorExtras}</p>
+                <p className="text-[15px] leading-7 text-foreground mt-2">{copy.errorExtras}</p>
               </div>
 
               <div className="grid gap-8 sm:grid-cols-2">
                 <div>
                   <h3 className="font-semibold mb-3">{t.rateLimits}</h3>
-                  <p className="text-sm text-muted-foreground mb-3">{t.rateLimitsDesc}</p>
-                  <p className="flex justify-between text-sm border-b border-border/40 py-2">
+                  <p className="text-[15px] leading-7 text-foreground mb-3">{t.rateLimitsDesc}</p>
+                  <p className="flex justify-between text-[15px] border-b border-border/40 py-2">
                     <span>{t.rateLimitLabels.default}</span>
-                    <span className="font-mono text-xs">100/min</span>
+                    <span className="font-mono text-sm">100/min</span>
                   </p>
-                  <p className="flex justify-between text-sm py-2">
+                  <p className="flex justify-between text-[15px] py-2">
                     <span>{t.rateLimitLabels.webhook}</span>
-                    <span className="font-mono text-xs">10/min</span>
+                    <span className="font-mono text-sm">10/min</span>
                   </p>
                 </div>
                 <div>
                   <h3 className="font-semibold mb-3">{t.statusCodes}</h3>
-                  <ul className="text-sm space-y-2">
-                    <li className="flex justify-between">
+                  <ul className="text-[15px] space-y-2">
+                    <li className="flex justify-between gap-4">
                       <span className="font-mono">200</span>
-                      <span className="text-muted-foreground">{t.statusCodesLabels.success}</span>
+                      <span className="text-foreground">{t.statusCodesLabels.success}</span>
                     </li>
-                    <li className="flex justify-between">
+                    <li className="flex justify-between gap-4">
                       <span className="font-mono">201</span>
-                      <span className="text-muted-foreground">{t.statusCodesLabels.created}</span>
+                      <span className="text-foreground">{t.statusCodesLabels.created}</span>
                     </li>
-                    <li className="flex justify-between">
+                    <li className="flex justify-between gap-4">
                       <span className="font-mono">400</span>
-                      <span className="text-muted-foreground">{t.statusCodesLabels.badRequest}</span>
+                      <span className="text-foreground">{t.statusCodesLabels.badRequest}</span>
                     </li>
-                    <li className="flex justify-between">
+                    <li className="flex justify-between gap-4">
                       <span className="font-mono">401</span>
-                      <span className="text-muted-foreground">{t.statusCodesLabels.unauthorized}</span>
+                      <span className="text-foreground">{t.statusCodesLabels.unauthorized}</span>
                     </li>
-                    <li className="flex justify-between">
+                    <li className="flex justify-between gap-4">
                       <span className="font-mono">403</span>
-                      <span className="text-muted-foreground">{t.statusCodesLabels.forbidden}</span>
+                      <span className="text-foreground">{t.statusCodesLabels.forbidden}</span>
                     </li>
-                    <li className="flex justify-between">
+                    <li className="flex justify-between gap-4">
                       <span className="font-mono">404</span>
-                      <span className="text-muted-foreground">{t.statusCodesLabels.notFound}</span>
+                      <span className="text-foreground">{t.statusCodesLabels.notFound}</span>
                     </li>
-                    <li className="flex justify-between">
+                    <li className="flex justify-between gap-4">
                       <span className="font-mono">429</span>
-                      <span className="text-muted-foreground">{t.statusCodesLabels.tooManyRequests}</span>
+                      <span className="text-foreground">{t.statusCodesLabels.tooManyRequests}</span>
                     </li>
-                    <li className="flex justify-between">
+                    <li className="flex justify-between gap-4">
                       <span className="font-mono">502</span>
-                      <span className="text-muted-foreground">{t.statusCodesLabels.badGateway}</span>
+                      <span className="text-foreground">{t.statusCodesLabels.badGateway}</span>
                     </li>
-                    <li className="flex justify-between">
+                    <li className="flex justify-between gap-4">
                       <span className="font-mono">500</span>
-                      <span className="text-muted-foreground">{t.statusCodesLabels.serverError}</span>
+                      <span className="text-foreground">{t.statusCodesLabels.serverError}</span>
                     </li>
                   </ul>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/70 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="rounded-2xl border border-border p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h3 className="font-semibold">{t.needHelp}</h3>
-                  <p className="text-sm text-muted-foreground">{t.supportDesc}</p>
+                  <p className="text-[15px] leading-7 text-foreground">{t.supportDesc}</p>
                 </div>
                 <Button variant="outline" asChild>
-                  <a href={`mailto:${t.supportEmail}`}>
+                  <a href={`mailto:${PARTNER_API_SUPPORT_EMAIL}`}>
                     <EnvelopeIcon className="mr-2 h-4 w-4" />
-                    {t.supportEmail}
+                    {PARTNER_API_SUPPORT_EMAIL}
                   </a>
                 </Button>
               </div>

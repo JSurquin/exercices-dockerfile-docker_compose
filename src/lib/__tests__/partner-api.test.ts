@@ -31,7 +31,7 @@ import { partnerCreateApiClientSchema, partnerCreateTradeSchema, partnerEstimate
 import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/validation';
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
-import { PARTNER_API_BASE_URL, partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples } from '@/lib/partner-api/docs-content';
+import { PARTNER_API_BASE_URL, PARTNER_API_SUPPORT_EMAIL, partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples, partnerEndpointCatalog, partnerPostmanCollection, partnerInsomniaExport, partnerBrunoEnvironment, buildPartnerEndpointBruno, buildPartnerEndpointPostman, buildPartnerEndpointInsomnia } from '@/lib/partner-api/docs-content';
 import { formatPartnerErrorCodesGuide, getPartnerDocsCopy } from '@/lib/partner-api/docs-i18n';
 import { locales } from '@/lib/i18n';
 import {
@@ -254,6 +254,21 @@ describe('partner-api JSON contract', () => {
     expect(partnerCurlExamples).not.toMatch(/@moonskin\/sdk|moonskin-sdk/);
   });
 
+  it('exposes Postman, Bruno and Insomnia import snippets', () => {
+    const me = partnerEndpointCatalog.find((endpoint) => endpoint.id === 'me');
+    const estimate = partnerEndpointCatalog.find((endpoint) => endpoint.id === 'estimate');
+    expect(me).toBeDefined();
+    expect(estimate).toBeDefined();
+    expect(buildPartnerEndpointBruno(me!)).toMatch(/auth:bearer/);
+    expect(buildPartnerEndpointBruno(me!)).toContain(`${PARTNER_API_BASE_URL}/api/v1/partner/me`);
+    expect(buildPartnerEndpointPostman(estimate!)).toContain('schema.getpostman.com');
+    expect(buildPartnerEndpointPostman(estimate!)).toContain('asset_ids');
+    expect(buildPartnerEndpointInsomnia(me!)).toContain('__export_format');
+    expect(partnerPostmanCollection).toContain('/api/v1/partner/trades');
+    expect(partnerInsomniaExport).toContain('wrk_moonskin');
+    expect(partnerBrunoEnvironment).toContain('api_key');
+  });
+
   it('documents every standard partner error code', () => {
     for (const code of PARTNER_ERROR_CODE_LIST) {
       expect(partnerErrorCodesGuide).toContain(code);
@@ -268,7 +283,9 @@ describe('partner-api JSON contract', () => {
     expect(partnerPrerequisitesGuide).toMatch(/Trade Link/i);
     expect(partnerPrerequisitesGuide).toMatch(/HTTPS/);
     expect(partnerPrerequisitesGuide).toMatch(/100 requests/);
-    expect(partnerPrerequisitesGuide).toContain('api-support@moonskin.gg');
+    expect(partnerPrerequisitesGuide).toContain(PARTNER_API_SUPPORT_EMAIL);
+    expect(partnerPrerequisitesGuide).not.toContain('api-support@moonskin.gg');
+    expect(PARTNER_API_SUPPORT_EMAIL).toBe('contact@moonskin.fun');
   });
 
   it('translates partner docs in fr, en and cn without inventing an SDK', () => {
@@ -281,6 +298,7 @@ describe('partner-api JSON contract', () => {
       }
       expect(copy.endpoints.createTrade.description.length).toBeGreaterThan(20);
       expect(copy.prerequisitesItems.join(' ')).toMatch(/KYC/i);
+      expect(copy.prerequisitesItems.join(' ')).toContain('contact@moonskin.fun');
       expect(JSON.stringify(copy)).not.toMatch(/@moonskin\/sdk|moonskin-sdk/);
     }
   });

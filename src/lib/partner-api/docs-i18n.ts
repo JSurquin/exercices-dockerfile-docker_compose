@@ -65,7 +65,7 @@ const fr: PartnerDocsCopy = {
     'Un moyen de paiement SEPA ou crypto déjà configuré dans le dashboard avant POST /payouts.',
     'URL webhook HTTPS publique (localhost, IP privées et URLs avec identifiants refusés).',
     'Limite par défaut : 100 requêtes / minute / clé (l’admin peut régler 10–1000).',
-    'Contact technique : api-support@moonskin.gg',
+    'Contact technique : contact@moonskin.fun',
   ],
   flowItems: [
     'Configurer le webhook : PUT /api/v1/partner/webhook',
@@ -184,7 +184,7 @@ const en: PartnerDocsCopy = {
     'A SEPA or crypto payout method already configured in the dashboard before POST /payouts.',
     'Public HTTPS webhook URL (localhost, private IPs and credentialed URLs are rejected).',
     'Default rate limit: 100 requests / minute / key (admin can set 10–1000).',
-    'Technical contact: api-support@moonskin.gg',
+    'Technical contact: contact@moonskin.fun',
   ],
   flowItems: [
     'Configure the webhook: PUT /api/v1/partner/webhook',
@@ -302,7 +302,7 @@ const cn: PartnerDocsCopy = {
     '调用 POST /payouts 前，须在控制台配置好 SEPA 或加密货币收款方式。',
     '公开 HTTPS webhook 地址（拒绝 localhost、内网 IP 和带凭据的 URL）。',
     '默认限流：每密钥每分钟 100 次（管理员可设为 10–1000）。',
-    '技术联系：api-support@moonskin.gg',
+    '技术联系：contact@moonskin.fun',
   ],
   flowItems: [
     '配置 webhook：PUT /api/v1/partner/webhook',

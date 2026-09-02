@@ -5521,10 +5521,16 @@ export interface Messages {
     onThisPage: string;
     tocStart: string;
     tocAuth: string;
+    tocClients: string;
     tocRoutes: string;
     tocFlow: string;
     tocWebhooks: string;
     tocErrors: string;
+    clientsTitle: string;
+    clientsIntro: string;
+    clientsPostmanHint: string;
+    clientsBrunoHint: string;
+    clientsInsomniaHint: string;
     statusCodesLabels: {
       success: string;
       created: string;

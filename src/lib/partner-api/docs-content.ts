@@ -7,6 +7,23 @@ import {
 
 export const PARTNER_API_BASE_URL = 'https://www.moonskin.eu';
 
+export const PARTNER_API_SUPPORT_EMAIL = 'contact@moonskin.fun';
+
+const POSTMAN_COLLECTION_SCHEMA = 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json';
+
+const ENDPOINT_CLIENT_NAMES: Record<PartnerEndpointId, string> = {
+  me: 'Get profile',
+  balance: 'Get balance',
+  inventory: 'Get inventory',
+  estimate: 'Estimate items',
+  createTrade: 'Create sale',
+  listTrades: 'List sales',
+  getTrade: 'Get sale',
+  payouts: 'Request payout',
+  putWebhook: 'Set webhook',
+  getWebhook: 'Get webhook',
+};
+
 export type PartnerEndpointCatalogItem = {
   id: PartnerEndpointId;
   method: 'GET' | 'POST' | 'PUT';
@@ -65,9 +82,13 @@ export const partnerEndpointCatalog: PartnerEndpointCatalogItem[] = [
   { id: 'getWebhook', method: 'GET', path: '/api/v1/partner/webhook', scope: 'read', rateLimit: '100/min' },
 ];
 
-export function buildPartnerEndpointCurl(endpoint: PartnerEndpointCatalogItem): string {
+function partnerEndpointUrl(endpoint: PartnerEndpointCatalogItem): string {
   const path = endpoint.path.replace('{id}', 'TRADE-123');
-  const url = `${PARTNER_API_BASE_URL}${path}${endpoint.query ?? ''}`;
+  return `${PARTNER_API_BASE_URL}${path}${endpoint.query ?? ''}`;
+}
+
+export function buildPartnerEndpointCurl(endpoint: PartnerEndpointCatalogItem): string {
+  const url = partnerEndpointUrl(endpoint);
   const lines = [
     endpoint.method === 'GET' ? `curl -s "${url}" \\` : `curl -s -X ${endpoint.method} "${url}" \\`,
     '  -H "Authorization: Bearer msk_live_YOUR_KEY"',
@@ -79,6 +100,147 @@ export function buildPartnerEndpointCurl(endpoint: PartnerEndpointCatalogItem): 
   }
   return lines.join('\n');
 }
+
+export function buildPartnerEndpointBruno(endpoint: PartnerEndpointCatalogItem): string {
+  const url = partnerEndpointUrl(endpoint);
+  const method = endpoint.method.toLowerCase();
+  const lines = [
+    'meta {',
+    `  name: ${ENDPOINT_CLIENT_NAMES[endpoint.id]}`,
+    '  type: http',
+    '  seq: 1',
+    '}',
+    '',
+    `${method} {`,
+    `  url: ${url}`,
+    `  body: ${endpoint.body ? 'json' : 'none'}`,
+    '  auth: bearer',
+    '}',
+    '',
+    'auth:bearer {',
+    '  token: {{api_key}}',
+    '}',
+  ];
+  if (endpoint.body) {
+    lines.push('', 'headers {', '  Content-Type: application/json', '}', '', 'body:json {', `  ${endpoint.body}`, '}');
+  }
+  return lines.join('\n');
+}
+
+function postmanItem(endpoint: PartnerEndpointCatalogItem) {
+  const headers = [{ key: 'Authorization', value: 'Bearer {{api_key}}' }];
+  if (endpoint.body) {
+    headers.push({ key: 'Content-Type', value: 'application/json' });
+  }
+  const request: Record<string, unknown> = {
+    method: endpoint.method,
+    header: headers,
+    url: partnerEndpointUrl(endpoint),
+  };
+  if (endpoint.body) {
+    request.body = {
+      mode: 'raw',
+      raw: endpoint.body,
+      options: { raw: { language: 'json' } },
+    };
+  }
+  return {
+    name: `${endpoint.method} ${endpoint.path}`,
+    request,
+  };
+}
+
+export function buildPartnerEndpointPostman(endpoint: PartnerEndpointCatalogItem): string {
+  return JSON.stringify(
+    {
+      info: {
+        name: ENDPOINT_CLIENT_NAMES[endpoint.id],
+        schema: POSTMAN_COLLECTION_SCHEMA,
+      },
+      variable: [{ key: 'api_key', value: 'msk_live_YOUR_KEY' }],
+      item: [postmanItem(endpoint)],
+    },
+    null,
+    2
+  );
+}
+
+function insomniaRequestResource(endpoint: PartnerEndpointCatalogItem, parentId: string, id: string) {
+  return {
+    _id: id,
+    parentId,
+    _type: 'request',
+    name: `${endpoint.method} ${endpoint.path}`,
+    method: endpoint.method,
+    url: partnerEndpointUrl(endpoint),
+    authentication: { type: 'bearer', token: '{{ _.api_key }}' },
+    headers: endpoint.body ? [{ name: 'Content-Type', value: 'application/json' }] : [],
+    body: endpoint.body ? { mimeType: 'application/json', text: endpoint.body } : {},
+  };
+}
+
+export function buildPartnerEndpointInsomnia(endpoint: PartnerEndpointCatalogItem): string {
+  return JSON.stringify(
+    {
+      _type: 'export',
+      __export_format: 4,
+      resources: [
+        { _id: 'wrk_moonskin', parentId: null, _type: 'workspace', name: 'MoonSkin Partner API' },
+        {
+          _id: 'env_moonskin',
+          parentId: 'wrk_moonskin',
+          _type: 'environment',
+          name: 'Base',
+          data: { api_key: 'msk_live_YOUR_KEY' },
+        },
+        insomniaRequestResource(endpoint, 'wrk_moonskin', `req_${endpoint.id}`),
+      ],
+    },
+    null,
+    2
+  );
+}
+
+export const partnerBrunoEnvironment = `vars {
+  api_key: msk_live_YOUR_KEY
+  base_url: ${PARTNER_API_BASE_URL}
+}`;
+
+export const partnerPostmanCollection = JSON.stringify(
+  {
+    info: {
+      name: 'MoonSkin Partner API',
+      description: `HTTPS REST at ${PARTNER_API_BASE_URL}/api/v1/partner. Set api_key to your msk_live_… key from Settings → Developer.`,
+      schema: POSTMAN_COLLECTION_SCHEMA,
+    },
+    variable: [{ key: 'api_key', value: 'msk_live_YOUR_KEY' }],
+    item: partnerEndpointCatalog.map(postmanItem),
+  },
+  null,
+  2
+);
+
+export const partnerInsomniaExport = JSON.stringify(
+  {
+    _type: 'export',
+    __export_format: 4,
+    resources: [
+      { _id: 'wrk_moonskin', parentId: null, _type: 'workspace', name: 'MoonSkin Partner API' },
+      {
+        _id: 'env_moonskin',
+        parentId: 'wrk_moonskin',
+        _type: 'environment',
+        name: 'Base',
+        data: { api_key: 'msk_live_YOUR_KEY', base_url: PARTNER_API_BASE_URL },
+      },
+      ...partnerEndpointCatalog.map((endpoint) =>
+        insomniaRequestResource(endpoint, 'wrk_moonskin', `req_${endpoint.id}`)
+      ),
+    ],
+  },
+  null,
+  2
+);
 
 export const partnerCurlExamples = partnerEndpointCatalog
   .map((endpoint) => `# ${endpoint.method} ${endpoint.path}\n${buildPartnerEndpointCurl(endpoint)}`)
