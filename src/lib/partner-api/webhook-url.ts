@@ -1,5 +1,3 @@
-import { promises as dns } from 'dns';
-
 const BLOCKED_HOSTS = new Set([
   'localhost',
   'metadata.google.internal',
@@ -130,6 +128,7 @@ export async function assertSafeWebhookDeliveryUrl(
 
   const hostname = stripIpv6Brackets(new URL(url).hostname);
   try {
+    const { promises: dns } = await import('node:dns');
     const records = await dns.lookup(hostname, { all: true, verbatim: true });
     if (records.length === 0) {
       return { ok: false, error: 'Webhook URL host could not be resolved' };

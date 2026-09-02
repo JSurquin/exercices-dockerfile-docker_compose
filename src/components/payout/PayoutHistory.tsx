@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, History, CreditCard, Building2, ChevronLeft, ChevronRight, ArrowDownRight, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
-import { clientDisplayPayoutStatus } from '@/lib/merchant-withdraw';
+import { clientDisplayPayoutStatus } from '@/lib/merchant-withdraw-display';
 
 interface Payout {
   id: string;

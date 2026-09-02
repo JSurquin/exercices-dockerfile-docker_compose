@@ -32,7 +32,7 @@ import { FeePreview, computeFees } from '@/components/payout/FeePreview';
 import { NetReceivePreview } from '@/components/payout/NetReceivePreview';
 import { SepaFrPremiumHint } from '@/components/payout/SepaFrPremiumHint';
 import { MerchantWithdrawCard } from '@/components/payout/MerchantWithdrawCard';
-import { clientDisplayPayoutStatus } from '@/lib/merchant-withdraw';
+import { clientDisplayPayoutStatus } from '@/lib/merchant-withdraw-display';
 import {
   WHITEPAY_SUPPORTED_CRYPTOS,
   MEMO_REQUIRED_NETWORKS,

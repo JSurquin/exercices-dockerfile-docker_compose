@@ -10,8 +10,16 @@ import {
 } from '@/lib/whitepay';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { isMerchantAccount } from '@/lib/user-rewards-guard';
+import { MERCHANT_WITHDRAW_PREFIX } from '@/lib/merchant-withdraw-display';
 
-export const MERCHANT_WITHDRAW_PREFIX = 'MOON-MERCHANT-WD-';
+export {
+  MERCHANT_WITHDRAW_PREFIX,
+  isMerchantWithdrawReference,
+  isMerchantWithdrawPayout,
+  merchantWithdrawClientDisplayStatus,
+  clientDisplayPayoutStatus,
+} from '@/lib/merchant-withdraw-display';
+
 export const MERCHANT_WITHDRAW_MAX_PENDING = 3;
 export const MERCHANT_WITHDRAW_MIN_CENTS = 1000;
 export const MERCHANT_WITHDRAW_MAX_CENTS = 1_000_000_00;
@@ -37,33 +45,6 @@ export type MerchantWithdrawCryptoDetails = {
 export type MerchantWithdrawDetails = MerchantWithdrawBankDetails | MerchantWithdrawCryptoDetails;
 
 const BIC_REGEX = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
-
-export function isMerchantWithdrawReference(ref: string | null | undefined): boolean {
-  return !!ref?.startsWith(MERCHANT_WITHDRAW_PREFIX);
-}
-
-export function isMerchantWithdrawPayout(opts: {
-  method?: string;
-  gateFiOrderId?: string | null;
-}): boolean {
-  return opts.method === 'MERCHANT_WITHDRAW' || isMerchantWithdrawReference(opts.gateFiOrderId);
-}
-
-/** Client-facing status for merchant withdraw (display only — DB/API unchanged). */
-export function merchantWithdrawClientDisplayStatus(status: string): string {
-  if (status.toUpperCase() === 'PENDING_APPROVAL') return 'PROCESSING';
-  return status;
-}
-
-export function clientDisplayPayoutStatus(
-  status: string,
-  opts?: { method?: string; gateFiOrderId?: string | null },
-): string {
-  if (isMerchantWithdrawPayout(opts ?? {})) {
-    return merchantWithdrawClientDisplayStatus(status);
-  }
-  return status;
-}
 
 export function generateMerchantWithdrawReference(idempotencyKey?: string): string {
   const suffix = idempotencyKey

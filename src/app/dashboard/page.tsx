@@ -67,7 +67,7 @@ import { LevelBadge, FragmentBadge } from "@/components/ui/level-badge";
 import { LevelProgressBar } from "@/components/ui/level-progress-bar";
 
 import { getTradeStatusLabel } from "@/lib/trade-status-display";
-import { clientDisplayPayoutStatus, isMerchantWithdrawReference } from "@/lib/merchant-withdraw";
+import { clientDisplayPayoutStatus, isMerchantWithdrawReference } from "@/lib/merchant-withdraw-display";
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
