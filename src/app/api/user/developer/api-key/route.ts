@@ -3,6 +3,10 @@ import { prisma } from '~/prisma/prisma';
 import { requireUserSession } from '@/lib/require-session-user';
 import { canUserManageApiKeys } from '@/lib/partner-api/developer-access';
 import {
+  assertPartnerAccountReady,
+  partnerAccountGuardFrMessage,
+} from '@/lib/partner-api/account-guards';
+import {
   createApiClient,
   getActiveApiClientForUser,
   regenerateApiClientCredentials,
@@ -41,6 +45,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const account = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      steamUsername: true,
+      name: true,
+      steamId: true,
+      acceptedTermsAt: true,
+      tradeLink: true,
+    },
+  });
+  if (!account) {
+    return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
+  }
+
+  const ready = assertPartnerAccountReady(account, { requireTradeLink: true });
+  if (!ready.ok) {
+    return NextResponse.json({ error: partnerAccountGuardFrMessage(ready) }, { status: ready.status });
+  }
+
   const existing = await getActiveApiClientForUser(session.user.id);
 
   if (existing) {
@@ -68,12 +91,7 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { steamUsername: true, name: true },
-  });
-
-  const displayName = user?.steamUsername ?? user?.name ?? 'Partenaire';
+  const displayName = account.steamUsername ?? account.name ?? 'Partenaire';
   const { client, rawKey } = await createApiClient({
     name: `${displayName} API`,
     userId: session.user.id,

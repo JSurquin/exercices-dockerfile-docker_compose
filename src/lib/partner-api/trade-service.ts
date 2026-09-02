@@ -10,6 +10,7 @@ import { notifyTradeStatusChange } from '@/lib/partner-api/webhook-service';
 import { logger } from '@/lib/logger';
 import { validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 import { toPartnerFacingProviderError } from '@/lib/partner-api/response';
+import { assertPartnerAccountReady } from '@/lib/partner-api/account-guards';
 
 function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
   const statusMap: Record<string, TradeStatus> = {
@@ -59,16 +60,20 @@ export async function createPartnerTrade(
   if (user.accountFrozen) {
     return { ok: false, error: 'Account frozen', code: 'ACCOUNT_FROZEN', status: 403 };
   }
-  if (!user.steamId) {
-    return { ok: false, error: 'Steam ID is not linked to this account', code: 'VALIDATION_ERROR', status: 400 };
-  }
-  if (!user.tradeLink) {
-    return { ok: false, error: 'Trade link is not configured on this account', code: 'VALIDATION_ERROR', status: 400 };
+  const accountReady = assertPartnerAccountReady(user, { requireTradeLink: true });
+  if (!accountReady.ok) {
+    return {
+      ok: false,
+      error: accountReady.message,
+      code: accountReady.code,
+      status: accountReady.status,
+    };
   }
 
-  const steamId = user.steamId;
+  const steamId = user.steamId!;
+  const accountTradeLink = user.tradeLink!;
 
-  const tradeUrlCheck = validatePartnerTradeUrl(params.tradeUrl, user.steamId, user.tradeLink);
+  const tradeUrlCheck = validatePartnerTradeUrl(params.tradeUrl, steamId, accountTradeLink);
   if (!tradeUrlCheck.ok) {
     return {
       ok: false,

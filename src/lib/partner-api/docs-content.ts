@@ -6,7 +6,7 @@ export const partnerApiConventionGuide = `All partner API responses follow a con
 • Error envelope: { "success": false, "error": { "code": "VALIDATION_ERROR", "message": "..." } }
 • Monetary amounts use *_cents fields (integers, never floats)
 • Status values use English snake_case (created, in_trade_hold, available, paid, failed, ...)
-• Error codes are uppercase English identifiers (UNAUTHORIZED, KYC_REQUIRED, RATE_LIMITED, ...)`;
+• Error codes are uppercase English identifiers (UNAUTHORIZED, KYC_REQUIRED, TERMS_REQUIRED, RATE_LIMITED, ...)`;
 
 export const partnerCurlExamples = `# Authentication — all partner routes
 # Required header: Authorization: Bearer msk_live_...
@@ -270,6 +270,7 @@ export const partnerErrorCodesGuide = `Standard partner API error codes:
 • VALIDATION_ERROR (400) — Invalid JSON, missing fields, invalid trade URL, or the trade is not ready for payout
 • RATE_LIMITED (429) — Quota exceeded (default 100 requests/minute per key, adjustable by admin)
 • KYC_REQUIRED (403) — Payout blocked until KYC is approved
+• TERMS_REQUIRED (403) — Terms of service have not been accepted on the linked MoonSkin account
 • ACCOUNT_FROZEN (403) — The linked MoonSkin account is frozen
 • ACCOUNT_BANNED (403) — The linked MoonSkin account is banned
 • API_ERROR (502) — Upstream trade provider failed (inventory or sale creation)
@@ -280,3 +281,11 @@ Error envelope:
 { "success": false, "error": { "code": "VALIDATION_ERROR", "message": "..." } }
 
 RATE_LIMITED may also include retry_after_seconds. KYC_REQUIRED may include requires_kyc: true.`;
+
+export const partnerPrerequisitesGuide = `Before go-live (partner side):
+• MoonSkin account with Steam linked and terms of service accepted
+• KYC approved before any automated payout (sales can start earlier)
+• Steam Trade Link saved on the account and matching the Steam ID used in POST /trades
+• Public HTTPS webhook URL — localhost, private IPs and credentialed URLs are rejected. Provide a test receiver for recette.
+• Rate limits: default 100 requests/minute per key (admin can set 10–1000). V1 scopes are read, trade, payout only.
+• Technical contact for recette: api-support@moonskin.gg or Telegram via the MoonSkin team`;

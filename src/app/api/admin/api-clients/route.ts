@@ -3,6 +3,10 @@ import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { createApiClient, revokeApiClient, sanitizeApiClient } from '@/lib/partner-api/key-service';
 import { partnerCreateApiClientSchema } from '@/lib/partner-api/schemas';
+import {
+  assertPartnerAccountReady,
+  partnerAccountGuardFrMessage,
+} from '@/lib/partner-api/account-guards';
 import { safeParseJson } from '@/lib/validation/helpers';
 
 export async function GET(request: NextRequest) {
@@ -48,6 +52,11 @@ export async function POST(request: NextRequest) {
   const user = await prisma.user.findUnique({ where: { id: parsed.data.user_id } });
   if (!user) {
     return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
+  }
+
+  const ready = assertPartnerAccountReady(user, { requireTradeLink: true });
+  if (!ready.ok) {
+    return NextResponse.json({ error: partnerAccountGuardFrMessage(ready) }, { status: ready.status });
   }
 
   const { client, rawKey } = await createApiClient({

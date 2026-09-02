@@ -8,6 +8,7 @@ import { withPartnerApi } from '@/lib/partner-api/handler';
 import { partnerSuccess, partnerError, formatPayoutForPartner } from '@/lib/partner-api/response';
 import { partnerPayoutSchema } from '@/lib/partner-api/schemas';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
+import { assertPartnerTermsAccepted } from '@/lib/partner-api/account-guards';
 import { readPartnerJsonBody, safeParsePartnerJson } from '@/lib/partner-api/validation';
 
 const TRADE_NOT_CLAIMABLE = 'TRADE_NOT_CLAIMABLE';
@@ -49,6 +50,11 @@ export async function POST(request: NextRequest) {
 
       if (trade.status !== 'AVAILABLE') {
         return partnerError('VALIDATION_ERROR', 'Trade is not ready for payout', 400);
+      }
+
+      const termsCheck = assertPartnerTermsAccepted(trade.user);
+      if (!termsCheck.ok) {
+        return partnerError(termsCheck.code, termsCheck.message, termsCheck.status);
       }
 
       const kycCheck = await canUserMakePayout(ctx.userId);

@@ -327,7 +327,7 @@ describe('partner API HTTP routes', () => {
     (prisma.trade.findUnique as jest.Mock).mockResolvedValue({
       ...sampleDbTrade,
       status: 'AVAILABLE',
-      user: { accountFrozen: false },
+      user: { accountFrozen: false, acceptedTermsAt: new Date('2026-01-01') },
     });
     (prisma.payout.findFirst as jest.Mock).mockResolvedValue(null);
     (canUserMakePayout as jest.Mock).mockResolvedValue({ allowed: true });
@@ -355,6 +355,28 @@ describe('partner API HTTP routes', () => {
     expect(body.error.code).toBe('VALIDATION_ERROR');
     expect(body.error.message).toMatch(/payout method/i);
     expect(prisma.payout.create).not.toHaveBeenCalled();
+  });
+
+  it('POST /payouts requires accepted terms before KYC', async () => {
+    mockAuth(['payout']);
+    (prisma.trade.findUnique as jest.Mock).mockResolvedValue({
+      ...sampleDbTrade,
+      status: 'AVAILABLE',
+      user: { accountFrozen: false, acceptedTermsAt: null },
+    });
+
+    const response = await postPayouts(
+      new NextRequest('http://localhost/api/v1/partner/payouts', {
+        method: 'POST',
+        body: JSON.stringify({ trade_id: 'TRADE-1' }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.error.code).toBe('TERMS_REQUIRED');
+    expect(canUserMakePayout).not.toHaveBeenCalled();
   });
 
   it('PUT /webhook rejects localhost URLs', async () => {

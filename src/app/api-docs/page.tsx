@@ -26,6 +26,7 @@ import {
   partnerEndpointDetails,
   partnerErrorCodesGuide,
   partnerPollingGuide,
+  partnerPrerequisitesGuide,
   partnerResponseExamples,
   partnerScopesGuide,
   partnerWebhookGuide,
@@ -550,6 +551,17 @@ export default function ApiDocsPage() {
                     </pre>
                     <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-muted/50 rounded-lg p-4">
                       {partnerApiConventionGuide}
+                    </pre>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-orange-600">Prérequis partenaire</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="text-sm whitespace-pre-wrap overflow-x-auto bg-muted rounded-lg p-4">
+                      {partnerPrerequisitesGuide}
                     </pre>
                   </CardContent>
                 </Card>

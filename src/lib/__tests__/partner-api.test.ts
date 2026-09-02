@@ -27,7 +27,12 @@ import { partnerCreateTradeSchema, partnerEstimateSchema, partnerWebhookConfigSc
 import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/validation';
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
-import { partnerErrorCodesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples } from '@/lib/partner-api/docs-content';
+import { partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples } from '@/lib/partner-api/docs-content';
+import {
+  assertPartnerAccountReady,
+  assertPartnerTermsAccepted,
+  partnerAccountGuardFrMessage,
+} from '@/lib/partner-api/account-guards';
 
 jest.mock('@/lib/partner-api/auth', () => ({
   requireApiKey: jest.fn(),
@@ -201,6 +206,16 @@ describe('partner-api JSON contract', () => {
     expect(partnerErrorCodesGuide).toMatch(/"success": false/);
   });
 
+  it('documents partner go-live prerequisites from the quote', () => {
+    expect(partnerPrerequisitesGuide).toMatch(/Steam linked/i);
+    expect(partnerPrerequisitesGuide).toMatch(/terms of service/i);
+    expect(partnerPrerequisitesGuide).toMatch(/KYC/i);
+    expect(partnerPrerequisitesGuide).toMatch(/Trade Link/i);
+    expect(partnerPrerequisitesGuide).toMatch(/HTTPS/);
+    expect(partnerPrerequisitesGuide).toMatch(/100 requests/);
+    expect(partnerPrerequisitesGuide).toContain('api-support@moonskin.gg');
+  });
+
   it('POST create payload maps raw Prisma status instead of leaking CREATED', () => {
     const payload = formatCreatedTradeForPartner({
       id: 'TRADE-1',
@@ -318,6 +333,7 @@ describe('partner-api JSON contract', () => {
   it('toPartnerErrorCode keeps API_ERROR and maps unknown item errors', () => {
     expect(toPartnerErrorCode('API_ERROR')).toBe('API_ERROR');
     expect(toPartnerErrorCode('ACCOUNT_FROZEN')).toBe('ACCOUNT_FROZEN');
+    expect(toPartnerErrorCode('TERMS_REQUIRED')).toBe('TERMS_REQUIRED');
     expect(toPartnerErrorCode('ITEMS_NOT_FOUND')).toBe('VALIDATION_ERROR');
     expect(toPartnerErrorCode('SOMETHING_ELSE')).toBe('VALIDATION_ERROR');
   });
@@ -419,6 +435,33 @@ describe('partner-api trade URL validation', () => {
     if (!result.ok) {
       expect(result.error).toMatch(/trade link/i);
     }
+  });
+});
+
+describe('partner-api account guards (quote prerequisites)', () => {
+  const readyUser = {
+    steamId: '76561198012345678',
+    acceptedTermsAt: new Date('2026-01-01'),
+    tradeLink: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc',
+  };
+
+  it('accepts a complete account', () => {
+    expect(assertPartnerAccountReady(readyUser, { requireTradeLink: true })).toEqual({ ok: true });
+  });
+
+  it('rejects missing Steam, terms, or trade link', () => {
+    expect(assertPartnerAccountReady({ ...readyUser, steamId: null }, { requireTradeLink: true }).ok).toBe(false);
+    const terms = assertPartnerTermsAccepted({ acceptedTermsAt: null });
+    expect(terms).toMatchObject({ ok: false, code: 'TERMS_REQUIRED', status: 403 });
+    expect(
+      assertPartnerAccountReady({ ...readyUser, tradeLink: null }, { requireTradeLink: true })
+    ).toMatchObject({ ok: false, code: 'VALIDATION_ERROR' });
+  });
+
+  it('maps failures to French self-service messages', () => {
+    const terms = assertPartnerTermsAccepted({ acceptedTermsAt: null });
+    if (terms.ok) throw new Error('expected failure');
+    expect(partnerAccountGuardFrMessage(terms)).toMatch(/CGV/);
   });
 });
 
