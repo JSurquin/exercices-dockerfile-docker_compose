@@ -120,16 +120,50 @@ export function assertPublicHttpsWebhookUrl(
   return { ok: true };
 }
 
-export async function assertSafeWebhookDeliveryUrl(
-  url: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
+export type WebhookDnsLookup = (
+  hostname: string,
+  options: { all: true; verbatim: true }
+) => Promise<Array<{ address: string; family: number }>>;
+
+export type WebhookAddressPin = { address: string; family: 4 | 6 };
+
+export type SafeWebhookDeliveryTarget = {
+  href: string;
+  hostname: string;
+  pins: WebhookAddressPin[];
+};
+
+async function defaultWebhookDnsLookup(
+  hostname: string,
+  options: { all: true; verbatim: true }
+): Promise<Array<{ address: string; family: number }>> {
+  const { promises: dns } = await import('node:dns');
+  return dns.lookup(hostname, options);
+}
+
+function toWebhookPin(record: { address: string; family: number }): WebhookAddressPin {
+  return {
+    address: record.address,
+    family: record.family === 6 ? 6 : 4,
+  };
+}
+
+/** IPv4 first so delivery still works on hosts without working IPv6. */
+export function orderWebhookAddressPins(pins: WebhookAddressPin[]): WebhookAddressPin[] {
+  return [...pins.filter((pin) => pin.family === 4), ...pins.filter((pin) => pin.family === 6)];
+}
+
+export async function resolveSafeWebhookDeliveryTarget(
+  url: string,
+  lookup: WebhookDnsLookup = defaultWebhookDnsLookup
+): Promise<{ ok: true; target: SafeWebhookDeliveryTarget } | { ok: false; error: string }> {
   const staticCheck = assertPublicHttpsWebhookUrl(url);
   if (!staticCheck.ok) return staticCheck;
 
-  const hostname = stripIpv6Brackets(new URL(url).hostname);
+  const parsed = new URL(url);
+  const hostname = stripIpv6Brackets(parsed.hostname);
   try {
-    const { promises: dns } = await import('node:dns');
-    const records = await dns.lookup(hostname, { all: true, verbatim: true });
+    const records = await lookup(hostname, { all: true, verbatim: true });
     if (records.length === 0) {
       return { ok: false, error: 'Webhook URL host could not be resolved' };
     }
@@ -138,9 +172,23 @@ export async function assertSafeWebhookDeliveryUrl(
         return { ok: false, error: 'Webhook URL must not resolve to a private or local address' };
       }
     }
+    return {
+      ok: true,
+      target: {
+        href: parsed.href,
+        hostname,
+        pins: orderWebhookAddressPins(records.map(toWebhookPin)),
+      },
+    };
   } catch {
     return { ok: false, error: 'Webhook URL host could not be resolved' };
   }
+}
 
-  return { ok: true };
+export async function assertSafeWebhookDeliveryUrl(
+  url: string,
+  lookup?: WebhookDnsLookup
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const resolved = await resolveSafeWebhookDeliveryTarget(url, lookup);
+  return resolved.ok ? { ok: true } : resolved;
 }

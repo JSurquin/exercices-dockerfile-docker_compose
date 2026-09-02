@@ -35,7 +35,11 @@ import {
   convertPartnerInventoryCurrency,
   normalizePartnerCurrency,
 } from '@/lib/partner-api/currency';
-import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
+import {
+  assertPublicHttpsWebhookUrl,
+  orderWebhookAddressPins,
+  resolveSafeWebhookDeliveryTarget,
+} from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
 import { PARTNER_API_BASE_URL, PARTNER_API_SUPPORT_EMAIL, partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples, partnerEndpointCatalog, partnerPostmanCollection, partnerInsomniaExport, partnerBrunoEnvironment, buildPartnerEndpointBruno, buildPartnerEndpointPostman, buildPartnerEndpointInsomnia } from '@/lib/partner-api/docs-content';
 import {
@@ -665,6 +669,47 @@ describe('partner-api webhook URL and payout guards', () => {
     expect(assertPublicHttpsWebhookUrl('https://2130706433/hooks').ok).toBe(false);
     expect(assertPublicHttpsWebhookUrl('https://[::1]/hooks').ok).toBe(false);
     expect(partnerWebhookConfigSchema.safeParse({ webhook_url: 'https://127.0.0.1/x' }).success).toBe(false);
+  });
+
+  it('pins public DNS records and rejects a private record even if mixed with a public one', async () => {
+    const ok = await resolveSafeWebhookDeliveryTarget('https://hooks.partner.test/x', async () => [
+      { address: '2606:4700:4700::1111', family: 6 },
+      { address: '203.0.113.10', family: 4 },
+    ]);
+    expect(ok).toEqual({
+      ok: true,
+      target: {
+        href: 'https://hooks.partner.test/x',
+        hostname: 'hooks.partner.test',
+        pins: [
+          { address: '203.0.113.10', family: 4 },
+          { address: '2606:4700:4700::1111', family: 6 },
+        ],
+      },
+    });
+
+    const rebind = await resolveSafeWebhookDeliveryTarget('https://evil.example/x', async () => [
+      { address: '203.0.113.10', family: 4 },
+      { address: '169.254.169.254', family: 4 },
+    ]);
+    expect(rebind.ok).toBe(false);
+
+    const loopback = await resolveSafeWebhookDeliveryTarget('https://evil.example/x', async () => [
+      { address: '127.0.0.1', family: 4 },
+    ]);
+    expect(loopback.ok).toBe(false);
+  });
+
+  it('prefers IPv4 pins so delivery still works without IPv6', () => {
+    expect(
+      orderWebhookAddressPins([
+        { address: '2001:db8::1', family: 6 },
+        { address: '203.0.113.8', family: 4 },
+      ])
+    ).toEqual([
+      { address: '203.0.113.8', family: 4 },
+      { address: '2001:db8::1', family: 6 },
+    ]);
   });
 
   it('refuses empty payment methods that would create unpaid SEPA stubs', () => {

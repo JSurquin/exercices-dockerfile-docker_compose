@@ -1,7 +1,8 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { prisma } from '~/prisma/prisma';
 import { formatFees, mapPayoutStatus, mapTradeStatus } from '@/lib/partner-api/response';
-import { assertSafeWebhookDeliveryUrl } from '@/lib/partner-api/webhook-url';
+import { resolveSafeWebhookDeliveryTarget } from '@/lib/partner-api/webhook-url';
+import { postPinnedHttps } from '@/lib/partner-api/webhook-delivery';
 import { markWebhookProcessed } from '@/lib/webhook-idempotency';
 import { logger } from '@/lib/logger';
 
@@ -110,14 +111,14 @@ async function deliverWebhook(
   const signature = signPayload(secret, timestamp, body);
   const start = Date.now();
 
-  const urlCheck = await assertSafeWebhookDeliveryUrl(url);
-  if (!urlCheck.ok) {
-    return { success: false, error: urlCheck.error, durationMs: Date.now() - start };
+  const resolved = await resolveSafeWebhookDeliveryTarget(url);
+  if (!resolved.ok) {
+    return { success: false, error: resolved.error, durationMs: Date.now() - start };
   }
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
+    const response = await postPinnedHttps({
+      target: resolved.target,
       headers: {
         'Content-Type': 'application/json',
         'X-MoonSkin-Signature': `t=${timestamp},v1=${signature}`,
@@ -125,12 +126,11 @@ async function deliverWebhook(
         'User-Agent': 'MoonSkin-Webhook/1.0',
       },
       body,
-      redirect: 'error',
-      signal: AbortSignal.timeout(10000),
+      timeoutMs: 10000,
     });
 
     const durationMs = Date.now() - start;
-    if (response.ok) {
+    if (response.status >= 200 && response.status < 300) {
       return { success: true, httpStatus: response.status, durationMs };
     }
     return {
