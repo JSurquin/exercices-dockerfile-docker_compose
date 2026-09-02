@@ -8,6 +8,7 @@ export type PartnerErrorCode =
   | 'RATE_LIMITED'
   | 'KYC_REQUIRED'
   | 'ACCOUNT_FROZEN'
+  | 'ACCOUNT_BANNED'
   | 'INTERNAL_ERROR'
   | 'CONFIG_ERROR'
   | 'API_ERROR';
@@ -20,6 +21,7 @@ const PARTNER_ERROR_CODES = new Set<PartnerErrorCode>([
   'RATE_LIMITED',
   'KYC_REQUIRED',
   'ACCOUNT_FROZEN',
+  'ACCOUNT_BANNED',
   'INTERNAL_ERROR',
   'CONFIG_ERROR',
   'API_ERROR',

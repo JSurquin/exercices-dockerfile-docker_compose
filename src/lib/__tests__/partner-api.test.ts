@@ -438,4 +438,24 @@ describe('partner-api handler scope enforcement', () => {
     expect(response.status).toBe(403);
     expect(handler).not.toHaveBeenCalled();
   });
+
+  it('logs known-client auth failures before returning', async () => {
+    const logApiCall = jest.fn().mockResolvedValue(undefined);
+    mockedRequireApiKey.mockResolvedValue({
+      ok: false,
+      response: new Response(JSON.stringify({ success: false }), { status: 403 }) as never,
+      logApiCall,
+      startMs: 123,
+    });
+
+    const request = new NextRequest('http://localhost/api/v1/partner/trades', { method: 'POST' });
+    const response = await withPartnerApi(
+      request,
+      { endpoint: '/api/v1/partner/trades', method: 'POST', scopes: ['trade'] },
+      jest.fn()
+    );
+
+    expect(response.status).toBe(403);
+    expect(logApiCall).toHaveBeenCalledWith(403, 123);
+  });
 });

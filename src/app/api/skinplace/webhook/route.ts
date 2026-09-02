@@ -203,6 +203,7 @@ export async function GET(request: NextRequest) {
             data: { status: 'AVAILABLE', availableAt: new Date() },
           });
           await TradeHooks.onTradeAvailable(trade.id);
+          await TradeHooks.notifyPartnerStatus(trade.id);
         }
       } else if (protectionStatus === 'rollback') {
         logger.error(`[WEBHOOK] Rollback for trade ${trade.id}`);
@@ -211,6 +212,7 @@ export async function GET(request: NextRequest) {
           data: { status: 'FAILED' },
         });
         await TradeHooks.onTradeRolledBack(trade.userId, trade.id);
+        await TradeHooks.notifyPartnerStatus(trade.id);
       }
 
       return new Response('ok', { status: 200 });

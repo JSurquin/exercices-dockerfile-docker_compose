@@ -32,11 +32,37 @@ export class TradeHooks {
   ): Promise<void> {
     if (TRADE_ACCEPTANCE_CREDIT_STATUSES.includes(newStatus)) {
       await this.onTradeAccepted(userId, tradeId);
+      await this.notifyPartnerStatus(tradeId);
     } else if (newStatus === 'AVAILABLE') {
       await this.onTradeAvailable(tradeId);
+      await this.notifyPartnerStatus(tradeId);
     } else if (newStatus === 'FAILED' || newStatus === 'CANCELLED') {
       logger.error(`[TradeHooks] Trade ${tradeId} ${newStatus.toLowerCase()}`);
       await this.onTradeStatusChanged(tradeId, oldStatus, newStatus);
+    }
+  }
+
+  /** Notification partenaire non bloquante (webhooks sortants). */
+  static async notifyPartnerStatus(tradeId: string): Promise<void> {
+    try {
+      const tradeForWebhook = await prisma.trade.findUnique({
+        where: { id: tradeId },
+        select: {
+          userId: true,
+          id: true,
+          status: true,
+          grossCents: true,
+          cashoutFees: true,
+          networkFees: true,
+          netCents: true,
+          ticketId: true,
+        },
+      });
+      if (!tradeForWebhook) return;
+      const { notifyTradeStatusChange } = await import('@/lib/partner-api/webhook-service');
+      void notifyTradeStatusChange(tradeForWebhook.userId, tradeForWebhook, 'trade.status_changed');
+    } catch (err) {
+      logger.error(`[TradeHooks] Partner webhook notify failed for ${tradeId}`, err);
     }
   }
 
@@ -82,6 +108,7 @@ export class TradeHooks {
         return;
       }
       logger.info(`[TradeHooks] Trade ${tradeId} marked PAID (affiliate commission handled at AVAILABLE)`);
+      await this.notifyPartnerStatus(tradeId);
     } catch (error) {
       logger.error(`[TradeHooks] Error processing trade ${tradeId}`, error);
       try {
@@ -446,25 +473,8 @@ export class TradeHooks {
         }
       });
 
-      // Webhook partenaire (non bloquant)
       if (oldStatus !== newStatus) {
-        const tradeForWebhook = await prisma.trade.findUnique({
-          where: { id: tradeId },
-          select: {
-            userId: true,
-            id: true,
-            status: true,
-            grossCents: true,
-            cashoutFees: true,
-            networkFees: true,
-            netCents: true,
-            ticketId: true,
-          },
-        });
-        if (tradeForWebhook) {
-          const { notifyTradeStatusChange } = await import('@/lib/partner-api/webhook-service');
-          void notifyTradeStatusChange(tradeForWebhook.userId, tradeForWebhook, 'trade.status_changed');
-        }
+        await this.notifyPartnerStatus(tradeId);
       }
       
     } catch (error) {

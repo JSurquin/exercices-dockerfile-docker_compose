@@ -33,6 +33,7 @@ jest.mock('@/lib/payout-lifecycle', () => ({
 
 jest.mock('@/lib/partner-api/webhook-service', () => ({
   notifyPayoutStatusChange: jest.fn(),
+  notifyTradeStatusChange: jest.fn(),
 }));
 
 import { prisma } from '~/prisma/prisma';

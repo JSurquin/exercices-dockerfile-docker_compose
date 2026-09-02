@@ -3,6 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { findApiClientByKey } from '@/lib/partner-api/key-service';
 import { partnerError } from '@/lib/partner-api/response';
 import { RateLimiter } from '@/lib/security/rate-limiter';
+import { isUserBanned } from '@/lib/user-ban-logic';
 
 export interface PartnerApiContext {
   apiClientId: string;
@@ -39,6 +40,20 @@ function getClientIp(request: NextRequest): string {
   );
 }
 
+type PartnerAuthSuccess = {
+  ok: true;
+  ctx: PartnerApiContext;
+  logApiCall: (statusCode: number, startMs: number) => Promise<void>;
+  startMs: number;
+};
+
+type PartnerAuthFailure = {
+  ok: false;
+  response: ReturnType<typeof partnerError>;
+  logApiCall?: (statusCode: number, startMs: number) => Promise<void>;
+  startMs?: number;
+};
+
 export async function requireApiKey(
   request: NextRequest,
   options: {
@@ -50,15 +65,7 @@ export async function requireApiKey(
     endpoint: 'unknown',
     method: 'GET',
   }
-): Promise<
-  | {
-      ok: true;
-      ctx: PartnerApiContext;
-      logApiCall: (statusCode: number, startMs: number) => Promise<void>;
-      startMs: number;
-    }
-  | { ok: false; response: ReturnType<typeof partnerError> }
-> {
+): Promise<PartnerAuthSuccess | PartnerAuthFailure> {
   const startMs = Date.now();
   const rawKey = extractBearerToken(request);
 
@@ -77,49 +84,7 @@ export async function requireApiKey(
     };
   }
 
-  if (options.requiredScopes?.length) {
-    const missing = options.requiredScopes.filter((s) => !client.scopes.includes(s));
-    if (missing.length > 0) {
-      return {
-        ok: false,
-        response: partnerError('FORBIDDEN', `Missing required scopes: ${missing.join(', ')}`, 403),
-      };
-    }
-  }
-
-  if (options.requiredAnyScopes?.length) {
-    const hasAny = options.requiredAnyScopes.some((s) => client.scopes.includes(s));
-    if (!hasAny) {
-      return {
-        ok: false,
-        response: partnerError(
-          'FORBIDDEN',
-          `Missing required scopes: ${options.requiredAnyScopes.join(' or ')}`,
-          403
-        ),
-      };
-    }
-  }
-
-  const limiter = getPartnerRateLimiter(client.rateLimitPerMin);
-  const rateCheck = await limiter.checkLimit(request, client.id);
-  if (!rateCheck.allowed) {
-    return {
-      ok: false,
-      response: partnerError('RATE_LIMITED', 'Rate limit exceeded', 429, {
-        retry_after_seconds: Math.ceil((rateCheck.resetTime - Date.now()) / 1000),
-      }),
-    };
-  }
-
   const ip = getClientIp(request);
-  const ctx: PartnerApiContext = {
-    apiClientId: client.id,
-    userId: client.userId,
-    scopes: client.scopes,
-    webhookSecret: client.webhookSecret,
-  };
-
   const logApiCall = async (statusCode: number, callStartMs: number) => {
     const durationMs = Date.now() - callStartMs;
     try {
@@ -157,6 +122,58 @@ export async function requireApiKey(
     } catch {
       /* non bloquant */
     }
+  };
+
+  const fail = (response: ReturnType<typeof partnerError>): PartnerAuthFailure => ({
+    ok: false,
+    response,
+    logApiCall,
+    startMs,
+  });
+
+  const linkedUser = await prisma.user.findUnique({
+    where: { id: client.userId },
+    select: { banned: true, banExpires: true },
+  });
+  if (linkedUser && isUserBanned(linkedUser)) {
+    return fail(partnerError('ACCOUNT_BANNED', 'Account is banned', 403));
+  }
+
+  if (options.requiredScopes?.length) {
+    const missing = options.requiredScopes.filter((s) => !client.scopes.includes(s));
+    if (missing.length > 0) {
+      return fail(partnerError('FORBIDDEN', `Missing required scopes: ${missing.join(', ')}`, 403));
+    }
+  }
+
+  if (options.requiredAnyScopes?.length) {
+    const hasAny = options.requiredAnyScopes.some((s) => client.scopes.includes(s));
+    if (!hasAny) {
+      return fail(
+        partnerError(
+          'FORBIDDEN',
+          `Missing required scopes: ${options.requiredAnyScopes.join(' or ')}`,
+          403
+        )
+      );
+    }
+  }
+
+  const limiter = getPartnerRateLimiter(client.rateLimitPerMin);
+  const rateCheck = await limiter.checkLimit(request, client.id);
+  if (!rateCheck.allowed) {
+    return fail(
+      partnerError('RATE_LIMITED', 'Rate limit exceeded', 429, {
+        retry_after_seconds: Math.ceil((rateCheck.resetTime - Date.now()) / 1000),
+      })
+    );
+  }
+
+  const ctx: PartnerApiContext = {
+    apiClientId: client.id,
+    userId: client.userId,
+    scopes: client.scopes,
+    webhookSecret: client.webhookSecret,
   };
 
   return { ok: true, ctx, logApiCall, startMs };

@@ -3,7 +3,7 @@ import { prisma } from '~/prisma/prisma';
 import { canUserMakePayout } from '@/lib/kycaid';
 import { checkWithdrawalLimit } from '@/lib/balance-service';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
-import { notifyPayoutStatusChange } from '@/lib/partner-api/webhook-service';
+import { notifyPayoutStatusChange, notifyTradeStatusChange } from '@/lib/partner-api/webhook-service';
 import { withPartnerApi } from '@/lib/partner-api/handler';
 import { partnerSuccess, partnerError, formatPayoutForPartner } from '@/lib/partner-api/response';
 import { partnerPayoutSchema } from '@/lib/partner-api/schemas';
@@ -142,6 +142,15 @@ export async function POST(request: NextRequest) {
         status: payout.status,
         amountCents: payout.amountCents,
         tradeId: payout.tradeId,
+      });
+      void notifyTradeStatusChange(ctx.userId, {
+        id: trade.id,
+        status: 'PAYOUT_PENDING',
+        grossCents: trade.grossCents,
+        cashoutFees: trade.cashoutFees,
+        networkFees: trade.networkFees,
+        netCents: trade.netCents,
+        ticketId: trade.ticketId,
       });
 
       return partnerSuccess(formatPayoutForPartner(payout));

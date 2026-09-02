@@ -17,7 +17,12 @@ export async function withPartnerApi(
     requiredScopes: options.scopes,
     ...(options.anyOfScopes ? { requiredAnyScopes: options.anyOfScopes } : {}),
   });
-  if (!auth.ok) return auth.response;
+  if (!auth.ok) {
+    if (auth.logApiCall && auth.startMs !== undefined) {
+      await auth.logApiCall(auth.response.status, auth.startMs);
+    }
+    return auth.response;
+  }
 
   try {
     const response = await handler(request, auth.ctx);

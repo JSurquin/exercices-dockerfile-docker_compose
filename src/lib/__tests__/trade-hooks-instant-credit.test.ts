@@ -56,6 +56,11 @@ jest.mock('@/lib/user-rewards-guard', () => ({
   isAffiliateRewardsBlocked: jest.fn().mockReturnValue(false),
 }));
 
+jest.mock('@/lib/partner-api/webhook-service', () => ({
+  notifyTradeStatusChange: jest.fn().mockResolvedValue(undefined),
+  notifyPayoutStatusChange: jest.fn().mockResolvedValue(undefined),
+}));
+
 import { prisma } from '../../../prisma/prisma';
 import { creditBalance, creditPendingBalance } from '@/lib/balance-service';
 import { TradeHooks } from '@/lib/trade-hooks';
@@ -153,6 +158,16 @@ describe('TradeHooks instant credit on IN_TRADE_HOLD', () => {
         pendingCreditedAt: new Date(),
         instantCreditedAt: null,
         pendingRevertedAt: null,
+      })
+      .mockResolvedValueOnce({
+        id: 'trade-4',
+        userId: 'user-4',
+        status: 'FAILED',
+        grossCents: 10_000,
+        cashoutFees: 0,
+        networkFees: 0,
+        netCents: 10_000,
+        ticketId: 'T-4',
       });
 
     await TradeHooks.onTradeStatusChanged('trade-4', 'IN_TRADE_HOLD', 'FAILED');
@@ -162,6 +177,58 @@ describe('TradeHooks instant credit on IN_TRADE_HOLD', () => {
       9200,
       expect.stringContaining('trade-4'),
       { tradeId: 'trade-4' }
+    );
+  });
+
+  it('notifies the partner API when a trade is accepted (IN_TRADE_HOLD)', async () => {
+    const { notifyTradeStatusChange } = jest.requireMock('@/lib/partner-api/webhook-service') as {
+      notifyTradeStatusChange: jest.Mock;
+    };
+
+    tradeFindUnique.mockResolvedValue({
+      id: 'trade-wh',
+      userId: 'user-wh',
+      status: 'IN_TRADE_HOLD',
+      grossCents: 10_000,
+      cashoutFees: 0,
+      networkFees: 0,
+      netCents: 10_000,
+      ticketId: 'T-WH',
+      user: { instantCreditEnabled: false },
+    });
+
+    await TradeHooks.applyStatusProgressionHooks('user-wh', 'trade-wh', 'CREATED', 'IN_TRADE_HOLD');
+
+    expect(notifyTradeStatusChange).toHaveBeenCalledWith(
+      'user-wh',
+      expect.objectContaining({ id: 'trade-wh', status: 'IN_TRADE_HOLD' }),
+      'trade.status_changed'
+    );
+  });
+
+  it('notifies the partner API when a trade is marked paid', async () => {
+    const { notifyTradeStatusChange } = jest.requireMock('@/lib/partner-api/webhook-service') as {
+      notifyTradeStatusChange: jest.Mock;
+    };
+
+    tradeUpdateMany.mockResolvedValue({ count: 1 });
+    tradeFindUnique.mockResolvedValue({
+      id: 'trade-paid',
+      userId: 'user-paid',
+      status: 'PAID',
+      grossCents: 1000,
+      cashoutFees: 0,
+      networkFees: 0,
+      netCents: 1000,
+      ticketId: 'T-PAID',
+    });
+
+    await TradeHooks.onTradePaid('trade-paid');
+
+    expect(notifyTradeStatusChange).toHaveBeenCalledWith(
+      'user-paid',
+      expect.objectContaining({ id: 'trade-paid', status: 'PAID' }),
+      'trade.status_changed'
     );
   });
 });
