@@ -12,7 +12,7 @@ Tout est décrit **étape par étape**, dans l’ordre réel.
 - Un **compte joueur de test** (Steam), **qui n’est pas admin**. C’est lui le « client ».
 - Le site qui tourne :
   - en local : `pnpm dev` puis base `http://localhost:3000`
-  - en recette / prod : l’URL du site (ex. `https://moonskin.gg`). L’API partenaire est aussi exposée sur `https://api.moonskin.gg`.
+  - en recette / prod : l’URL du site (ex. `https://www.moonskin.eu`). L’API partenaire est sur le même host : `https://www.moonskin.eu/api/v1/partner`.
 - Un bloc-notes : la **clé API** et le **secret webhook** ne s’affichent **qu’une seule fois**.
 
 **Attention :** `POST /api/v1/partner/trades` crée une **vraie vente Skinplace / Steam**. En prod, ne le lance que si tu acceptes de vendre un skin du compte de test.
@@ -108,7 +108,7 @@ Pour quitter : bouton **Quitter l’impersonation** sur la bannière.
 
 Remplace :
 
-- `BASE` par `http://localhost:3000` (local) ou `https://api.moonskin.gg` (prod)
+- `BASE` par `http://localhost:3000` (local) ou `https://www.moonskin.eu` (prod)
 - `MSK_KEY` par la clé copiée
 
 Tous les appels utilisent :
@@ -293,7 +293,7 @@ Sans le switch développeur, `POST /api/user/developer/api-key` répond **403** 
 | Clés API admin | `/admin/api-clients` |
 | Paramètres client | `/settings` → onglet Développeur |
 | Doc API | `/api-docs` |
-| Base API partenaire | `/api/v1/partner/...` |
+| Base API partenaire | `https://www.moonskin.eu/api/v1/partner/...` |
 
 Tests unitaires déjà dans le repo (ne remplacent pas ce parcours manuel) :
 

@@ -1,4 +1,4 @@
-export const PARTNER_API_BASE_URL = 'https://api.moonskin.gg';
+export const PARTNER_API_BASE_URL = 'https://www.moonskin.eu';
 
 export const partnerApiConventionGuide = `All partner API responses follow a consistent English JSON convention:
 • HTTP status codes: 200, 201, 400, 401, 403, 404, 409, 429, 502, 500

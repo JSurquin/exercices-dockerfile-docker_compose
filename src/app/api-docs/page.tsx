@@ -198,12 +198,12 @@ trade = client.create_trade({
 })`,
 
   curl: `# ${messages.apiDocs.sdkComments.authentication}
-curl -X POST https://api.moonskin.gg/auth/steam \\
+curl -X POST https://www.moonskin.eu/api/auth/steam \\
   -H "Content-Type: application/json" \\
   -d '{"return_url": "https://yourapp.com/callback"}'
 
 # ${messages.apiDocs.sdkComments.priceEstimation}
-curl -X POST https://api.moonskin.gg/steam/estimate-prices \\
+curl -X POST https://www.moonskin.eu/api/steam/estimate-prices \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -213,7 +213,7 @@ curl -X POST https://api.moonskin.gg/steam/estimate-prices \\
   }'
 
 # ${messages.apiDocs.sdkComments.createTrade}
-curl -X POST https://api.moonskin.gg/steam/create-trade \\
+curl -X POST https://www.moonskin.eu/api/steam/create-trade \\
   -H "Authorization: Bearer YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -389,7 +389,7 @@ export default function ApiDocsPage() {
               Version 1.0
             </Badge>
             <Badge variant="outline">
-              Base URL: https://api.moonskin.gg
+              Base URL: https://www.moonskin.eu
             </Badge>
           </div>
         </motion.div>
@@ -535,8 +535,10 @@ export default function ApiDocsPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-muted-foreground text-sm">
-                      Les routes sous <code className="text-xs">/api/v1/partner/</code> utilisent une clé API
-                      Bearer au format <code className="text-xs">msk_live_...</code>. Membres du programme développeur :
+                      Base URL : <code className="text-xs">https://www.moonskin.eu/api/v1/partner/</code>
+                      {' '}(même host que le site, pas de sous-domaine <code className="text-xs">api.</code>).
+                      Les routes utilisent une clé API Bearer au format{' '}
+                      <code className="text-xs">msk_live_...</code>. Membres du programme développeur :
                       générez ou régénérez votre clé depuis{' '}
                       <a href="/settings" className="text-theme-accent underline underline-offset-2">
                         Paramètres → Développeur
