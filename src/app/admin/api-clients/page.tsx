@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Key, Trash2, Webhook, Plus, Activity, Save } from 'lucide-react';
+import { AdminUserCombobox } from '@/components/admin/admin-user-combobox';
 
 interface ApiClientRow {
   id: string;
@@ -177,11 +178,12 @@ export default function AdminApiClientsPage() {
               />
             </div>
             <div>
-              <Label>ID utilisateur lié</Label>
-              <Input
+              <Label>Utilisateur lié</Label>
+              <AdminUserCombobox
                 value={form.user_id}
-                onChange={(e) => setForm((f) => ({ ...f, user_id: e.target.value }))}
-                placeholder="cuid utilisateur MoonSkin"
+                onChange={(userId) => setForm((f) => ({ ...f, user_id: userId }))}
+                placeholder="Rechercher par pseudo Steam, email ou Steam ID…"
+                disabled={creating}
               />
             </div>
             <div>
@@ -193,7 +195,10 @@ export default function AdminApiClientsPage() {
               />
             </div>
           </div>
-          <Button onClick={handleCreate} disabled={creating}>
+          <Button
+            onClick={handleCreate}
+            disabled={creating || !form.name.trim() || !form.user_id}
+          >
             {creating ? 'Création…' : 'Générer la clé'}
           </Button>
           {newKey && (
@@ -289,7 +294,9 @@ export default function AdminApiClientsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {apiLogs.length === 0 ? (
+          {loading ? (
+            <p className="text-muted-foreground">Chargement…</p>
+          ) : apiLogs.length === 0 ? (
             <p className="text-muted-foreground">Aucun appel enregistré.</p>
           ) : (
             <div className="overflow-x-auto">
@@ -340,7 +347,9 @@ export default function AdminApiClientsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {deliveries.length === 0 ? (
+          {loading ? (
+            <p className="text-muted-foreground">Chargement…</p>
+          ) : deliveries.length === 0 ? (
             <p className="text-muted-foreground">Aucune livraison.</p>
           ) : (
             <div className="space-y-2 text-sm">

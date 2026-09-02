@@ -67,6 +67,7 @@ export async function GET(request: NextRequest) {
         OR: [
           { name: { contains: filters.search, mode: 'insensitive' } },
           { email: { contains: filters.search, mode: 'insensitive' } },
+          { steamUsername: { contains: filters.search, mode: 'insensitive' } },
           { steamId: { contains: filters.search, mode: 'insensitive' } },
           { id: { contains: filters.search, mode: 'insensitive' } },
         ],
@@ -97,6 +98,7 @@ export async function GET(request: NextRequest) {
           email: true,
           image: true,
           steamId: true,
+          steamUsername: true,
           kycStatus: true,
           level: true,
           xp: true,
@@ -157,7 +159,7 @@ export async function GET(request: NextRequest) {
     const formattedUsers: User[] = users.map(user => ({
       id: user.id,
       steamId64: user.steamId || 'N/A',
-      username: user.name || user.email || 'Utilisateur sans nom',
+      username: user.steamUsername || user.name || user.email || 'Utilisateur sans nom',
       avatar: user.image || '',
       acceptedTermsAt: user.acceptedTermsAt || undefined,
       kycStatus: user.kycStatus as 'PENDING' | 'IN_PROGRESS' | 'VERIFIED' | 'REJECTED' | 'KYCAID_PENDING' | 'KYCAID_VERIFIED' | 'KYCAID_REJECTED',
