@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         webhook_url: client.webhookUrl,
         signature_header: 'X-MoonSkin-Signature',
         signature_format: 't=<unix_timestamp>,v1=<hmac_sha256_hex>',
-        note: 'The signing secret is shown once when the API key is created and cannot be retrieved again.',
+        note: 'The signing secret is available in Settings → Developer. It is not returned by this endpoint.',
       });
     }
   );

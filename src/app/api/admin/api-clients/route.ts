@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
-import { createApiClient, revokeApiClient, sanitizeApiClient } from '@/lib/partner-api/key-service';
+import { createApiClient, revokeApiClient, toOwnerApiClientView } from '@/lib/partner-api/key-service';
 import { partnerCreateApiClientSchema } from '@/lib/partner-api/schemas';
 import {
   assertPartnerAccountReady,
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     clients: clients.map((c) => ({
-      ...sanitizeApiClient(c),
+      ...toOwnerApiClientView(c),
       user: {
         steam_username: c.user.steamUsername,
         steam_id: c.user.steamId,
@@ -81,9 +81,9 @@ export async function POST(request: NextRequest) {
   });
 
   return NextResponse.json({
-    client: sanitizeApiClient(client),
+    client: toOwnerApiClientView(client),
     api_key: rawKey,
     webhook_secret: client.webhookSecret,
-    warning: 'Conservez la clé API et le secret webhook — ils ne seront plus affichés.',
+    warning: 'Conservez la clé API et le secret webhook. Ils restent visibles sur cette page et dans Paramètres → Développeur.',
   });
 }

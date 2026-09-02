@@ -4,6 +4,10 @@ import {
   hashApiKey,
   generateApiKey,
   generateWebhookSecret,
+  encryptApiKeyForStorage,
+  decryptStoredApiKey,
+  sanitizeApiClient,
+  toOwnerApiClientView,
 } from '@/lib/partner-api/key-service';
 import { buildPartnerWebhookEventId, verifyWebhookSignature } from '@/lib/partner-api/webhook-service';
 import {
@@ -86,6 +90,50 @@ describe('partner-api key-service', () => {
 
   it('generateWebhookSecret is 64 hex chars', () => {
     expect(generateWebhookSecret()).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('stores and restores the raw API key for the owner view', () => {
+    const previous = process.env.ENCRYPTION_KEY;
+    process.env.ENCRYPTION_KEY = 'a'.repeat(64);
+    try {
+      const rawKey = 'msk_live_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+      const stored = encryptApiKeyForStorage(rawKey);
+      expect(stored).not.toBe(rawKey);
+      expect(decryptStoredApiKey(stored)).toBe(rawKey);
+    } finally {
+      process.env.ENCRYPTION_KEY = previous;
+    }
+  });
+
+  it('owner view exposes secrets while sanitizeApiClient hides them', () => {
+    const client = {
+      id: 'client-1',
+      name: 'Acme',
+      keyPrefix: 'msk_live_abcdef',
+      keyHash: 'hash',
+      encryptedKey: 'msk_live_full_key',
+      webhookSecret: 'whsec-secret',
+      webhookUrl: 'https://example.com/hook',
+      scopes: ['read'],
+      rateLimitPerMin: 100,
+      status: 'ACTIVE' as const,
+      expiresAt: null,
+      userId: 'user-1',
+      createdBy: 'admin-1',
+      lastUsedAt: null,
+      createdAt: new Date('2026-09-02T12:00:00.000Z'),
+      updatedAt: new Date('2026-09-02T12:00:00.000Z'),
+    };
+
+    const sanitized = JSON.stringify(sanitizeApiClient(client));
+    expect(sanitized).not.toMatch(/msk_live_full_key|whsec-secret|encryptedKey/);
+    expect(toOwnerApiClientView(client)).toEqual(
+      expect.objectContaining({
+        api_key: 'msk_live_full_key',
+        webhook_secret: 'whsec-secret',
+        key_prefix: 'msk_live_abcdef',
+      })
+    );
   });
 });
 

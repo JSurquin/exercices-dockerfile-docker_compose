@@ -4,6 +4,7 @@ import { getRequestContext, logUnauthorizedAccess } from '@/lib/security/audit-h
 import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { CREDITED_TRADE_STATUSES } from '@/lib/trade-volume';
+import { getActiveApiClientForUser, toOwnerApiClientView } from '@/lib/partner-api/key-service';
 
 export async function GET(
   request: NextRequest,
@@ -59,7 +60,7 @@ export async function GET(
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
 
-    const [totalVolumeAgg, pendingVolumeAgg] = await Promise.all([
+    const [totalVolumeAgg, pendingVolumeAgg, apiClient] = await Promise.all([
       prisma.trade.aggregate({
         where: {
           userId,
@@ -74,6 +75,7 @@ export async function GET(
         },
         _sum: { grossCents: true },
       }),
+      getActiveApiClientForUser(userId),
     ]);
 
     const tradeTotalVolumeCents = totalVolumeAgg._sum.grossCents ?? 0;
@@ -132,6 +134,7 @@ export async function GET(
         endedAt: h.endedAt,
         isActive: h.isActive,
       })),
+      apiClient: apiClient ? toOwnerApiClientView(apiClient) : null,
     });
   } catch (err) {
     console.error('[admin/users/[userId]]', err);

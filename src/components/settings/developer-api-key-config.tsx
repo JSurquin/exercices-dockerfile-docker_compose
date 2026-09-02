@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { KeyIcon, ArrowPathIcon, DocumentTextIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { KeyIcon, ArrowPathIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
+import { SecretValueField } from '@/components/ui/secret-value-field';
 import { toast } from 'sonner';
 
 interface ApiClientInfo {
@@ -21,11 +20,8 @@ interface ApiClientInfo {
   webhook_url: string | null;
   last_used_at: string | null;
   created_at: string;
-}
-
-interface NewCredentials {
-  api_key: string;
-  webhook_secret: string;
+  api_key: string | null;
+  webhook_secret: string | null;
 }
 
 export default function DeveloperApiKeyConfig() {
@@ -35,10 +31,7 @@ export default function DeveloperApiKeyConfig() {
   const [loading, setLoading] = useState(true);
   const [eligible, setEligible] = useState(false);
   const [client, setClient] = useState<ApiClientInfo | null>(null);
-  const [newCredentials, setNewCredentials] = useState<NewCredentials | null>(null);
   const [generating, setGenerating] = useState(false);
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [showWebhookSecret, setShowWebhookSecret] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -62,7 +55,6 @@ export default function DeveloperApiKeyConfig() {
     if (!window.confirm(confirmMessage)) return;
 
     setGenerating(true);
-    setNewCredentials(null);
     try {
       const res = await fetch('/api/user/developer/api-key', { method: 'POST' });
       const data = await res.json();
@@ -70,7 +62,6 @@ export default function DeveloperApiKeyConfig() {
         toast.error(data.error || t.errorGeneric);
         return;
       }
-      setNewCredentials({ api_key: data.api_key, webhook_secret: data.webhook_secret });
       setClient(data.client ?? null);
       toast.success(client ? t.regenerateSuccess : t.createSuccess);
     } finally {
@@ -112,13 +103,31 @@ export default function DeveloperApiKeyConfig() {
       </CardHeader>
       <CardContent className="space-y-6">
         {client ? (
-          <div className="rounded-lg border bg-muted/40 p-4 space-y-3 text-sm">
+          <div className="rounded-lg border bg-muted/40 p-4 space-y-4 text-sm">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant={client.status === 'ACTIVE' ? 'default' : 'secondary'}>
                 {client.status}
               </Badge>
-              <span className="font-mono text-muted-foreground">{client.key_prefix}…</span>
             </div>
+            <p className="text-muted-foreground">{t.credentialsStayVisible}</p>
+            <SecretValueField
+              label={t.apiKeyLabel}
+              value={client.api_key}
+              emptyHint={`${client.key_prefix}… — ${t.apiKeyUnavailable}`}
+              showLabel={t.show}
+              hideLabel={t.hide}
+              copyLabel={t.copy}
+              copiedLabel={t.copied}
+            />
+            <SecretValueField
+              label={t.webhookSecretLabel}
+              value={client.webhook_secret}
+              emptyHint={t.webhookSecretUnavailable}
+              showLabel={t.show}
+              hideLabel={t.hide}
+              copyLabel={t.copy}
+              copiedLabel={t.copied}
+            />
             <p>
               <span className="text-muted-foreground">{t.scopesLabel}: </span>
               {client.scopes.join(', ')}
@@ -136,56 +145,6 @@ export default function DeveloperApiKeyConfig() {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">{t.noKeyYet}</p>
-        )}
-
-        {newCredentials && (
-          <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4 space-y-4">
-            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">{t.credentialsWarning}</p>
-            <div className="space-y-2">
-              <Label>{t.apiKeyLabel}</Label>
-              <div className="flex gap-2">
-                <Input
-                  readOnly
-                  type={showApiKey ? 'text' : 'password'}
-                  value={newCredentials.api_key}
-                  className="font-mono text-xs"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowApiKey((v) => !v)}
-                  aria-label={showApiKey ? t.hide : t.show}
-                >
-                  {showApiKey ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t.webhookSecretLabel}</Label>
-              <div className="flex gap-2">
-                <Input
-                  readOnly
-                  type={showWebhookSecret ? 'text' : 'password'}
-                  value={newCredentials.webhook_secret}
-                  className="font-mono text-xs"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowWebhookSecret((v) => !v)}
-                  aria-label={showWebhookSecret ? t.hide : t.show}
-                >
-                  {showWebhookSecret ? (
-                    <EyeSlashIcon className="w-4 h-4" />
-                  ) : (
-                    <EyeIcon className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
         )}
 
         <div className="flex flex-wrap gap-3">

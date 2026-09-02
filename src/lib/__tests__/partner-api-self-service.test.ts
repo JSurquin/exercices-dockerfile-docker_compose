@@ -73,6 +73,7 @@ describe('partner-api regenerateApiClientCredentials', () => {
       data: expect.objectContaining({
         keyPrefix: expect.any(String),
         keyHash: expect.any(String),
+        encryptedKey: expect.any(String),
         webhookSecret: expect.any(String),
         status: 'ACTIVE',
       }),

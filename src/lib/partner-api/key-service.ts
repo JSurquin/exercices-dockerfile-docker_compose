@@ -1,8 +1,28 @@
 import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import type { ApiClient } from '@prisma/client';
+import { decrypt, encrypt } from '@/lib/encryption';
 import { prisma } from '~/prisma/prisma';
 
 const KEY_PREFIX = 'msk_live_';
+
+export function encryptApiKeyForStorage(rawKey: string): string {
+  if (!process.env.ENCRYPTION_KEY?.trim()) {
+    return rawKey;
+  }
+  return encrypt(rawKey);
+}
+
+export function decryptStoredApiKey(stored: string | null | undefined): string | null {
+  if (!stored) return null;
+  if (!process.env.ENCRYPTION_KEY?.trim()) {
+    return stored;
+  }
+  try {
+    return decrypt(stored);
+  } catch {
+    return stored;
+  }
+}
 
 export function hashApiKey(rawKey: string): string {
   return createHash('sha256').update(rawKey).digest('hex');
@@ -59,6 +79,7 @@ export async function createApiClient(params: {
       userId: params.userId,
       keyPrefix,
       keyHash,
+      encryptedKey: encryptApiKeyForStorage(rawKey),
       webhookSecret,
       createdBy: params.createdBy,
       rateLimitPerMin: params.rateLimitPerMin ?? 100,
@@ -95,6 +116,7 @@ export async function regenerateApiClientCredentials(
     data: {
       keyPrefix,
       keyHash,
+      encryptedKey: encryptApiKeyForStorage(rawKey),
       webhookSecret,
       status: 'ACTIVE',
     },
@@ -129,5 +151,13 @@ export function sanitizeApiClient(client: ApiClient) {
     expires_at: client.expiresAt?.toISOString() ?? null,
     last_used_at: client.lastUsedAt?.toISOString() ?? null,
     created_at: client.createdAt.toISOString(),
+  };
+}
+
+export function toOwnerApiClientView(client: ApiClient) {
+  return {
+    ...sanitizeApiClient(client),
+    api_key: decryptStoredApiKey(client.encryptedKey),
+    webhook_secret: client.webhookSecret,
   };
 }

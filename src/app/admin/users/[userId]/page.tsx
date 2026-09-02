@@ -34,6 +34,7 @@ import { UserRoleBadge } from '@/components/ui/user-role-badge';
 import { useLocale } from '@/components/providers/locale-provider';
 import { UserRewardsBlockControls } from '@/components/admin/user-rewards-block-controls';
 import { UserBanManagement } from '@/components/admin/user-ban-management';
+import { SecretValueField } from '@/components/ui/secret-value-field';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { SteamIcon } from '@/components/ui/cs2-icons';
 import { getSteamProfileUrl } from '@/lib/steam-id';
@@ -74,6 +75,15 @@ interface UserDetail {
   developerProgramEnabled: boolean;
   affiliateRewardsBlocked: boolean;
   xpRewardsBlocked: boolean;
+  apiClient: {
+    id: string;
+    status: string;
+    key_prefix: string;
+    api_key: string | null;
+    webhook_secret: string | null;
+    scopes: string[];
+    rate_limit_per_min: number;
+  } | null;
   referredBy: { affiliateId: string; code: string; steamUsername: string | null } | null;
   affiliateHistory?: Array<{
     id: string;
@@ -493,6 +503,33 @@ export default function AdminUserDetailPage() {
               </div>
               {user.developerProgramEnabled && (
                 <p className="text-sm text-theme-highlight">{t.developerProgramActiveWarning}</p>
+              )}
+              {user.apiClient ? (
+                <div className="space-y-4 rounded-lg border border-slate-700 bg-slate-900/30 p-4">
+                  <Badge variant={user.apiClient.status === 'ACTIVE' ? 'default' : 'secondary'}>
+                    {user.apiClient.status}
+                  </Badge>
+                  <SecretValueField
+                    label={t.partnerApiKeyLabel}
+                    value={user.apiClient.api_key}
+                    emptyHint={`${user.apiClient.key_prefix}… — ${t.partnerApiKeyUnavailable}`}
+                    showLabel={t.show}
+                    hideLabel={t.hide}
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                  <SecretValueField
+                    label={t.partnerWebhookSecretLabel}
+                    value={user.apiClient.webhook_secret}
+                    emptyHint={t.partnerApiNoKey}
+                    showLabel={t.show}
+                    hideLabel={t.hide}
+                    copyLabel={t.copy}
+                    copiedLabel={t.copied}
+                  />
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400">{t.partnerApiNoKey}</p>
               )}
             </CardContent>
           </Card>

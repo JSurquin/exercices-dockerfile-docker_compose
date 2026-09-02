@@ -99,6 +99,7 @@ model ApiClient {
   name              String
   keyPrefix         String
   keyHash           String
+  encryptedKey      String?
   webhookSecret     String
   webhookUrl        String?
   scopes            String[]                 @default(["read", "trade", "payout"])

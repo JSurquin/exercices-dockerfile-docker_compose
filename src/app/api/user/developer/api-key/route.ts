@@ -10,7 +10,7 @@ import {
   createApiClient,
   getActiveApiClientForUser,
   regenerateApiClientCredentials,
-  sanitizeApiClient,
+  toOwnerApiClientView,
 } from '@/lib/partner-api/key-service';
 
 export async function GET(request: NextRequest) {
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   const client = await getActiveApiClientForUser(session.user.id);
   return NextResponse.json({
     eligible: true,
-    client: client ? sanitizeApiClient(client) : null,
+    client: client ? toOwnerApiClientView(client) : null,
   });
 }
 
@@ -82,12 +82,12 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      client: sanitizeApiClient(client),
+      client: toOwnerApiClientView(client),
       api_key: rawKey,
       webhook_secret: client.webhookSecret,
       regenerated: true,
       warning:
-        'Conservez la clé API et le secret webhook — ils ne seront plus affichés. L’ancienne clé est immédiatement invalidée.',
+        'Conservez la clé API et le secret webhook. Ils restent visibles dans Paramètres → Développeur. L’ancienne clé est immédiatement invalidée.',
     });
   }
 
@@ -111,10 +111,10 @@ export async function POST(request: NextRequest) {
   });
 
   return NextResponse.json({
-    client: sanitizeApiClient(client),
+    client: toOwnerApiClientView(client),
     api_key: rawKey,
     webhook_secret: client.webhookSecret,
     regenerated: false,
-    warning: 'Conservez la clé API et le secret webhook — ils ne seront plus affichés.',
+    warning: 'Conservez la clé API et le secret webhook. Ils restent visibles dans Paramètres → Développeur.',
   });
 }

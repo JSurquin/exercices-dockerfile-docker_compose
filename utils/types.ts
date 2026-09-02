@@ -1158,8 +1158,11 @@ export interface Messages {
       createSuccess: string;
       regenerateSuccess: string;
       credentialsWarning: string;
+      credentialsStayVisible: string;
       apiKeyLabel: string;
       webhookSecretLabel: string;
+      apiKeyUnavailable: string;
+      webhookSecretUnavailable: string;
       scopesLabel: string;
       rateLimitLabel: string;
       lastUsedLabel: string;
@@ -1168,6 +1171,8 @@ export interface Messages {
       generating: string;
       show: string;
       hide: string;
+      copy: string;
+      copied: string;
       errorGeneric: string;
     };
     loginRequired: {
@@ -1629,6 +1634,14 @@ export interface Messages {
       developerProgramEnabledDesc: string;
       developerProgramDisabledTitle: string;
       developerProgramDisabledDesc: string;
+      partnerApiKeyLabel: string;
+      partnerWebhookSecretLabel: string;
+      partnerApiNoKey: string;
+      partnerApiKeyUnavailable: string;
+      copy: string;
+      copied: string;
+      show: string;
+      hide: string;
       referredByLabel: string;
       affiliateHistoryTitle: string;
       affiliateHistoryCurrent: string;

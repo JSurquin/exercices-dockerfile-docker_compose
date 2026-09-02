@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Key, Trash2, Webhook, Plus, Activity, Save } from 'lucide-react';
 import { AdminUserCombobox } from '@/components/admin/admin-user-combobox';
+import { SecretValueField } from '@/components/ui/secret-value-field';
 
 interface ApiClientRow {
   id: string;
@@ -18,6 +19,8 @@ interface ApiClientRow {
   rate_limit_per_min: number;
   webhook_url: string | null;
   key_prefix: string;
+  api_key: string | null;
+  webhook_secret: string | null;
   user: { steam_username: string | null; steam_id: string | null; email: string };
   stats: { api_calls: number; webhook_deliveries: number };
 }
@@ -204,7 +207,7 @@ export default function AdminApiClientsPage() {
           {newKey && (
             <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-sm space-y-2">
               <p className="font-semibold text-amber-700 dark:text-amber-300">
-                Copiez ces valeurs maintenant — elles ne seront plus affichées.
+                Clé générée — elle reste visible ci-dessous et sur la fiche utilisateur.
               </p>
               <p>
                 <span className="text-muted-foreground">Clé API :</span>{' '}
@@ -238,8 +241,28 @@ export default function AdminApiClientsPage() {
                   <div>
                     <p className="font-medium">{c.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {c.user.steam_username || c.user.email} — préfixe {c.key_prefix}…
+                      {c.user.steam_username || c.user.email}
                     </p>
+                    <div className="mt-3 space-y-3 max-w-xl">
+                      <SecretValueField
+                        label="Clé API"
+                        value={c.api_key}
+                        emptyHint={`${c.key_prefix}… — régénérer pour afficher la clé complète`}
+                        showLabel="Afficher"
+                        hideLabel="Masquer"
+                        copyLabel="Copier"
+                        copiedLabel="Copié"
+                      />
+                      <SecretValueField
+                        label="Secret webhook"
+                        value={c.webhook_secret}
+                        emptyHint="Aucun secret webhook"
+                        showLabel="Afficher"
+                        hideLabel="Masquer"
+                        copyLabel="Copier"
+                        copiedLabel="Copié"
+                      />
+                    </div>
                     <div className="flex gap-2 mt-1 flex-wrap">
                       <Badge variant={c.status === 'ACTIVE' ? 'default' : 'secondary'}>{c.status}</Badge>
                       {c.scopes.map((scope) => (
