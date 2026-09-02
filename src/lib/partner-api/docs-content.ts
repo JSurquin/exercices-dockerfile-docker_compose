@@ -65,59 +65,24 @@ export const partnerEndpointCatalog: PartnerEndpointCatalogItem[] = [
   { id: 'getWebhook', method: 'GET', path: '/api/v1/partner/webhook', scope: 'read', rateLimit: '100/min' },
 ];
 
-export const partnerCurlExamples = `# All partner routes require:
-# Authorization: Bearer msk_live_...
+export function buildPartnerEndpointCurl(endpoint: PartnerEndpointCatalogItem): string {
+  const path = endpoint.path.replace('{id}', 'TRADE-123');
+  const url = `${PARTNER_API_BASE_URL}${path}${endpoint.query ?? ''}`;
+  const lines = [
+    endpoint.method === 'GET' ? `curl -s "${url}" \\` : `curl -s -X ${endpoint.method} "${url}" \\`,
+    '  -H "Authorization: Bearer msk_live_YOUR_KEY"',
+  ];
+  if (endpoint.body) {
+    lines[lines.length - 1] += ' \\';
+    lines.push('  -H "Content-Type: application/json" \\');
+    lines.push(`  -d '${endpoint.body}'`);
+  }
+  return lines.join('\n');
+}
 
-# Profile
-curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/me" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY"
-
-# Balance (cents)
-curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/balance" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY"
-
-# Sellable CS2 inventory
-curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/inventory" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY"
-
-# Price estimate
-curl -s -X POST "${PARTNER_API_BASE_URL}/api/v1/partner/estimate" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{"asset_ids":["12345678901234567"]}'
-
-# Create a sale (trade scope)
-curl -s -X POST "${PARTNER_API_BASE_URL}/api/v1/partner/trades" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "items":[{"asset_id":"12345678901234567"}],
-    "trade_url":"https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh"
-  }'
-
-# List trades
-curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/trades?limit=20&offset=0" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY"
-
-# Trade detail
-curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/trades/TRADE-123" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY"
-
-# Request a payout (payout scope + approved KYC)
-curl -s -X POST "${PARTNER_API_BASE_URL}/api/v1/partner/payouts" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{"trade_id":"TRADE-123"}'
-
-# Configure webhook
-curl -s -X PUT "${PARTNER_API_BASE_URL}/api/v1/partner/webhook" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{"webhook_url":"https://your-server.com/webhooks/moonskin"}'
-
-# Read active webhook
-curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/webhook" \\
-  -H "Authorization: Bearer msk_live_YOUR_KEY"`;
+export const partnerCurlExamples = partnerEndpointCatalog
+  .map((endpoint) => `# ${endpoint.method} ${endpoint.path}\n${buildPartnerEndpointCurl(endpoint)}`)
+  .join('\n\n');
 
 export const partnerWebhookSignatureExample = `const crypto = require('crypto');
 const header = req.headers['x-moonskin-signature']; // t=123,v1=abc...
@@ -210,6 +175,88 @@ export const partnerResponseExamples = {
     "message": "Missing required scopes: trade"
   }
 }`,
+  balance: `{
+  "success": true,
+  "data": {
+    "balance_cents": 150000,
+    "pending_cents": 12000,
+    "frozen_cents": 5000,
+    "available_cents": 145000,
+    "account_frozen": false
+  }
+}`,
+  inventory: `{
+  "success": true,
+  "data": {
+    "steam_id": "76561198012345678",
+    "items": [
+      { "asset_id": "12345678901234567", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 125000, "icon_url": null, "exterior": "Field-Tested", "stat_trak": false, "rarity": "Classified" }
+    ],
+    "total_items": 1,
+    "total_value_cents": 125000
+  }
+}`,
+  createTrade: `{
+  "success": true,
+  "data": {
+    "id": "TRADE-123",
+    "trade_id": "TRADE-123",
+    "ticket_id": "TICK-20250728-0001",
+    "status": "created",
+    "gross_cents": 125000,
+    "net_cents": 126250,
+    "fees": { "cashout": 0, "network": 0 },
+    "vip_bonus_cents": 1250,
+    "expires_at": "2026-07-28T13:00:00.000Z",
+    "available_at": null,
+    "payment_reference": "TICK-20250728-0001"
+  }
+}`,
+  listTrades: `{
+  "success": true,
+  "data": {
+    "trades": [
+      {
+        "id": "TRADE-123",
+        "trade_id": "TRADE-123",
+        "status": "in_trade_hold",
+        "gross_cents": 125000,
+        "net_cents": 120000,
+        "payment_reference": "TICK-20250728-0001"
+      }
+    ],
+    "pagination": { "limit": 20, "offset": 0, "total": 1 }
+  }
+}`,
+  putWebhook: `{
+  "success": true,
+  "data": {
+    "webhook_url": "https://your-server.com/webhooks/moonskin",
+    "message": "Webhook URL configured"
+  }
+}`,
+  getWebhook: `{
+  "success": true,
+  "data": {
+    "webhook_url": "https://your-server.com/webhooks/moonskin",
+    "signature_header": "X-MoonSkin-Signature",
+    "signature_format": "t=<unix_timestamp>,v1=<hmac_sha256_hex>",
+    "note": "The signing secret is available in Settings → Developer. It is not returned by this endpoint."
+  }
+}`,
+};
+
+export const partnerEndpointResponseExamples: Record<PartnerEndpointId, string> = {
+  me: partnerResponseExamples.me,
+  balance: partnerResponseExamples.balance,
+  inventory: partnerResponseExamples.inventory,
+  estimate: partnerResponseExamples.estimate,
+  createTrade: partnerResponseExamples.createTrade,
+  listTrades: partnerResponseExamples.listTrades,
+  getTrade: partnerResponseExamples.tradeDetail,
+  payouts: partnerResponseExamples.payout,
+  putWebhook: partnerResponseExamples.putWebhook,
+  getWebhook: partnerResponseExamples.getWebhook,
 };
 
 export const partnerWebhookGuide = `${formatPartnerWebhookProse('en')}

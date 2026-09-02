@@ -5515,6 +5515,16 @@ export interface Messages {
     needHelp: string;
     supportDesc: string;
     supportEmail: string;
+    copy: string;
+    copied: string;
+    requestTab: string;
+    onThisPage: string;
+    tocStart: string;
+    tocAuth: string;
+    tocRoutes: string;
+    tocFlow: string;
+    tocWebhooks: string;
+    tocErrors: string;
     statusCodesLabels: {
       success: string;
       created: string;

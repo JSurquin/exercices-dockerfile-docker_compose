@@ -247,7 +247,7 @@ describe('partner-api JSON contract', () => {
     expect(partnerResponseExamples.webhook).toContain('trade.status_changed:TRADE-123:available:clxabc');
     expect(partnerWebhookGuide).toMatch(/deterministic/);
     expect(PARTNER_API_BASE_URL).toBe('https://www.moonskin.eu');
-    expect(partnerCurlExamples).toContain('https://www.moonskin.eu/api/v1/partner/me');
+    expect(partnerCurlExamples).toContain(`curl -s "${PARTNER_API_BASE_URL}/api/v1/partner/me"`);
     expect(partnerCurlExamples).toContain('/api/v1/partner/webhook');
     expect(partnerCurlExamples).not.toMatch(/api\.moonskin/);
     expect(partnerCurlExamples).toMatch(/GET.*webhook|Read active webhook/i);
