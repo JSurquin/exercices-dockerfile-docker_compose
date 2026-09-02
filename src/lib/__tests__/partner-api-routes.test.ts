@@ -207,22 +207,21 @@ describe('partner API HTTP routes', () => {
     expect(body.error.provider_status).toBe('error');
   });
 
-  it('GET /inventory returns 503 when Skinplace reports empty_inventory', async () => {
+  it('GET /inventory returns an empty list when Skinplace reports empty_inventory', async () => {
     mockAuth(['read']);
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({ steamId: '76561198012345678' });
     (fetchSkinplaceInstantInventory as jest.Mock).mockResolvedValue({
-      ok: false,
-      code: 'API_ERROR',
-      error: 'Unable to fetch inventory from the trade provider',
-      provider: { status: 'error', error_message: 'empty_inventory' },
+      ok: true,
+      inventory: [],
     });
 
     const response = await getInventory(new NextRequest('http://localhost/api/v1/partner/inventory'));
     const body = await response.json();
 
-    expect(response.status).toBe(503);
-    expect(body.error.code).toBe('API_ERROR');
-    expect(body.error.provider_error).toBe('empty_inventory');
+    expect(response.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data.total_items).toBe(0);
+    expect(body.data.items).toEqual([]);
   });
 
   it('GET /me is blocked for trade-only scope', async () => {

@@ -63,7 +63,7 @@ export function partnerExtraFromSkinplaceProvider(provider?: {
 
 export function isRetryableSkinplaceInventoryError(errorMessage?: string): boolean {
   const msg = (errorMessage ?? '').toLowerCase().replace(/-/g, '_');
-  return msg === 'empty_inventory' || msg === 'parse_inventory' || msg === 'steam_down';
+  return msg === 'parse_inventory' || msg === 'steam_down';
 }
 
 export function mapSkinplaceInventoryFailure(
@@ -85,14 +85,6 @@ export function mapSkinplaceInventoryFailure(
       code: 'VALIDATION_ERROR',
       message: 'Steam inventory is private or inaccessible',
       httpStatus: 400,
-      extra,
-    };
-  }
-  if (msg === 'empty_inventory') {
-    return {
-      code: 'API_ERROR',
-      message: 'Trade provider could not load the Steam inventory',
-      httpStatus: 503,
       extra,
     };
   }
@@ -241,6 +233,10 @@ async function fetchSkinplaceInstantInventoryOnce(
         providerStatus: provider.status,
         providerError: provider.error_message,
       });
+      if ((provider.error_message ?? '').toLowerCase().replace(/-/g, '_') === 'empty_inventory') {
+        partnerTrace('skinplace.inventory.empty', { attempt });
+        return { ok: true, inventory: [] };
+      }
       return {
         ok: false,
         code: 'API_ERROR',

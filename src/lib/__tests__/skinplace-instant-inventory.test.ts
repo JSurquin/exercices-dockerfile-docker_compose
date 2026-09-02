@@ -58,8 +58,8 @@ describe('extractSkinplaceInventoryItems', () => {
 });
 
 describe('skinplaceErrorFields and mapSkinplaceInventoryFailure', () => {
-  it('retries empty_inventory, parse_inventory and steam_down', () => {
-    expect(isRetryableSkinplaceInventoryError('empty_inventory')).toBe(true);
+  it('retries parse_inventory and steam_down, not empty_inventory', () => {
+    expect(isRetryableSkinplaceInventoryError('empty_inventory')).toBe(false);
     expect(isRetryableSkinplaceInventoryError('parse_inventory')).toBe(true);
     expect(isRetryableSkinplaceInventoryError('steam_down')).toBe(true);
     expect(isRetryableSkinplaceInventoryError('need_auth')).toBe(false);
@@ -98,17 +98,5 @@ describe('skinplaceErrorFields and mapSkinplaceInventoryFailure', () => {
     expect(mapped.httpStatus).toBe(503);
     expect(mapped.code).toBe('API_ERROR');
     expect(mapped.extra).toEqual({ provider_status: 'error', provider_error: 'need_auth' });
-  });
-
-  it('does not treat empty_inventory as a successful empty list', () => {
-    const mapped = mapSkinplaceInventoryFailure({
-      ok: false,
-      code: 'API_ERROR',
-      error: 'Unable to fetch inventory from the trade provider',
-      provider: { status: 'error', error_message: 'empty_inventory' },
-    });
-    expect(mapped.httpStatus).toBe(503);
-    expect(mapped.code).toBe('API_ERROR');
-    expect(mapped.extra?.provider_error).toBe('empty_inventory');
   });
 });
