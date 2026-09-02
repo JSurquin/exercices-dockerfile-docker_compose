@@ -2,9 +2,11 @@ import type { NextRequest } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { withPartnerApi } from '@/lib/partner-api/handler';
 import { partnerSuccess, partnerError, mapKycStatus } from '@/lib/partner-api/response';
+import { withPartnerTrace } from '@/lib/partner-api/trace';
 
 export async function GET(request: NextRequest) {
-  return withPartnerApi(request, { endpoint: '/api/v1/partner/me', method: 'GET', scopes: ['read'] }, async (_req, ctx) => {
+  return withPartnerTrace(request, '/api/v1/partner/me', 'GET', () =>
+    withPartnerApi(request, { endpoint: '/api/v1/partner/me', method: 'GET', scopes: ['read'] }, async (_req, ctx) => {
     const user = await prisma.user.findUnique({
       where: { id: ctx.userId },
       select: {
@@ -35,5 +37,6 @@ export async function GET(request: NextRequest) {
       account_frozen: user.accountFrozen,
       created_at: user.createdAt.toISOString(),
     });
-  });
+  })
+  );
 }

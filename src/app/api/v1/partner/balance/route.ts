@@ -2,9 +2,11 @@ import type { NextRequest } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { withPartnerApi } from '@/lib/partner-api/handler';
 import { partnerSuccess, partnerError } from '@/lib/partner-api/response';
+import { withPartnerTrace } from '@/lib/partner-api/trace';
 
 export async function GET(request: NextRequest) {
-  return withPartnerApi(
+  return withPartnerTrace(request, '/api/v1/partner/balance', 'GET', () =>
+    withPartnerApi(
     request,
     { endpoint: '/api/v1/partner/balance', method: 'GET', scopes: ['read'] },
     async (_req, ctx) => {
@@ -32,5 +34,6 @@ export async function GET(request: NextRequest) {
         account_frozen: user.accountFrozen,
       });
     }
+  )
   );
 }

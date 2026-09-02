@@ -1,4 +1,5 @@
 import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
+import { heapMb, partnerTrace } from '@/lib/partner-api/trace';
 
 export type SkinplaceInstantInventoryItem = {
   market_name?: string;
@@ -36,10 +37,12 @@ export async function fetchSkinplaceInstantInventory(
   const publicKey = process.env.SKINPLACE_API_KEY_PUBLIC;
 
   if (!privateKey || !publicKey) {
+    partnerTrace('skinplace.inventory.config-missing');
     return { ok: false, code: 'CONFIG_ERROR', error: 'Trade provider is not configured' };
   }
 
   if (!/^\d{17}$/.test(steamId)) {
+    partnerTrace('skinplace.inventory.bad-steamid');
     return { ok: false, code: 'API_ERROR', error: 'Unable to fetch inventory from the trade provider' };
   }
 
@@ -50,6 +53,8 @@ export async function fetchSkinplaceInstantInventory(
   params.append('project', 'csgo');
   params.append('public key', publicKey);
 
+  const started = Date.now();
+  partnerTrace('skinplace.inventory.fetch.start', { steamId, heapMb: heapMb() });
   try {
     const response = await fetch(
       `https://api.skin.place/api/v3/instant/inventory?${params.toString()}`,
@@ -63,7 +68,15 @@ export async function fetchSkinplaceInstantInventory(
       }
     );
 
+    partnerTrace('skinplace.inventory.fetch.headers', {
+      status: response.status,
+      elapsedMs: Date.now() - started,
+      contentType: response.headers.get('content-type'),
+      contentLength: response.headers.get('content-length'),
+    });
+
     if (!response.ok) {
+      partnerTrace('skinplace.inventory.fetch.http-error', { status: response.status });
       return {
         ok: false,
         code: 'API_ERROR',
@@ -72,6 +85,12 @@ export async function fetchSkinplaceInstantInventory(
     }
 
     const data = (await response.json()) as { inventory?: SkinplaceInstantInventoryItem[] };
+    const count = Array.isArray(data.inventory) ? data.inventory.length : -1;
+    partnerTrace('skinplace.inventory.fetch.body', {
+      elapsedMs: Date.now() - started,
+      itemCount: count,
+      heapMb: heapMb(),
+    });
     if (!Array.isArray(data.inventory)) {
       return {
         ok: false,
@@ -81,7 +100,12 @@ export async function fetchSkinplaceInstantInventory(
     }
 
     return { ok: true, inventory: data.inventory };
-  } catch {
+  } catch (err) {
+    partnerTrace('skinplace.inventory.fetch.throw', {
+      elapsedMs: Date.now() - started,
+      error: err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+      heapMb: heapMb(),
+    });
     return {
       ok: false,
       code: 'API_ERROR',

@@ -11,6 +11,7 @@ import { logger } from '@/lib/logger';
 import { getPartnerOperatingSteamId, validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 import { toPartnerFacingProviderError } from '@/lib/partner-api/response';
 import { assertPartnerAccountReady } from '@/lib/partner-api/account-guards';
+import { heapMb, partnerTrace } from '@/lib/partner-api/trace';
 
 function mapSkinplaceStatusToTradeStatus(skinplaceStatus: string): TradeStatus {
   const statusMap: Record<string, TradeStatus> = {
@@ -86,6 +87,7 @@ export async function createPartnerTrade(
 
   const verification = await verifyAndPriceItems(steamId, params.assetIds);
   if (!verification.ok) {
+    partnerTrace('trades.skinplace.verify.fail', { code: verification.code });
     const status = verification.code === 'ITEMS_NOT_FOUND' ? 400 : 502;
     return {
       ok: false,
@@ -163,6 +165,8 @@ export async function createPartnerTrade(
     send_offer_sync: 1,
   };
 
+  const started = Date.now();
+  partnerTrace('trades.skinplace.post.start', { steamId, offerCount: params.assetIds.length, heapMb: heapMb() });
   const skinplaceResponse = await fetch('https://api.skin.place/api/v3/instant/inventory', {
     method: 'POST',
     headers: {
@@ -172,6 +176,12 @@ export async function createPartnerTrade(
     },
     body: JSON.stringify(skinplacePayload),
     signal: AbortSignal.timeout(15000),
+  });
+
+  partnerTrace('trades.skinplace.post.headers', {
+    status: skinplaceResponse.status,
+    elapsedMs: Date.now() - started,
+    heapMb: heapMb(),
   });
 
   if (!skinplaceResponse.ok) {
@@ -329,6 +339,7 @@ export async function estimatePartnerItems(
     return { ok: false, error: 'Steam ID is not linked to this account', code: 'VALIDATION_ERROR', status: 400 };
   }
 
+  partnerTrace('estimate.verify.start', { steamId, assetCount: assetIds.length });
   const verification = await verifyAndPriceItems(steamId, assetIds);
   if (!verification.ok) {
     return {

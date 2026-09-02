@@ -3,6 +3,7 @@ import {
   isSkinplaceItemSellable,
   type SkinplaceInstantInventoryItem,
 } from '@/lib/skinplace-instant-inventory';
+import { partnerTrace } from '@/lib/partner-api/trace';
 
 export interface VerifiedItem {
   asset_id: string;
@@ -46,8 +47,10 @@ export async function verifyAndPriceItems(
   steamId: string,
   assetIds: string[]
 ): Promise<VerifyResult> {
+  partnerTrace('price-verifier.start', { steamId, assetCount: assetIds.length });
   const fetched = await fetchSkinplaceInstantInventory(steamId);
   if (!fetched.ok) {
+    partnerTrace('price-verifier.fail', { code: fetched.code });
     if (fetched.code === 'CONFIG_ERROR') {
       return { ok: false, error: 'Configuration API manquante', code: 'CONFIG_ERROR' };
     }
