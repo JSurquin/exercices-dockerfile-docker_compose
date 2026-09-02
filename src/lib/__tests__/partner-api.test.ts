@@ -32,6 +32,8 @@ import { parsePartnerPagination, safeParsePartnerJson } from '@/lib/partner-api/
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
 import { PARTNER_API_BASE_URL, partnerErrorCodesGuide, partnerPrerequisitesGuide, partnerResponseExamples, partnerWebhookGuide, partnerCurlExamples } from '@/lib/partner-api/docs-content';
+import { formatPartnerErrorCodesGuide, getPartnerDocsCopy } from '@/lib/partner-api/docs-i18n';
+import { locales } from '@/lib/i18n';
 import {
   assertPartnerAccountReady,
   assertPartnerTermsAccepted,
@@ -249,6 +251,7 @@ describe('partner-api JSON contract', () => {
     expect(partnerCurlExamples).toContain('/api/v1/partner/webhook');
     expect(partnerCurlExamples).not.toMatch(/api\.moonskin/);
     expect(partnerCurlExamples).toMatch(/GET.*webhook|Read active webhook/i);
+    expect(partnerCurlExamples).not.toMatch(/@moonskin\/sdk|moonskin-sdk/);
   });
 
   it('documents every standard partner error code', () => {
@@ -266,6 +269,20 @@ describe('partner-api JSON contract', () => {
     expect(partnerPrerequisitesGuide).toMatch(/HTTPS/);
     expect(partnerPrerequisitesGuide).toMatch(/100 requests/);
     expect(partnerPrerequisitesGuide).toContain('api-support@moonskin.gg');
+  });
+
+  it('translates partner docs in fr, en and cn without inventing an SDK', () => {
+    for (const locale of locales) {
+      const copy = getPartnerDocsCopy(locale);
+      const errors = formatPartnerErrorCodesGuide(locale);
+      for (const code of PARTNER_ERROR_CODE_LIST) {
+        expect(errors).toContain(code);
+        expect(copy.errorCodes[code]).toBeTruthy();
+      }
+      expect(copy.endpoints.createTrade.description.length).toBeGreaterThan(20);
+      expect(copy.prerequisitesItems.join(' ')).toMatch(/KYC/i);
+      expect(JSON.stringify(copy)).not.toMatch(/@moonskin\/sdk|moonskin-sdk/);
+    }
   });
 
   it('POST create payload maps raw Prisma status instead of leaking CREATED', () => {

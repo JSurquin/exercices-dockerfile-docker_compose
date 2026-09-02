@@ -5473,6 +5473,8 @@ export interface Messages {
   apiDocs: {
     title: string;
     subtitle: string;
+    version: string;
+    baseUrlLabel: string;
     quickStart: string;
     getApiKey: string;
     getApiKeyDesc: string;
@@ -5482,62 +5484,55 @@ export interface Messages {
     integrateDesc: string;
     authentication: string;
     authDescription: string;
+    authHostNote: string;
+    settingsLink: string;
     important: string;
     securityWarning: string;
     availableEndpoints: string;
-    codeExamples: string;
+    prerequisitesTitle: string;
+    scopesTitle: string;
+    conventionTitle: string;
+    endpointsTitle: string;
+    bodyLabel: string;
+    queryLabel: string;
+    responseLabel: string;
+    scopeLabel: string;
+    flowTitle: string;
+    webhooksTitle: string;
+    webhookHeadersTitle: string;
+    webhookSignatureTitle: string;
+    errorsTitle: string;
+    errorEnvelopeLabel: string;
+    curlTitle: string;
     responseExamples: string;
     rateLimits: string;
     rateLimitsDesc: string;
     statusCodes: string;
-    officialSdks: string;
     needHelp: string;
     supportDesc: string;
-    categories: {
-      authentication: string;
-      user: string;
-      trading: string;
-      skinplace: string;
-    };
-    endpoints: {
-      steamAuth: string;
-      logout: string;
-      getProfile: string;
-      updateProfile: string;
-      getTradeHistory: string;
-      estimatePrices: string;
-      createTrade: string;
-      getInventory: string;
-      getItems: string;
-      getBalance: string;
-      purchaseItems: string;
-    };
+    supportEmail: string;
     statusCodesLabels: {
       success: string;
+      created: string;
       badRequest: string;
       unauthorized: string;
+      forbidden: string;
+      notFound: string;
       tooManyRequests: string;
+      badGateway: string;
       serverError: string;
     };
     rateLimitLabels: {
       default: string;
-      authentication: string;
-      trading: string;
-      estimation: string;
+      webhook: string;
     };
     tabLabels: {
+      me: string;
       estimate: string;
       trade: string;
+      payout: string;
+      webhook: string;
       error: string;
-    };
-    discordDevs: string;
-    sdkComments: {
-      installation: string;
-      usage: string;
-      priceEstimation: string;
-      createTrade: string;
-      authentication: string;
-      orSandbox: string;
     };
     comingSoon: {
       title: string;

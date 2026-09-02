@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   CodeBracketIcon,
   KeyIcon,
-  DocumentTextIcon,
   ShieldCheckIcon,
   ClockIcon,
   ExclamationTriangleIcon,
@@ -17,263 +17,35 @@ import {
   CubeIcon,
   RocketLaunchIcon,
   EnvelopeIcon,
-  ChatBubbleLeftRightIcon,
-} from "@heroicons/react/24/outline";
-import { useLocale } from "@/components/providers/locale-provider";
+  DocumentTextIcon,
+} from '@heroicons/react/24/outline';
+import { useLocale } from '@/components/providers/locale-provider';
 import {
-  partnerApiConventionGuide,
+  PARTNER_API_BASE_URL,
   partnerCurlExamples,
-  partnerEndpointDetails,
-  partnerErrorCodesGuide,
-  partnerPollingGuide,
-  partnerPrerequisitesGuide,
+  partnerEndpointCatalog,
   partnerResponseExamples,
-  partnerScopesGuide,
-  partnerWebhookGuide,
-} from "@/lib/partner-api/docs-content";
+  partnerWebhookSignatureExample,
+} from '@/lib/partner-api/docs-content';
+import { getPartnerDocsCopy } from '@/lib/partner-api/docs-i18n';
 
-const getEndpoints = (messages: any) => [
-  {
-    category: messages.apiDocs.categories.authentication,
-    color: "text-blue-600",
-    endpoints: [
-      {
-        method: "POST",
-        path: "/api/auth/steam",
-        description: messages.apiDocs.endpoints.steamAuth,
-        auth: false,
-        rateLimit: "10/min",
-      },
-      {
-        method: "POST",
-        path: "/api/auth/logout",
-        description: messages.apiDocs.endpoints.logout,
-        auth: true,
-        rateLimit: "5/min",
-      },
-    ]
-  },
-  {
-    category: messages.apiDocs.categories.user,
-    color: "text-green-600",
-    endpoints: [
-      {
-        method: "GET",
-        path: "/api/user/profile",
-        description: messages.apiDocs.endpoints.getProfile,
-        auth: true,
-        rateLimit: "60/min",
-      },
-      {
-        method: "PUT",
-        path: "/api/user/profile",
-        description: messages.apiDocs.endpoints.updateProfile,
-        auth: true,
-        rateLimit: "10/min",
-      },
-      {
-        method: "GET",
-        path: "/api/user/trades",
-        description: messages.apiDocs.endpoints.getTradeHistory,
-        auth: true,
-        rateLimit: "30/min",
-      },
-    ]
-  },
-  {
-    category: messages.apiDocs.categories.trading,
-    color: "text-theme-accent",
-    endpoints: [
-      {
-        method: "POST",
-        path: "/api/steam/estimate-prices",
-        description: messages.apiDocs.endpoints.estimatePrices,
-        auth: true,
-        rateLimit: "20/min",
-      },
-      {
-        method: "POST",
-        path: "/api/steam/create-trade",
-        description: messages.apiDocs.endpoints.createTrade,
-        auth: true,
-        rateLimit: "5/min",
-      },
-      {
-        method: "GET",
-        path: "/api/steam/inventory",
-        description: messages.apiDocs.endpoints.getInventory,
-        auth: true,
-        rateLimit: "10/min",
-      },
-    ]
-  },
-  {
-    category: messages.apiDocs.categories.skinplace,
-    color: "text-purple-600",
-    endpoints: [
-      {
-        method: "GET",
-        path: "/api/skinplace/items",
-        description: messages.apiDocs.endpoints.getItems,
-        auth: true,
-        rateLimit: "30/min",
-      },
-      {
-        method: "GET",
-        path: "/api/skinplace/balance",
-        description: messages.apiDocs.endpoints.getBalance,
-        auth: true,
-        rateLimit: "10/min",
-      },
-      {
-        method: "POST",
-        path: "/api/skinplace/purchase",
-        description: messages.apiDocs.endpoints.purchaseItems,
-        auth: true,
-        rateLimit: "5/min",
-      },
-    ]
-  },
-  {
-    category: 'API Partenaires (V1)',
-    color: 'text-orange-600',
-    endpoints: [
-      { method: 'GET', path: '/api/v1/partner/me', description: 'Profil et statut du compte lié', auth: true, rateLimit: '100/min' },
-      { method: 'GET', path: '/api/v1/partner/balance', description: 'Solde détaillé en centimes', auth: true, rateLimit: '100/min' },
-      { method: 'GET', path: '/api/v1/partner/inventory', description: 'Inventaire CS2 du Steam ID lié', auth: true, rateLimit: '100/min' },
-      { method: 'POST', path: '/api/v1/partner/estimate', description: 'Estimation prix + frais + net', auth: true, rateLimit: '100/min' },
-      { method: 'POST', path: '/api/v1/partner/trades', description: 'Créer une vente', auth: true, rateLimit: '100/min (10/jour)' },
-      { method: 'GET', path: '/api/v1/partner/trades', description: 'Liste des ventes', auth: true, rateLimit: '100/min' },
-      { method: 'GET', path: '/api/v1/partner/trades/{id}', description: 'Détail et statut d\'une vente', auth: true, rateLimit: '100/min' },
-      { method: 'POST', path: '/api/v1/partner/payouts', description: 'Demander un retrait (KYC requis)', auth: true, rateLimit: '100/min' },
-      { method: 'PUT', path: '/api/v1/partner/webhook', description: 'Configurer l\'URL de notification', auth: true, rateLimit: '10/min' },
-      { method: 'GET', path: '/api/v1/partner/webhook', description: 'Consulter la config webhook active', auth: true, rateLimit: '100/min' },
-    ],
-  },
-];
-
-const getSdkExamples = (messages: any) => ({
-  javascript: `// ${messages.apiDocs.sdkComments.installation}
-npm install @moonskin/sdk
-
-// ${messages.apiDocs.sdkComments.usage}
-import MoonSkin from '@moonskin/sdk';
-
-const client = new MoonSkin({
-  apiKey: 'your_api_key',
-  environment: 'production' // ${messages.apiDocs.sdkComments.orSandbox}
-});
-
-// ${messages.apiDocs.sdkComments.priceEstimation}
-const estimate = await client.estimatePrices([
-  { market_hash_name: 'AK-47 | Redline (Field-Tested)' }
-]);
-
-// ${messages.apiDocs.sdkComments.createTrade}
-const trade = await client.createTrade({
-  items: estimate.items,
-  tradeLink: 'https://steamcommunity.com/tradeoffer/new/?partner=...'
-});`,
-
-  python: `# ${messages.apiDocs.sdkComments.installation}
-pip install moonskin-sdk
-
-# ${messages.apiDocs.sdkComments.usage}
-from moonskin import MoonSkin
-
-client = MoonSkin(
-    api_key='your_api_key',
-    environment='production'  # ${messages.apiDocs.sdkComments.orSandbox}
-)
-
-# ${messages.apiDocs.sdkComments.priceEstimation}
-estimate = client.estimate_prices([
-    {'market_hash_name': 'AK-47 | Redline (Field-Tested)'}
-])
-
-# ${messages.apiDocs.sdkComments.createTrade}
-trade = client.create_trade({
-    'items': estimate['items'],
-    'trade_link': 'https://steamcommunity.com/tradeoffer/new/?partner=...'
-})`,
-
-  curl: `# ${messages.apiDocs.sdkComments.authentication}
-curl -X POST https://www.moonskin.eu/api/auth/steam \\
-  -H "Content-Type: application/json" \\
-  -d '{"return_url": "https://yourapp.com/callback"}'
-
-# ${messages.apiDocs.sdkComments.priceEstimation}
-curl -X POST https://www.moonskin.eu/api/steam/estimate-prices \\
-  -H "Authorization: Bearer YOUR_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "items": [
-      {"market_hash_name": "AK-47 | Redline (Field-Tested)"}
-    ]
-  }'
-
-# ${messages.apiDocs.sdkComments.createTrade}
-curl -X POST https://www.moonskin.eu/api/steam/create-trade \\
-  -H "Authorization: Bearer YOUR_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "items": [...],
-    "trade_link": "https://steamcommunity.com/tradeoffer/new/?partner=..."
-  }'`
-});
-
-const responseExamples = {
-  estimate: `{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "market_hash_name": "AK-47 | Redline (Field-Tested)",
-        "price_cents": 1250,
-        "price_eur": "12.50",
-        "confidence": 0.95,
-        "last_updated": "2024-09-21T10:30:00Z"
-      }
-    ],
-    "total_cents": 1250,
-    "total_eur": "12.50",
-    "fees": {
-      "cashout_cents": 6,
-      "network_cents": 200
-    },
-    "net_cents": 1044,
-    "net_eur": "10.44"
-  }
-}`,
-
-  trade: `{
-  "success": true,
-  "data": {
-    "trade_id": "trade_01HF7XQZM8N5P2R4S6T8V0W2X4",
-    "status": "created",
-    "items": [...],
-    "total_cents": 1250,
-    "net_cents": 1044,
-    "trade_url": "https://steamcommunity.com/tradeoffer/new/?tradeofferid=...",
-    "expires_at": "2024-09-21T11:30:00Z",
-    "created_at": "2024-09-21T10:30:00Z"
-  }
-}`,
-
-  error: `{
-  "success": false,
-  "error": {
-    "code": "INVALID_TRADE_LINK",
-    "message": "Le Trade Link fourni n&apos;est pas valide",
-    "details": {
-      "field": "trade_link",
-      "expected_format": "https://steamcommunity.com/tradeoffer/new/?partner=..."
-    }
-  }
-}`
-};
-
-function ApiDocsComingSoon({ messages }: { messages: any }) {
+function ApiDocsComingSoon({
+  title,
+  description,
+  badge,
+  version,
+  feature1,
+  feature2,
+  feature3,
+}: {
+  title: string;
+  description: string;
+  badge: string;
+  version: string;
+  feature1: string;
+  feature2: string;
+  feature3: string;
+}) {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-2xl mx-auto">
@@ -289,41 +61,29 @@ function ApiDocsComingSoon({ messages }: { messages: any }) {
               <RocketLaunchIcon className="w-12 h-12 text-theme-accent" />
             </div>
           </div>
-
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-theme-accent to-primary bg-clip-text text-transparent">
-            {messages.apiDocs.comingSoon.title}
+            {title}
           </h1>
-
-          <p className="text-lg text-muted-foreground max-w-md mx-auto mb-8">
-            {messages.apiDocs.comingSoon.description}
-          </p>
-
+          <p className="text-lg text-muted-foreground max-w-md mx-auto mb-8">{description}</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Badge variant="secondary" className="bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20 dark:text-theme-highlight px-4 py-1.5 text-sm">
-              {messages.apiDocs.comingSoon.badge}
+            <Badge
+              variant="secondary"
+              className="bg-theme-accent/10 text-theme-accent dark:bg-theme-accent/20 dark:text-theme-highlight px-4 py-1.5 text-sm"
+            >
+              {badge}
             </Badge>
             <Badge variant="outline" className="px-4 py-1.5 text-sm">
-              {messages.apiDocs.comingSoon.version}
+              {version}
             </Badge>
           </div>
-
           <div className="mt-12 grid gap-4 sm:grid-cols-3 max-w-xl mx-auto">
             {[
-              {
-                icon: CodeBracketIcon,
-                label: messages.apiDocs.comingSoon.feature1,
-              },
-              {
-                icon: ShieldCheckIcon,
-                label: messages.apiDocs.comingSoon.feature2,
-              },
-              {
-                icon: CubeIcon,
-                label: messages.apiDocs.comingSoon.feature3,
-              },
+              { icon: CodeBracketIcon, label: feature1 },
+              { icon: ShieldCheckIcon, label: feature2 },
+              { icon: CubeIcon, label: feature3 },
             ].map(({ icon: Icon, label }, i) => (
               <motion.div
-                key={i}
+                key={label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
@@ -340,14 +100,28 @@ function ApiDocsComingSoon({ messages }: { messages: any }) {
   );
 }
 
+function MethodBadge({ method }: { method: string }) {
+  const className =
+    method === 'GET'
+      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+      : method === 'POST'
+        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+        : 'bg-theme-accent/10 text-theme-accent';
+  return (
+    <Badge variant={method === 'GET' ? 'secondary' : 'default'} className={`${className} font-mono text-xs`}>
+      {method}
+    </Badge>
+  );
+}
+
 export default function ApiDocsPage() {
-  const { messages } = useLocale();
-  const endpoints = getEndpoints(messages);
-  const sdkExamples = getSdkExamples(messages);
+  const { locale, messages } = useLocale();
+  const t = messages.apiDocs;
+  const copy = getPartnerDocsCopy(locale);
   const [isEnabled, setIsEnabled] = useState<boolean | null>(null);
 
   useEffect(() => {
-    fetch("/api/settings/api-docs-enabled")
+    fetch('/api/settings/api-docs-enabled')
       .then((r) => r.json())
       .then((data) => setIsEnabled(data.enabled))
       .catch(() => setIsEnabled(false));
@@ -364,37 +138,52 @@ export default function ApiDocsPage() {
   }
 
   if (!isEnabled) {
-    return <ApiDocsComingSoon messages={messages} />;
+    return (
+      <ApiDocsComingSoon
+        title={t.comingSoon.title}
+        description={t.comingSoon.description}
+        badge={t.comingSoon.badge}
+        version={t.comingSoon.version}
+        feature1={t.comingSoon.feature1}
+        feature2={t.comingSoon.feature2}
+        feature3={t.comingSoon.feature3}
+      />
+    );
   }
+
+  const exampleTabs = [
+    { key: 'me' as const, label: t.tabLabels.me },
+    { key: 'estimate' as const, label: t.tabLabels.estimate },
+    { key: 'tradeDetail' as const, label: t.tabLabels.trade },
+    { key: 'payout' as const, label: t.tabLabels.payout },
+    { key: 'webhook' as const, label: t.tabLabels.webhook },
+    { key: 'error' as const, label: t.tabLabels.error },
+  ];
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-8 sm:mb-12"
         >
-          <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">
             <CodeBracketIcon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
-            {messages.apiDocs.title}
+            {t.title}
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            {messages.apiDocs.subtitle}
-          </p>
-          <div className="flex items-center justify-center space-x-4">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">{t.subtitle}</p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-              Version 1.0
+              {t.version}
             </Badge>
-            <Badge variant="outline">
-              Base URL: https://www.moonskin.eu
+            <Badge variant="outline" className="font-mono">
+              {t.baseUrlLabel}: {PARTNER_API_BASE_URL}/api/v1/partner
             </Badge>
           </div>
         </motion.div>
 
-        {/* Quick Start */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -405,7 +194,7 @@ export default function ApiDocsPage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <CheckCircleIcon className="w-5 h-5 text-green-600" />
-                <span>{messages.apiDocs.quickStart}</span>
+                <span>{t.quickStart}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -414,22 +203,22 @@ export default function ApiDocsPage() {
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <KeyIcon className="w-6 h-6 text-blue-600" />
                   </div>
-                  <h3 className="font-semibold mb-2">{messages.apiDocs.getApiKey}</h3>
-                  <p className="text-sm text-muted-foreground">{messages.apiDocs.getApiKeyDesc}</p>
+                  <h3 className="font-semibold mb-2">{t.getApiKey}</h3>
+                  <p className="text-sm text-muted-foreground">{t.getApiKeyDesc}</p>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 bg-theme-accent/15 dark:bg-theme-accent/25 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <CodeBracketIcon className="w-6 h-6 text-theme-accent" />
+                    <ShieldCheckIcon className="w-6 h-6 text-theme-accent" />
                   </div>
-                  <h3 className="font-semibold mb-2">{messages.apiDocs.makeCall}</h3>
-                  <p className="text-sm text-muted-foreground">{messages.apiDocs.makeCallDesc}</p>
+                  <h3 className="font-semibold mb-2">{t.makeCall}</h3>
+                  <p className="text-sm text-muted-foreground">{t.makeCallDesc}</p>
                 </div>
                 <div className="text-center">
                   <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <CubeIcon className="w-6 h-6 text-green-600" />
+                    <CodeBracketIcon className="w-6 h-6 text-green-600" />
                   </div>
-                  <h3 className="font-semibold mb-2">{messages.apiDocs.integrate}</h3>
-                  <p className="text-sm text-muted-foreground">{messages.apiDocs.integrateDesc}</p>
+                  <h3 className="font-semibold mb-2">{t.integrate}</h3>
+                  <p className="text-sm text-muted-foreground">{t.integrateDesc}</p>
                 </div>
               </div>
             </CardContent>
@@ -437,464 +226,327 @@ export default function ApiDocsPage() {
         </motion.div>
 
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            {/* Authentication */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-8"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <ShieldCheckIcon className="w-5 h-5" />
-                    <span>{messages.apiDocs.authentication}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">
-                    {messages.apiDocs.authDescription}
-                  </p>
-                  <div className="bg-muted rounded-lg p-4">
-                    <code className="text-sm">
-                      Authorization: Bearer YOUR_API_TOKEN
-                    </code>
+          <div className="lg:col-span-3 space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <ShieldCheckIcon className="w-5 h-5" />
+                  <span>{t.authentication}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground">{t.authDescription}</p>
+                <div className="bg-muted rounded-lg p-4">
+                  <code className="text-sm">Authorization: Bearer msk_live_YOUR_KEY</code>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {t.authHostNote}{' '}
+                  <code className="text-xs">{PARTNER_API_BASE_URL}/api/v1/partner/</code>
+                </p>
+                <p className="text-sm">
+                  <Link href="/settings" className="text-theme-accent underline underline-offset-2">
+                    {t.settingsLink}
+                  </Link>
+                </p>
+                <div className="flex items-start space-x-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-theme-highlight/25">
+                  <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-yellow-800 dark:text-yellow-200">{t.important}</p>
+                    <p className="text-yellow-700 dark:text-yellow-300">{t.securityWarning}</p>
                   </div>
-                  <div className="flex items-start space-x-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-theme-highlight/25 dark:border-theme-highlight/35">
-                    <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm">
-                      <p className="font-medium text-yellow-800 dark:text-yellow-200">{messages.apiDocs.important}</p>
-                      <p className="text-yellow-700 dark:text-yellow-300">
-                        {messages.apiDocs.securityWarning}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.prerequisitesTitle}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                  {copy.prerequisitesItems.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.scopesTitle}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                  {copy.scopesItems.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <p className="text-muted-foreground">{copy.scopesReadOnly}</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.conventionTitle}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                  {copy.conventionItems.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <div>
+              <h2 className="text-2xl font-semibold mb-6">{t.availableEndpoints}</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-3">
+                  {partnerEndpointCatalog.map((endpoint) => (
+                    <div
+                      key={`${endpoint.method}-${endpoint.path}-${endpoint.id}`}
+                      className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg"
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <MethodBadge method={endpoint.method} />
+                        <div className="min-w-0">
+                          <code className="text-sm font-mono break-all">{endpoint.path}</code>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {copy.endpoints[endpoint.id].description}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+                        <Badge variant="outline">scope: {endpoint.scope}</Badge>
+                        <span>{endpoint.rateLimit}</span>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.endpointsTitle}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {partnerEndpointCatalog.map((ep) => {
+                  const detail = copy.endpoints[ep.id];
+                  return (
+                    <div key={ep.id} className="border rounded-lg p-4 space-y-2 text-sm">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <MethodBadge method={ep.method} />
+                        <code className="font-mono break-all">{ep.path}</code>
+                        <Badge variant="outline">
+                          {t.scopeLabel}: {ep.scope}
+                        </Badge>
+                      </div>
+                      <p className="text-muted-foreground">{detail.description}</p>
+                      {ep.body && (
+                        <p>
+                          <span className="font-medium">{t.bodyLabel} :</span>{' '}
+                          <code className="text-xs break-all">{ep.body}</code>
+                        </p>
+                      )}
+                      {ep.query && (
+                        <p>
+                          <span className="font-medium">{t.queryLabel} :</span>{' '}
+                          <code className="text-xs">{ep.query}</code>
+                        </p>
+                      )}
+                      <p>
+                        <span className="font-medium">{t.responseLabel} :</span>{' '}
+                        <code className="text-xs break-all">{detail.response}</code>
                       </p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  );
+                })}
+              </CardContent>
+            </Card>
 
-            {/* Endpoints */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="mb-8"
-            >
-              <h2 className="text-2xl font-semibold mb-6">{messages.apiDocs.availableEndpoints}</h2>
-              <div className="space-y-6">
-                {endpoints.map((category, index) => (
-                  <Card key={index}>
-                    <CardHeader>
-                      <CardTitle className={`${category.color}`}>{category.category}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {category.endpoints.map((endpoint, endpointIndex) => (
-                          <div key={endpointIndex} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center space-x-3">
-                              <Badge 
-                                variant={endpoint.method === 'GET' ? 'secondary' : 'default'}
-                                className={`${endpoint.method === 'GET' ? 'bg-green-100 text-green-800' : 
-                                          endpoint.method === 'POST' ? 'bg-blue-100 text-blue-800' : 
-                                          'bg-theme-accent/10 text-theme-accent'} font-mono text-xs`}
-                              >
-                                {endpoint.method}
-                              </Badge>
-                              <div>
-                                <code className="text-sm font-mono">{endpoint.path}</code>
-                                <p className="text-xs text-muted-foreground">{endpoint.description}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                              {endpoint.auth && <ShieldCheckIcon className="w-4 h-4" />}
-                              <span>{endpoint.rateLimit}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </motion.div>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.flowTitle}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="list-decimal pl-5 space-y-2 text-sm text-muted-foreground">
+                  {copy.flowItems.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
 
-            {/* API Partenaires — guide détaillé */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.35 }}
-              className="mb-8"
-            >
-              <h2 className="text-2xl font-semibold mb-6">API Partenaires — guide V1</h2>
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-orange-600">Authentification partenaire</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="text-muted-foreground text-sm">
-                      Base URL : <code className="text-xs">https://www.moonskin.eu/api/v1/partner/</code>
-                      {' '}(même host que le site, pas de sous-domaine <code className="text-xs">api.</code>).
-                      Les routes utilisent une clé API Bearer au format{' '}
-                      <code className="text-xs">msk_live_...</code>. Membres du programme développeur :
-                      générez ou régénérez votre clé depuis{' '}
-                      <a href="/settings" className="text-theme-accent underline underline-offset-2">
-                        Paramètres → Développeur
-                      </a>
-                      .
-                    </p>
-                    <div className="bg-muted rounded-lg p-4">
-                      <code className="text-sm">Authorization: Bearer msk_live_VOTRE_CLE</code>
-                    </div>
-                    <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-muted/50 rounded-lg p-4">
-                      {partnerScopesGuide}
-                    </pre>
-                    <pre className="text-sm whitespace-pre-wrap text-muted-foreground bg-muted/50 rounded-lg p-4">
-                      {partnerApiConventionGuide}
-                    </pre>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-orange-600">Prérequis partenaire</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <pre className="text-sm whitespace-pre-wrap overflow-x-auto bg-muted rounded-lg p-4">
-                      {partnerPrerequisitesGuide}
-                    </pre>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-orange-600">Endpoints — paramètres et réponses</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {partnerEndpointDetails.map((ep, i) => (
-                      <div key={i} className="border rounded-lg p-4 space-y-2 text-sm">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant={ep.method === 'GET' ? 'secondary' : 'default'} className="font-mono text-xs">
-                            {ep.method}
-                          </Badge>
-                          <code className="font-mono">{ep.path}</code>
-                          <Badge variant="outline">scope: {ep.scope}</Badge>
-                        </div>
-                        <p className="text-muted-foreground">{ep.description}</p>
-                        {'body' in ep && ep.body && (
-                          <p><span className="font-medium">Body :</span> <code className="text-xs">{ep.body}</code></p>
-                        )}
-                        {'query' in ep && ep.query && (
-                          <p><span className="font-medium">Query :</span> <code className="text-xs">{ep.query}</code></p>
-                        )}
-                        <p><span className="font-medium">Réponse :</span> <code className="text-xs">{ep.response}</code></p>
-                      </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.webhooksTitle}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <p className="text-muted-foreground">{copy.webhookIntro}</p>
+                <div>
+                  <p className="font-medium mb-2">{t.webhookHeadersTitle}</p>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    {copy.webhookHeaders.map((item) => (
+                      <li key={item}>{item}</li>
                     ))}
-                  </CardContent>
-                </Card>
+                  </ul>
+                </div>
+                <p className="text-muted-foreground">{copy.webhookEvents}</p>
+                <p className="text-muted-foreground">{copy.webhookIdempotence}</p>
+                <p className="text-muted-foreground">{copy.webhookRetries}</p>
+                <p className="text-muted-foreground">{copy.webhookSecretHint}</p>
+                <div>
+                  <p className="font-medium mb-2">{t.webhookSignatureTitle}</p>
+                  <pre className="text-sm overflow-x-auto bg-muted rounded-lg p-4">
+                    <code>{partnerWebhookSignatureExample}</code>
+                  </pre>
+                </div>
+              </CardContent>
+            </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-orange-600">Suivi d&apos;une vente (webhooks + secours)</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <pre className="text-sm whitespace-pre-wrap overflow-x-auto bg-muted rounded-lg p-4">
-                      {partnerPollingGuide}
-                    </pre>
-                  </CardContent>
-                </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.errorsTitle}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <p className="text-muted-foreground">{copy.errorIntro}</p>
+                <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                  {(Object.entries(copy.errorCodes) as [string, string][]).map(([code, text]) => (
+                    <li key={code}>
+                      <code className="text-xs">{code}</code> — {text}
+                    </li>
+                  ))}
+                </ul>
+                <p>
+                  <span className="font-medium">{t.errorEnvelopeLabel} :</span>{' '}
+                  <code className="text-xs">{copy.errorEnvelope}</code>
+                </p>
+                <p className="text-muted-foreground">{copy.errorExtras}</p>
+              </CardContent>
+            </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-orange-600">Webhooks sortants</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <pre className="text-sm whitespace-pre-wrap overflow-x-auto bg-muted rounded-lg p-4">
-                      {partnerWebhookGuide}
-                    </pre>
-                  </CardContent>
-                </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.curlTitle}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-sm overflow-x-auto bg-muted rounded-lg p-4">
+                  <code>{partnerCurlExamples}</code>
+                </pre>
+              </CardContent>
+            </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-orange-600">Codes d&apos;erreur standardisés</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <pre className="text-sm whitespace-pre-wrap overflow-x-auto bg-muted rounded-lg p-4">
-                      {partnerErrorCodesGuide}
-                    </pre>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-orange-600">Exemples cURL — API Partenaires</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="bg-muted rounded-lg p-4">
-                      <pre className="text-sm overflow-x-auto">
-                        <code>{partnerCurlExamples}</code>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.responseExamples}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="me" className="w-full">
+                  <TabsList className="flex flex-wrap h-auto gap-1">
+                    {exampleTabs.map((tab) => (
+                      <TabsTrigger key={tab.key} value={tab.key}>
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {exampleTabs.map((tab) => (
+                    <TabsContent key={tab.key} value={tab.key} className="mt-4">
+                      <pre className="text-sm overflow-x-auto bg-muted rounded-lg p-4">
+                        <code>{partnerResponseExamples[tab.key]}</code>
                       </pre>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-orange-600">Exemples de réponses partenaires</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Tabs defaultValue="me" className="w-full">
-                      <TabsList className="grid w-full grid-cols-5">
-                        <TabsTrigger value="me">Profil</TabsTrigger>
-                        <TabsTrigger value="estimate">Estimation</TabsTrigger>
-                        <TabsTrigger value="tradeDetail">Vente</TabsTrigger>
-                        <TabsTrigger value="webhook">Webhook</TabsTrigger>
-                        <TabsTrigger value="error">Erreur</TabsTrigger>
-                      </TabsList>
-                      {(['me', 'estimate', 'tradeDetail', 'webhook', 'error'] as const).map((key) => (
-                        <TabsContent key={key} value={key} className="mt-4">
-                          <div className="bg-muted rounded-lg p-4">
-                            <pre className="text-sm overflow-x-auto">
-                              <code>{partnerResponseExamples[key]}</code>
-                            </pre>
-                          </div>
-                        </TabsContent>
-                      ))}
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              </div>
-            </motion.div>
-
-            {/* Code Examples */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="mb-8"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>{messages.apiDocs.codeExamples}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="javascript" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="javascript">JavaScript</TabsTrigger>
-                      <TabsTrigger value="python">Python</TabsTrigger>
-                      <TabsTrigger value="curl">cURL</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="javascript" className="mt-4">
-                      <div className="bg-muted rounded-lg p-4">
-                        <pre className="text-sm overflow-x-auto">
-                          <code>{sdkExamples.javascript}</code>
-                        </pre>
-                      </div>
                     </TabsContent>
-                    <TabsContent value="python" className="mt-4">
-                      <div className="bg-muted rounded-lg p-4">
-                        <pre className="text-sm overflow-x-auto">
-                          <code>{sdkExamples.python}</code>
-                        </pre>
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="curl" className="mt-4">
-                      <div className="bg-muted rounded-lg p-4">
-                        <pre className="text-sm overflow-x-auto">
-                          <code>{sdkExamples.curl}</code>
-                        </pre>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Response Examples */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>{messages.apiDocs.responseExamples}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="estimate" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                      <TabsTrigger value="estimate">{messages.apiDocs.tabLabels.estimate}</TabsTrigger>
-                      <TabsTrigger value="trade">{messages.apiDocs.tabLabels.trade}</TabsTrigger>
-                      <TabsTrigger value="error">{messages.apiDocs.tabLabels.error}</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="estimate" className="mt-4">
-                      <div className="bg-muted rounded-lg p-4">
-                        <pre className="text-sm overflow-x-auto">
-                          <code>{responseExamples.estimate}</code>
-                        </pre>
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="trade" className="mt-4">
-                      <div className="bg-muted rounded-lg p-4">
-                        <pre className="text-sm overflow-x-auto">
-                          <code>{responseExamples.trade}</code>
-                        </pre>
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="error" className="mt-4">
-                      <div className="bg-muted rounded-lg p-4">
-                        <pre className="text-sm overflow-x-auto">
-                          <code>{responseExamples.error}</code>
-                        </pre>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  ))}
+                </Tabs>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Rate Limits */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <ClockIcon className="w-5 h-5" />
-                    <span>{messages.apiDocs.rateLimits}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-sm space-y-2">
-                    <div className="flex justify-between">
-                      <span>{messages.apiDocs.rateLimitLabels.default}</span>
-                      <Badge variant="outline">100/min</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>{messages.apiDocs.rateLimitLabels.authentication}</span>
-                      <Badge variant="outline">10/min</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>{messages.apiDocs.rateLimitLabels.trading}</span>
-                      <Badge variant="outline">20/min</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>{messages.apiDocs.rateLimitLabels.estimation}</span>
-                      <Badge variant="outline">30/min</Badge>
-                    </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <ClockIcon className="w-5 h-5" />
+                  <span>{t.rateLimits}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-sm space-y-2">
+                  <div className="flex justify-between gap-2">
+                    <span>{t.rateLimitLabels.default}</span>
+                    <Badge variant="outline">100/min</Badge>
                   </div>
-                  <div className="pt-3 border-t">
-                    <p className="text-xs text-muted-foreground">
-                      {messages.apiDocs.rateLimitsDesc}
-                    </p>
+                  <div className="flex justify-between gap-2">
+                    <span>{t.rateLimitLabels.webhook}</span>
+                    <Badge variant="outline">10/min</Badge>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                </div>
+                <p className="text-xs text-muted-foreground pt-3 border-t">{t.rateLimitsDesc}</p>
+              </CardContent>
+            </Card>
 
-            {/* Status Codes */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>{messages.apiDocs.statusCodes}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-sm space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span>200</span>
-                      <span className="text-green-600">{messages.apiDocs.statusCodesLabels.success}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>400</span>
-                      <span className="text-red-600">{messages.apiDocs.statusCodesLabels.badRequest}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>401</span>
-                      <span className="text-red-600">{messages.apiDocs.statusCodesLabels.unauthorized}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>429</span>
-                      <span className="text-theme-accent">{messages.apiDocs.statusCodesLabels.tooManyRequests}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>500</span>
-                      <span className="text-red-600">{messages.apiDocs.statusCodesLabels.serverError}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.statusCodes}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm space-y-2">
+                <div className="flex justify-between">
+                  <span>200</span>
+                  <span className="text-green-600">{t.statusCodesLabels.success}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>201</span>
+                  <span className="text-green-600">{t.statusCodesLabels.created}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>400</span>
+                  <span className="text-red-600">{t.statusCodesLabels.badRequest}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>401</span>
+                  <span className="text-red-600">{t.statusCodesLabels.unauthorized}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>403</span>
+                  <span className="text-red-600">{t.statusCodesLabels.forbidden}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>404</span>
+                  <span className="text-red-600">{t.statusCodesLabels.notFound}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>429</span>
+                  <span className="text-theme-accent">{t.statusCodesLabels.tooManyRequests}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>502</span>
+                  <span className="text-red-600">{t.statusCodesLabels.badGateway}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>500</span>
+                  <span className="text-red-600">{t.statusCodesLabels.serverError}</span>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* SDKs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>{messages.apiDocs.officialSdks}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    <Button variant="outline" className="w-full justify-start" size="sm">
-                      <CubeIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-                      JavaScript/TypeScript
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start" size="sm">
-                      <CodeBracketIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-                      Python
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start" size="sm">
-                      <ShieldCheckIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-                      Rust
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start" size="sm">
-                      <RocketLaunchIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-                      Go
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Support */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.9 }}
-            >
-              <Card className="bg-muted/50">
-                <CardContent className="p-6 text-center">
-                  <h3 className="font-semibold mb-2">{messages.apiDocs.needHelp}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {messages.apiDocs.supportDesc}
-                  </p>
-                  <div className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <EnvelopeIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-                      api-support@moonskin.gg
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <ChatBubbleLeftRightIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-                      {messages.apiDocs.discordDevs}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <Card className="bg-muted/50">
+              <CardContent className="p-6 text-center">
+                <h3 className="font-semibold mb-2">{t.needHelp}</h3>
+                <p className="text-sm text-muted-foreground mb-4">{t.supportDesc}</p>
+                <Button variant="outline" size="sm" className="w-full justify-start" asChild>
+                  <a href={`mailto:${t.supportEmail}`}>
+                    <EnvelopeIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
+                    {t.supportEmail}
+                  </a>
+                </Button>
+                <Button variant="outline" size="sm" className="w-full justify-start mt-2" asChild>
+                  <Link href="/settings">
+                    <DocumentTextIcon className="mr-2 h-4 w-4 shrink-0" aria-hidden />
+                    {t.settingsLink}
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
