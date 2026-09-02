@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -13,6 +13,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { SafeImg } from '@/components/ui/safe-image';
 
 export type AdminUserOption = {
   id: string;
@@ -100,7 +101,18 @@ export function AdminUserCombobox({
           disabled={disabled}
           className="w-full justify-between font-normal"
         >
-          <span className={cn('truncate', !selected && 'text-muted-foreground')}>{label}</span>
+          <span className="flex min-w-0 items-center gap-2">
+            {selected && (
+              <SafeImg
+                src={selected.avatar || undefined}
+                alt=""
+                className="h-6 w-6 shrink-0 rounded-full object-cover"
+                fallbackClassName="h-6 w-6 shrink-0 rounded-full bg-muted text-muted-foreground"
+                fallbackIcon={<User className="h-3 w-3" />}
+              />
+            )}
+            <span className={cn('truncate', !selected && 'text-muted-foreground')}>{label}</span>
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -125,6 +137,7 @@ export function AdminUserCombobox({
                     <CommandItem
                       key={user.id}
                       value={user.id}
+                      className="gap-2"
                       onSelect={() => {
                         setSelected(user);
                         onChange(user.id);
@@ -136,6 +149,13 @@ export function AdminUserCombobox({
                           'h-4 w-4',
                           value === user.id ? 'opacity-100' : 'opacity-0'
                         )}
+                      />
+                      <SafeImg
+                        src={user.avatar || undefined}
+                        alt=""
+                        className="h-7 w-7 shrink-0 rounded-full object-cover"
+                        fallbackClassName="h-7 w-7 shrink-0 rounded-full bg-muted text-muted-foreground"
+                        fallbackIcon={<User className="h-3.5 w-3.5" />}
                       />
                       <div className="min-w-0">
                         <p className="truncate">{user.username}</p>

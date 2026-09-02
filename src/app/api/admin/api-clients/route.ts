@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
-import { createApiClient, revokeApiClient, sanitizeApiClient } from '@/lib/partner-api/key-service';
+import { createApiClient, purgeRevokedApiClients, sanitizeApiClient } from '@/lib/partner-api/key-service';
 import { partnerCreateApiClientSchema } from '@/lib/partner-api/schemas';
 import {
   assertPartnerAccountReady,
@@ -15,10 +15,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
   }
 
+  await purgeRevokedApiClients();
+
   const clients = await prisma.apiClient.findMany({
+    where: { status: 'ACTIVE' },
     orderBy: { createdAt: 'desc' },
     include: {
-      user: { select: { steamUsername: true, steamId: true, email: true } },
+      user: { select: { steamUsername: true, steamId: true, email: true, steamAvatar: true, image: true } },
       _count: { select: { apiLogs: true, webhookDeliveries: true } },
     },
   });
@@ -30,6 +33,7 @@ export async function GET(request: NextRequest) {
         steam_username: c.user.steamUsername,
         steam_id: c.user.steamId,
         email: c.user.email,
+        avatar: (c.user.steamAvatar || c.user.image || '').trim(),
       },
       stats: {
         api_calls: c._count.apiLogs,

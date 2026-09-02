@@ -92,10 +92,12 @@ export async function createApiClient(params: {
 }
 
 export async function revokeApiClient(id: string): Promise<void> {
-  await prisma.apiClient.update({
-    where: { id },
-    data: { status: 'REVOKED' },
-  });
+  await prisma.apiClient.delete({ where: { id } });
+}
+
+export async function purgeRevokedApiClients(): Promise<number> {
+  const result = await prisma.apiClient.deleteMany({ where: { status: 'REVOKED' } });
+  return result.count;
 }
 
 export async function getActiveApiClientForUser(userId: string): Promise<ApiClient | null> {

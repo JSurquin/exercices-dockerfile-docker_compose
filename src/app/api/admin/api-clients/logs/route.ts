@@ -19,7 +19,14 @@ export async function GET(request: NextRequest) {
     orderBy: { createdAt: 'desc' },
     take: limit,
     include: {
-      apiClient: { select: { name: true, keyPrefix: true } },
+      apiClient: {
+        select: {
+          name: true,
+          keyPrefix: true,
+          userId: true,
+          user: { select: { steamUsername: true, steamId: true, email: true, steamAvatar: true, image: true } },
+        },
+      },
     },
   });
 
@@ -28,6 +35,10 @@ export async function GET(request: NextRequest) {
       id: log.id,
       api_client_id: log.apiClientId,
       partner_name: log.apiClient.name,
+      user_id: log.apiClient.userId,
+      account_name: log.apiClient.user.steamUsername || log.apiClient.user.email,
+      steam_id: log.apiClient.user.steamId,
+      avatar: (log.apiClient.user.steamAvatar || log.apiClient.user.image || '').trim(),
       key_prefix: log.apiClient.keyPrefix,
       endpoint: log.endpoint,
       method: log.method,

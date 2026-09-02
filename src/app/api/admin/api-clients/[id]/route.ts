@@ -72,9 +72,9 @@ export async function DELETE(
     data: {
       userId: session.user.id,
       action: 'ADMIN_ACTION',
-      details: { type: 'api_client_revoked', apiClientId: id },
+      details: { type: 'api_client_revoked', apiClientId: id, partnerName: existing.name },
     },
   });
 
-  return NextResponse.json({ success: true, client: sanitizeApiClient({ ...existing, status: 'REVOKED' }) });
+  return NextResponse.json({ success: true });
 }
