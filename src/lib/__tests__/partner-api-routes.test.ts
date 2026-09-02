@@ -188,6 +188,31 @@ describe('partner API HTTP routes', () => {
     ]);
   });
 
+  it('GET /inventory uses trade_url Steam ID instead of the saved account', async () => {
+    mockAuth(['read']);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      steamId: '76561199040420116',
+      tradeLink: 'https://steamcommunity.com/tradeoffer/new/?partner=1080154388&token=savedTok',
+    });
+    (fetchSkinplaceInstantInventory as jest.Mock).mockResolvedValue({
+      ok: true,
+      inventory: [],
+    });
+
+    const tradeUrl = 'https://steamcommunity.com/tradeoffer/new/?partner=52079950&token=AbCdEfGh';
+    const response = await getInventory(
+      new NextRequest(
+        `http://localhost/api/v1/partner/inventory?trade_url=${encodeURIComponent(tradeUrl)}`
+      )
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(fetchSkinplaceInstantInventory).toHaveBeenCalledWith('76561198012345678');
+    expect(body.data.steam_id).toBe('76561198012345678');
+    expect(body.data.total_items).toBe(0);
+  });
+
   it('GET /inventory returns 503 JSON with provider_error instead of 502', async () => {
     mockAuth(['read']);
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({ steamId: '76561198012345678' });
@@ -414,6 +439,32 @@ describe('partner API HTTP routes', () => {
     expect(body.data.gross_cents).toBe(1000);
     expect(body.data).not.toHaveProperty('ok');
     expect(body.data.fees.network).toBe(0);
+  });
+
+  it('POST /estimate forwards trade_url to the estimator', async () => {
+    mockAuth(['read']);
+    (estimatePartnerItems as jest.Mock).mockResolvedValue({
+      ok: true,
+      data: {
+        gross_cents: 1000,
+        fees: { cashout: 5, network: 0 },
+        net_cents: 995,
+        vip_bonus_cents: 0,
+        items: [{ asset_id: '1', market_hash_name: 'AK', price_cents: 1000 }],
+      },
+    });
+    const tradeUrl = 'https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh';
+
+    const response = await postEstimate(
+      new NextRequest('http://localhost/api/v1/partner/estimate', {
+        method: 'POST',
+        body: JSON.stringify({ asset_ids: ['1'], trade_url: tradeUrl }),
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(estimatePartnerItems).toHaveBeenCalledWith('user-1', ['1'], tradeUrl);
   });
 
   it('POST /payouts refuses to create an empty SEPA method', async () => {

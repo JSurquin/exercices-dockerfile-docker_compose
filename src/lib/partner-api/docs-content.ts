@@ -38,14 +38,14 @@ export type PartnerEndpointCatalogItem = {
 export const partnerEndpointCatalog: PartnerEndpointCatalogItem[] = [
   { id: 'me', method: 'GET', path: '/api/v1/partner/me', scope: 'read', rateLimit: '100/min' },
   { id: 'balance', method: 'GET', path: '/api/v1/partner/balance', scope: 'read', rateLimit: '100/min' },
-  { id: 'inventory', method: 'GET', path: '/api/v1/partner/inventory', scope: 'read', rateLimit: '100/min' },
+  { id: 'inventory', method: 'GET', path: '/api/v1/partner/inventory', scope: 'read', rateLimit: '100/min', query: '?trade_url=https%3A%2F%2Fsteamcommunity.com%2Ftradeoffer%2Fnew%2F%3Fpartner%3D123456789%26token%3DAbCdEfGh' },
   {
     id: 'estimate',
     method: 'POST',
     path: '/api/v1/partner/estimate',
     scope: 'read',
     rateLimit: '100/min',
-    body: '{ "asset_ids": ["12345678901234567"] }',
+    body: '{ "asset_ids": ["12345678901234567"], "trade_url": "https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh" }',
   },
   {
     id: 'createTrade',

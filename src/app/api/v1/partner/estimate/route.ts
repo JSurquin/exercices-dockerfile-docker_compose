@@ -21,8 +21,9 @@ export async function POST(request: NextRequest) {
         partnerTrace('estimate.start', {
           userId: ctx.userId,
           assetCount: parsed.data.asset_ids.length,
+          hasTradeUrl: Boolean(parsed.data.trade_url),
         });
-        const result = await estimatePartnerItems(ctx.userId, parsed.data.asset_ids);
+        const result = await estimatePartnerItems(ctx.userId, parsed.data.asset_ids, parsed.data.trade_url);
         if (!result.ok) {
           partnerTrace('estimate.fail', { code: result.code, status: result.status });
           return partnerError(toPartnerErrorCode(result.code), result.error, result.status, result.extra);

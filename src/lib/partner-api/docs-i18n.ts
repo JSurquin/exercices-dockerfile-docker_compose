@@ -60,7 +60,7 @@ const fr: PartnerDocsCopy = {
     'Une clé read seule ne peut ni vendre, ni retirer, ni changer le webhook. Réponse HTTP 403 si un scope manque.',
   prerequisitesItems: [
     'Compte MoonSkin avec Steam lié et conditions d’utilisation acceptées.',
-    'Trade Link Steam enregistré (Paramètres) et cohérent avec le compte Steam utilisé pour POST /trades.',
+    'Trade Link : passez trade_url à chaque appel (inventaire, estimation, vente). Inutile de le changer dans Paramètres. Un Trade Link enregistré sert seulement de défaut si trade_url est omis.',
     'KYC validé avant tout retrait automatique. Les ventes peuvent commencer avant le KYC.',
     'Un moyen de paiement SEPA ou crypto déjà configuré dans le dashboard avant POST /payouts.',
     'URL webhook HTTPS publique (localhost, IP privées et URLs avec identifiants refusés).',
@@ -69,8 +69,9 @@ const fr: PartnerDocsCopy = {
   ],
   flowItems: [
     'Configurer le webhook : PUT /api/v1/partner/webhook',
-    'Estimer : POST /api/v1/partner/estimate avec les asset_id de l’inventaire.',
-    'Créer la vente : POST /api/v1/partner/trades — conserver l’id renvoyé (aussi exposé en trade_id).',
+    'Inventaire : GET /api/v1/partner/inventory?trade_url=… (URL encodée). Même trade_url pour estimer puis vendre.',
+    'Estimer : POST /api/v1/partner/estimate avec asset_ids et trade_url.',
+    'Créer la vente : POST /api/v1/partner/trades avec items et le même trade_url — conserver l’id renvoyé.',
     'Recevoir un POST à chaque changement de statut (trade.* et payout.*).',
     'Secours : interroger GET /api/v1/partner/trades/{id} si un webhook a été manqué.',
   ],
@@ -119,18 +120,18 @@ const fr: PartnerDocsCopy = {
     },
     inventory: {
       description:
-        'Skins CS2 rachetables (même source que la page Vendre). Les items lockés / non rachetables sont omis. Un tableau vide avec success: true signifie « rien à vendre », pas une erreur.',
+        'Skins CS2 rachetables (même source que la page Vendre). Passez ?trade_url= (URL encodée) pour viser un compte Steam sans passer par Paramètres ; sinon le Trade Link enregistré est utilisé. Les items lockés / non rachetables sont omis. Un tableau vide avec success: true signifie « rien à vendre », pas une erreur.',
       response:
         '{ steam_id, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
     },
     estimate: {
       description:
-        'Estimation brut, bonus VIP et net. Les frais cashout/réseau de la vente sont 0 ; les frais plateforme s’appliquent au payout. 1 à 50 asset_id, sans doublon.',
+        'Estimation brut, bonus VIP et net. trade_url optionnel : même lien que pour l’inventaire / la vente. Les frais cashout/réseau de la vente sont 0 ; les frais plateforme s’appliquent au payout. 1 à 50 asset_id, sans doublon.',
       response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, items }',
     },
     createTrade: {
       description:
-        'Crée une vraie vente Steam : le bot MoonSkin envoie une offre d’échange. trade_url doit correspondre au compte Steam lié. Scope trade requis. Réponse HTTP 201.',
+        'Crée une vraie vente Steam : le bot MoonSkin envoie une offre d’échange. trade_url (obligatoire) est le Trade Link du compte Steam visé, à la volée — pas besoin de l’enregistrer sur le site. Scope trade requis. Réponse HTTP 201. Minimum 100 centimes.',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },
@@ -180,7 +181,7 @@ const en: PartnerDocsCopy = {
     'A read-only key cannot create sales, request payouts, or change the webhook URL. HTTP 403 if a required scope is missing.',
   prerequisitesItems: [
     'MoonSkin account with Steam linked and terms of service accepted.',
-    'Steam Trade Link saved in Settings and matching the Steam account used in POST /trades.',
+    'Pass trade_url on each call (inventory, estimate, sale). You do not need to change it in Settings. A saved Trade Link is only the default when trade_url is omitted.',
     'KYC approved before any automated payout. Sales can start earlier.',
     'A SEPA or crypto payout method already configured in the dashboard before POST /payouts.',
     'Public HTTPS webhook URL (localhost, private IPs and credentialed URLs are rejected).',
@@ -189,8 +190,9 @@ const en: PartnerDocsCopy = {
   ],
   flowItems: [
     'Configure the webhook: PUT /api/v1/partner/webhook',
-    'Estimate: POST /api/v1/partner/estimate with asset_ids from inventory.',
-    'Create the sale: POST /api/v1/partner/trades — keep the returned id (also exposed as trade_id).',
+    'Inventory: GET /api/v1/partner/inventory?trade_url=… (URL-encoded). Reuse the same trade_url to estimate then sell.',
+    'Estimate: POST /api/v1/partner/estimate with asset_ids and trade_url.',
+    'Create the sale: POST /api/v1/partner/trades with items and the same trade_url — keep the returned id.',
     'Receive a POST on every status change (trade.* and payout.*).',
     'Fallback: poll GET /api/v1/partner/trades/{id} if a webhook was missed.',
   ],
@@ -239,18 +241,18 @@ const en: PartnerDocsCopy = {
     },
     inventory: {
       description:
-        'Sellable CS2 items (same source as the Sell page). Locked / unsellable items are omitted. An empty array with success: true means nothing is sellable, not an error.',
+        'Sellable CS2 items (same source as the Sell page). Pass ?trade_url= (URL-encoded) to target a Steam account without using Settings; otherwise the saved Trade Link is used. Locked / unsellable items are omitted. An empty array with success: true means nothing is sellable, not an error.',
       response:
         '{ steam_id, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
     },
     estimate: {
       description:
-        'Estimate gross, VIP bonus and net. Sale cashout/network fees are 0; platform fees apply at payout. 1–50 unique asset_ids.',
+        'Estimate gross, VIP bonus and net. Optional trade_url: same link as inventory / sale. Sale cashout/network fees are 0; platform fees apply at payout. 1–50 unique asset_ids.',
       response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, items }',
     },
     createTrade: {
       description:
-        'Creates a real Steam sale: the MoonSkin bot sends a trade offer. trade_url must match the linked Steam account. Requires trade scope. HTTP 201.',
+        'Creates a real Steam sale: the MoonSkin bot sends a trade offer. Required trade_url is the target Steam Trade Link, passed per request — no need to save it in Settings. Requires trade scope. HTTP 201. Minimum 100 cents.',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },
@@ -299,7 +301,7 @@ const cn: PartnerDocsCopy = {
   scopesReadOnly: '只读密钥无法创建销售、申请提现或修改 webhook。缺少所需 scope 时返回 HTTP 403。',
   prerequisitesItems: [
     'MoonSkin 账户已绑定 Steam 并已接受服务条款。',
-    '设置中已保存 Steam Trade Link，且与 POST /trades 使用的 Steam 账户一致。',
+    '每次调用传入 trade_url（库存、估价、销售），无需在设置中修改。仅当省略 trade_url 时，才使用已保存的 Trade Link 作为默认值。',
     '自动提现前需完成 KYC。销售可在 KYC 之前开始。',
     '调用 POST /payouts 前，须在控制台配置好 SEPA 或加密货币收款方式。',
     '公开 HTTPS webhook 地址（拒绝 localhost、内网 IP 和带凭据的 URL）。',
@@ -308,8 +310,9 @@ const cn: PartnerDocsCopy = {
   ],
   flowItems: [
     '配置 webhook：PUT /api/v1/partner/webhook',
-    '估价：POST /api/v1/partner/estimate，使用库存中的 asset_id。',
-    '创建销售：POST /api/v1/partner/trades — 保存返回的 id（同时也是 trade_id）。',
+    '库存：GET /api/v1/partner/inventory?trade_url=…（需 URL 编码）。估价和销售使用同一个 trade_url。',
+    '估价：POST /api/v1/partner/estimate，传入 asset_ids 和 trade_url。',
+    '创建销售：POST /api/v1/partner/trades，传入 items 和同一个 trade_url — 保存返回的 id。',
     '每次状态变化会收到 POST（trade.* 与 payout.*）。',
     '备用：若漏收 webhook，轮询 GET /api/v1/partner/trades/{id}。',
   ],
@@ -355,18 +358,18 @@ const cn: PartnerDocsCopy = {
     },
     inventory: {
       description:
-        '可回购的 CS2 皮肤（与「出售」页同一数据源）。锁定/不可售物品会被省略。success: true 且空数组表示没有可售物品，不是错误。',
+        '可回购的 CS2 皮肤（与「出售」页同一数据源）。传入 ?trade_url=（需 URL 编码）可指定 Steam 账户，无需改设置；省略时使用已保存的 Trade Link。锁定/不可售物品会被省略。success: true 且空数组表示没有可售物品，不是错误。',
       response:
         '{ steam_id, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
     },
     estimate: {
       description:
-        '估算毛额、VIP 加成和净额。销售的 cashout/网络费用为 0；平台费用在提现时收取。1–50 个不重复的 asset_id。',
+        '估算毛额、VIP 加成和净额。可选 trade_url：与库存/销售使用同一链接。销售的 cashout/网络费用为 0；平台费用在提现时收取。1–50 个不重复的 asset_id。',
       response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, items }',
     },
     createTrade: {
       description:
-        '创建真实的 Steam 销售：MoonSkin 机器人会发送报价。trade_url 必须匹配已绑定的 Steam 账户。需要 trade scope。HTTP 201。',
+        '创建真实的 Steam 销售：MoonSkin 机器人会发送报价。必填 trade_url 是目标 Steam Trade Link，每次请求传入，无需先保存到网站。需要 trade scope。HTTP 201。最低 100 分。',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },

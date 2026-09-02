@@ -8,7 +8,7 @@ import { generateSkinplaceSignature } from '@/utils/skinplace-signature';
 import { notifyAdminsNewTrade } from '@/lib/admin-notification-hooks';
 import { notifyTradeStatusChange } from '@/lib/partner-api/webhook-service';
 import { logger } from '@/lib/logger';
-import { getPartnerOperatingSteamId, validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
+import { resolvePartnerOperatingSteamId } from '@/lib/partner-api/trade-url-validation';
 import { toPartnerFacingProviderError } from '@/lib/partner-api/response';
 import { assertPartnerAccountReady } from '@/lib/partner-api/account-guards';
 import { heapMb, partnerTrace } from '@/lib/partner-api/trace';
@@ -77,7 +77,7 @@ export async function createPartnerTrade(
   if (user.accountFrozen) {
     return { ok: false, error: 'Account frozen', code: 'ACCOUNT_FROZEN', status: 403 };
   }
-  const accountReady = assertPartnerAccountReady(user, { requireTradeLink: true });
+  const accountReady = assertPartnerAccountReady(user);
   if (!accountReady.ok) {
     return {
       ok: false,
@@ -87,9 +87,7 @@ export async function createPartnerTrade(
     };
   }
 
-  const accountTradeLink = user.tradeLink!;
-
-  const tradeUrlCheck = validatePartnerTradeUrl(params.tradeUrl, user.steamId ?? '', accountTradeLink);
+  const tradeUrlCheck = resolvePartnerOperatingSteamId(user, params.tradeUrl);
   if (!tradeUrlCheck.ok) {
     return {
       ok: false,
@@ -330,7 +328,8 @@ export async function createPartnerTrade(
 
 export async function estimatePartnerItems(
   userId: string,
-  assetIds: string[]
+  assetIds: string[],
+  tradeUrl?: string
 ): Promise<
   | {
       ok: true;
@@ -348,10 +347,16 @@ export async function estimatePartnerItems(
     where: { id: userId },
     select: { steamId: true, tradeLink: true, bonusRatePercent: true },
   });
-  const steamId = user ? getPartnerOperatingSteamId(user) : null;
-  if (!user || !steamId) {
-    return { ok: false, error: 'Steam ID is not linked to this account', code: 'VALIDATION_ERROR', status: 400 };
+  const steamIdResolved = resolvePartnerOperatingSteamId(user, tradeUrl);
+  if (!user || !steamIdResolved.ok) {
+    return {
+      ok: false,
+      error: steamIdResolved.ok === false ? steamIdResolved.error : 'Steam ID is not linked to this account',
+      code: 'VALIDATION_ERROR',
+      status: 400,
+    };
   }
+  const steamId = steamIdResolved.steamId;
 
   partnerTrace('estimate.verify.start', { steamId, assetCount: assetIds.length });
   const verification = await verifyAndPriceItems(steamId, assetIds);

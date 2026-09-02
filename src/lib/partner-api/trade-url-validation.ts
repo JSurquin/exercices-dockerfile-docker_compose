@@ -20,37 +20,44 @@ export function getPartnerOperatingSteamId(user: {
   return linked && isValidSteamId64(linked) ? linked : null;
 }
 
+export function parsePartnerTradeUrl(
+  tradeUrl: string
+): { ok: true; steamId: string; normalized: string } | { ok: false; error: string } {
+  const normalized = normalizeSteamTradeLink(tradeUrl);
+  const steamId = parseSteamId64FromUserInput(normalized ?? tradeUrl);
+  if (!normalized || !steamId) {
+    return { ok: false, error: 'Invalid Steam trade URL' };
+  }
+  return { ok: true, steamId, normalized };
+}
+
+/**
+ * Per-request trade URL (any valid Steam trade link). Does not need to match
+ * the Trade Link saved in Settings.
+ */
 export function validatePartnerTradeUrl(
   tradeUrl: string,
-  userSteamId: string,
-  userTradeLink: string
+  _userSteamId?: string,
+  _userTradeLink?: string
 ): { ok: true; steamId: string } | { ok: false; error: string } {
-  const urlSteamId = parseSteamId64FromUserInput(tradeUrl);
-  if (!urlSteamId) {
-    return { ok: false, error: 'Trade URL does not match the linked Steam account' };
-  }
+  const parsed = parsePartnerTradeUrl(tradeUrl);
+  if (!parsed.ok) return parsed;
+  return { ok: true, steamId: parsed.steamId };
+}
 
-  const allowed = new Set<string>();
-  if (userSteamId && isValidSteamId64(userSteamId)) {
-    allowed.add(userSteamId);
+export function resolvePartnerOperatingSteamId(
+  user: { steamId: string | null; tradeLink: string | null } | null,
+  tradeUrl?: string | null
+): { ok: true; steamId: string } | { ok: false; error: string } {
+  if (tradeUrl) {
+    return validatePartnerTradeUrl(tradeUrl);
   }
-  const linkSteamId = parseSteamId64FromUserInput(userTradeLink);
-  if (linkSteamId) {
-    allowed.add(linkSteamId);
-  }
-
-  if (!allowed.has(urlSteamId)) {
-    return { ok: false, error: 'Trade URL does not match the linked Steam account' };
-  }
-
-  const normalizedInput = normalizeSteamTradeLink(tradeUrl);
-  const normalizedAccount = normalizeSteamTradeLink(userTradeLink);
-  if (!normalizedInput || !normalizedAccount || normalizedInput !== normalizedAccount) {
+  const steamId = user ? getPartnerOperatingSteamId(user) : null;
+  if (!steamId) {
     return {
       ok: false,
-      error: 'Trade URL must match the trade link saved on the account',
+      error: 'Pass trade_url or save a Steam Trade Link on the account',
     };
   }
-
-  return { ok: true, steamId: urlSteamId };
+  return { ok: true, steamId };
 }

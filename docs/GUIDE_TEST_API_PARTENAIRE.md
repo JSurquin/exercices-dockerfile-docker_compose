@@ -27,7 +27,7 @@ Connecte-toi **en Steam** avec le compte de test (ou impersonifie-le plus tard, 
 
 1. Steam est lié.
 2. Les **CGV** sont acceptées (`accepted_terms_at` en base).
-3. Un **Trade Link Steam** est enregistré dans Paramètres (format `https://steamcommunity.com/tradeoffer/new/?partner=…&token=…`).
+3. Un **Trade Link Steam** n’est plus obligatoire à chaque vente : vous pouvez passer `trade_url` dans l’API. Il reste utile comme **défaut** (et pour générer une clé).
 4. (Optionnel, seulement pour tester un payout) KYC validé **et** un moyen de paiement par défaut (SEPA / crypto).
 
 Si le Trade Link ou Steam manque : message du type « Le Trade Link Steam doit être configuré avant de générer une clé API. »  
@@ -142,22 +142,32 @@ Champs : `balance_cents`, `pending_cents`, `frozen_cents`, `available_cents`.
 
 ### 6.3 Inventaire CS2
 
+Sans `trade_url`, l’API utilise le Trade Link enregistré (ou le Steam de connexion) :
+
 ```bash
 curl -s "$BASE/api/v1/partner/inventory" \
   -H "Authorization: Bearer $MSK_KEY"
 ```
 
-Liste les skins **rachetables par Skinplace** (même source que la page Vendre), pas tout l’inventaire Steam.  
-Les items lockés / overstock / non rachetables sont omis. Un tableau vide avec `success: true` signifie « aucun item vendable », pas une erreur.  
-Peut renvoyer une erreur amont (Skinplace) si l’inventaire Steam est privé / indisponible.
+Pour viser **un autre compte Steam à la volée** (sans passer par Paramètres), encodez le Trade Link dans `trade_url` :
+
+```bash
+curl -s "$BASE/api/v1/partner/inventory?trade_url=https%3A%2F%2Fsteamcommunity.com%2Ftradeoffer%2Fnew%2F%3Fpartner%3D123456789%26token%3DAbCdEfGh" \
+  -H "Authorization: Bearer $MSK_KEY"
+```
+
+Liste les skins rachetables (même source que la page Vendre), pas tout l’inventaire Steam.  
+Les items lockés / overstock / non rachetables sont omis. Un tableau vide avec `success: true` signifie « aucun item vendable », pas une erreur.
 
 ### 6.4 Estimation
+
+Même `trade_url` que pour l’inventaire (optionnel si un Trade Link est déjà enregistré) :
 
 ```bash
 curl -s -X POST "$BASE/api/v1/partner/estimate" \
   -H "Authorization: Bearer $MSK_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"asset_ids":["REMPLACER_ASSET_ID"]}'
+  -d '{"asset_ids":["REMPLACER_ASSET_ID"],"trade_url":"https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh"}'
 ```
 
 Attendu : `gross_cents`, `fees`, `net_cents`, `vip_bonus_cents`, `items`.
@@ -178,7 +188,7 @@ curl -s "$BASE/api/v1/partner/trades/TRADE-ID" \
 
 ### 6.7 Créer une vente (scope `trade` — **vraie offre Steam**)
 
-Le `trade_url` **doit** correspondre au Steam du compte lié.
+Le `trade_url` est le Trade Link Steam **du compte visé**, passé à la volée. Inutile qu’il soit enregistré dans Paramètres. Minimum **100 centimes**.
 
 ```bash
 curl -s -X POST "$BASE/api/v1/partner/trades" \

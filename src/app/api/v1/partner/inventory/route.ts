@@ -6,7 +6,8 @@ import {
   isSkinplaceItemSellable,
   mapSkinplaceInventoryFailure,
 } from '@/lib/skinplace-instant-inventory';
-import { getPartnerOperatingSteamId } from '@/lib/partner-api/trade-url-validation';
+import { resolvePartnerOperatingSteamId } from '@/lib/partner-api/trade-url-validation';
+import { parseOptionalPartnerTradeUrl } from '@/lib/partner-api/validation';
 import { partnerTrace, withPartnerTrace } from '@/lib/partner-api/trace';
 import { prisma } from '~/prisma/prisma';
 
@@ -15,21 +16,24 @@ export async function GET(request: NextRequest) {
     withPartnerApi(
       request,
       { endpoint: '/api/v1/partner/inventory', method: 'GET', scopes: ['read'] },
-      async (_req, ctx) => {
-        partnerTrace('inventory.user.lookup', { userId: ctx.userId });
+      async (req, ctx) => {
+        const tradeUrl = parseOptionalPartnerTradeUrl(new URL(req.url).searchParams);
+        if (!tradeUrl.ok) return tradeUrl.response;
+
+        partnerTrace('inventory.user.lookup', { userId: ctx.userId, hasTradeUrl: Boolean(tradeUrl.data) });
         const user = await prisma.user.findUnique({
           where: { id: ctx.userId },
           select: { steamId: true, tradeLink: true },
         });
 
-        const steamId = user ? getPartnerOperatingSteamId(user) : null;
-        if (!steamId) {
+        const resolved = resolvePartnerOperatingSteamId(user, tradeUrl.data);
+        if (!resolved.ok) {
           partnerTrace('inventory.no-steam');
-          return partnerError('VALIDATION_ERROR', 'Steam ID is not linked to this account', 400);
+          return partnerError('VALIDATION_ERROR', resolved.error, 400);
         }
 
-        partnerTrace('inventory.steam', { steamId });
-        const fetched = await fetchSkinplaceInstantInventory(steamId);
+        partnerTrace('inventory.steam', { steamId: resolved.steamId });
+        const fetched = await fetchSkinplaceInstantInventory(resolved.steamId);
         if (!fetched.ok) {
           const mapped = mapSkinplaceInventoryFailure(fetched);
           partnerTrace('inventory.skinplace.fail', {
@@ -46,7 +50,7 @@ export async function GET(request: NextRequest) {
           raw: fetched.inventory.length,
           sellable: sellable.length,
         });
-        return partnerSuccess(formatInventoryForPartner(steamId, { inventory: sellable }));
+        return partnerSuccess(formatInventoryForPartner(resolved.steamId, { inventory: sellable }));
       }
     )
   );

@@ -1,6 +1,7 @@
 import type { NextRequest, NextResponse } from 'next/server';
 import type { ZodType } from 'zod';
 import { partnerError } from '@/lib/partner-api/response';
+import { partnerTradeUrlSchema } from '@/lib/partner-api/schemas';
 
 export type PartnerParseResult<T> =
   | { ok: true; data: T }
@@ -58,4 +59,19 @@ export function parsePartnerPagination(searchParams: URLSearchParams): PartnerPa
   }
 
   return { ok: true, data: { limit, offset } };
+}
+
+export function parseOptionalPartnerTradeUrl(
+  searchParams: URLSearchParams
+): PartnerParseResult<string | undefined> {
+  const raw = searchParams.get('trade_url');
+  if (raw === null || raw === '') return { ok: true, data: undefined };
+  const parsed = partnerTradeUrlSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      response: partnerError('VALIDATION_ERROR', 'Invalid Steam trade URL', 400),
+    };
+  }
+  return { ok: true, data: parsed.data };
 }

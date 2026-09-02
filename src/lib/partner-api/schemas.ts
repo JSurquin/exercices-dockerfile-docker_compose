@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { assertPublicHttpsWebhookUrl } from '@/lib/partner-api/webhook-url';
 
-const partnerTradeUrlSchema = z
+export const partnerTradeUrlSchema = z
   .string()
   .regex(
     /^https:\/\/steamcommunity\.com\/tradeoffer\/new\/?\?partner=\d+&token=[a-zA-Z0-9_-]+$/,
@@ -18,6 +18,7 @@ export const partnerEstimateSchema = z.object({
     .min(1)
     .max(50)
     .refine(uniqueStrings, 'Duplicate asset_ids are not allowed'),
+  trade_url: partnerTradeUrlSchema.optional(),
 });
 
 export const partnerCreateTradeSchema = z.object({

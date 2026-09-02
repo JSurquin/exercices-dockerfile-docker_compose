@@ -24,7 +24,7 @@ import {
   toPartnerFacingProviderError,
   PARTNER_ERROR_CODE_LIST,
 } from '@/lib/partner-api/response';
-import { getPartnerOperatingSteamId, validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
+import { getPartnerOperatingSteamId, parsePartnerTradeUrl, resolvePartnerOperatingSteamId, validatePartnerTradeUrl } from '@/lib/partner-api/trade-url-validation';
 import { withPartnerApi } from '@/lib/partner-api/handler';
 import { requireApiKey } from '@/lib/partner-api/auth';
 import { partnerCreateApiClientSchema, partnerCreateTradeSchema, partnerEstimateSchema, partnerWebhookConfigSchema } from '@/lib/partner-api/schemas';
@@ -327,6 +327,9 @@ describe('partner-api JSON contract', () => {
         expect(copy.errorCodes[code]).toBeTruthy();
       }
       expect(copy.endpoints.createTrade.description.length).toBeGreaterThan(20);
+      expect(copy.endpoints.inventory.description).toMatch(/trade_url/i);
+      expect(copy.endpoints.estimate.description).toMatch(/trade_url/i);
+      expect(copy.endpoints.createTrade.description).toMatch(/trade_url/i);
       expect(copy.prerequisitesItems.join(' ')).toMatch(/KYC/i);
       expect(copy.prerequisitesItems.join(' ')).toContain('contact@moonskin.fun');
       expect(JSON.stringify(copy)).not.toMatch(/@moonskin\/sdk|moonskin-sdk/);
@@ -512,6 +515,12 @@ describe('partner-api pagination and validation envelope', () => {
       partnerEstimateSchema.safeParse({ asset_ids: ['1', '1'] }).success
     ).toBe(false);
     expect(
+      partnerEstimateSchema.safeParse({
+        asset_ids: ['1'],
+        trade_url: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=AbCdEfGh',
+      }).success
+    ).toBe(true);
+    expect(
       partnerCreateTradeSchema.safeParse({
         items: [{ asset_id: '1' }, { asset_id: '1' }],
         trade_url: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=AbCdEfGh',
@@ -582,22 +591,33 @@ describe('partner-api trade URL validation', () => {
     expect(result).toEqual({ ok: true, steamId });
   });
 
-  it('rejects trade URL with wrong Steam account', () => {
-    const wrongPartnerUrl = `https://steamcommunity.com/tradeoffer/new/?partner=99999999&token=${token}`;
-    const result = validatePartnerTradeUrl(wrongPartnerUrl, steamId, tradeLink);
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error).toMatch(/Steam account/i);
+  it('accepts a per-request trade URL for another Steam account', () => {
+    const otherUrl = `https://steamcommunity.com/tradeoffer/new/?partner=99999999&token=${token}`;
+    const result = validatePartnerTradeUrl(otherUrl, steamId, tradeLink);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.steamId).not.toBe(steamId);
     }
   });
 
-  it('rejects trade URL with wrong token vs account link', () => {
-    const wrongTokenUrl = `https://steamcommunity.com/tradeoffer/new/?partner=${partner}&token=WrongToken1`;
-    const result = validatePartnerTradeUrl(wrongTokenUrl, steamId, tradeLink);
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error).toMatch(/trade link/i);
+  it('accepts a different token than the saved account Trade Link', () => {
+    const otherTokenUrl = `https://steamcommunity.com/tradeoffer/new/?partner=${partner}&token=WrongToken1`;
+    const result = validatePartnerTradeUrl(otherTokenUrl, steamId, tradeLink);
+    expect(result).toEqual({ ok: true, steamId });
+  });
+
+  it('resolves an explicit trade_url over the saved account link', () => {
+    const otherUrl = `https://steamcommunity.com/tradeoffer/new/?partner=99999999&token=OtherTok1`;
+    const resolved = resolvePartnerOperatingSteamId({ steamId, tradeLink }, otherUrl);
+    expect(resolved.ok).toBe(true);
+    if (resolved.ok) {
+      expect(resolved.steamId).not.toBe(steamId);
     }
+  });
+
+  it('rejects a malformed trade URL', () => {
+    expect(parsePartnerTradeUrl('https://example.com/not-a-trade-link').ok).toBe(false);
+    expect(validatePartnerTradeUrl('not-a-url', steamId, tradeLink).ok).toBe(false);
   });
 });
 
