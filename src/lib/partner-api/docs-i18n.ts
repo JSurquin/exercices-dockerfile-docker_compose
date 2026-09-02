@@ -106,7 +106,7 @@ const fr: PartnerDocsCopy = {
   },
   errorEnvelope,
   errorExtras:
-    'RATE_LIMITED peut inclure retry_after_seconds. KYC_REQUIRED peut inclure requires_kyc: true. API_ERROR peut inclure provider_status et provider_error (code Skinplace).',
+    'RATE_LIMITED peut inclure retry_after_seconds. KYC_REQUIRED peut inclure requires_kyc: true. API_ERROR peut inclure provider_status et provider_error.',
   endpoints: {
     me: {
       description: 'Compte MoonSkin lié à la clé : Steam, KYC, Trade Link, gel du compte.',
@@ -130,7 +130,7 @@ const fr: PartnerDocsCopy = {
     },
     createTrade: {
       description:
-        'Crée une vraie vente Steam/Skinplace. trade_url doit correspondre au compte Steam lié. Scope trade requis. Réponse HTTP 201.',
+        'Crée une vraie vente Steam : le bot MoonSkin envoie une offre d’échange. trade_url doit correspondre au compte Steam lié. Scope trade requis. Réponse HTTP 201.',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },
@@ -226,7 +226,7 @@ const en: PartnerDocsCopy = {
   },
   errorEnvelope,
   errorExtras:
-    'RATE_LIMITED may include retry_after_seconds. KYC_REQUIRED may include requires_kyc: true. API_ERROR may include provider_status and provider_error (Skinplace code).',
+    'RATE_LIMITED may include retry_after_seconds. KYC_REQUIRED may include requires_kyc: true. API_ERROR may include provider_status and provider_error.',
   endpoints: {
     me: {
       description: 'MoonSkin account linked to the API key: Steam, KYC, Trade Link, freeze status.',
@@ -250,7 +250,7 @@ const en: PartnerDocsCopy = {
     },
     createTrade: {
       description:
-        'Creates a real Steam/Skinplace sale. trade_url must match the linked Steam account. Requires trade scope. HTTP 201.',
+        'Creates a real Steam sale: the MoonSkin bot sends a trade offer. trade_url must match the linked Steam account. Requires trade scope. HTTP 201.',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },
@@ -342,7 +342,7 @@ const cn: PartnerDocsCopy = {
   },
   errorEnvelope,
   errorExtras:
-    'RATE_LIMITED 可能包含 retry_after_seconds。KYC_REQUIRED 可能包含 requires_kyc: true。API_ERROR 可能包含 provider_status 和 provider_error（Skinplace 错误码）。',
+    'RATE_LIMITED 可能包含 retry_after_seconds。KYC_REQUIRED 可能包含 requires_kyc: true。API_ERROR 可能包含 provider_status 和 provider_error。',
   endpoints: {
     me: {
       description: '密钥绑定的 MoonSkin 账户：Steam、KYC、Trade Link、冻结状态。',
@@ -366,7 +366,7 @@ const cn: PartnerDocsCopy = {
     },
     createTrade: {
       description:
-        '创建真实的 Steam/Skinplace 销售。trade_url 必须匹配已绑定的 Steam 账户。需要 trade scope。HTTP 201。',
+        '创建真实的 Steam 销售：MoonSkin 机器人会发送报价。trade_url 必须匹配已绑定的 Steam 账户。需要 trade scope。HTTP 201。',
       response:
         '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
     },

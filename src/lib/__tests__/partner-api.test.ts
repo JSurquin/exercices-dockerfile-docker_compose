@@ -303,6 +303,7 @@ describe('partner-api JSON contract', () => {
       expect(partnerErrorCodesGuide).toContain(code);
     }
     expect(partnerErrorCodesGuide).toMatch(/"success": false/);
+    expect(partnerErrorCodesGuide).not.toMatch(/skinplace/i);
   });
 
   it('documents partner go-live prerequisites from the quote', () => {
@@ -329,6 +330,7 @@ describe('partner-api JSON contract', () => {
       expect(copy.prerequisitesItems.join(' ')).toMatch(/KYC/i);
       expect(copy.prerequisitesItems.join(' ')).toContain('contact@moonskin.fun');
       expect(JSON.stringify(copy)).not.toMatch(/@moonskin\/sdk|moonskin-sdk/);
+      expect(JSON.stringify(copy)).not.toMatch(/skinplace/i);
     }
   });
 
