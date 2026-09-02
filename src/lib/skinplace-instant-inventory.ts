@@ -21,6 +21,36 @@ export type FetchSkinplaceInstantInventoryResult =
   | { ok: true; inventory: SkinplaceInstantInventoryItem[] }
   | { ok: false; code: 'CONFIG_ERROR' | 'API_ERROR'; error: string };
 
+function jsonRootKeys(payload: unknown): string[] | null {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null;
+  return Object.keys(payload as object).slice(0, 24);
+}
+
+/** Skinplace sometimes wraps items in `inventory`, `data.inventory` or `data.items`. */
+export function extractSkinplaceInventoryItems(payload: unknown): SkinplaceInstantInventoryItem[] | null {
+  if (Array.isArray(payload)) {
+    return payload as SkinplaceInstantInventoryItem[];
+  }
+  if (!payload || typeof payload !== 'object') return null;
+
+  const root = payload as Record<string, unknown>;
+  if (root.success === false) return null;
+  if (typeof root.status === 'string' && root.status.toLowerCase() === 'error') return null;
+
+  const nested =
+    root.data && typeof root.data === 'object' && !Array.isArray(root.data)
+      ? (root.data as Record<string, unknown>)
+      : null;
+
+  const candidates = [root.inventory, nested?.inventory, nested?.items, root.items];
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate as SkinplaceInstantInventoryItem[];
+    }
+  }
+  return null;
+}
+
 /** Items Skinplace can actually buy — same filter as sale / estimate. */
 export function isSkinplaceItemSellable(item: SkinplaceInstantInventoryItem): boolean {
   return Boolean(item.assetid) && !item.untouchable && !item.skip_reason;
@@ -84,14 +114,18 @@ export async function fetchSkinplaceInstantInventory(
       };
     }
 
-    const data = (await response.json()) as { inventory?: SkinplaceInstantInventoryItem[] };
-    const count = Array.isArray(data.inventory) ? data.inventory.length : -1;
+    const payload: unknown = await response.json();
+    const items = extractSkinplaceInventoryItems(payload);
     partnerTrace('skinplace.inventory.fetch.body', {
       elapsedMs: Date.now() - started,
-      itemCount: count,
+      itemCount: items?.length ?? -1,
+      keys: jsonRootKeys(payload),
       heapMb: heapMb(),
     });
-    if (!Array.isArray(data.inventory)) {
+    if (!items) {
+      partnerTrace('skinplace.inventory.fetch.shape-mismatch', {
+        keys: jsonRootKeys(payload),
+      });
       return {
         ok: false,
         code: 'API_ERROR',
@@ -99,7 +133,7 @@ export async function fetchSkinplaceInstantInventory(
       };
     }
 
-    return { ok: true, inventory: data.inventory };
+    return { ok: true, inventory: items };
   } catch (err) {
     partnerTrace('skinplace.inventory.fetch.throw', {
       elapsedMs: Date.now() - started,
