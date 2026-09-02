@@ -1,12 +1,10 @@
 import type { NextRequest } from 'next/server';
-import { skinplaceService } from '@/lib/skinplace';
 import { withPartnerApi } from '@/lib/partner-api/handler';
+import { formatInventoryForPartner, partnerSuccess, partnerError } from '@/lib/partner-api/response';
 import {
-  formatInventoryForPartner,
-  partnerInventoryFetchFailed,
-  partnerSuccess,
-  partnerError,
-} from '@/lib/partner-api/response';
+  fetchSkinplaceInstantInventory,
+  isSkinplaceItemSellable,
+} from '@/lib/skinplace-instant-inventory';
 import { prisma } from '~/prisma/prisma';
 
 export async function GET(request: NextRequest) {
@@ -23,15 +21,13 @@ export async function GET(request: NextRequest) {
         return partnerError('VALIDATION_ERROR', 'Steam ID is not linked to this account', 400);
       }
 
-      try {
-        const inventory = await skinplaceService.getInventory(user.steamId);
-        if (partnerInventoryFetchFailed(inventory)) {
-          return partnerError('API_ERROR', 'Unable to fetch inventory from the trade provider', 502);
-        }
-        return partnerSuccess(formatInventoryForPartner(user.steamId, inventory));
-      } catch {
-        return partnerError('API_ERROR', 'Unable to fetch inventory from the trade provider', 502);
+      const fetched = await fetchSkinplaceInstantInventory(user.steamId);
+      if (!fetched.ok) {
+        return partnerError(fetched.code, fetched.error, 502);
       }
+
+      const sellable = fetched.inventory.filter(isSkinplaceItemSellable);
+      return partnerSuccess(formatInventoryForPartner(user.steamId, { inventory: sellable }));
     }
   );
 }

@@ -36,16 +36,24 @@ jest.mock('@/lib/partner-api/webhook-service', () => ({
   notifyTradeStatusChange: jest.fn(),
 }));
 
+jest.mock('@/lib/skinplace-instant-inventory', () => ({
+  fetchSkinplaceInstantInventory: jest.fn(),
+  isSkinplaceItemSellable: (item: { assetid?: string; untouchable?: boolean; skip_reason?: string }) =>
+    Boolean(item.assetid) && !item.untouchable && !item.skip_reason,
+}));
+
 import { prisma } from '~/prisma/prisma';
 import { requireApiKey } from '@/lib/partner-api/auth';
 import { createPartnerTrade, estimatePartnerItems } from '@/lib/partner-api/trade-service';
 import { canUserMakePayout } from '@/lib/kycaid';
+import { fetchSkinplaceInstantInventory } from '@/lib/skinplace-instant-inventory';
 import { GET as getMe } from '@/app/api/v1/partner/me/route';
 import { GET as getTrades, POST as postTrades } from '@/app/api/v1/partner/trades/route';
 import { GET as getTradeById } from '@/app/api/v1/partner/trades/[id]/route';
 import { POST as postEstimate } from '@/app/api/v1/partner/estimate/route';
 import { POST as postPayouts } from '@/app/api/v1/partner/payouts/route';
 import { PUT as putWebhook, GET as getWebhook } from '@/app/api/v1/partner/webhook/route';
+import { GET as getInventory } from '@/app/api/v1/partner/inventory/route';
 
 const mockedRequireApiKey = requireApiKey as jest.MockedFunction<typeof requireApiKey>;
 
@@ -130,6 +138,52 @@ describe('partner API HTTP routes', () => {
     expect(body.data.steam_username).toBe('Player');
     expect(body.data.kyc_status).toBe('verified');
     expect(body.data).not.toHaveProperty('role');
+  });
+
+  it('GET /inventory returns sellable Skinplace items and skips locked skins', async () => {
+    mockAuth(['read']);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({ steamId: '76561198012345678' });
+    (fetchSkinplaceInstantInventory as jest.Mock).mockResolvedValue({
+      ok: true,
+      inventory: [
+        {
+          assetid: 'sellable-1',
+          market_hash_name: 'AK-47 | Redline (FT)',
+          price: 12.5,
+          icon_url: 'abc',
+          exterior: 'Field-Tested',
+          is_stattrak: 0,
+          is_souvenir: 0,
+          rarity: 'Classified',
+          untouchable: false,
+        },
+        {
+          assetid: 'locked-1',
+          market_hash_name: 'AWP | Dragon Lore (FN)',
+          price: 9000,
+          icon_url: 'def',
+          exterior: 'Factory New',
+          is_stattrak: 0,
+          is_souvenir: 0,
+          rarity: 'Covert',
+          untouchable: true,
+          skip_reason: 'system_lock',
+        },
+      ],
+    });
+
+    const response = await getInventory(new NextRequest('http://localhost/api/v1/partner/inventory'));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.total_items).toBe(1);
+    expect(body.data.items).toEqual([
+      expect.objectContaining({
+        asset_id: 'sellable-1',
+        market_hash_name: 'AK-47 | Redline (FT)',
+        price_cents: 1250,
+      }),
+    ]);
   });
 
   it('GET /me is blocked for trade-only scope', async () => {

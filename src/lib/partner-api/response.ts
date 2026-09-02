@@ -261,6 +261,12 @@ function toPriceCents(price: number | undefined, fromInstantInventory: boolean):
   return Math.round(price);
 }
 
+function toPartnerIconUrl(icon: string | null | undefined): string | null {
+  if (!icon) return null;
+  if (/^https?:\/\//i.test(icon)) return icon;
+  return `https://community.cloudflare.steamstatic.com/economy/image/${icon}`;
+}
+
 export function partnerInventoryFetchFailed(inventory: unknown): boolean {
   if (!inventory || typeof inventory !== 'object') return true;
   const envelope = inventory as { success?: boolean };
@@ -278,7 +284,7 @@ export function formatInventoryForPartner(steamId: string, inventory: unknown) {
     asset_id: String(item.asset_id ?? item.assetid ?? item.id ?? ''),
     market_hash_name: item.market_hash_name ?? '',
     price_cents: toPriceCents(item.price, fromInstant),
-    icon_url: item.icon_url ?? null,
+    icon_url: toPartnerIconUrl(item.icon_url),
     exterior: item.exterior ?? null,
     stat_trak: Boolean(item.stat_trak ?? item.is_stattrak),
     rarity: item.rarity ?? null,

@@ -123,7 +123,8 @@ export const partnerEndpointDetails = [
     method: 'GET',
     path: '/api/v1/partner/inventory',
     scope: 'read',
-    description: 'CS2 inventory for the linked Steam ID.',
+    description:
+      'Sellable CS2 items for the linked Steam ID (Skinplace-priced). Locked or unsellable Steam items are omitted.',
     response: '{ steam_id, items: [{ asset_id, market_hash_name, price_cents, ... }], total_items, total_value_cents }',
   },
   {

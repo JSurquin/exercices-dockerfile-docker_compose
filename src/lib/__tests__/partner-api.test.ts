@@ -294,8 +294,25 @@ describe('partner-api JSON contract', () => {
 
     expect(payload.items[0].asset_id).toBe('asset-9');
     expect(payload.items[0].price_cents).toBe(1250);
+    expect(payload.items[0].icon_url).toBeNull();
     expect(payload.total_items).toBe(1);
     expect(payload.total_value_cents).toBe(1250);
+  });
+
+  it('inventory formatter prefixes Skinplace icon hashes', () => {
+    const payload = formatInventoryForPartner('76561198012345678', {
+      inventory: [
+        {
+          assetid: 'asset-2',
+          market_hash_name: 'Glock-18 | Water Elemental (FT)',
+          price: 1.2,
+          icon_url: '-9a81dlWLw',
+        },
+      ],
+    });
+    expect(payload.items[0].icon_url).toBe(
+      'https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLw'
+    );
   });
 
   it('treats success:false inventory as a provider failure', () => {

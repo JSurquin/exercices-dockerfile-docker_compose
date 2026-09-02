@@ -147,7 +147,8 @@ curl -s "$BASE/api/v1/partner/inventory" \
   -H "Authorization: Bearer $MSK_KEY"
 ```
 
-Récupère un `asset_id` d’un item pour les étapes suivantes.  
+Liste les skins **rachetables par Skinplace** (même source que la page Vendre), pas tout l’inventaire Steam.  
+Les items lockés / overstock / non rachetables sont omis. Un tableau vide avec `success: true` signifie « aucun item vendable », pas une erreur.  
 Peut renvoyer une erreur amont (Skinplace) si l’inventaire Steam est privé / indisponible.
 
 ### 6.4 Estimation
