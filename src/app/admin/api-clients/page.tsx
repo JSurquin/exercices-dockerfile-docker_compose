@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Key, Trash2, Webhook, Plus, Activity, Save, Globe } from 'lucide-react';
+import { Key, Trash2, Webhook, Plus, Activity, Save, Globe, Search } from 'lucide-react';
 import { AdminUserCombobox } from '@/components/admin/admin-user-combobox';
 import { AdminUserLink } from '@/components/admin/admin-user-link';
 import { SecretValueField } from '@/components/ui/secret-value-field';
@@ -150,6 +150,26 @@ function EventBadges({
   );
 }
 
+function matchesLogSearch(log: ApiCallLog, query: string, locale: Locale): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const haystack = [
+    log.account_name,
+    log.partner_name,
+    log.steam_id,
+    log.ip_address,
+    log.endpoint,
+    log.method,
+    String(log.status_code),
+    partnerCallLabel(log.method, log.endpoint, locale),
+    partnerHttpResultLabel(log.status_code, locale),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return haystack.includes(q);
+}
+
 export default function AdminApiClientsPage() {
   const { locale } = useLocale();
   const t = partnerAdminPageCopy(locale);
@@ -169,6 +189,7 @@ export default function AdminApiClientsPage() {
   });
   const [rateLimitEdits, setRateLimitEdits] = useState<Record<string, string>>({});
   const [savingRateLimit, setSavingRateLimit] = useState<string | null>(null);
+  const [logSearch, setLogSearch] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -176,7 +197,7 @@ export default function AdminApiClientsPage() {
       const [clientsRes, deliveriesRes, logsRes] = await Promise.all([
         fetch('/api/admin/api-clients'),
         fetch('/api/admin/api-clients/deliveries?limit=30'),
-        fetch('/api/admin/api-clients/logs?limit=50'),
+        fetch('/api/admin/api-clients/logs?limit=200'),
       ]);
       if (clientsRes.ok) {
         const data = await clientsRes.json();
@@ -270,6 +291,11 @@ export default function AdminApiClientsPage() {
       setSavingRateLimit(null);
     }
   };
+
+  const filteredLogs = useMemo(
+    () => apiLogs.filter((log) => matchesLogSearch(log, logSearch, locale)),
+    [apiLogs, logSearch, locale]
+  );
 
   const stats = useMemo(
     () => ({
@@ -489,19 +515,38 @@ export default function AdminApiClientsPage() {
 
       <Card className={adminGlassCard}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Activity className="h-5 w-5 text-theme-accent" />
-            {t.logsTitle}
-          </CardTitle>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Activity className="h-5 w-5 text-theme-accent" />
+              {t.logsTitle}
+              {!loading && apiLogs.length > 0 && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  ({logSearch.trim() ? `${filteredLogs.length}/${apiLogs.length}` : apiLogs.length})
+                </span>
+              )}
+            </CardTitle>
+            <div className="relative w-full sm:max-w-xs">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={logSearch}
+                onChange={(e) => setLogSearch(e.target.value)}
+                placeholder={t.logsSearch}
+                className={cn('pl-8', panelGlassField)}
+                disabled={loading || apiLogs.length === 0}
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
             <p className="text-muted-foreground">{t.loading}</p>
           ) : apiLogs.length === 0 ? (
             <p className="text-muted-foreground">{t.noLogs}</p>
+          ) : filteredLogs.length === 0 ? (
+            <p className="text-muted-foreground">{t.logsNoMatch}</p>
           ) : (
-            <div className="space-y-2">
-              {apiLogs.map((log) => (
+            <div className="h-[28rem] overflow-y-auto overscroll-contain space-y-2 pr-1">
+              {filteredLogs.map((log) => (
                 <div key={log.id} className={panelListRow}>
                   <div className="flex flex-wrap items-center gap-3">
                     <AdminUserLink

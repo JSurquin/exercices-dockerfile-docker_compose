@@ -357,6 +357,8 @@ type PageCopy = {
   revokeConfirm: string;
   cancel: string;
   logsTitle: string;
+  logsSearch: string;
+  logsNoMatch: string;
   noLogs: string;
   colAccount: string;
   colAction: string;
@@ -408,6 +410,8 @@ const PAGE_FR: PageCopy = {
   revokeConfirm: 'Révoquer et supprimer',
   cancel: 'Annuler',
   logsTitle: 'Derniers appels',
+  logsSearch: 'Compte, IP, action, code HTTP…',
+  logsNoMatch: 'Aucun appel ne correspond à cette recherche.',
   noLogs: 'Aucun appel pour le moment.',
   colAccount: 'Compte',
   colAction: 'Ce qu’il a fait',
@@ -459,6 +463,8 @@ const PAGE_EN: PageCopy = {
   revokeConfirm: 'Revoke and delete',
   cancel: 'Cancel',
   logsTitle: 'Latest calls',
+  logsSearch: 'Account, IP, action, HTTP code…',
+  logsNoMatch: 'No calls match this search.',
   noLogs: 'No calls yet.',
   colAccount: 'Account',
   colAction: 'What they did',
@@ -510,6 +516,8 @@ const PAGE_CN: PageCopy = {
   revokeConfirm: '撤销并删除',
   cancel: '取消',
   logsTitle: '最近调用',
+  logsSearch: '账户、IP、操作、HTTP 状态码…',
+  logsNoMatch: '没有符合搜索的调用。',
   noLogs: '暂无调用。',
   colAccount: '账户',
   colAction: '他们做了什么',
