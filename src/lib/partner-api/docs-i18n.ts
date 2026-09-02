@@ -10,6 +10,7 @@ export type PartnerEndpointId =
   | 'createTrade'
   | 'listTrades'
   | 'getTrade'
+  | 'listPayouts'
   | 'payouts'
   | 'putWebhook'
   | 'getWebhook';
@@ -52,7 +53,7 @@ const fr: PartnerDocsCopy = {
     'HTTP : 200, 201 (création de vente), 400, 401, 403, 404, 409, 429, 503, 500.',
   ],
   scopesItems: [
-    'read — profil, solde, inventaire, estimation, liste et détail des ventes, lecture du webhook.',
+    'read — profil, solde, inventaire, estimation, liste et détail des ventes, liste des retraits, lecture du webhook.',
     'trade — créer une vente (POST /trades) et configurer le webhook (PUT /webhook).',
     'payout — demander un retrait (POST /payouts) et configurer le webhook (PUT /webhook).',
   ],
@@ -73,7 +74,7 @@ const fr: PartnerDocsCopy = {
     'Estimer : POST /api/v1/partner/estimate avec asset_ids et trade_url.',
     'Créer la vente : POST /api/v1/partner/trades avec items et le même trade_url — conserver l’id renvoyé.',
     'Recevoir un POST à chaque changement de statut (trade.* et payout.*).',
-    'Secours : interroger GET /api/v1/partner/trades/{id} si un webhook a été manqué.',
+    'Secours : interroger GET /api/v1/partner/trades/{id} ou GET /api/v1/partner/payouts si un webhook a été manqué.',
   ],
   webhookIntro:
     'MoonSkin envoie un POST JSON vers l’URL HTTPS configurée. Le secret de signature est visible dans Paramètres → Développeur (et sur la fiche admin).',
@@ -144,11 +145,16 @@ const fr: PartnerDocsCopy = {
       response:
         '{ id, trade_id, status, gross_cents, fees, net_cents, ticket_id, steam_id, trade_link, available_at, payment_reference, items, ... }',
     },
+    listPayouts: {
+      description:
+        'Liste paginée des retraits du compte lié à la clé (GET /payouts, plus récents d’abord), y compris ceux demandés via l’API. Scope read. Même pagination que GET /trades (limit, offset).',
+      response: '{ payouts: [...], pagination: { limit, offset, total } }',
+    },
     payouts: {
       description:
         'Demande un retrait SEPA/crypto pour une vente au statut available. KYC validé et moyen de paiement déjà configuré. Rejouer le même trade_id renvoie le payout existant avec already_exists: true.',
       response:
-        '{ id, status, amount_cents, trade_id, payment_method: { type, verified }, payment_reference, already_exists? }',
+        '{ id, status, amount_cents, trade_id, payment_method: { type, verified }, payment_reference, created_at, paid_at, already_exists? }',
     },
     putWebhook: {
       description:
@@ -173,7 +179,7 @@ const en: PartnerDocsCopy = {
     'HTTP: 200, 201 (sale created), 400, 401, 403, 404, 409, 429, 503, 500.',
   ],
   scopesItems: [
-    'read — profile, balance, inventory, estimate, trade list/detail, GET webhook.',
+    'read — profile, balance, inventory, estimate, trade list/detail, payout list, GET webhook.',
     'trade — create a sale (POST /trades) and set the webhook URL (PUT /webhook).',
     'payout — request a payout (POST /payouts) and set the webhook URL (PUT /webhook).',
   ],
@@ -194,7 +200,7 @@ const en: PartnerDocsCopy = {
     'Estimate: POST /api/v1/partner/estimate with asset_ids and trade_url.',
     'Create the sale: POST /api/v1/partner/trades with items and the same trade_url — keep the returned id.',
     'Receive a POST on every status change (trade.* and payout.*).',
-    'Fallback: poll GET /api/v1/partner/trades/{id} if a webhook was missed.',
+    'Fallback: poll GET /api/v1/partner/trades/{id} or GET /api/v1/partner/payouts if a webhook was missed.',
   ],
   webhookIntro:
     'MoonSkin sends a JSON POST to the HTTPS URL you configured. The signing secret is visible in Settings → Developer (and on the admin user page).',
@@ -265,11 +271,16 @@ const en: PartnerDocsCopy = {
       response:
         '{ id, trade_id, status, gross_cents, fees, net_cents, ticket_id, steam_id, trade_link, available_at, payment_reference, items, ... }',
     },
+    listPayouts: {
+      description:
+        'Paginated list of payouts on the account linked to the key (newest first), including those requested via the API. Requires read scope. Same pagination as GET /trades (limit, offset).',
+      response: '{ payouts: [...], pagination: { limit, offset, total } }',
+    },
     payouts: {
       description:
         'Request a SEPA/crypto payout for a trade in available status. KYC must be approved and a payout method already configured. Replaying the same trade_id returns the existing payout with already_exists: true.',
       response:
-        '{ id, status, amount_cents, trade_id, payment_method: { type, verified }, payment_reference, already_exists? }',
+        '{ id, status, amount_cents, trade_id, payment_method: { type, verified }, payment_reference, created_at, paid_at, already_exists? }',
     },
     putWebhook: {
       description:
@@ -294,7 +305,7 @@ const cn: PartnerDocsCopy = {
     'HTTP：200、201（创建销售）、400、401、403、404、409、429、503、500。',
   ],
   scopesItems: [
-    'read — 资料、余额、库存、估价、销售列表/详情、读取 webhook。',
+    'read — 资料、余额、库存、估价、销售列表/详情、提现列表、读取 webhook。',
     'trade — 创建销售（POST /trades）并配置 webhook（PUT /webhook）。',
     'payout — 申请提现（POST /payouts）并配置 webhook（PUT /webhook）。',
   ],
@@ -314,7 +325,7 @@ const cn: PartnerDocsCopy = {
     '估价：POST /api/v1/partner/estimate，传入 asset_ids 和 trade_url。',
     '创建销售：POST /api/v1/partner/trades，传入 items 和同一个 trade_url — 保存返回的 id。',
     '每次状态变化会收到 POST（trade.* 与 payout.*）。',
-    '备用：若漏收 webhook，轮询 GET /api/v1/partner/trades/{id}。',
+    '备用：若漏收 webhook，轮询 GET /api/v1/partner/trades/{id} 或 GET /api/v1/partner/payouts。',
   ],
   webhookIntro:
     'MoonSkin 会向您配置的 HTTPS 地址发送 JSON POST。签名密钥可在 设置 → 开发者（以及管理员用户页）查看。',
@@ -382,11 +393,16 @@ const cn: PartnerDocsCopy = {
       response:
         '{ id, trade_id, status, gross_cents, fees, net_cents, ticket_id, steam_id, trade_link, available_at, payment_reference, items, ... }',
     },
+    listPayouts: {
+      description:
+        '密钥绑定账户的提现分页列表 GET /payouts（最新在前），包含通过 API 申请的提现。需要 read scope。分页参数与 GET /trades 相同（limit、offset）。',
+      response: '{ payouts: [...], pagination: { limit, offset, total } }',
+    },
     payouts: {
       description:
         '对状态为 available 的销售申请 SEPA/加密货币提现。须已通过 KYC 并配置收款方式。重复提交同一 trade_id 会返回已有 payout，并带 already_exists: true。',
       response:
-        '{ id, status, amount_cents, trade_id, payment_method: { type, verified }, payment_reference, already_exists? }',
+        '{ id, status, amount_cents, trade_id, payment_method: { type, verified }, payment_reference, created_at, paid_at, already_exists? }',
     },
     putWebhook: {
       description: '设置通知 URL（仅限公开 HTTPS）。需要 trade 或 payout scope。只读密钥无法修改。',

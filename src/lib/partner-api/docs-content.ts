@@ -20,6 +20,7 @@ const ENDPOINT_CLIENT_NAMES: Record<PartnerEndpointId, string> = {
   createTrade: 'Create sale',
   listTrades: 'List sales',
   getTrade: 'Get sale',
+  listPayouts: 'List payouts',
   payouts: 'Request payout',
   putWebhook: 'Set webhook',
   getWebhook: 'Get webhook',
@@ -64,6 +65,14 @@ export const partnerEndpointCatalog: PartnerEndpointCatalogItem[] = [
     query: '?limit=20&offset=0',
   },
   { id: 'getTrade', method: 'GET', path: '/api/v1/partner/trades/{id}', scope: 'read', rateLimit: '100/min' },
+  {
+    id: 'listPayouts',
+    method: 'GET',
+    path: '/api/v1/partner/payouts',
+    scope: 'read',
+    rateLimit: '100/min',
+    query: '?limit=20&offset=0',
+  },
   {
     id: 'payouts',
     method: 'POST',
@@ -303,7 +312,9 @@ export const partnerResponseExamples = {
     "amount_cents": 120000,
     "trade_id": "TRADE-123",
     "payment_method": { "type": "sepa", "verified": true },
-    "payment_reference": "payout_01"
+    "payment_reference": "payout_01",
+    "created_at": "2026-07-28T12:00:00.000Z",
+    "paid_at": null
   }
 }`,
   webhook: `{
@@ -378,6 +389,24 @@ export const partnerResponseExamples = {
     "pagination": { "limit": 20, "offset": 0, "total": 1 }
   }
 }`,
+  listPayouts: `{
+  "success": true,
+  "data": {
+    "payouts": [
+      {
+        "id": "payout_01",
+        "status": "paid",
+        "amount_cents": 120000,
+        "trade_id": "TRADE-123",
+        "payment_method": { "type": "sepa", "verified": true },
+        "payment_reference": "payout_01",
+        "created_at": "2026-07-28T12:00:00.000Z",
+        "paid_at": "2026-07-28T12:05:00.000Z"
+      }
+    ],
+    "pagination": { "limit": 20, "offset": 0, "total": 1 }
+  }
+}`,
   putWebhook: `{
   "success": true,
   "data": {
@@ -404,6 +433,7 @@ export const partnerEndpointResponseExamples: Record<PartnerEndpointId, string> 
   createTrade: partnerResponseExamples.createTrade,
   listTrades: partnerResponseExamples.listTrades,
   getTrade: partnerResponseExamples.tradeDetail,
+  listPayouts: partnerResponseExamples.listPayouts,
   payouts: partnerResponseExamples.payout,
   putWebhook: partnerResponseExamples.putWebhook,
   getWebhook: partnerResponseExamples.getWebhook,

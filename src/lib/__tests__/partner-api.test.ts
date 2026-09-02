@@ -294,6 +294,10 @@ describe('partner-api JSON contract', () => {
     expect(buildPartnerEndpointPostman(estimate!)).toContain('asset_ids');
     expect(buildPartnerEndpointInsomnia(me!)).toContain('__export_format');
     expect(partnerPostmanCollection).toContain('/api/v1/partner/trades');
+    expect(partnerPostmanCollection).toContain('/api/v1/partner/payouts');
+    expect(partnerEndpointCatalog.some((endpoint) => endpoint.id === 'listPayouts' && endpoint.method === 'GET')).toBe(
+      true
+    );
     expect(partnerInsomniaExport).toContain('wrk_moonskin');
     expect(partnerBrunoEnvironment).toContain('api_key');
   });
@@ -330,6 +334,8 @@ describe('partner-api JSON contract', () => {
       expect(copy.endpoints.inventory.description).toMatch(/trade_url/i);
       expect(copy.endpoints.estimate.description).toMatch(/trade_url/i);
       expect(copy.endpoints.createTrade.description).toMatch(/trade_url/i);
+      expect(copy.endpoints.listPayouts.description).toMatch(/payout/i);
+      expect(copy.endpoints.listPayouts.response).toMatch(/pagination/i);
       expect(copy.prerequisitesItems.join(' ')).toMatch(/KYC/i);
       expect(copy.prerequisitesItems.join(' ')).toContain('contact@moonskin.fun');
       expect(JSON.stringify(copy)).not.toMatch(/@moonskin\/sdk|moonskin-sdk/);
@@ -462,10 +468,14 @@ describe('partner-api JSON contract', () => {
       amountCents: 120000,
       tradeId: 'TRADE-1',
       paymentMethod: { type: 'SEPA', isVerified: true },
+      createdAt: new Date('2026-07-28T12:00:00.000Z'),
+      paidAt: null,
     });
     expect(payload.payment_reference).toBe('payout-1');
     expect(payload.payment_method.type).toBe('sepa');
     expect(payload.status).toBe('pending');
+    expect(payload.created_at).toBe('2026-07-28T12:00:00.000Z');
+    expect(payload.paid_at).toBeNull();
   });
 
   it('toPartnerErrorCode keeps API_ERROR and maps unknown item errors', () => {

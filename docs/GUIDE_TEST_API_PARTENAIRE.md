@@ -202,7 +202,18 @@ curl -s -X POST "$BASE/api/v1/partner/trades" \
 
 Attendu HTTP 201 : `id` / `trade_id`, `status`, `gross_cents`, `net_cents`, `available_at`.
 
-### 6.8 Demander un payout (scope `payout`)
+### 6.8 Lister les payouts
+
+Tous les retraits du compte lié à la clé (pas seulement ceux créés via `POST /payouts`). Scope `read`.
+
+```bash
+curl -s "$BASE/api/v1/partner/payouts?limit=20&offset=0" \
+  -H "Authorization: Bearer $MSK_KEY"
+```
+
+Attendu : `payouts` (id, status, amount_cents, trade_id, payment_method, created_at, paid_at) et `pagination`.
+
+### 6.9 Demander un payout (scope `payout`)
 
 Le trade doit être en statut `available` (après trade hold). KYC obligatoire. Un moyen de paiement doit déjà exister sur le compte.
 
@@ -216,7 +227,7 @@ curl -s -X POST "$BASE/api/v1/partner/payouts" \
 Sans KYC : `403` + `KYC_REQUIRED`.  
 Rejouer le même `trade_id` renvoie le payout existant avec `already_exists: true`.
 
-### 6.9 Webhook
+### 6.10 Webhook
 
 `localhost` et les IP privées sont **refusés**. Utilise une URL HTTPS publique (ex. [webhook.site](https://webhook.site) ou un tunnel ngrok).
 
@@ -259,11 +270,12 @@ La doc interactive côté site : `/api-docs`.
 7. [ ] `GET /inventory` → items (si Steam OK)
 8. [ ] `POST /estimate` → centimes
 9. [ ] `GET /trades` → 200
-10. [ ] `PUT /webhook` vers une URL HTTPS publique
-11. [ ] (Optionnel, vrai trade) `POST /trades`
-12. [ ] (Optionnel) payout seulement si trade `available` + KYC
-13. [ ] Les appels se voient dans le journal admin
-14. [ ] Clé révoquée en fin de test si ce n’est pas un vrai partenaire
+10. [ ] `GET /payouts` → 200
+11. [ ] `PUT /webhook` vers une URL HTTPS publique
+12. [ ] (Optionnel, vrai trade) `POST /trades`
+13. [ ] (Optionnel) payout seulement si trade `available` + KYC
+14. [ ] Les appels se voient dans le journal admin
+15. [ ] Clé révoquée en fin de test si ce n’est pas un vrai partenaire
 
 ---
 

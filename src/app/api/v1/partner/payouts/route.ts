@@ -9,9 +9,38 @@ import { partnerSuccess, partnerError, formatPayoutForPartner } from '@/lib/part
 import { partnerPayoutSchema } from '@/lib/partner-api/schemas';
 import { isUsablePartnerPaymentMethod } from '@/lib/partner-api/payout-guards';
 import { assertPartnerTermsAccepted } from '@/lib/partner-api/account-guards';
-import { readPartnerJsonBody, safeParsePartnerJson } from '@/lib/partner-api/validation';
+import { parsePartnerPagination, readPartnerJsonBody, safeParsePartnerJson } from '@/lib/partner-api/validation';
 
 const TRADE_NOT_CLAIMABLE = 'TRADE_NOT_CLAIMABLE';
+
+export async function GET(request: NextRequest) {
+  return withPartnerApi(
+    request,
+    { endpoint: '/api/v1/partner/payouts', method: 'GET', scopes: ['read'] },
+    async (req, ctx) => {
+      const pagination = parsePartnerPagination(new URL(req.url).searchParams);
+      if (!pagination.ok) return pagination.response;
+      const { limit, offset } = pagination.data;
+
+      const where = { userId: ctx.userId };
+      const [payouts, total] = await Promise.all([
+        prisma.payout.findMany({
+          where,
+          include: { paymentMethod: true },
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.payout.count({ where }),
+      ]);
+
+      return partnerSuccess({
+        payouts: payouts.map((payout) => formatPayoutForPartner(payout)),
+        pagination: { limit, offset, total },
+      });
+    }
+  );
+}
 
 export async function POST(request: NextRequest) {
   return withPartnerApi(

@@ -4,7 +4,7 @@ jest.mock('~/prisma/prisma', () => ({
   prisma: {
     user: { findUnique: jest.fn() },
     trade: { findMany: jest.fn(), findFirst: jest.fn(), findUnique: jest.fn(), count: jest.fn() },
-    payout: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
+    payout: { findFirst: jest.fn(), findMany: jest.fn(), count: jest.fn(), create: jest.fn(), update: jest.fn() },
     paymentMethod: { findFirst: jest.fn() },
     apiClient: { findUnique: jest.fn(), update: jest.fn() },
   },
@@ -53,7 +53,7 @@ import { GET as getMe } from '@/app/api/v1/partner/me/route';
 import { GET as getTrades, POST as postTrades } from '@/app/api/v1/partner/trades/route';
 import { GET as getTradeById } from '@/app/api/v1/partner/trades/[id]/route';
 import { POST as postEstimate } from '@/app/api/v1/partner/estimate/route';
-import { POST as postPayouts } from '@/app/api/v1/partner/payouts/route';
+import { POST as postPayouts, GET as getPayouts } from '@/app/api/v1/partner/payouts/route';
 import { PUT as putWebhook, GET as getWebhook } from '@/app/api/v1/partner/webhook/route';
 import { GET as getInventory } from '@/app/api/v1/partner/inventory/route';
 
@@ -465,6 +465,65 @@ describe('partner API HTTP routes', () => {
 
     expect(response.status).toBe(200);
     expect(estimatePartnerItems).toHaveBeenCalledWith('user-1', ['1'], tradeUrl);
+  });
+
+  it('GET /payouts lists English statuses and returns total, not page length as count', async () => {
+    mockAuth(['read']);
+    (prisma.payout.findMany as jest.Mock).mockResolvedValue([
+      {
+        id: 'payout-1',
+        status: 'PENDING',
+        amountCents: 120000,
+        tradeId: 'TRADE-1',
+        createdAt: new Date('2026-07-28T12:00:00Z'),
+        paidAt: null,
+        paymentMethod: { type: 'SEPA', isVerified: true },
+      },
+    ]);
+    (prisma.payout.count as jest.Mock).mockResolvedValue(7);
+
+    const response = await getPayouts(
+      new NextRequest('http://localhost/api/v1/partner/payouts?limit=1&offset=0')
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.data.payouts).toHaveLength(1);
+    expect(body.data.payouts[0].id).toBe('payout-1');
+    expect(body.data.payouts[0].status).toBe('pending');
+    expect(body.data.payouts[0].amount_cents).toBe(120000);
+    expect(body.data.payouts[0].trade_id).toBe('TRADE-1');
+    expect(body.data.payouts[0].created_at).toBe('2026-07-28T12:00:00.000Z');
+    expect(body.data.pagination).toEqual({ limit: 1, offset: 0, total: 7 });
+    expect(prisma.payout.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'user-1' },
+        take: 1,
+        skip: 0,
+      })
+    );
+  });
+
+  it('GET /payouts rejects non-integer pagination instead of querying', async () => {
+    mockAuth(['read']);
+
+    const response = await getPayouts(new NextRequest('http://localhost/api/v1/partner/payouts?limit=nope'));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(prisma.payout.findMany).not.toHaveBeenCalled();
+  });
+
+  it('GET /payouts is blocked without read scope', async () => {
+    mockAuth(['payout']);
+
+    const response = await getPayouts(new NextRequest('http://localhost/api/v1/partner/payouts'));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.error.code).toBe('FORBIDDEN');
+    expect(prisma.payout.findMany).not.toHaveBeenCalled();
   });
 
   it('POST /payouts refuses to create an empty SEPA method', async () => {

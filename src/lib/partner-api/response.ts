@@ -146,6 +146,8 @@ export function formatPayoutForPartner(
     amountCents: number;
     tradeId: string | null;
     paymentMethod: { type: string; isVerified: boolean };
+    createdAt?: Date | null;
+    paidAt?: Date | null;
   },
   extra?: { already_exists?: boolean }
 ) {
@@ -159,6 +161,8 @@ export function formatPayoutForPartner(
       verified: payout.paymentMethod.isVerified,
     },
     payment_reference: payout.id,
+    created_at: payout.createdAt?.toISOString() ?? null,
+    paid_at: payout.paidAt?.toISOString() ?? null,
     ...extra,
   };
 }
