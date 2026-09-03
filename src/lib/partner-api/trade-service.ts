@@ -22,6 +22,11 @@ import {
   type PartnerCurrency,
 } from '@/lib/partner-api/currency';
 import {
+  normalizePartnerBonusRatePercent,
+  partnerBonusCents,
+  partnerMerchantPriceCents,
+} from '@/lib/partner-api/merchant-price';
+import {
   partnerExtraFromSkinplaceProvider,
   skinplaceErrorFields,
 } from '@/lib/skinplace-instant-inventory';
@@ -403,8 +408,14 @@ export async function estimatePartnerItems(
         fees: { cashout: number; network: number };
         net_cents: number;
         vip_bonus_cents: number;
+        bonus_rate_percent: number;
         currency: PartnerCurrency;
-        items: Array<{ asset_id: string; market_hash_name: string; price_cents: number }>;
+        items: Array<{
+          asset_id: string;
+          market_hash_name: string;
+          price_cents: number;
+          merchant_price_cents: number;
+        }>;
       };
     }
   | { ok: false; error: string; code: string; status: number; extra?: Record<string, unknown> }
@@ -438,7 +449,8 @@ export async function estimatePartnerItems(
   const gross = Array.from(verification.items.values()).reduce((s, i) => s + i.price_centimes, 0);
   const cashoutFeeRate = await getCashoutFeeRate();
   const ledger = computeTradeLedgerFromGross(gross, cashoutFeeRate);
-  const vipBonusCents = Math.round(gross * (user.bonusRatePercent ?? 0) / 100);
+  const bonusRatePercent = normalizePartnerBonusRatePercent(user.bonusRatePercent);
+  const vipBonusCents = partnerBonusCents(gross, bonusRatePercent);
   const fxRate = await getPartnerUsdFxRate(currency);
 
   return {
@@ -451,6 +463,7 @@ export async function estimatePartnerItems(
       },
       net_cents: applyUsdCentsToCurrency(ledger.netCents + vipBonusCents, fxRate),
       vip_bonus_cents: applyUsdCentsToCurrency(vipBonusCents, fxRate),
+      bonus_rate_percent: bonusRatePercent,
       currency,
       items: assetIds.map((id) => {
         const v = verification.items.get(id)!;
@@ -458,6 +471,10 @@ export async function estimatePartnerItems(
           asset_id: id,
           market_hash_name: v.market_hash_name,
           price_cents: applyUsdCentsToCurrency(v.price_centimes, fxRate),
+          merchant_price_cents: applyUsdCentsToCurrency(
+            partnerMerchantPriceCents(v.price_centimes, bonusRatePercent),
+            fxRate
+          ),
         };
       }),
     },

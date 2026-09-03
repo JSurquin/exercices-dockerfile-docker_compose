@@ -269,6 +269,7 @@ export const partnerResponseExamples = {
     "accepted_terms_at": "2026-01-15T17:28:52.851Z",
     "trade_link": "https://steamcommunity.com/tradeoffer/new/?partner=...&token=...",
     "user_tag": "MERCHANT",
+    "bonus_rate_percent": 1,
     "account_frozen": false,
     "created_at": "2026-01-15T17:28:52.737Z"
   }
@@ -280,9 +281,10 @@ export const partnerResponseExamples = {
     "fees": { "cashout": 0, "network": 0 },
     "net_cents": 107313,
     "vip_bonus_cents": 1063,
+    "bonus_rate_percent": 1,
     "currency": "EUR",
     "items": [
-      { "asset_id": "123", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 106250 }
+      { "asset_id": "123", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 106250, "merchant_price_cents": 107313 }
     ]
   }
 }`,
@@ -354,11 +356,13 @@ export const partnerResponseExamples = {
   "data": {
     "steam_id": "76561198012345678",
     "currency": "EUR",
+    "bonus_rate_percent": 1,
     "items": [
-      { "asset_id": "12345678901234567", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 106250, "icon_url": null, "exterior": "Field-Tested", "stat_trak": false, "rarity": "Classified" }
+      { "asset_id": "12345678901234567", "market_hash_name": "AK-47 | Redline (FT)", "price_cents": 106250, "merchant_price_cents": 107313, "icon_url": null, "exterior": "Field-Tested", "stat_trak": false, "rarity": "Classified" }
     ],
     "total_items": 1,
-    "total_value_cents": 106250
+    "total_value_cents": 106250,
+    "total_merchant_value_cents": 107313
   }
 }`,
   createTrade: `{

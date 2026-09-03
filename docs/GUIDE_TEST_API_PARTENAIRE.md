@@ -157,7 +157,8 @@ curl -s "$BASE/api/v1/partner/inventory?trade_url=https%3A%2F%2Fsteamcommunity.c
 ```
 
 Liste les skins rachetables (même source que la page Vendre), pas tout l’inventaire Steam.  
-Les items lockés / overstock / non rachetables sont omis. Un tableau vide avec `success: true` signifie « aucun item vendable », pas une erreur.
+Les items lockés / overstock / non rachetables sont omis. Un tableau vide avec `success: true` signifie « aucun item vendable », pas une erreur.  
+Chaque item a `price_cents` (prix regular) et `merchant_price_cents` (regular + bonus merchant/VIP du compte). `bonus_rate_percent` et `total_merchant_value_cents` sont aussi renvoyés.
 
 ### 6.4 Estimation
 
@@ -170,7 +171,7 @@ curl -s -X POST "$BASE/api/v1/partner/estimate" \
   -d '{"asset_ids":["REMPLACER_ASSET_ID"],"trade_url":"https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh"}'
 ```
 
-Attendu : `gross_cents`, `fees`, `net_cents`, `vip_bonus_cents`, `items`.
+Attendu : `gross_cents`, `fees`, `net_cents`, `vip_bonus_cents`, `bonus_rate_percent`, `items` (`price_cents` regular + `merchant_price_cents`).
 
 ### 6.5 Lister les ventes
 

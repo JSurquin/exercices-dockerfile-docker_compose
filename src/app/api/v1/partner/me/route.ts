@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { prisma } from '~/prisma/prisma';
 import { withPartnerApi } from '@/lib/partner-api/handler';
 import { partnerSuccess, partnerError, mapKycStatus } from '@/lib/partner-api/response';
+import { normalizePartnerBonusRatePercent } from '@/lib/partner-api/merchant-price';
 import { withPartnerTrace } from '@/lib/partner-api/trace';
 
 export async function GET(request: NextRequest) {
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
         acceptedTermsAt: true,
         tradeLink: true,
         userTag: true,
+        bonusRatePercent: true,
         accountFrozen: true,
         createdAt: true,
       },
@@ -34,6 +36,7 @@ export async function GET(request: NextRequest) {
       accepted_terms_at: user.acceptedTermsAt?.toISOString() ?? null,
       trade_link: user.tradeLink,
       user_tag: user.userTag,
+      bonus_rate_percent: normalizePartnerBonusRatePercent(user.bonusRatePercent),
       account_frozen: user.accountFrozen,
       created_at: user.createdAt.toISOString(),
     });

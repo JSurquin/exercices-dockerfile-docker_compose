@@ -112,9 +112,9 @@ const fr: PartnerDocsCopy = {
     'RATE_LIMITED peut inclure retry_after_seconds. KYC_REQUIRED peut inclure requires_kyc: true. API_ERROR peut inclure provider_status et provider_error.',
   endpoints: {
     me: {
-      description: 'Compte MoonSkin lié à la clé : Steam, KYC, Trade Link, gel du compte.',
+      description: 'Compte MoonSkin lié à la clé : Steam, KYC, Trade Link, gel du compte, taux de bonus merchant/VIP.',
       response:
-        '{ id, steam_id, steam_username, kyc_status, accepted_terms_at, trade_link, user_tag, account_frozen, created_at }',
+        '{ id, steam_id, steam_username, kyc_status, accepted_terms_at, trade_link, user_tag, bonus_rate_percent, account_frozen, created_at }',
     },
     balance: {
       description: 'Soldes en centimes : total, en attente, gelé, disponible.',
@@ -122,14 +122,15 @@ const fr: PartnerDocsCopy = {
     },
     inventory: {
       description:
-        'Skins CS2 rachetables (même source que la page Vendre). Passez ?trade_url= (URL encodée) pour viser un compte Steam sans passer par Paramètres ; sinon le Trade Link enregistré est utilisé. Les items lockés / non rachetables sont omis. Un tableau vide avec success: true signifie « rien à vendre », pas une erreur. Prix source en USD. ?currency=USD|EUR|CNY (défaut USD) convertit les price_cents à chaque requête — changer la devise change les cents.',
+        'Skins CS2 rachetables (même source que la page Vendre). Passez ?trade_url= (URL encodée) pour viser un compte Steam sans passer par Paramètres ; sinon le Trade Link enregistré est utilisé. Les items lockés / non rachetables sont omis. Un tableau vide avec success: true signifie « rien à vendre », pas une erreur. Prix source en USD. ?currency=USD|EUR|CNY (défaut USD) convertit les cents à chaque requête. price_cents = prix regular (tarif public). merchant_price_cents = regular + bonus du compte lié (bonus_rate_percent). Sans bonus les deux sont égaux. Pour figer un devis sur POST /trades, passez price_cents (pas merchant_price_cents).',
       response:
-        '{ steam_id, currency, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
+        '{ steam_id, currency, bonus_rate_percent, items: [{ asset_id, market_hash_name, price_cents, merchant_price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents, total_merchant_value_cents }',
     },
     estimate: {
       description:
-        'Estimation brut, bonus VIP et net. trade_url optionnel : même lien que pour l’inventaire / la vente. currency optionnel (USD, EUR, CNY ; défaut USD), même unité que GET /inventory. Les frais cashout/réseau de la vente sont 0 ; les frais plateforme s’appliquent au payout. 1 à 50 asset_id, sans doublon.',
-      response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, currency, items }',
+        'Estimation brut, bonus merchant/VIP et net. trade_url optionnel : même lien que pour l’inventaire / la vente. currency optionnel (USD, EUR, CNY ; défaut USD), même unité que GET /inventory. Les frais cashout/réseau de la vente sont 0 ; les frais plateforme s’appliquent au payout. 1 à 50 asset_id, sans doublon. Sur chaque item : price_cents (regular) et merchant_price_cents (regular + bonus). vip_bonus_cents est le bonus arrondi sur le total (c’est ce qui est crédité). bonus_rate_percent est le taux du compte.',
+      response:
+        '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, bonus_rate_percent, currency, items: [{ asset_id, market_hash_name, price_cents, merchant_price_cents }] }',
     },
     createTrade: {
       description:
@@ -239,9 +240,9 @@ const en: PartnerDocsCopy = {
     'RATE_LIMITED may include retry_after_seconds. KYC_REQUIRED may include requires_kyc: true. API_ERROR may include provider_status and provider_error.',
   endpoints: {
     me: {
-      description: 'MoonSkin account linked to the API key: Steam, KYC, Trade Link, freeze status.',
+      description: 'MoonSkin account linked to the API key: Steam, KYC, Trade Link, freeze status, merchant/VIP bonus rate.',
       response:
-        '{ id, steam_id, steam_username, kyc_status, accepted_terms_at, trade_link, user_tag, account_frozen, created_at }',
+        '{ id, steam_id, steam_username, kyc_status, accepted_terms_at, trade_link, user_tag, bonus_rate_percent, account_frozen, created_at }',
     },
     balance: {
       description: 'Balances in cents: total, pending, frozen, available.',
@@ -249,14 +250,15 @@ const en: PartnerDocsCopy = {
     },
     inventory: {
       description:
-        'Sellable CS2 items (same source as the Sell page). Pass ?trade_url= (URL-encoded) to target a Steam account without using Settings; otherwise the saved Trade Link is used. Locked / unsellable items are omitted. An empty array with success: true means nothing is sellable, not an error. Source prices are USD. ?currency=USD|EUR|CNY (default USD) converts price_cents on every request — changing currency changes the cents.',
+        'Sellable CS2 items (same source as the Sell page). Pass ?trade_url= (URL-encoded) to target a Steam account without using Settings; otherwise the saved Trade Link is used. Locked / unsellable items are omitted. An empty array with success: true means nothing is sellable, not an error. Source prices are USD. ?currency=USD|EUR|CNY (default USD) converts cents on every request. price_cents is the regular public buy price. merchant_price_cents is regular plus the linked account bonus (bonus_rate_percent). Without a bonus they are equal. When locking a quote on POST /trades, send price_cents — not merchant_price_cents.',
       response:
-        '{ steam_id, currency, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
+        '{ steam_id, currency, bonus_rate_percent, items: [{ asset_id, market_hash_name, price_cents, merchant_price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents, total_merchant_value_cents }',
     },
     estimate: {
       description:
-        'Estimate gross, VIP bonus and net. Optional trade_url: same link as inventory / sale. Optional currency (USD, EUR, CNY; default USD), same unit as GET /inventory. Sale cashout/network fees are 0; platform fees apply at payout. 1–50 unique asset_ids.',
-      response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, currency, items }',
+        'Estimate gross, merchant/VIP bonus and net. Optional trade_url: same link as inventory / sale. Optional currency (USD, EUR, CNY; default USD), same unit as GET /inventory. Sale cashout/network fees are 0; platform fees apply at payout. 1–50 unique asset_ids. Each item has price_cents (regular) and merchant_price_cents (regular + bonus). vip_bonus_cents is the bonus rounded on the total (what is credited). bonus_rate_percent is the account rate.',
+      response:
+        '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, bonus_rate_percent, currency, items: [{ asset_id, market_hash_name, price_cents, merchant_price_cents }] }',
     },
     createTrade: {
       description:
@@ -362,9 +364,9 @@ const cn: PartnerDocsCopy = {
     'RATE_LIMITED 可能包含 retry_after_seconds。KYC_REQUIRED 可能包含 requires_kyc: true。API_ERROR 可能包含 provider_status 和 provider_error。',
   endpoints: {
     me: {
-      description: '密钥绑定的 MoonSkin 账户：Steam、KYC、Trade Link、冻结状态。',
+      description: '密钥绑定的 MoonSkin 账户：Steam、KYC、Trade Link、冻结状态、商家/VIP 奖励比率。',
       response:
-        '{ id, steam_id, steam_username, kyc_status, accepted_terms_at, trade_link, user_tag, account_frozen, created_at }',
+        '{ id, steam_id, steam_username, kyc_status, accepted_terms_at, trade_link, user_tag, bonus_rate_percent, account_frozen, created_at }',
     },
     balance: {
       description: '以分为单位的余额：总额、待入账、冻结、可用。',
@@ -372,14 +374,15 @@ const cn: PartnerDocsCopy = {
     },
     inventory: {
       description:
-        '可回购的 CS2 皮肤（与「出售」页同一数据源）。传入 ?trade_url=（需 URL 编码）可指定 Steam 账户，无需改设置；省略时使用已保存的 Trade Link。锁定/不可售物品会被省略。success: true 且空数组表示没有可售物品，不是错误。源价格为 USD。?currency=USD|EUR|CNY（默认 USD）会在每次请求转换 price_cents — 更换货币会改变分值。',
+        '可回购的 CS2 皮肤（与「出售」页同一数据源）。传入 ?trade_url=（需 URL 编码）可指定 Steam 账户，无需改设置；省略时使用已保存的 Trade Link。锁定/不可售物品会被省略。success: true 且空数组表示没有可售物品，不是错误。源价格为 USD。?currency=USD|EUR|CNY（默认 USD）会在每次请求转换分值。price_cents 为 regular（公开）价。merchant_price_cents 为 regular 加上绑定账户奖励（bonus_rate_percent）。无奖励时两者相同。在 POST /trades 锁定报价时请传 price_cents，不要传 merchant_price_cents。',
       response:
-        '{ steam_id, currency, items: [{ asset_id, market_hash_name, price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents }',
+        '{ steam_id, currency, bonus_rate_percent, items: [{ asset_id, market_hash_name, price_cents, merchant_price_cents, icon_url, exterior, stat_trak, rarity }], total_items, total_value_cents, total_merchant_value_cents }',
     },
     estimate: {
       description:
-        '估算毛额、VIP 加成和净额。可选 trade_url：与库存/销售使用同一链接。可选 currency（USD、EUR、CNY；默认 USD），单位与 GET /inventory 相同。销售的 cashout/网络费用为 0；平台费用在提现时收取。1–50 个不重复的 asset_id。',
-      response: '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, currency, items }',
+        '估算毛额、商家/VIP 加成和净额。可选 trade_url：与库存/销售使用同一链接。可选 currency（USD、EUR、CNY；默认 USD），单位与 GET /inventory 相同。销售的 cashout/网络费用为 0；平台费用在提现时收取。1–50 个不重复的 asset_id。每个物品含 price_cents（regular）和 merchant_price_cents（regular + 奖励）。vip_bonus_cents 是按总额四舍五入的奖励（实际入账）。bonus_rate_percent 为账户比率。',
+      response:
+        '{ gross_cents, fees: { cashout, network }, net_cents, vip_bonus_cents, bonus_rate_percent, currency, items: [{ asset_id, market_hash_name, price_cents, merchant_price_cents }] }',
     },
     createTrade: {
       description:

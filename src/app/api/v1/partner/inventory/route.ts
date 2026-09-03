@@ -9,6 +9,7 @@ import {
 import { resolvePartnerOperatingSteamId } from '@/lib/partner-api/trade-url-validation';
 import { parseOptionalPartnerTradeUrl, parsePartnerCurrencyParam } from '@/lib/partner-api/validation';
 import { convertPartnerInventoryCurrency } from '@/lib/partner-api/currency';
+import { withPartnerMerchantPrices } from '@/lib/partner-api/merchant-price';
 import { partnerTrace, withPartnerTrace } from '@/lib/partner-api/trace';
 import { prisma } from '~/prisma/prisma';
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
         partnerTrace('inventory.user.lookup', { userId: ctx.userId, hasTradeUrl: Boolean(tradeUrl.data) });
         const user = await prisma.user.findUnique({
           where: { id: ctx.userId },
-          select: { steamId: true, tradeLink: true },
+          select: { steamId: true, tradeLink: true, bonusRatePercent: true },
         });
 
         const resolved = resolvePartnerOperatingSteamId(user, tradeUrl.data);
@@ -56,7 +57,10 @@ export async function GET(request: NextRequest) {
           currency: currency.data,
         });
         const inventory = await convertPartnerInventoryCurrency(
-          formatInventoryForPartner(resolved.steamId, { inventory: sellable }),
+          withPartnerMerchantPrices(
+            formatInventoryForPartner(resolved.steamId, { inventory: sellable }),
+            user?.bonusRatePercent
+          ),
           currency.data
         );
         return partnerSuccess(inventory);

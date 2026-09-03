@@ -263,6 +263,7 @@ describe('partner-api JSON contract', () => {
     expect(docs).toMatch(/"gross_cents"/);
     expect(docs).toMatch(/"payment_reference"/);
     expect(docs).toMatch(/"steam_trade_offer_id"/);
+    expect(docs).toMatch(/"merchant_price_cents"/);
     expect(docs).not.toMatch(/brut_centimes|statut|reference_paiement|"réseau"/);
     expect(partnerResponseExamples.webhook).toContain('trade.status_changed:TRADE-123:available:clxabc');
     expect(partnerWebhookGuide).toMatch(/deterministic/);
@@ -347,8 +348,12 @@ describe('partner-api JSON contract', () => {
       expect(copy.endpoints.createTrade.description.length).toBeGreaterThan(20);
       expect(copy.endpoints.inventory.description).toMatch(/trade_url/i);
       expect(copy.endpoints.inventory.description).toMatch(/currency/i);
+      expect(copy.endpoints.inventory.description).toMatch(/merchant_price_cents/);
+      expect(copy.endpoints.inventory.response).toMatch(/merchant_price_cents/);
       expect(copy.endpoints.estimate.description).toMatch(/trade_url/i);
       expect(copy.endpoints.estimate.description).toMatch(/currency/i);
+      expect(copy.endpoints.estimate.response).toMatch(/merchant_price_cents/);
+      expect(copy.endpoints.me.response).toMatch(/bonus_rate_percent/);
       expect(copy.endpoints.createTrade.description).toMatch(/trade_url/i);
       expect(copy.endpoints.createTrade.description).toMatch(/price_cents/i);
       expect(copy.endpoints.createTrade.description).toMatch(/steam_trade_offer_id/);
@@ -640,6 +645,24 @@ describe('partner inventory currency', () => {
     expect(converted.currency).toBe('USD');
     expect(converted.items[0].price_cents).toBe(1250);
     expect(converted.total_value_cents).toBe(3250);
+  });
+
+  it('converts merchant_price_cents with the same FX rate as price_cents', async () => {
+    const converted = await convertPartnerInventoryCurrency(
+      {
+        steam_id: '1',
+        items: [
+          { price_cents: 1250, merchant_price_cents: 1275 },
+          { price_cents: 2000, merchant_price_cents: 2040 },
+        ],
+        total_value_cents: 3250,
+        total_merchant_value_cents: 3315,
+      },
+      'USD'
+    );
+    expect(converted.currency).toBe('USD');
+    expect(converted.items[0].merchant_price_cents).toBe(1275);
+    expect(converted.total_merchant_value_cents).toBe(3315);
   });
 });
 

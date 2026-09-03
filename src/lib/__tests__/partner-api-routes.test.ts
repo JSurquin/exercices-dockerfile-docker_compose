@@ -139,6 +139,7 @@ describe('partner API HTTP routes', () => {
       acceptedTermsAt: new Date('2026-01-01'),
       tradeLink: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc',
       userTag: null,
+      bonusRatePercent: 0,
       accountFrozen: false,
       createdAt: new Date('2025-01-01'),
     });
@@ -151,6 +152,7 @@ describe('partner API HTTP routes', () => {
     expect(body.data.steam_username).toBe('Player');
     expect(body.data.kyc_status).toBe('verified');
     expect(body.data).not.toHaveProperty('role');
+    expect(body.data.bonus_rate_percent).toBe(0);
   });
 
   it('GET /inventory returns sellable Skinplace items and skips locked skins', async () => {
@@ -195,9 +197,12 @@ describe('partner API HTTP routes', () => {
         asset_id: 'sellable-1',
         market_hash_name: 'AK-47 | Redline (FT)',
         price_cents: 1250,
+        merchant_price_cents: 1250,
       }),
     ]);
     expect(body.data.currency).toBe('USD');
+    expect(body.data.bonus_rate_percent).toBe(0);
+    expect(body.data.total_merchant_value_cents).toBe(1250);
   });
 
   it('GET /inventory converts cents when currency differs from the USD source', async () => {
@@ -227,7 +232,9 @@ describe('partner API HTTP routes', () => {
     expect(eur.status).toBe(200);
     expect(eurBody.data.currency).toBe('EUR');
     expect(eurBody.data.items[0].price_cents).toBe(1063);
+    expect(eurBody.data.items[0].merchant_price_cents).toBe(1063);
     expect(eurBody.data.total_value_cents).toBe(1063);
+    expect(eurBody.data.total_merchant_value_cents).toBe(1063);
 
     const usd = await getInventory(
       new NextRequest('http://localhost/api/v1/partner/inventory?currency=usd')
@@ -235,6 +242,47 @@ describe('partner API HTTP routes', () => {
     const usdBody = await usd.json();
     expect(usdBody.data.currency).toBe('USD');
     expect(usdBody.data.items[0].price_cents).toBe(1250);
+  });
+
+  it('GET /inventory includes merchant_price_cents from the account bonus rate', async () => {
+    mockAuth(['read']);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      steamId: '76561198012345678',
+      bonusRatePercent: 2,
+    });
+    (fetchSkinplaceInstantInventory as jest.Mock).mockResolvedValue({
+      ok: true,
+      inventory: [
+        {
+          assetid: 'sellable-1',
+          market_hash_name: 'AK-47 | Redline (FT)',
+          price: 12.5,
+          icon_url: 'abc',
+          exterior: 'Field-Tested',
+          is_stattrak: 0,
+          is_souvenir: 0,
+          rarity: 'Classified',
+          untouchable: false,
+        },
+      ],
+    });
+
+    const usd = await getInventory(new NextRequest('http://localhost/api/v1/partner/inventory'));
+    const usdBody = await usd.json();
+    expect(usd.status).toBe(200);
+    expect(usdBody.data.bonus_rate_percent).toBe(2);
+    expect(usdBody.data.items[0].price_cents).toBe(1250);
+    expect(usdBody.data.items[0].merchant_price_cents).toBe(1275);
+    expect(usdBody.data.total_value_cents).toBe(1250);
+    expect(usdBody.data.total_merchant_value_cents).toBe(1275);
+
+    const eur = await getInventory(
+      new NextRequest('http://localhost/api/v1/partner/inventory?currency=EUR')
+    );
+    const eurBody = await eur.json();
+    expect(eurBody.data.items[0].price_cents).toBe(1063);
+    expect(eurBody.data.items[0].merchant_price_cents).toBe(1084);
+    expect(eurBody.data.total_merchant_value_cents).toBe(1084);
   });
 
   it('GET /inventory rejects an unsupported currency instead of reusing a previous quote', async () => {
@@ -530,7 +578,8 @@ describe('partner API HTTP routes', () => {
         fees: { cashout: 5, network: 0 },
         net_cents: 995,
         vip_bonus_cents: 0,
-        items: [{ asset_id: '1', market_hash_name: 'AK', price_cents: 1000 }],
+        bonus_rate_percent: 0,
+        items: [{ asset_id: '1', market_hash_name: 'AK', price_cents: 1000, merchant_price_cents: 1000 }],
       },
     });
 
@@ -558,7 +607,8 @@ describe('partner API HTTP routes', () => {
         fees: { cashout: 5, network: 0 },
         net_cents: 995,
         vip_bonus_cents: 0,
-        items: [{ asset_id: '1', market_hash_name: 'AK', price_cents: 1000 }],
+        bonus_rate_percent: 0,
+        items: [{ asset_id: '1', market_hash_name: 'AK', price_cents: 1000, merchant_price_cents: 1000 }],
       },
     });
     const tradeUrl = 'https://steamcommunity.com/tradeoffer/new/?partner=123456789&token=AbCdEfGh';
