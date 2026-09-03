@@ -268,6 +268,8 @@ model Trade {
   tradeUrl           String?
   expiresAt          DateTime?
   skinplaceToken     String?
+  /// Identifiant Steam de l’offre d’échange (peut rester null tant que Steam n’a pas créé l’offre)
+  steamTradeOfferId  String?
   affiliateReferrals AffiliateReferral[]
   affiliateCommissions AffiliateCommission[]
   payouts            Payout[]

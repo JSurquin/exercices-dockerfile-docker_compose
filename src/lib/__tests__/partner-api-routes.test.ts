@@ -117,6 +117,7 @@ const sampleDbTrade = {
   ticketId: 'T-1',
   steamId: '76561198012345678',
   tradeUrl: null,
+  steamTradeOfferId: null,
   tradeAcceptedAt: null,
   availableAt: null,
   createdAt: new Date('2026-07-28T09:00:00Z'),
@@ -332,6 +333,7 @@ describe('partner API HTTP routes', () => {
     expect(body.data.trades[0].status).toBe('created');
     expect(body.data.trades[0].trade_id).toBe('TRADE-1');
     expect(body.data.trades[0].id).toBe('TRADE-1');
+    expect(body.data.trades[0].steam_trade_offer_id).toBeNull();
     expect(body.data.trades[0]).not.toHaveProperty('statut');
     expect(body.data.pagination).toEqual({ limit: 1, offset: 0, total: 42 });
   });
@@ -353,6 +355,7 @@ describe('partner API HTTP routes', () => {
       ...sampleDbTrade,
       status: 'IN_TRADE_HOLD',
       ticketId: 'TICK-1',
+      steamTradeOfferId: '4123456789',
       tradeAcceptedAt: new Date('2026-07-28T10:00:00Z'),
       availableAt: new Date('2026-08-04T10:00:00Z'),
       items: [
@@ -379,6 +382,7 @@ describe('partner API HTTP routes', () => {
     expect(body.data.id).toBe('TRADE-1');
     expect(body.data.status).toBe('in_trade_hold');
     expect(body.data.payment_reference).toBe('TICK-1');
+    expect(body.data.steam_trade_offer_id).toBe('4123456789');
     expect(body.data.gross_cents).toBe(1000);
     expect(body.data.items[0].price_cents).toBe(1000);
     expect(body.data).not.toHaveProperty('reference_paiement');
@@ -412,6 +416,7 @@ describe('partner API HTTP routes', () => {
         networkFees: 0,
         expiresAt: new Date('2026-08-04T00:00:00Z'),
         availableAt: null,
+        steamTradeOfferId: '4123456789',
       },
     });
 
@@ -431,6 +436,7 @@ describe('partner API HTTP routes', () => {
     expect(createdBody.data.status).toBe('created');
     expect(createdBody.data.gross_cents).toBe(2000);
     expect(createdBody.data.id).toBe('TRADE-9');
+    expect(createdBody.data.steam_trade_offer_id).toBe('4123456789');
 
     (createPartnerTrade as jest.Mock).mockResolvedValueOnce({
       ok: false,

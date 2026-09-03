@@ -133,9 +133,9 @@ const fr: PartnerDocsCopy = {
     },
     createTrade: {
       description:
-        'Crée une vraie vente Steam : le bot MoonSkin envoie une offre d’échange. trade_url (obligatoire) est le Trade Link du compte Steam visé, à la volée — pas besoin de l’enregistrer sur le site. Scope trade requis. Réponse HTTP 201. Minimum 100 centimes. price_cents optionnel (par item et/ou total) pour refuser la vente si le prix a changé depuis le chargement de l’inventaire : VALIDATION_ERROR 409 avec expected_price_cents et actual_price_cents. Passez currency (USD, EUR, CNY) si le devis vient de GET /inventory?currency=… — les montants renvoyés à la création restent en USD.',
+        'Crée une vraie vente Steam : le bot MoonSkin envoie une offre d’échange. trade_url (obligatoire) est le Trade Link du compte Steam visé, à la volée — pas besoin de l’enregistrer sur le site. Scope trade requis. Réponse HTTP 201. Minimum 100 centimes. price_cents optionnel (par item et/ou total) pour refuser la vente si le prix a changé depuis le chargement de l’inventaire : VALIDATION_ERROR 409 avec expected_price_cents et actual_price_cents. Passez currency (USD, EUR, CNY) si le devis vient de GET /inventory?currency=… — les montants renvoyés à la création restent en USD. steam_trade_offer_id (nullable) est l’identifiant Steam de l’offre : ouvrez https://steamcommunity.com/tradeoffer/{id}. S’il est null à la création, il est renseigné ensuite sur GET /trades/{id} et les webhooks trade.*',
       response:
-        '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
+        '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference, steam_trade_offer_id }',
     },
     listTrades: {
       description: 'Liste paginée des ventes du compte (plus récentes d’abord).',
@@ -144,7 +144,7 @@ const fr: PartnerDocsCopy = {
     getTrade: {
       description: 'Détail complet d’une vente, y compris les items. À utiliser en secours si un webhook a été manqué.',
       response:
-        '{ id, trade_id, status, gross_cents, fees, net_cents, ticket_id, steam_id, trade_link, available_at, payment_reference, items, ... }',
+        '{ id, trade_id, status, gross_cents, fees, net_cents, ticket_id, steam_id, trade_link, steam_trade_offer_id, available_at, payment_reference, items, ... }',
     },
     listPayouts: {
       description:
@@ -260,9 +260,9 @@ const en: PartnerDocsCopy = {
     },
     createTrade: {
       description:
-        'Creates a real Steam sale: the MoonSkin bot sends a trade offer. Required trade_url is the target Steam Trade Link, passed per request — no need to save it in Settings. Requires trade scope. HTTP 201. Minimum 100 cents. Optional price_cents (per item and/or total) rejects the sale if the live price changed since inventory was loaded: VALIDATION_ERROR 409 with expected_price_cents and actual_price_cents. Pass currency (USD, EUR, CNY) when the quote comes from GET /inventory?currency=… — created sale amounts stay in USD.',
+        'Creates a real Steam sale: the MoonSkin bot sends a trade offer. Required trade_url is the target Steam Trade Link, passed per request — no need to save it in Settings. Requires trade scope. HTTP 201. Minimum 100 cents. Optional price_cents (per item and/or total) rejects the sale if the live price changed since inventory was loaded: VALIDATION_ERROR 409 with expected_price_cents and actual_price_cents. Pass currency (USD, EUR, CNY) when the quote comes from GET /inventory?currency=… — created sale amounts stay in USD. steam_trade_offer_id (nullable) is the Steam trade offer id: open https://steamcommunity.com/tradeoffer/{id}. If it is null at creation, it is filled later on GET /trades/{id} and trade.* webhooks.',
       response:
-        '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
+        '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference, steam_trade_offer_id }',
     },
     listTrades: {
       description: 'Paginated list of the account trades (newest first).',
@@ -271,7 +271,7 @@ const en: PartnerDocsCopy = {
     getTrade: {
       description: 'Full trade detail including items. Use as a webhook fallback if a notification was missed.',
       response:
-        '{ id, trade_id, status, gross_cents, fees, net_cents, ticket_id, steam_id, trade_link, available_at, payment_reference, items, ... }',
+        '{ id, trade_id, status, gross_cents, fees, net_cents, ticket_id, steam_id, trade_link, steam_trade_offer_id, available_at, payment_reference, items, ... }',
     },
     listPayouts: {
       description:
@@ -383,9 +383,9 @@ const cn: PartnerDocsCopy = {
     },
     createTrade: {
       description:
-        '创建真实的 Steam 销售：MoonSkin 机器人会发送报价。必填 trade_url 是目标 Steam Trade Link，每次请求传入，无需先保存到网站。需要 trade scope。HTTP 201。最低 100 分。可选 price_cents（按物品和/或总额）用于在库存加载后价格变动时拒绝销售：VALIDATION_ERROR 409，包含 expected_price_cents 和 actual_price_cents。若报价来自 GET /inventory?currency=…，请传入相同的 currency（USD、EUR、CNY）— 创建销售返回的金额仍为 USD。',
+        '创建真实的 Steam 销售：MoonSkin 机器人会发送报价。必填 trade_url 是目标 Steam Trade Link，每次请求传入，无需先保存到网站。需要 trade scope。HTTP 201。最低 100 分。可选 price_cents（按物品和/或总额）用于在库存加载后价格变动时拒绝销售：VALIDATION_ERROR 409，包含 expected_price_cents 和 actual_price_cents。若报价来自 GET /inventory?currency=…，请传入相同的 currency（USD、EUR、CNY）— 创建销售返回的金额仍为 USD。steam_trade_offer_id（可为 null）是 Steam 报价 ID，用于打开 https://steamcommunity.com/tradeoffer/{id}。若创建时为 null，稍后会在 GET /trades/{id} 和 trade.* webhook 中补全。',
       response:
-        '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference }',
+        '{ id, trade_id, ticket_id, status, gross_cents, net_cents, fees, vip_bonus_cents, expires_at, available_at, payment_reference, steam_trade_offer_id }',
     },
     listTrades: {
       description: '账户销售的分页列表（最新在前）。',
@@ -394,7 +394,7 @@ const cn: PartnerDocsCopy = {
     getTrade: {
       description: '销售完整详情（含物品）。若漏收 webhook，可用此接口作为备用。',
       response:
-        '{ id, trade_id, status, gross_cents, fees, net_cents, ticket_id, steam_id, trade_link, available_at, payment_reference, items, ... }',
+        '{ id, trade_id, status, gross_cents, fees, net_cents, ticket_id, steam_id, trade_link, steam_trade_offer_id, available_at, payment_reference, items, ... }',
     },
     listPayouts: {
       description:

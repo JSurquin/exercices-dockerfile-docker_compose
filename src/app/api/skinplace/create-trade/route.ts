@@ -18,6 +18,7 @@ import { resolveUserContactEmail } from '@/lib/user-contact-email';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
 import { verifyAndPriceItems } from '@/lib/skinplace-price-verifier';
+import { extractSteamTradeOfferId } from '@/lib/steam-trade-offer-id';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
 import { notifyAdminsNewTrade } from '@/lib/admin-notification-hooks';
 
@@ -346,7 +347,7 @@ export async function POST(request: NextRequest) {
     }
 
     const steamTrade = skinplaceData.steamtrade;
-    const tradeOfferId = steamTrade?.tradeofferid;
+    const tradeOfferId = extractSteamTradeOfferId(skinplaceData);
     const skinplaceToken = skinplaceData.token;
     const skinplaceStatus = steamTrade?.status || skinplaceData.status || 'pending';
     const botInfo: SkinplaceBotInfo | null = steamTrade?.bot || null;
@@ -402,6 +403,7 @@ export async function POST(request: NextRequest) {
         tradeAcceptedAt,
         ticketId: token,
         skinplaceToken: skinplaceToken || null,
+        steamTradeOfferId: tradeOfferId,
         items: {
           create: itemsData,
         },

@@ -4,6 +4,7 @@ import { skinplaceService } from '@/lib/skinplace';
 import { resolveMoonSkinTradeStatusFromSkinplaceApi } from '@/lib/skinplace-trade-status-resolve';
 import { TradeHooks } from '@/lib/trade-hooks';
 import { logger } from '@/lib/logger';
+import { extractSteamTradeOfferId, persistSteamTradeOfferIdIfMissing } from '@/lib/steam-trade-offer-id';
 
 type TradeSyncRow = {
   id: string;
@@ -71,6 +72,8 @@ export async function syncTradeStatusFromSkinplace(
   if (!payload) {
     return { updated: false, reason: 'no_skinplace_payload' };
   }
+
+  await persistSteamTradeOfferIdIfMissing(trade.id, extractSteamTradeOfferId(payload));
 
   const resolved = resolveMoonSkinTradeStatusFromSkinplaceApi(payload);
   const newStatus = resolved.status;

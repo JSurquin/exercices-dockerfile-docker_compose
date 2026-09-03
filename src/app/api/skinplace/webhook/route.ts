@@ -7,6 +7,7 @@ import { isProductionApp } from '@/lib/env-production';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { skinplaceWebhookPostBodySchema } from '@/lib/validation/schemas/integrations';
 import { logger } from '@/lib/logger';
+import { persistSteamTradeOfferIdIfMissing } from '@/lib/steam-trade-offer-id';
 
 // =============================================================================
 // Skinplace IPN (webhook)
@@ -150,6 +151,8 @@ export async function GET(request: NextRequest) {
       logger.error('[WEBHOOK] Trade not found for IPN');
       return new Response('ok', { status: 200 });
     }
+
+    await persistSteamTradeOfferIdIfMissing(trade.id, tradeOfferId);
 
     logger.info(`[WEBHOOK] Trade found: ${trade.id}, status=${trade.status}`);
 

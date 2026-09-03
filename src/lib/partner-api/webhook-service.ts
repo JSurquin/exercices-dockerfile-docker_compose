@@ -41,6 +41,7 @@ export interface PartnerWebhookPayload {
   net_cents?: number;
   fees?: { cashout: number; network: number };
   payment_reference?: string | null;
+  steam_trade_offer_id?: string | null;
 }
 
 function signPayload(secret: string, timestamp: number, body: string): string {
@@ -353,6 +354,7 @@ export async function notifyTradeStatusChange(
     networkFees: number;
     netCents: number;
     ticketId: string;
+    steamTradeOfferId?: string | null;
   },
   eventType: 'trade.created' | 'trade.status_changed' = 'trade.status_changed'
 ): Promise<void> {
@@ -362,6 +364,7 @@ export async function notifyTradeStatusChange(
     net_cents: trade.netCents,
     fees: formatFees(trade.cashoutFees, trade.networkFees),
     payment_reference: trade.ticketId,
+    steam_trade_offer_id: trade.steamTradeOfferId ?? null,
   });
 }
 

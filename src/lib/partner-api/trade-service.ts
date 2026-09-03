@@ -25,6 +25,7 @@ import {
   partnerExtraFromSkinplaceProvider,
   skinplaceErrorFields,
 } from '@/lib/skinplace-instant-inventory';
+import { extractSteamTradeOfferId } from '@/lib/steam-trade-offer-id';
 
 function secondsUntilNextLocalMidnight(from = new Date()): number {
   const nextMidnight = new Date(from);
@@ -81,6 +82,7 @@ export type CreatePartnerTradeResult =
         expiresAt: Date | null;
         availableAt: Date | null;
         vipBonusCents: number;
+        steamTradeOfferId: string | null;
       };
     }
   | { ok: false; error: string; code: string; status: number; extra?: Record<string, unknown> };
@@ -278,6 +280,7 @@ export async function createPartnerTrade(
   }
 
   const steamTrade = skinplaceData.steamtrade;
+  const steamTradeOfferId = extractSteamTradeOfferId(skinplaceData);
   const skinplaceStatus = steamTrade?.status || skinplaceData.status || 'pending';
   const tradeStatus = mapSkinplaceStatusToTradeStatus(skinplaceStatus);
 
@@ -327,6 +330,7 @@ export async function createPartnerTrade(
         tradeAcceptedAt,
         ticketId: orderId,
         skinplaceToken: skinplaceData.token || null,
+        steamTradeOfferId,
         items: { create: itemsData },
       },
     });
@@ -357,11 +361,16 @@ export async function createPartnerTrade(
       networkFees: trade.networkFees,
       netCents: trade.netCents,
       ticketId: trade.ticketId,
+      steamTradeOfferId: trade.steamTradeOfferId,
     },
     'trade.created'
   );
 
-  logger.info('[PartnerTrade] Trade created', { tradeId: trade.id, userId });
+  logger.info('[PartnerTrade] Trade created', {
+    tradeId: trade.id,
+    userId,
+    steamTradeOfferId: trade.steamTradeOfferId,
+  });
 
   return {
     ok: true,
@@ -376,6 +385,7 @@ export async function createPartnerTrade(
       expiresAt: trade.expiresAt,
       availableAt: trade.availableAt,
       vipBonusCents,
+      steamTradeOfferId: trade.steamTradeOfferId,
     },
   };
 }

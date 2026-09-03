@@ -5,6 +5,7 @@ import { skinplaceService } from '@/lib/skinplace';
 import { resolveMoonSkinTradeStatusFromSkinplaceApi } from '@/lib/skinplace-trade-status-resolve';
 import { TradeHooks } from '@/lib/trade-hooks';
 import { logger } from '@/lib/logger';
+import { extractSteamTradeOfferId, persistSteamTradeOfferIdIfMissing } from '@/lib/steam-trade-offer-id';
 import { requireUserSession } from '@/lib/require-session-user';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
@@ -150,6 +151,10 @@ export async function GET(
 
     if (!skinplacePayload) {
       console.error(`[STATUS] Both strategies failed for trade ${trade.id} — no Skinplace data available`);
+    }
+
+    if (skinplacePayload) {
+      await persistSteamTradeOfferIdIfMissing(trade.id, extractSteamTradeOfferId(skinplacePayload));
     }
 
     const resolved = skinplacePayload

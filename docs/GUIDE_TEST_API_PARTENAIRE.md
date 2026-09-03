@@ -200,7 +200,7 @@ curl -s -X POST "$BASE/api/v1/partner/trades" \
   }'
 ```
 
-Attendu HTTP 201 : `id` / `trade_id`, `status`, `gross_cents`, `net_cents`, `available_at`.
+Attendu HTTP 201 : `id` / `trade_id`, `status`, `gross_cents`, `net_cents`, `available_at`, `steam_trade_offer_id` (nullable).
 
 ### 6.8 Lister les payouts
 

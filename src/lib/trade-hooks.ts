@@ -56,6 +56,7 @@ export class TradeHooks {
           networkFees: true,
           netCents: true,
           ticketId: true,
+          steamTradeOfferId: true,
         },
       });
       if (!tradeForWebhook) return;

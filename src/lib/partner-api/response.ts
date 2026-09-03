@@ -181,6 +181,7 @@ export function formatTradeForPartner(trade: {
   createdAt: Date;
   steamId: string;
   tradeUrl: string | null;
+  steamTradeOfferId?: string | null;
   items?: Array<{
     id: string;
     name: string;
@@ -203,6 +204,7 @@ export function formatTradeForPartner(trade: {
     ticket_id: trade.ticketId,
     steam_id: trade.steamId,
     trade_link: trade.tradeUrl,
+    steam_trade_offer_id: trade.steamTradeOfferId ?? null,
     trade_accepted_at: trade.tradeAcceptedAt?.toISOString() ?? null,
     available_at: trade.availableAt?.toISOString() ?? null,
     payment_reference: trade.ticketId,
@@ -231,6 +233,7 @@ export function formatCreatedTradeForPartner(trade: {
   vipBonusCents?: number;
   expiresAt: Date | null;
   availableAt: Date | null;
+  steamTradeOfferId?: string | null;
 }) {
   return {
     id: trade.id,
@@ -244,6 +247,7 @@ export function formatCreatedTradeForPartner(trade: {
     expires_at: trade.expiresAt?.toISOString() ?? null,
     available_at: trade.availableAt?.toISOString() ?? null,
     payment_reference: trade.ticketId,
+    steam_trade_offer_id: trade.steamTradeOfferId ?? null,
   };
 }
 

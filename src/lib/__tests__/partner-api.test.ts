@@ -75,6 +75,7 @@ function sampleTrade() {
     ticketId: 'TICK-1',
     steamId: '76561198012345678',
     tradeUrl: 'https://steamcommunity.com/tradeoffer/new/?partner=1&token=abc',
+    steamTradeOfferId: '7654321098',
     tradeAcceptedAt: null,
     availableAt: null,
     createdAt: new Date('2026-07-28T12:00:00.000Z'),
@@ -251,6 +252,7 @@ describe('partner-api JSON contract', () => {
     expect(payload.fees).toEqual({ cashout: 625, network: 4375 });
     expect(payload.payment_reference).toBe('TICK-1');
     expect(payload.trade_id).toBe(payload.id);
+    expect(payload.steam_trade_offer_id).toBe('7654321098');
     expect(payload.items[0].price_cents).toBe(125000);
     expect(json).not.toMatch(/statut|brut_centimes|net_centimes|prix_centimes|réseau|disponible_le|reference_paiement/);
     expect(json).not.toMatch(/[éèàùôî]/);
@@ -260,6 +262,7 @@ describe('partner-api JSON contract', () => {
     const docs = `${partnerResponseExamples.estimate}${partnerResponseExamples.webhook}${partnerResponseExamples.tradeDetail}${partnerWebhookGuide}`;
     expect(docs).toMatch(/"gross_cents"/);
     expect(docs).toMatch(/"payment_reference"/);
+    expect(docs).toMatch(/"steam_trade_offer_id"/);
     expect(docs).not.toMatch(/brut_centimes|statut|reference_paiement|"réseau"/);
     expect(partnerResponseExamples.webhook).toContain('trade.status_changed:TRADE-123:available:clxabc');
     expect(partnerWebhookGuide).toMatch(/deterministic/);
@@ -348,6 +351,8 @@ describe('partner-api JSON contract', () => {
       expect(copy.endpoints.estimate.description).toMatch(/currency/i);
       expect(copy.endpoints.createTrade.description).toMatch(/trade_url/i);
       expect(copy.endpoints.createTrade.description).toMatch(/price_cents/i);
+      expect(copy.endpoints.createTrade.description).toMatch(/steam_trade_offer_id/);
+      expect(copy.endpoints.createTrade.response).toMatch(/steam_trade_offer_id/);
       expect(copy.errorCodes.VALIDATION_ERROR).toMatch(/price_cents/i);
       expect(copy.errorCodes.API_ERROR).toMatch(/provider_status/);
       expect(copy.errorCodes.KYC_REQUIRED).toMatch(/requires_kyc/);
@@ -381,6 +386,24 @@ describe('partner-api JSON contract', () => {
     expect(payload.fees.network).toBe(0);
     expect(payload.payment_reference).toBe('TICK-1');
     expect(payload.vip_bonus_cents).toBe(0);
+    expect(payload.steam_trade_offer_id).toBeNull();
+  });
+
+  it('POST create payload includes steam_trade_offer_id when Steam has created the offer', () => {
+    const payload = formatCreatedTradeForPartner({
+      id: 'TRADE-1',
+      ticketId: 'TICK-1',
+      status: 'CREATED',
+      grossCents: 1000,
+      netCents: 995,
+      cashoutFees: 5,
+      networkFees: 0,
+      expiresAt: new Date('2026-08-04T12:00:00.000Z'),
+      availableAt: null,
+      steamTradeOfferId: '4123456789',
+    });
+
+    expect(payload.steam_trade_offer_id).toBe('4123456789');
   });
 
   it('inventory formatter unwraps Skinplace envelope into the partner contract', () => {

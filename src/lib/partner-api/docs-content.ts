@@ -298,6 +298,7 @@ export const partnerResponseExamples = {
     "net_cents": 120000,
     "ticket_id": "TICK-20250728-0001",
     "payment_reference": "TICK-20250728-0001",
+    "steam_trade_offer_id": "7654321098",
     "available_at": "2026-08-04T12:00:00.000Z",
     "created_at": "2026-07-28T12:00:00.000Z",
     "items": [
@@ -328,7 +329,8 @@ export const partnerResponseExamples = {
   "gross_cents": 125000,
   "net_cents": 120000,
   "fees": { "cashout": 625, "network": 4375 },
-  "payment_reference": "order-abc"
+  "payment_reference": "order-abc",
+  "steam_trade_offer_id": "7654321098"
 }`,
   error: `{
   "success": false,
@@ -372,7 +374,8 @@ export const partnerResponseExamples = {
     "vip_bonus_cents": 1250,
     "expires_at": "2026-07-28T13:00:00.000Z",
     "available_at": null,
-    "payment_reference": "TICK-20250728-0001"
+    "payment_reference": "TICK-20250728-0001",
+    "steam_trade_offer_id": "7654321098"
   }
 }`,
   listTrades: `{
@@ -385,7 +388,8 @@ export const partnerResponseExamples = {
         "status": "in_trade_hold",
         "gross_cents": 125000,
         "net_cents": 120000,
-        "payment_reference": "TICK-20250728-0001"
+        "payment_reference": "TICK-20250728-0001",
+        "steam_trade_offer_id": "7654321098"
       }
     ],
     "pagination": { "limit": 20, "offset": 0, "total": 1 }
