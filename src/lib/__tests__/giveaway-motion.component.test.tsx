@@ -6,7 +6,9 @@ import { render, screen } from '@testing-library/react';
 import { GiveawayCountdown } from '@/components/giveaway/giveaway-countdown';
 import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
 import { GiveawayMotionSurface } from '@/components/giveaway/giveaway-motion-surface';
+import { GiveawayPrizeVisual } from '@/components/giveaway/giveaway-prize-visual';
 import { GiveawayStarfield } from '@/components/giveaway/giveaway-starfield';
+import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { getGiveawayTierCtaColors } from '@/lib/giveaway-presentation';
 import type { Messages } from '~/utils/types';
 
@@ -82,6 +84,19 @@ describe('GiveawayCountdown', () => {
     expect(timer).toHaveAttribute('data-urgent', 'true');
     expect(timer).toHaveClass('giveaway-countdown--urgent');
   });
+
+  it('colors seconds with the --tier class when more than one hour remains', () => {
+    const now = Date.parse('2026-09-16T12:00:00.000Z');
+    const { container } = render(
+      <GiveawayCountdown
+        endDate="2026-09-16T14:00:00.000Z"
+        now={now}
+        labels={{ days: 'J', hours: 'H', minutes: 'M', seconds: 'S' }}
+      />
+    );
+    expect(container.querySelector('.giveaway-countdown__seconds')).toBeInTheDocument();
+    expect(container.querySelector('.giveaway-countdown--urgent')).not.toBeInTheDocument();
+  });
 });
 
 describe('GiveawayCtaButton', () => {
@@ -147,5 +162,31 @@ describe('GiveawayStarfield', () => {
   it('renders at most 30 stars', () => {
     const { container } = render(<GiveawayStarfield />);
     expect(container.querySelectorAll('.giveaway-star').length).toBeLessThanOrEqual(30);
+  });
+});
+
+describe('GiveawayPrizeVisual', () => {
+  it('adds slow golden particles around yearly prestige skins', () => {
+    const { container } = render(
+      <GiveawayPrizeVisual
+        giveaway={
+          {
+            id: 'yearly',
+            prize: '★ Karambit | Fade (Factory New)',
+            ticketPrice: 80,
+            maxTickets: 100,
+            soldTickets: 10,
+            status: 'ACTIVE',
+            durationType: 'YEARLY',
+            endDate: '2026-12-01T00:00:00.000Z',
+          } as GiveawayWithEntries
+        }
+        showDetails={false}
+        prestige
+        floating
+      />
+    );
+    expect(container.querySelectorAll('.giveaway-prestige__particle').length).toBeGreaterThan(0);
+    expect(container.querySelector('.giveaway-prize-skin-wrap--float')).toBeInTheDocument();
   });
 });

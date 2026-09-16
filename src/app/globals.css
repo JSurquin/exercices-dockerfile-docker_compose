@@ -3520,6 +3520,7 @@ body.next-dev-overlay-present #sentry-feedback {
   .giveaway-card-sheen::after,
   .giveaway-cta--tier,
   .giveaway-motion-surface[data-tilt='true']:hover,
+  .giveaway-motion-surface[data-tilt='true']::before,
   .giveaway-earn-panel::before,
   .giveaway-earn-badge__ping,
   .giveaway-earn-panel--flash {
@@ -3528,6 +3529,11 @@ body.next-dev-overlay-present #sentry-feedback {
 
   .giveaway-motion-surface[data-tilt='true'] {
     transform: none !important;
+  }
+
+  .giveaway-motion-surface[data-tilt='true']::before {
+    opacity: 0 !important;
+    transition: none !important;
   }
 
   .giveaway-prize-skin-wrap,
@@ -3809,7 +3815,7 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 .giveaway-earn-link {
-  color: var(--tier, var(--giveaway-accent));
+  color: var(--giveaway-tier-fg, var(--tier, var(--giveaway-accent)));
   font-size: 0.8125rem;
   font-weight: 600;
   background: none;
@@ -3875,6 +3881,7 @@ body.next-dev-overlay-present #sentry-feedback {
 .giveaway-card-surface {
   --giveaway-accent: #4F8CFF;
   --tier: var(--giveaway-accent);
+  --giveaway-tier-fg: var(--giveaway-tier-weekly-fg);
   --tier-soft: color-mix(in srgb, var(--tier) 15%, transparent);
   --tier-glow: color-mix(in srgb, var(--tier) 40%, transparent);
   background:
@@ -3884,22 +3891,40 @@ body.next-dev-overlay-present #sentry-feedback {
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--tier) 20%, transparent),
     0 0 28px color-mix(in srgb, var(--tier) 8%, transparent);
-  transition: transform 300ms ease, box-shadow 300ms ease;
+  transition: transform 300ms ease;
 }
 
-.giveaway-card-surface[data-tier='daily'] { --tier: var(--giveaway-tier-daily); }
-.giveaway-card-surface[data-tier='weekly'] { --tier: var(--giveaway-tier-weekly); }
-.giveaway-card-surface[data-tier='monthly'] { --tier: var(--giveaway-tier-monthly); }
-.giveaway-card-surface[data-tier='yearly'] { --tier: var(--giveaway-tier-yearly); }
-.giveaway-card-surface[data-tier='special'] { --tier: var(--giveaway-tier-special); }
-.giveaway-card-surface[data-tier='partenaire'] { --tier: var(--giveaway-tier-partner); }
+.giveaway-card-surface[data-tier='daily'] {
+  --tier: var(--giveaway-tier-daily);
+  --giveaway-tier-fg: var(--giveaway-tier-daily-fg);
+}
+.giveaway-card-surface[data-tier='weekly'] {
+  --tier: var(--giveaway-tier-weekly);
+  --giveaway-tier-fg: var(--giveaway-tier-weekly-fg);
+}
+.giveaway-card-surface[data-tier='monthly'] {
+  --tier: var(--giveaway-tier-monthly);
+  --giveaway-tier-fg: var(--giveaway-tier-monthly-fg);
+}
+.giveaway-card-surface[data-tier='yearly'] {
+  --tier: var(--giveaway-tier-yearly);
+  --giveaway-tier-fg: var(--giveaway-tier-yearly-fg);
+}
+.giveaway-card-surface[data-tier='special'] {
+  --tier: var(--giveaway-tier-special);
+  --giveaway-tier-fg: var(--giveaway-tier-special-fg);
+}
+.giveaway-card-surface[data-tier='partenaire'] {
+  --tier: var(--giveaway-tier-partner);
+  --giveaway-tier-fg: var(--giveaway-partner-fg);
+}
 
 .giveaway-cost-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   border: 1px solid var(--tier);
-  color: var(--tier);
+  color: var(--giveaway-tier-fg, var(--tier));
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
   font-size: 0.75rem;
@@ -3911,7 +3936,7 @@ body.next-dev-overlay-present #sentry-feedback {
   margin-top: 0.5rem;
   border-left: 2px solid var(--tier);
   padding-left: 0.75rem;
-  color: rgb(255 255 255 / 0.8);
+  color: color-mix(in srgb, var(--foreground) 80%, transparent);
   font-size: 0.875rem;
   line-height: 1.5;
 }
@@ -3925,7 +3950,7 @@ body.next-dev-overlay-present #sentry-feedback {
   width: 100%;
   border-radius: 999px;
   background: var(--tier-soft);
-  color: var(--tier);
+  color: var(--giveaway-tier-fg, var(--tier));
   padding: 0.65rem 1rem;
   text-align: center;
 }
@@ -3945,8 +3970,7 @@ body.next-dev-overlay-present #sentry-feedback {
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.2;
-  color: var(--tier);
-  opacity: 0.9;
+  color: var(--giveaway-tier-fg, var(--tier));
 }
 
 .giveaway-card-meta {
@@ -3993,9 +4017,6 @@ body.next-dev-overlay-present #sentry-feedback {
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .giveaway-card-surface--interactive:hover {
     transform: translateY(-4px);
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 50%, transparent),
-      0 18px 42px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 28%, transparent);
   }
 }
 
@@ -4147,14 +4168,26 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 .giveaway-motion-surface[data-tilt='true'] {
-  transition: transform 120ms ease-out, box-shadow 200ms ease;
+  transition: transform 120ms ease-out;
   transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
 }
 
-.giveaway-motion-surface[data-tilt='true']:hover {
+.giveaway-motion-surface[data-tilt='true']::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 70%, transparent),
     0 20px 56px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 42%, transparent);
+  transition: opacity 200ms ease;
+}
+
+.giveaway-motion-surface[data-tilt='true']:hover::before {
+  opacity: 1;
 }
 
 .giveaway-motion-surface[data-tilt='true']:hover .giveaway-prize-skin-wrap {
@@ -4224,7 +4257,7 @@ body.next-dev-overlay-present #sentry-feedback {
 }
 
 .giveaway-countdown__seconds {
-  color: var(--tier, var(--giveaway-accent));
+  color: var(--giveaway-tier-fg, var(--tier, var(--giveaway-accent)));
 }
 
 .giveaway-flip {
@@ -4270,7 +4303,9 @@ body.next-dev-overlay-present #sentry-feedback {
 
 .giveaway-progress [data-slot='progress-indicator'] {
   background: var(--tier, var(--giveaway-accent));
-  transition: transform 800ms ease-out;
+  transition-property: transform;
+  transition-duration: 800ms;
+  transition-timing-function: ease-out;
 }
 
 .giveaway-progress[data-motion-active='true']::after {
@@ -4309,13 +4344,19 @@ body.next-dev-overlay-present #sentry-feedback {
   border-radius: 999px;
   background: rgb(255 255 255 / 0.85);
   opacity: 0.45;
+  contain: layout style;
   transform: translate3d(0, calc(var(--star-parallax, 0px) * var(--star-depth, 0.1)), 0);
+}
+
+.light .giveaway-star {
+  background: rgb(15 23 42 / 0.55);
 }
 
 .giveaway-starfield[data-motion-active='true'] .giveaway-star {
   animation-name: giveaway-star-twinkle;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+  will-change: transform, opacity;
 }
 
 @keyframes giveaway-star-twinkle {
@@ -4371,7 +4412,7 @@ body.next-dev-overlay-present #sentry-feedback {
   transform: translateX(-50%);
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--tier, var(--giveaway-accent));
+  color: var(--giveaway-tier-fg, var(--tier, var(--giveaway-accent)));
   text-shadow: 0 1px 8px rgb(0 0 0 / 0.45);
   white-space: nowrap;
 }
@@ -4413,6 +4454,12 @@ body.next-dev-overlay-present #sentry-feedback {
 
   .giveaway-motion-surface[data-tilt='true'] {
     transform: none !important;
+  }
+
+  .giveaway-motion-surface[data-tilt='true']::before,
+  .giveaway-motion-surface[data-tilt='true']:hover::before {
+    opacity: 0 !important;
+    transition: none !important;
   }
 
   .giveaway-motion-surface[data-tilt='true']:hover .giveaway-prize-skin-wrap {

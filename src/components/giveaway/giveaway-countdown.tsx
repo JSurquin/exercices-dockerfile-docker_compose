@@ -25,7 +25,7 @@ function pad(value: number): string {
   return String(value).padStart(2, '0');
 }
 
-function FlipValue({ value, className }: { value: string; className?: string }) {
+export function GiveawayFlipText({ value, className }: { value: string; className?: string }) {
   const reduceMotion = useReducedMotion();
 
   return (
@@ -88,7 +88,7 @@ export function GiveawayCountdown({
           {index > 0 && (
             <span
               className={cn(
-                'font-display pb-4 text-2xl text-foreground/55 sm:text-3xl',
+                'font-display pb-4 text-2xl text-foreground/70 sm:text-3xl',
                 compact && 'pb-3 text-xl sm:text-2xl'
               )}
             >
@@ -101,7 +101,7 @@ export function GiveawayCountdown({
               compact && 'min-w-[2.25rem] sm:min-w-[2.75rem]'
             )}
           >
-            <FlipValue
+            <GiveawayFlipText
               value={pad(unit.value)}
               className={cn(
                 'font-display text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl',
@@ -130,5 +130,5 @@ export function GiveawayCompactTime({
   expiredLabel: string;
   labels: CompactDurationLabels;
 }) {
-  return <>{formatCompactCountdown(remaining, labels, expiredLabel)}</>;
+  return <GiveawayFlipText value={formatCompactCountdown(remaining, labels, expiredLabel)} />;
 }

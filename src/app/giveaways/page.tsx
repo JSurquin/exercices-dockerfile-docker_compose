@@ -302,7 +302,7 @@ export default function GiveawaysPage() {
           <GiveawayPageReveal as="header" index={0} className="giveaway-page-header">
             <GiveawaysCompactHeader messages={messages} />
           </GiveawayPageReveal>
-          <GiveawayPageReveal as="aside" index={1} fadeOnly className="giveaway-page-sidebar">
+          <GiveawayPageReveal as="aside" index={1} className="giveaway-page-sidebar">
             <GiveawayLevelCard
               messages={messages}
               user={user}

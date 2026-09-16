@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { GiveawayCompactTime, useLiveNow } from '@/components/giveaway/giveaway-countdown';
+import { GiveawayCompactTime, GiveawayCountdown, useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
+import { GiveawayCountUp, GiveawayCountUpMessage, useGiveawayBurstSyncedValue } from '@/components/giveaway/giveaway-count-up';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import { GiveawayEurAmount } from '@/components/giveaway/giveaway-eur-amount';
 import { GiveawayMotionSurface, giveawayTierSurfaceStyle } from '@/components/giveaway/giveaway-motion-surface';
@@ -42,6 +43,7 @@ export function GiveawayShowcaseCard({
   now,
   featured = false,
   selected = false,
+  floatSkin,
   onActivate,
 }: {
   giveaway: GiveawayWithEntries;
@@ -51,6 +53,7 @@ export function GiveawayShowcaseCard({
   now?: number;
   featured?: boolean;
   selected?: boolean;
+  floatSkin?: boolean;
   onActivate?: () => void;
 }) {
   const { locale } = useLocale();
@@ -76,9 +79,15 @@ export function GiveawayShowcaseCard({
   const totalParticipants = giveaway.totalParticipants ?? 0;
   const totalEntries = giveaway.totalEntries ?? giveaway.soldTickets;
   const chance = getDisplayedWinChance(myEntries, totalEntries, giveaway.myChancePercent);
+  const burstSyncId = featured ? burst.id : 0;
+  const displayedEntries = useGiveawayBurstSyncedValue(myEntries, burstSyncId);
+  const displayedTotal = useGiveawayBurstSyncedValue(totalEntries, burstSyncId);
+  const displayedChance = useGiveawayBurstSyncedValue(chance.percent, burstSyncId);
+  const displayedHypothetical = useGiveawayBurstSyncedValue(chance.hypothetical, burstSyncId);
   const description = localizedGiveawayBlurb(giveaway, layout);
   const isPartner = visualTier === 'partner';
   const clickable = Boolean(onActivate) && !featured;
+  const skinFloats = floatSkin ?? featured;
 
   const handleParticipate = async (target: GiveawayWithEntries, entries: number) => {
     if (!onParticipate) return;
@@ -113,7 +122,7 @@ export function GiveawayShowcaseCard({
     valueCents != null ? (
       <p
         className={cn(
-          'mt-1 font-display font-semibold tabular-nums text-white',
+          'mt-1 font-display font-semibold tabular-nums text-foreground',
           featured ? 'text-[28px] leading-none' : 'text-xl leading-none'
         )}
       >
@@ -147,9 +156,9 @@ export function GiveawayShowcaseCard({
         </span>
       </div>
 
-      <p className="mt-2 flex items-center justify-center gap-1 text-xs text-foreground/60">
+      <p className="mt-2 flex items-center justify-center gap-1 text-xs text-foreground/70">
         <UserGroupIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        {card.socialEntries.replace('{count}', String(totalEntries))}
+        <GiveawayCountUpMessage template={card.socialEntries} token="{count}" value={displayedTotal} />
       </p>
 
       <GiveawayPrizeVisual
@@ -157,7 +166,7 @@ export function GiveawayShowcaseCard({
         size={featured ? 'featured' : 'compact'}
         showDetails={false}
         grayscale={isEnded}
-        floating={featured}
+        floating={skinFloats}
         prestige={durationTier === 'yearly'}
         tier={visualTier}
       />
@@ -172,35 +181,64 @@ export function GiveawayShowcaseCard({
       ) : null}
 
       <div className="giveaway-chance-pill mt-3">
-        {chance.hypothetical ? (
+        {displayedHypothetical ? (
           <p className="giveaway-chance-pill__label text-sm font-semibold">
-            {card.chanceWithOneEntry.replace('{percent}', formatChancePercent(chance.percent, locale))}
+            <GiveawayCountUpMessage
+              template={card.chanceWithOneEntry}
+              token="{percent}"
+              value={displayedChance}
+              format={(current) => formatChancePercent(current, locale)}
+              decimals={2}
+            />
           </p>
         ) : (
           <>
             <p className="giveaway-chance-pill__value font-display tabular-nums">
-              {formatChancePercent(chance.percent, locale)}
+              <GiveawayCountUp
+                value={displayedChance}
+                format={(current) => formatChancePercent(current, locale)}
+                decimals={2}
+              />
             </p>
             <p className="giveaway-chance-pill__label">{card.chanceToWin}</p>
           </>
         )}
       </div>
 
+      {featured ? (
+        <GiveawayCountdown
+          endDate={endDate}
+          now={now ?? liveNow}
+          compact
+          className="mt-3 justify-center"
+          labels={{
+            days: layout.countdownDays,
+            hours: layout.countdownHours,
+            minutes: layout.countdownMinutes,
+            seconds: layout.countdownSeconds,
+          }}
+        />
+      ) : null}
+
       <div className={cn('giveaway-card-meta mt-3', !featured && 'max-w-full')}>
         <span className="giveaway-card-meta__item">
           <TicketIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          {card.metaYourEntries.replace('{count}', String(myEntries))}
+          <GiveawayCountUpMessage template={card.metaYourEntries} token="{count}" value={displayedEntries} />
         </span>
         <span className="giveaway-card-meta__sep" aria-hidden />
         <span className="giveaway-card-meta__item">
           <UserGroupIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          {card.metaParticipants.replace('{count}', String(totalParticipants))}
+          <GiveawayCountUpMessage template={card.metaParticipants} token="{count}" value={totalParticipants} />
         </span>
-        <span className="giveaway-card-meta__sep" aria-hidden />
-        <span className="giveaway-card-meta__item" data-countdown>
-          <ClockIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          {compactTime}
-        </span>
+        {featured ? null : (
+          <>
+            <span className="giveaway-card-meta__sep" aria-hidden />
+            <span className="giveaway-card-meta__item" data-countdown>
+              <ClockIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              {compactTime}
+            </span>
+          </>
+        )}
       </div>
 
       <div className="mt-auto pt-4">

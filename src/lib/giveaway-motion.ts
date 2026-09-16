@@ -10,6 +10,12 @@ export const GIVEAWAY_STAR_COUNT = 30;
 export const GIVEAWAY_PROGRESS_MS = 800;
 export const GIVEAWAY_COUNT_UP_MS = 700;
 export const GIVEAWAY_TILT_MAX_DEG = 6;
+export const GIVEAWAY_ENTRY_BURST_MS = 720;
+
+export function giveawayStatRevealDelayMs(burstId: number, reduceMotion = false): number {
+  if (reduceMotion || burstId <= 0) return 0;
+  return GIVEAWAY_ENTRY_BURST_MS;
+}
 
 export interface GiveawayStarSpec {
   x: number;

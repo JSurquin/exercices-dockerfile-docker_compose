@@ -1,8 +1,10 @@
 import {
   createGiveawayStarfield,
   GIVEAWAY_CAROUSEL_SPRING,
+  GIVEAWAY_ENTRY_BURST_MS,
   GIVEAWAY_STAR_COUNT,
   GIVEAWAY_STARFIELD,
+  giveawayStatRevealDelayMs,
 } from '@/lib/giveaway-motion';
 
 describe('giveaway motion helpers', () => {
@@ -27,5 +29,11 @@ describe('giveaway motion helpers', () => {
 
   it('uses the requested carousel spring', () => {
     expect(GIVEAWAY_CAROUSEL_SPRING).toEqual({ type: 'spring', stiffness: 260, damping: 28 });
+  });
+
+  it('delays chance/entry count-up until after the entry burst', () => {
+    expect(giveawayStatRevealDelayMs(0)).toBe(0);
+    expect(giveawayStatRevealDelayMs(1, true)).toBe(0);
+    expect(giveawayStatRevealDelayMs(1)).toBe(GIVEAWAY_ENTRY_BURST_MS);
   });
 });

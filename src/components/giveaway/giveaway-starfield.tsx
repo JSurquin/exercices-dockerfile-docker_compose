@@ -12,12 +12,26 @@ export function GiveawayStarfield() {
   useEffect(() => {
     const node = ref.current;
     if (!node || reduceMotion || !inView) return;
-    const onScroll = () => {
-      node.style.setProperty('--star-parallax', `${window.scrollY}px`);
+    let frame = 0;
+    let last = Number.NaN;
+    const publish = (scrollY: number) => {
+      if (scrollY === last) return;
+      last = scrollY;
+      node.style.setProperty('--star-parallax', `${scrollY}px`);
     };
-    onScroll();
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        publish(window.scrollY);
+      });
+    };
+    publish(window.scrollY);
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [inView, reduceMotion, ref]);
 
   return (

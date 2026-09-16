@@ -2,10 +2,10 @@
 
 import { FragmentBadge } from '@/components/ui/level-badge';
 import { useInView } from '@/hooks/use-in-view';
-import { GIVEAWAY_COUNT_UP_MS } from '@/lib/giveaway-motion';
+import { GIVEAWAY_COUNT_UP_MS, giveawayStatRevealDelayMs } from '@/lib/giveaway-motion';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 function easeOutQuad(progress: number): number {
   return 1 - (1 - progress) * (1 - progress);
@@ -13,12 +13,22 @@ function easeOutQuad(progress: number): number {
 
 export function useGiveawayCountUp(value: number, enabled: boolean, durationMs = GIVEAWAY_COUNT_UP_MS): number {
   const reduceMotion = useReducedMotion();
-  const [shown, setShown] = useState(value);
-  const previous = useRef(value);
+  const [shown, setShown] = useState(0);
+  const previous = useRef(0);
   const entered = useRef(false);
 
   useEffect(() => {
-    if (reduceMotion || !enabled) {
+    if (reduceMotion) {
+      setShown(value);
+      previous.current = value;
+      entered.current = true;
+      return;
+    }
+    if (!enabled) {
+      if (!entered.current) {
+        setShown(0);
+        return;
+      }
       setShown(value);
       previous.current = value;
       return;
@@ -46,6 +56,49 @@ export function useGiveawayCountUp(value: number, enabled: boolean, durationMs =
   }, [durationMs, enabled, reduceMotion, value]);
 
   return shown;
+}
+
+export function useGiveawayBurstSyncedValue<T>(value: T, burstId: number): T {
+  const reduceMotion = useReducedMotion();
+  const [shown, setShown] = useState(value);
+  const lastBurst = useRef(burstId);
+
+  useEffect(() => {
+    const burstChanged = burstId !== lastBurst.current;
+    lastBurst.current = burstId;
+    const delay = burstChanged ? giveawayStatRevealDelayMs(burstId, Boolean(reduceMotion)) : 0;
+    if (delay === 0) {
+      setShown(value);
+      return;
+    }
+    const id = window.setTimeout(() => setShown(value), delay);
+    return () => window.clearTimeout(id);
+  }, [burstId, reduceMotion, value]);
+
+  return shown;
+}
+
+export function GiveawayCountUpMessage({
+  template,
+  token,
+  value,
+  format,
+  decimals = 0,
+}: {
+  template: string;
+  token: string;
+  value: number;
+  format?: (value: number) => string;
+  decimals?: number;
+}): ReactNode {
+  const [before, after = ''] = template.split(token);
+  return (
+    <>
+      {before}
+      <GiveawayCountUp value={value} format={format} decimals={decimals} />
+      {after}
+    </>
+  );
 }
 
 export function GiveawayCountUp({

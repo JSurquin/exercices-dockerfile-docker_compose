@@ -30,6 +30,7 @@ export function GiveawayCard({
       onParticipate={onParticipate}
       now={now}
       featured
+      floatSkin={false}
       selected={selected}
       onActivate={onSelect}
     />
