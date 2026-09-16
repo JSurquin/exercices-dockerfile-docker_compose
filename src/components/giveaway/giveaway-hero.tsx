@@ -1,11 +1,10 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import { GiveawayCountdown, useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { GiveawayEntryControl } from '@/components/giveaway/giveaway-entry-control';
-import { GiveawayLeaderboard } from '@/components/giveaway/giveaway-leaderboard';
+import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayPrizeVisual } from '@/components/giveaway/giveaway-prize-visual';
 import { GiveawayTierBadge } from '@/components/giveaway/giveaway-tier-badge';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
@@ -18,7 +17,6 @@ import {
   getGiveawayTierLabel,
   getTimeRemaining,
   giveawayTierLabels,
-  type GiveawayLeaderboardRow,
 } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
 import { TicketIcon, UserGroupIcon, LockClosedIcon } from '@heroicons/react/24/outline';
@@ -31,7 +29,6 @@ export function GiveawayHero({
   locale,
   userFragments,
   onParticipate,
-  currentUser,
   now,
 }: {
   giveaway: GiveawayWithEntries;
@@ -39,7 +36,7 @@ export function GiveawayHero({
   locale: string;
   userFragments: number;
   onParticipate: (giveaway: GiveawayWithEntries, entries: number) => void | Promise<void>;
-  currentUser: { username: string; avatar: string } | null;
+  currentUser?: { username: string; avatar: string } | null;
   now?: number;
 }) {
   const layout = messages.giveaways.layout;
@@ -57,13 +54,6 @@ export function GiveawayHero({
   const accent = getGiveawayTierAccent(tier);
   const labels = giveawayTierLabels(layout);
 
-  const leaderboard: GiveawayLeaderboardRow[] =
-    giveaway.leaderboard && giveaway.leaderboard.length > 0
-      ? giveaway.leaderboard
-      : myEntries > 0 && currentUser
-        ? [{ username: currentUser.username, avatar: currentUser.avatar, entries: myEntries, isYou: true }]
-        : [];
-
   return (
     <Card
       data-giveaway={giveaway.id}
@@ -72,8 +62,8 @@ export function GiveawayHero({
     >
       <CardContent className="p-4 sm:p-5">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <Badge className="mission-glass-badge font-normal text-foreground">{layout.featured}</Badge>
           <GiveawayTierBadge tier={tier}>{getGiveawayTierLabel(tier, labels)}</GiveawayTierBadge>
+          <GiveawayPartnerBadge giveaway={giveaway} messages={messages} />
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start lg:gap-5">
           <GiveawayPrizeVisual giveaway={giveaway} size="hero" />
@@ -133,13 +123,6 @@ export function GiveawayHero({
                 compact
               />
             )}
-
-            <GiveawayLeaderboard
-              rows={leaderboard}
-              messages={messages}
-              compact
-              participantCount={Math.max(totalParticipants, leaderboard.length)}
-            />
           </div>
         </div>
       </CardContent>

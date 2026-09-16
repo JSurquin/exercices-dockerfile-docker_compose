@@ -26,6 +26,10 @@ import {
   carouselSignedOffset,
   carouselCoverflowTransform,
   carouselCoverflowXPercent,
+  getCarouselBreakpoint,
+  carouselMaxVisibleOffset,
+  insertLocalDailyGiveawayIfMissing,
+  LOCAL_DAILY_GIVEAWAY_FIXTURE_ID,
   findPartnerLogo,
   splitCurrencyDisplay,
   sortGiveaways,
@@ -34,6 +38,7 @@ import {
   visibleLeaderboardRows,
   GIVEAWAY_TIER_TOKENS_DARK,
   GIVEAWAY_TIER_TOKENS_LIGHT,
+  GIVEAWAY_PARTNER_TOKENS,
   type GiveawayPresentationInput,
   type GiveawayTier,
 } from '@/lib/giveaway-presentation';
@@ -188,6 +193,46 @@ describe('selectRecurringActiveGiveaways', () => {
     expect(selectHighestValueIndex(sorted)).toBe(2);
   });
 
+  it('inserts a local daily fixture before weekly without breaking coverflow offsets', () => {
+    const withoutDaily = [
+      giveaway({
+        id: 'year',
+        durationType: 'YEARLY',
+        startDate: '2025-09-16T00:00:00.000Z',
+        endDate: '2026-09-16T00:00:00.000Z',
+        rewardValueCents: 80_000,
+      }),
+      giveaway({
+        id: 'month',
+        startDate: '2026-09-16T00:00:00.000Z',
+        endDate: '2026-10-16T00:00:00.000Z',
+        rewardValueCents: 5_000,
+      }),
+      giveaway({
+        id: 'week',
+        startDate: '2026-09-16T00:00:00.000Z',
+        endDate: '2026-09-23T00:00:00.000Z',
+        rewardValueCents: 250,
+      }),
+    ];
+    const withDaily = insertLocalDailyGiveawayIfMissing(withoutDaily, Date.parse('2026-09-16T08:00:00.000Z'));
+    expect(withDaily.map((item) => item.id)).toEqual([
+      LOCAL_DAILY_GIVEAWAY_FIXTURE_ID,
+      'week',
+      'month',
+      'year',
+    ]);
+    expect(selectHighestValueIndex(withDaily)).toBe(3);
+    const yearlyCenter = [0, 1, 2, 3].map((index) => carouselSignedOffset(index, 3, 4));
+    expect(yearlyCenter).toEqual([1, -2, -1, 0]);
+    expect(carouselCoverflowTransform(2, 'tablet').visible).toBe(false);
+    expect(carouselCoverflowTransform(1, 'tablet').visible).toBe(true);
+    expect(carouselCoverflowTransform(2, 'desktop').visible).toBe(true);
+    expect(insertLocalDailyGiveawayIfMissing(withDaily).map((item) => item.id)[0]).toBe(
+      LOCAL_DAILY_GIVEAWAY_FIXTURE_ID
+    );
+  });
+
   it('wraps carousel offsets around the center card', () => {
     expect(carouselSignedOffset(2, 2, 3)).toBe(0);
     expect(carouselSignedOffset(0, 2, 3)).toBe(1);
@@ -205,6 +250,14 @@ describe('selectRecurringActiveGiveaways', () => {
     expect(carouselCoverflowTransform(-2)).toMatchObject({ scale: 0.68, translateY: 32, opacity: 0.4 });
     expect(carouselCoverflowXPercent(1)).toBe(74);
     expect(carouselCoverflowXPercent(-2)).toBe(-132);
+    expect(getCarouselBreakpoint(390)).toBe('mobile');
+    expect(getCarouselBreakpoint(1024)).toBe('tablet');
+    expect(getCarouselBreakpoint(1440)).toBe('desktop');
+    expect(carouselMaxVisibleOffset('mobile')).toBe(1);
+    expect(carouselMaxVisibleOffset('tablet')).toBe(1);
+    expect(carouselMaxVisibleOffset('desktop')).toBe(2);
+    expect(carouselCoverflowXPercent(1, 'mobile')).toBe(98);
+    expect(carouselCoverflowTransform(2, 'mobile').visible).toBe(false);
   });
 });
 
@@ -645,5 +698,8 @@ describe('giveaway palier tokens contrast', () => {
       expect(hexContrastRatio(dark.fg, dark.bg)).toBeGreaterThanOrEqual(4.5);
       expect(hexContrastRatio(light.fg, light.bg)).toBeGreaterThanOrEqual(4.5);
     }
+    expect(hexContrastRatio(GIVEAWAY_PARTNER_TOKENS.fg, GIVEAWAY_PARTNER_TOKENS.bg)).toBeGreaterThanOrEqual(
+      4.5
+    );
   });
 });

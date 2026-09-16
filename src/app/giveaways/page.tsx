@@ -42,6 +42,7 @@ import Link from 'next/link';
 import {
   cheapestActiveTicketPrice,
   fragmentsUntilCheapestEntry,
+  insertLocalDailyGiveawayIfMissing,
   selectHighestValueIndex,
   selectRecurringActiveGiveaways,
   sortGiveawaysByTierThenEnd,
@@ -127,10 +128,11 @@ export default function GiveawaysPage() {
     () => sortGiveawaysByTierThenEnd(privateActive),
     [privateActive]
   );
-  const recurringGiveaways = useMemo(
-    () => selectRecurringActiveGiveaways(publicActive),
-    [publicActive]
-  );
+  const recurringGiveaways = useMemo(() => {
+    const selected = selectRecurringActiveGiveaways(publicActive);
+    if (process.env.NODE_ENV !== 'development') return selected;
+    return insertLocalDailyGiveawayIfMissing(selected);
+  }, [publicActive]);
   const otherPublic = useMemo(
     () =>
       sortGiveawaysByTierThenEnd(
@@ -292,8 +294,8 @@ export default function GiveawaysPage() {
   return (
     <>
       <GiveawayNotifications />
-      <div className="container mx-auto px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8 lg:px-8">
-        <div className="mx-auto max-w-[1440px]">
+      <div className="container mx-auto overflow-x-clip px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8 lg:px-8">
+        <div className="mx-auto max-w-[1440px] overflow-x-clip">
           <GiveawaysCompactHeader
             messages={messages}
             user={user}
@@ -416,7 +418,7 @@ export default function GiveawaysPage() {
           </div>
         </div>
       </div>
-      <GiveawayWalletBar messages={messages} userFragments={userFragments} />
+      <GiveawayWalletBar messages={messages} userFragments={userFragments} user={user} />
     </>
   );
 }

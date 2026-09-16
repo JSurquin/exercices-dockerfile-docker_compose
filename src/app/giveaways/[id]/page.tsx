@@ -39,7 +39,9 @@ import {
   formatCompactCountdown,
   formatGiveawayDate,
   getDisplayInitials,
+  getGiveawayEntryLimits,
   getTimeRemaining,
+  hasConfiguredUserEntryLimit,
 } from '@/lib/giveaway-presentation';
 
 interface GiveawayDetails {
@@ -184,12 +186,11 @@ export default function GiveawayDetailsPage() {
     !!giveaway.requiredAffiliateCode &&
     giveaway.canParticipate === false;
 
-  const poolLeft = giveaway.maxTickets - giveaway.soldTickets;
-  const maxPerUser = giveaway.maxEntriesPerUser != null
-    ? Math.max(0, giveaway.maxEntriesPerUser - myEntries)
-    : poolLeft;
-  const maxAffordable = giveaway.ticketPrice > 0 ? Math.floor(fragments / giveaway.ticketPrice) : 0;
-  const maxSelectable = Math.max(0, Math.min(poolLeft, maxPerUser, maxAffordable));
+  const limits = getGiveawayEntryLimits(giveaway, fragments);
+  const maxSelectable = limits.maxSelectable;
+  const remainingUserEntries = hasConfiguredUserEntryLimit(giveaway.maxEntriesPerUser)
+    ? Math.max(0, (giveaway.maxEntriesPerUser ?? 0) - myEntries)
+    : null;
   const totalCost = entriesToBuy * giveaway.ticketPrice;
 
   const previewMyEntries = myEntries + entriesToBuy;
@@ -408,8 +409,7 @@ export default function GiveawayDetailsPage() {
                                 participateMutation.isPending ||
                                 maxSelectable < 1 ||
                                 fragments < totalCost ||
-                                entriesToBuy > poolLeft ||
-                                entriesToBuy > maxPerUser
+                                entriesToBuy > maxSelectable
                               }
                               className="bg-cta-gradient hover:brightness-110 shrink-0 gap-2"
                             >
@@ -437,9 +437,9 @@ export default function GiveawayDetailsPage() {
                             </div>
                           )}
 
-                          {giveaway.maxEntriesPerUser != null && (
+                          {remainingUserEntries != null && (
                             <p className="text-xs text-muted-foreground">
-                              {messages.giveawaysPage.detail.userEntryLimit.replace('{max}', String(giveaway.maxEntriesPerUser)).replace('{remaining}', String(maxPerUser))}
+                              {messages.giveawaysPage.detail.userEntryLimit.replace('{max}', String(giveaway.maxEntriesPerUser)).replace('{remaining}', String(remainingUserEntries))}
                             </p>
                           )}
                         </div>

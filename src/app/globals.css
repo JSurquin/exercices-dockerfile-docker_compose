@@ -608,6 +608,9 @@ body.next-dev-overlay-present #sentry-feedback {
   --giveaway-tier-special-bg: #4c0519;
   --giveaway-tier-special-fg: #fecdd3;
   --giveaway-tier-special-border: #fb7185;
+  --giveaway-partner-bg: #2e1065;
+  --giveaway-partner-fg: #f3e8ff;
+  --giveaway-partner-border: #d8b4fe;
 }
 
 /* ─── Moonskin : chrome soft + accents froids ─── */
@@ -752,22 +755,25 @@ body.next-dev-overlay-present #sentry-feedback {
   --font-sans: var(--font-poppins), sans-serif;
   color-scheme: light;
 
-  /* Giveaway palier tokens — light bg + dark text (AA ≥ 4.5:1) */
-  --giveaway-tier-daily-bg: #e0f2fe;
-  --giveaway-tier-daily-fg: #0c4a6e;
-  --giveaway-tier-daily-border: #0284c7;
-  --giveaway-tier-weekly-bg: #dbeafe;
-  --giveaway-tier-weekly-fg: #1e3a8a;
-  --giveaway-tier-weekly-border: #3b82f6;
-  --giveaway-tier-monthly-bg: #ede9fe;
-  --giveaway-tier-monthly-fg: #4c1d95;
-  --giveaway-tier-monthly-border: #8b5cf6;
-  --giveaway-tier-yearly-bg: #fef3c7;
-  --giveaway-tier-yearly-fg: #78350f;
-  --giveaway-tier-yearly-border: #d97706;
-  --giveaway-tier-special-bg: #ffe4e6;
-  --giveaway-tier-special-fg: #9f1239;
-  --giveaway-tier-special-border: #e11d48;
+  /* Giveaway palier tokens — dark tinted bg + light text (AA ≥ 4.5:1) */
+  --giveaway-tier-daily-bg: #082f44;
+  --giveaway-tier-daily-fg: #7dd3fc;
+  --giveaway-tier-daily-border: #38bdf8;
+  --giveaway-tier-weekly-bg: #0b2744;
+  --giveaway-tier-weekly-fg: #bfdbfe;
+  --giveaway-tier-weekly-border: #7eb8ff;
+  --giveaway-tier-monthly-bg: #1e1248;
+  --giveaway-tier-monthly-fg: #ddd6fe;
+  --giveaway-tier-monthly-border: #a78bfa;
+  --giveaway-tier-yearly-bg: #422006;
+  --giveaway-tier-yearly-fg: #fef3c7;
+  --giveaway-tier-yearly-border: #fbbf24;
+  --giveaway-tier-special-bg: #4c0519;
+  --giveaway-tier-special-fg: #fecdd3;
+  --giveaway-tier-special-border: #fb7185;
+  --giveaway-partner-bg: #2e1065;
+  --giveaway-partner-fg: #f3e8ff;
+  --giveaway-partner-border: #d8b4fe;
 }
 
 /* Rétrocompat next-themes "dark" */
@@ -3613,14 +3619,28 @@ body.next-dev-overlay-present #sentry-feedback {
   --giveaway-tier-border: var(--giveaway-tier-special-border);
 }
 
+.giveaway-partner-badge {
+  background: var(--giveaway-partner-bg, #2e1065);
+  color: var(--giveaway-partner-fg, #f3e8ff);
+  border-color: var(--giveaway-partner-border, #d8b4fe);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--giveaway-partner-border, #d8b4fe) 32%, transparent);
+}
+
 .giveaway-board {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 2.5rem 2rem;
+  overflow-x: clip;
 }
 
 .giveaway-board-main {
   min-width: 0;
+  order: 2;
+}
+
+.giveaway-board-aside {
+  min-width: 0;
+  order: 1;
 }
 
 .giveaway-earn-list {
@@ -3635,10 +3655,15 @@ body.next-dev-overlay-present #sentry-feedback {
     align-items: start;
   }
 
+  .giveaway-board-main {
+    order: 1;
+  }
+
   .giveaway-board-aside {
-    position: sticky;
-    top: calc(4rem + 1.5rem);
-    z-index: 0;
+    order: 2;
+    position: relative;
+    top: auto;
+    z-index: auto;
   }
 }
 
@@ -3687,6 +3712,7 @@ body.next-dev-overlay-present #sentry-feedback {
   position: relative;
   outline: none;
   overflow: hidden;
+  overflow-x: clip;
   touch-action: pan-y;
 }
 
@@ -3697,7 +3723,7 @@ body.next-dev-overlay-present #sentry-feedback {
 
 .giveaway-recurring-carousel__stage {
   position: relative;
-  height: 42rem;
+  height: 36rem;
   overflow: hidden;
 }
 
@@ -3705,9 +3731,9 @@ body.next-dev-overlay-present #sentry-feedback {
   position: absolute;
   top: 1.5rem;
   left: 50%;
-  width: min(27.5rem, 86%);
+  width: calc(100% - 32px);
   height: calc(100% - 2.5rem);
-  margin-left: calc(min(27.5rem, 86%) / -2);
+  margin-left: calc((100% - 32px) / -2);
   display: flex;
 }
 
@@ -3770,9 +3796,24 @@ body.next-dev-overlay-present #sentry-feedback {
   background: var(--foreground);
 }
 
+@media (max-width: 767px) {
+  .giveaway-recurring-carousel__stage {
+    height: 38rem;
+  }
+
+  .giveaway-recurring-carousel__slide--far {
+    visibility: hidden;
+  }
+}
+
 @media (min-width: 768px) {
   .giveaway-recurring-carousel__stage {
     height: 46rem;
+  }
+
+  .giveaway-recurring-carousel__slide {
+    width: min(27.5rem, 86%);
+    margin-left: calc(min(27.5rem, 86%) / -2);
   }
 
   .giveaway-recurring-carousel__nav--prev {
@@ -3781,6 +3822,12 @@ body.next-dev-overlay-present #sentry-feedback {
 
   .giveaway-recurring-carousel__nav--next {
     right: 0.75rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .giveaway-recurring-carousel__slide--far {
+    visibility: hidden;
   }
 }
 

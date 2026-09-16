@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { GiveawayShowcaseCard } from '@/components/giveaway/giveaway-showcase-card';
@@ -9,13 +9,36 @@ import {
   carouselCoverflowTransform,
   carouselCoverflowXPercent,
   carouselSignedOffset,
+  getCarouselBreakpoint,
   parsePrizeDisplay,
+  type CarouselBreakpoint,
 } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
 
 const SWIPE_THRESHOLD = 48;
+
+function useCarouselBreakpoint(): CarouselBreakpoint {
+  const [breakpoint, setBreakpoint] = useState<CarouselBreakpoint>('desktop');
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia('(min-width: 1200px)');
+    const tabletQuery = window.matchMedia('(min-width: 768px)');
+    const update = () => {
+      setBreakpoint(getCarouselBreakpoint(window.innerWidth));
+    };
+    update();
+    desktopQuery.addEventListener('change', update);
+    tabletQuery.addEventListener('change', update);
+    return () => {
+      desktopQuery.removeEventListener('change', update);
+      tabletQuery.removeEventListener('change', update);
+    };
+  }, []);
+
+  return breakpoint;
+}
 
 export function GiveawayRecurringCarousel({
   giveaways,
@@ -36,6 +59,7 @@ export function GiveawayRecurringCarousel({
 }) {
   const layout = messages.giveaways.layout;
   const reduceMotion = useReducedMotion();
+  const breakpoint = useCarouselBreakpoint();
   const count = giveaways.length;
   const safeIndex = count === 0 ? 0 : ((activeIndex % count) + count) % count;
   const activeGiveaway = giveaways[safeIndex];
@@ -72,7 +96,7 @@ export function GiveawayRecurringCarousel({
     <section
       id="recurring-giveaways"
       data-tour="giveaways-tabs"
-      className="mb-8 scroll-mt-24"
+      className="mb-8 scroll-mt-24 overflow-x-clip"
       aria-label={layout.recurringSectionTitle}
       aria-roledescription={layout.carouselRole}
       role="region"
@@ -98,7 +122,7 @@ export function GiveawayRecurringCarousel({
           {layout.emptyFiltered}
         </p>
       ) : (
-        <div className="giveaway-recurring-carousel">
+        <div className="giveaway-recurring-carousel" data-carousel-bp={breakpoint}>
           <p className="sr-only" aria-live="polite">
             {liveLabel}
           </p>
@@ -149,7 +173,7 @@ export function GiveawayRecurringCarousel({
           >
             {giveaways.map((giveaway, index) => {
               const offset = carouselSignedOffset(index, safeIndex, count);
-              const coverflow = carouselCoverflowTransform(offset);
+              const coverflow = carouselCoverflowTransform(offset, breakpoint);
               const featured = offset === 0;
               return (
                 <motion.div
@@ -163,7 +187,7 @@ export function GiveawayRecurringCarousel({
                   )}
                   initial={false}
                   animate={{
-                    x: `${carouselCoverflowXPercent(offset)}%`,
+                    x: `${carouselCoverflowXPercent(offset, breakpoint)}%`,
                     y: coverflow.translateY,
                     scale: coverflow.scale,
                     opacity: coverflow.opacity,
@@ -171,6 +195,7 @@ export function GiveawayRecurringCarousel({
                   }}
                   transition={reduceMotion ? { duration: 0 } : { duration: 0.35, ease: 'easeOut' }}
                   aria-current={featured ? 'true' : undefined}
+                  aria-hidden={coverflow.visible ? undefined : true}
                 >
                   <GiveawayShowcaseCard
                     giveaway={giveaway}

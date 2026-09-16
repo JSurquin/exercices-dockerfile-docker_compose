@@ -15,14 +15,14 @@ export function GiveawayUserAvatar({
   className?: string;
   fallbackName: string;
 }) {
-  const displayName = (name ?? '').trim() || fallbackName;
+  const displayName = (name ?? '').trim() || fallbackName.trim() || 'MS';
   const initials = getDisplayInitials(displayName) || getDisplayInitials(fallbackName) || 'MS';
   const src = resolveAvatarSrc(avatar);
 
   return (
     <Avatar className={cn('h-8 w-8', className)}>
-      <AvatarImage src={src} alt={displayName} referrerPolicy="no-referrer" />
-      <AvatarFallback delayMs={0} className="text-[10px] font-semibold">
+      {src ? <AvatarImage src={src} alt={displayName} referrerPolicy="no-referrer" /> : null}
+      <AvatarFallback delayMs={0} className="bg-muted text-[10px] font-semibold text-foreground">
         {initials}
       </AvatarFallback>
     </Avatar>

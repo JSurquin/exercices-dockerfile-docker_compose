@@ -2,15 +2,21 @@
 
 import { Button } from '@/components/ui/button';
 import { FragmentAmount } from '@/components/ui/level-badge';
+import { GiveawayUserAvatar } from '@/components/giveaway/giveaway-user-avatar';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
 
 export function GiveawayWalletBar({
   messages,
   userFragments,
+  user,
 }: {
   messages: Messages;
   userFragments: number;
+  user: {
+    username: string;
+    avatar: string;
+  };
 }) {
   const layout = messages.giveaways.layout;
   const earn = messages.giveaways.earn;
@@ -24,6 +30,12 @@ export function GiveawayWalletBar({
       aria-label={layout.walletBarLabel}
     >
       <div className="mx-auto flex max-w-[90rem] items-center gap-3">
+        <GiveawayUserAvatar
+          name={user.username}
+          avatar={user.avatar}
+          fallbackName={user.username || 'MS'}
+          className="h-10 w-10 shrink-0 ring-1 ring-white/15"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <FragmentAmount

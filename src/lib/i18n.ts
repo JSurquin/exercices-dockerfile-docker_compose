@@ -920,7 +920,7 @@ export const messages: Record<Locale, Messages> = {
         title: "Questions fréquentes",
         fragmentsQ: "Comment fonctionnent les fragments ?",
         fragmentsA:
-          "Les fragments se gagnent principalement en vendant vos skins CS2. Vous pouvez aussi réclamer la récompense quotidienne. Utilisez-les ensuite pour acheter des entrées aux giveaways : plus vous avez d’entrées, plus vos chances de gagner sont élevées.",
+          "Les fragments se gagnent principalement en vendant vos skins CS2. Vous pouvez aussi compléter des missions. Utilisez-les ensuite pour acheter des entrées aux giveaways : plus vous avez d’entrées, plus vos chances de gagner sont élevées.",
         drawQ: "Comment les gagnants sont-ils tirés au sort ?",
         drawA:
           "À la fin du compte à rebours, un tirage pondéré désigne le ou les gagnants. Chaque entrée compte pour une chance : plus vous avez d’entrées, plus votre probabilité est élevée. Le tirage est enregistré et vérifiable.",
@@ -9227,7 +9227,7 @@ export const messages: Record<Locale, Messages> = {
         title: "FAQ",
         fragmentsQ: "How do fragments work?",
         fragmentsA:
-          "You mainly earn fragments by selling CS2 skins. You can also claim the daily reward. Spend them to buy giveaway entries: the more entries you have, the higher your odds of winning.",
+          "You mainly earn fragments by selling CS2 skins. You can also complete missions. Spend them to buy giveaway entries: the more entries you have, the higher your odds of winning.",
         drawQ: "How are winners drawn?",
         drawA:
           "When the countdown ends, a weighted draw picks the winner(s). Each entry is one chance, so more entries mean better odds. The draw is logged and can be verified.",
@@ -17529,7 +17529,7 @@ export const messages: Record<Locale, Messages> = {
         title: "常见问题",
         fragmentsQ: "碎片如何运作？",
         fragmentsA:
-          "主要通过出售 CS2 皮肤获得碎片，也可以领取每日奖励。用碎片购买抽奖条目：条目越多，中奖几率越高。",
+          "主要通过出售 CS2 皮肤获得碎片，也可以完成任务。用碎片购买抽奖条目：条目越多，中奖几率越高。",
         drawQ: "如何抽取获奖者？",
         drawA:
           "倒计时结束后进行加权抽奖。每条参与计一次机会，条目越多几率越高。抽奖过程会被记录并可核验。",

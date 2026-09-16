@@ -36,6 +36,13 @@ export const GIVEAWAY_TIER_TOKENS_LIGHT: Record<GiveawayTier, GiveawayTierTokens
 
 export const GIVEAWAY_TIER_TOKENS = GIVEAWAY_TIER_TOKENS_DARK;
 
+/** Badge partenaire : fond sombre teinté + texte clair (contraste AA ≥ 4.5:1). */
+export const GIVEAWAY_PARTNER_TOKENS = {
+  bg: '#2e1065',
+  fg: '#f3e8ff',
+  border: '#d8b4fe',
+} as const;
+
 export const GIVEAWAY_TIER_ACCENTS: Record<GiveawayTier, string> = {
   daily: GIVEAWAY_TIER_TOKENS.daily.border,
   weekly: GIVEAWAY_TIER_TOKENS.weekly.border,
@@ -402,18 +409,39 @@ export interface PastWinnerGroup {
 }
 
 export const CAROUSEL_MAX_OFFSET = 2;
+export const LOCAL_DAILY_GIVEAWAY_FIXTURE_ID = 'local-daily-fixture';
 
-export function carouselCoverflowTransform(offset: number): {
+export type CarouselBreakpoint = 'mobile' | 'tablet' | 'desktop';
+
+export function getCarouselBreakpoint(width: number): CarouselBreakpoint {
+  if (width < 768) return 'mobile';
+  if (width < 1200) return 'tablet';
+  return 'desktop';
+}
+
+export function carouselMaxVisibleOffset(breakpoint: CarouselBreakpoint): number {
+  return breakpoint === 'desktop' ? CAROUSEL_MAX_OFFSET : 1;
+}
+
+export function carouselCoverflowTransform(
+  offset: number,
+  breakpoint: CarouselBreakpoint = 'desktop'
+): {
   scale: number;
   translateY: number;
   opacity: number;
   visible: boolean;
 } {
   const abs = Math.abs(offset);
+  const maxVisible = carouselMaxVisibleOffset(breakpoint);
+  if (abs > maxVisible) return { scale: 0.5, translateY: 40, opacity: 0, visible: false };
+  if (breakpoint === 'mobile') {
+    if (abs === 0) return { scale: 1, translateY: 0, opacity: 1, visible: true };
+    return { scale: 0.94, translateY: 12, opacity: 0.82, visible: true };
+  }
   if (abs === 0) return { scale: 1, translateY: -24, opacity: 1, visible: true };
   if (abs === 1) return { scale: 0.82, translateY: 16, opacity: 0.7, visible: true };
-  if (abs === 2) return { scale: 0.68, translateY: 32, opacity: 0.4, visible: true };
-  return { scale: 0.5, translateY: 40, opacity: 0, visible: false };
+  return { scale: 0.68, translateY: 32, opacity: 0.4, visible: true };
 }
 
 export function findPartnerLogo<T extends { name: string; logoUrl: string }>(
@@ -710,10 +738,50 @@ export function carouselSignedOffset(index: number, active: number, count: numbe
   return diff;
 }
 
-export function carouselCoverflowXPercent(offset: number): number {
+export function carouselCoverflowXPercent(
+  offset: number,
+  breakpoint: CarouselBreakpoint = 'desktop'
+): number {
   const abs = Math.min(Math.abs(offset), CAROUSEL_MAX_OFFSET + 1);
+  if (breakpoint === 'mobile') {
+    const shift = abs === 0 ? 0 : abs === 1 ? 98 : 118;
+    return Math.sign(offset) * shift;
+  }
   const shift = abs === 0 ? 0 : abs === 1 ? 74 : abs === 2 ? 132 : 160;
   return Math.sign(offset) * shift;
+}
+
+export function createLocalDailyGiveawayFixture<T extends GiveawayPresentationInput>(
+  template: T,
+  now = Date.now()
+): T {
+  const start = new Date(now);
+  const end = new Date(now + 20 * 60 * 60 * 1000);
+  return {
+    ...template,
+    id: LOCAL_DAILY_GIVEAWAY_FIXTURE_ID,
+    durationType: 'DAILY',
+    startDate: start.toISOString(),
+    createdAt: start.toISOString(),
+    endDate: end.toISOString(),
+    status: 'ACTIVE',
+    isPrivate: false,
+    rewardValueCents:
+      typeof template.rewardValueCents === 'number' && template.rewardValueCents > 0
+        ? Math.min(template.rewardValueCents, 250)
+        : 250,
+  };
+}
+
+export function insertLocalDailyGiveawayIfMissing<T extends GiveawayPresentationInput>(
+  giveaways: T[],
+  now = Date.now()
+): T[] {
+  const recurring = selectRecurringActiveGiveaways(giveaways);
+  if (recurring.some((item) => getGiveawayTier(item) === 'daily')) return recurring;
+  const template = recurring[0];
+  if (!template) return recurring;
+  return selectRecurringActiveGiveaways([...recurring, createLocalDailyGiveawayFixture(template, now)]);
 }
 
 export function sortGiveawaysByTierThenEnd<T extends GiveawayPresentationInput>(giveaways: T[]): T[] {
