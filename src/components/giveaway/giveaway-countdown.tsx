@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { getTimeRemaining, type TimeRemaining } from '@/lib/giveaway-presentation';
+import {
+  formatCompactCountdown,
+  getTimeRemaining,
+  type CompactDurationLabels,
+  type TimeRemaining,
+} from '@/lib/giveaway-presentation';
 
 export function useLiveNow(intervalMs = 1000): number {
   const [now, setNow] = useState(() => Date.now());
@@ -76,14 +81,7 @@ export function GiveawayCompactTime({
 }: {
   remaining: TimeRemaining;
   expiredLabel: string;
-  labels: { days: string; hours: string; minutes: string; seconds: string };
+  labels: CompactDurationLabels;
 }) {
-  if (remaining.expired) return <>{expiredLabel}</>;
-  if (remaining.days > 0) {
-    return <>{`${remaining.days}${labels.days} ${pad(remaining.hours)}${labels.hours}`}</>;
-  }
-  if (remaining.hours > 0) {
-    return <>{`${pad(remaining.hours)}${labels.hours} ${pad(remaining.minutes)}${labels.minutes}`}</>;
-  }
-  return <>{`${pad(remaining.minutes)}${labels.minutes} ${pad(remaining.seconds)}${labels.seconds}`}</>;
+  return <>{formatCompactCountdown(remaining, labels, expiredLabel)}</>;
 }

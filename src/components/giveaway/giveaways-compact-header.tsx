@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { FragmentAmount, LevelBadge } from '@/components/ui/level-badge';
 import { GiveawayHowItWorksDialog } from '@/components/giveaway/giveaway-how-it-works-dialog';
+import { getDisplayInitials } from '@/lib/giveaway-presentation';
 import { getLevelInfo } from '@/lib/level-system';
 import { GiftIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
@@ -12,6 +13,7 @@ export function GiveawaysCompactHeader({
   messages,
   user,
   userFragments,
+  fragmentsUntilNext,
 }: {
   messages: Messages;
   user: {
@@ -21,13 +23,15 @@ export function GiveawaysCompactHeader({
     level: number;
   };
   userFragments: number;
+  fragmentsUntilNext?: number | null;
 }) {
   const layout = messages.giveaways.layout;
   const levelInfo = getLevelInfo(user.xp);
   const xpPercent = Math.round(levelInfo.levelProgress * 100);
+  const initials = getDisplayInitials(user.username) || 'MS';
 
   return (
-    <div className="mb-6 flex flex-col gap-4 lg:mb-8 lg:max-h-24 lg:flex-row lg:items-center lg:justify-between">
+    <div className="mb-6 flex flex-col gap-4 lg:mb-8 lg:flex-row lg:items-center lg:justify-between">
       <div className="min-w-0">
         <div className="flex items-center gap-2.5">
           <GiftIcon className="h-6 w-6 shrink-0 text-theme-accent" />
@@ -52,7 +56,7 @@ export function GiveawaysCompactHeader({
       >
         <Avatar className="h-11 w-11 shrink-0 ring-1 ring-white/15">
           <AvatarImage src={user.avatar} alt={user.username} />
-          <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+          <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
         <LevelBadge
           tierIndex={levelInfo.tierIndex}
@@ -61,9 +65,21 @@ export function GiveawaysCompactHeader({
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <FragmentAmount amount={userFragments} size="sm" className="font-display text-2xl font-semibold leading-none" />
+            <FragmentAmount
+              amount={userFragments}
+              size="sm"
+              className="font-display text-2xl font-semibold leading-none"
+            />
             <span className="text-xs text-muted-foreground">{layout.availableFragments}</span>
           </div>
+          {fragmentsUntilNext != null && fragmentsUntilNext > 0 && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {messages.giveaways.card.fragmentsUntilNext.replace(
+                '{count}',
+                String(fragmentsUntilNext)
+              )}
+            </p>
+          )}
           <Progress
             value={xpPercent}
             className="mt-2 h-1 bg-muted/60 [&>div]:bg-theme-accent"

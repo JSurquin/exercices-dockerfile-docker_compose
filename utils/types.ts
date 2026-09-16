@@ -3987,6 +3987,15 @@ export interface Messages {
       nextGiveaway: string;
       moreNeeded: string;
       missionsLink: string;
+      winnerOne: string;
+      winnerOther: string;
+      yourEntriesLine: string;
+      communityName: string;
+      maxEntriesReached: string;
+      participateCost: string;
+      missingFragmentsCta: string;
+      maxButton: string;
+      fragmentsUntilNext: string;
     };
     empty: {
       noActive: string;
@@ -4045,10 +4054,42 @@ export interface Messages {
       countdownHours: string;
       countdownMinutes: string;
       countdownSeconds: string;
+      compactDays: string;
+      compactHours: string;
+      compactMinutes: string;
+      compactSeconds: string;
       leaderboardTitle: string;
       leaderboardEmpty: string;
       leaderboardYou: string;
       featured: string;
+    };
+    earn: {
+      title: string;
+      sellLabel: string;
+      sellReward: string;
+      sellCta: string;
+      dailyLabel: string;
+      dailyReward: string;
+      dailyCta: string;
+      dailyClaimed: string;
+    };
+    pastWinners: {
+      title: string;
+      seeMore: string;
+      empty: string;
+    };
+    faq: {
+      title: string;
+      fragmentsQ: string;
+      fragmentsA: string;
+      drawQ: string;
+      drawA: string;
+      deliveryQ: string;
+      deliveryA: string;
+      privateQ: string;
+      privateA: string;
+      entriesQ: string;
+      entriesA: string;
     };
   };
   missions: {

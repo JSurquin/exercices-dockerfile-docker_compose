@@ -32,6 +32,12 @@ import {
 import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
 import Image from 'next/image';
+import {
+  formatCompactCountdown,
+  formatGiveawayDate,
+  getDisplayInitials,
+  getTimeRemaining,
+} from '@/lib/giveaway-presentation';
 
 interface GiveawayDetails {
   id: string;
@@ -60,17 +66,6 @@ interface GiveawayDetails {
     rank: number;
     user?: { steamUsername: string | null; steamAvatar: string | null } | null;
   }[];
-}
-
-function getTimeRemaining(endDate: string) {
-  const diff = new Date(endDate).getTime() - Date.now();
-  if (diff <= 0) return null;
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const minutes = Math.floor((diff % 3600000) / 60000);
-  if (days > 0) return `${days}j ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
 }
 
 export default function GiveawayDetailsPage() {
@@ -166,8 +161,21 @@ export default function GiveawayDetailsPage() {
   const myEntries = giveaway.myEntries;
   const myChance = giveaway.myChancePercent;
   const progress = (giveaway.soldTickets / giveaway.maxTickets) * 100;
-  const timeLeft = getTimeRemaining(giveaway.endDate);
-  const isActive = giveaway.status === 'ACTIVE' && timeLeft !== null;
+  const remaining = getTimeRemaining(giveaway.endDate);
+  const layout = messages.giveaways.layout;
+  const timeLeft = remaining.expired
+    ? null
+    : formatCompactCountdown(
+        remaining,
+        {
+          days: layout.compactDays,
+          hours: layout.compactHours,
+          minutes: layout.compactMinutes,
+          seconds: layout.compactSeconds,
+        },
+        messages.giveawaysPage.detail.finished
+      );
+  const isActive = giveaway.status === 'ACTIVE' && !remaining.expired;
   const isParticipationLocked =
     giveaway.isPrivate &&
     !!giveaway.requiredAffiliateCode &&
@@ -284,7 +292,7 @@ export default function GiveawayDetailsPage() {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <CalendarIcon className="w-4 h-4 shrink-0" />
-                    <span>{new Date(giveaway.endDate).toLocaleDateString(locale === 'cn' ? 'zh-CN' : locale)}</span>
+                    <span>{formatGiveawayDate(giveaway.endDate, locale)}</span>
                   </div>
                 </div>
 
@@ -489,7 +497,9 @@ export default function GiveawayDetailsPage() {
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={u?.steamAvatar ?? undefined} />
                           <AvatarFallback className="bg-yellow-500 text-white">
-                            {(u?.steamUsername ?? 'W').slice(0, 2).toUpperCase()}
+                            {getDisplayInitials(
+                              u?.steamUsername ?? messages.giveawaysPage.detail.winnerFallback
+                            ) || 'MS'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">

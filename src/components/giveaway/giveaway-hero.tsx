@@ -31,7 +31,7 @@ export function GiveawayHero({
   giveaway: GiveawayWithEntries;
   messages: Messages;
   userFragments: number;
-  onParticipate: (giveaway: GiveawayWithEntries, entries: number) => void;
+  onParticipate: (giveaway: GiveawayWithEntries, entries: number) => void | Promise<void>;
   currentUser: { username: string; avatar: string } | null;
 }) {
   const layout = messages.giveaways.layout;
@@ -131,7 +131,9 @@ export function GiveawayHero({
                       <span className="w-5 text-muted-foreground">{index + 1}</span>
                       <Avatar className="h-7 w-7">
                         <AvatarImage src={row.avatar} alt={row.username} />
-                        <AvatarFallback>{row.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>
+                          {(row.username.trim().slice(0, 2) || 'MS').toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       <span className="min-w-0 flex-1 truncate">
                         {row.username}

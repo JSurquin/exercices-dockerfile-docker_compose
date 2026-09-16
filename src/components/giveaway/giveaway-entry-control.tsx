@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
+import { cn } from '@/lib/utils';
+import { ArrowPathIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
+
+function scrollToEarnFragments() {
+  document.getElementById('earn-fragments')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 export function GiveawayEntryControl({
   giveaway,
@@ -19,76 +22,126 @@ export function GiveawayEntryControl({
   giveaway: GiveawayWithEntries;
   messages: Messages;
   userFragments: number;
-  onParticipate: (giveaway: GiveawayWithEntries, entries: number) => void;
+  onParticipate: (giveaway: GiveawayWithEntries, entries: number) => void | Promise<void>;
   compact?: boolean;
 }) {
   const [entriesToBuy, setEntriesToBuy] = useState(1);
-  const fg = messages.giveaways.fragments;
+  const [submitting, setSubmitting] = useState(false);
+  const card = messages.giveaways.card;
   const myEntries = giveaway.myEntries ?? 0;
-  const poolLeft = giveaway.maxTickets - giveaway.soldTickets;
-  const maxPerUser =
+  const poolLeft = Math.max(0, giveaway.maxTickets - giveaway.soldTickets);
+  const remainingPerUser =
     giveaway.maxEntriesPerUser != null ? Math.max(0, giveaway.maxEntriesPerUser - myEntries) : poolLeft;
-  const maxAffordable = giveaway.ticketPrice > 0 ? Math.floor(userFragments / giveaway.ticketPrice) : 0;
-  const maxSelectable = Math.max(0, Math.min(poolLeft, maxPerUser, maxAffordable));
+  const maxAffordable =
+    giveaway.ticketPrice > 0 ? Math.floor(userFragments / giveaway.ticketPrice) : 0;
+  const maxByRules = Math.max(0, Math.min(poolLeft, remainingPerUser));
+  const maxSelectable = Math.max(0, Math.min(maxByRules, maxAffordable));
+  const maxReached = maxByRules < 1;
   const totalCost = entriesToBuy * giveaway.ticketPrice;
+  const missing = Math.max(0, totalCost - userFragments);
+  const unaffordable = !maxReached && missing > 0;
+
+  useEffect(() => {
+    setEntriesToBuy((current) => {
+      if (maxReached) return 1;
+      const upper = Math.max(1, maxSelectable || 1);
+      return Math.min(Math.max(1, current), upper);
+    });
+  }, [maxReached, maxSelectable]);
+
+  const setQuantity = (value: number) => {
+    const upper = Math.max(1, maxSelectable || 1);
+    setEntriesToBuy(Math.min(Math.max(1, value), upper));
+  };
+
+  const handleParticipate = async () => {
+    if (submitting || maxReached || unaffordable) return;
+    setSubmitting(true);
+    try {
+      await onParticipate(giveaway, entriesToBuy);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const quantityDisabled = submitting || maxReached || maxSelectable < 1;
 
   return (
-    <div className={compact ? 'space-y-2' : 'space-y-3'}>
-      {userFragments < giveaway.ticketPrice && (
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <FragmentAmount amount={userFragments} size="xs" />
-              <span>/</span>
-              <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
-              <span>{messages.giveaways.card.fragmentsLabel}</span>
+    <div className={cn('space-y-2', compact ? '' : 'space-y-3')}>
+      {!maxReached && (
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center overflow-hidden rounded-md border border-white/10 bg-white/5">
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center text-muted-foreground hover:bg-white/10 disabled:opacity-40"
+              onClick={() => setQuantity(entriesToBuy - 1)}
+              disabled={quantityDisabled || entriesToBuy <= 1}
+              aria-label="-"
+            >
+              <MinusIcon className="h-4 w-4" />
+            </button>
+            <span className="min-w-[2.25rem] text-center font-display text-sm tabular-nums">
+              {entriesToBuy}
             </span>
-            <span className="font-medium text-theme-stat">
-              {messages.giveaways.card.fragmentsRemaining.replace(
-                '{count}',
-                String(giveaway.ticketPrice - userFragments)
-              )}
-            </span>
+            <button
+              type="button"
+              className="flex h-9 w-9 items-center justify-center text-muted-foreground hover:bg-white/10 disabled:opacity-40"
+              onClick={() => setQuantity(entriesToBuy + 1)}
+              disabled={quantityDisabled || entriesToBuy >= Math.max(1, maxSelectable)}
+              aria-label="+"
+            >
+              <PlusIcon className="h-4 w-4" />
+            </button>
           </div>
-          <Progress
-            value={Math.min(100, (userFragments / giveaway.ticketPrice) * 100)}
-            className="h-1.5 bg-muted [&>div]:bg-theme-stat"
-          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setQuantity(maxSelectable)}
+            disabled={quantityDisabled || maxSelectable < 1}
+          >
+            {card.maxButton}
+          </Button>
         </div>
       )}
-      <Label htmlFor={`entries-${giveaway.id}`} className="text-sm">
-        {fg.entriesToBuy}
-      </Label>
-      <div className="flex space-x-2">
-        <Input
-          id={`entries-${giveaway.id}`}
-          type="number"
-          min="1"
-          max={Math.max(1, maxSelectable)}
-          value={entriesToBuy}
-          onChange={(e) => {
-            const v = Math.max(1, parseInt(e.target.value, 10) || 1);
-            setEntriesToBuy(Math.min(v, Math.max(1, maxSelectable)));
-          }}
-          className="flex-1"
-        />
-        <Button
-          variant="chrome"
-          onClick={() => onParticipate(giveaway, entriesToBuy)}
-          disabled={
-            maxSelectable < 1 ||
-            userFragments < totalCost ||
-            entriesToBuy > poolLeft ||
-            entriesToBuy > maxPerUser
-          }
-        >
-          {messages.giveaways.card.participate}
+
+      {maxReached ? (
+        <Button type="button" variant="secondary" className="w-full" disabled>
+          {card.maxEntriesReached}
         </Button>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {messages.giveaways.youHave} {userFragments} {fg.entriesAvailable},{' '}
-        {messages.giveaways.card.costLabel.replace('{cost}', String(totalCost))}
-      </p>
+      ) : unaffordable ? (
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full opacity-100"
+          onClick={scrollToEarnFragments}
+        >
+          {card.missingFragmentsCta.replace('{count}', String(missing))}
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          variant="chrome"
+          className="w-full"
+          onClick={() => void handleParticipate()}
+          disabled={submitting}
+        >
+          {submitting ? (
+            <ArrowPathIcon className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              {card.participateCost.split('{cost}')[0]}
+              <FragmentAmount amount={totalCost} size="xs" className="font-semibold" />
+            </>
+          )}
+        </Button>
+      )}
+
+      {!maxReached && (
+        <p className="text-xs text-muted-foreground">
+          {card.costLabel.replace('{cost}', String(totalCost))}
+        </p>
+      )}
     </div>
   );
 }

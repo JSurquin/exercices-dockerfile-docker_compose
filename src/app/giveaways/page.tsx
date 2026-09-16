@@ -18,6 +18,9 @@ import { GiveawaysCompactHeader } from '@/components/giveaway/giveaways-compact-
 import { GiveawayHero } from '@/components/giveaway/giveaway-hero';
 import { GiveawayCard } from '@/components/giveaway/giveaway-card';
 import { GiveawayToolbar } from '@/components/giveaway/giveaway-toolbar';
+import { GiveawayEarnFragments } from '@/components/giveaway/giveaway-earn-fragments';
+import { GiveawayPastWinners } from '@/components/giveaway/giveaway-past-winners';
+import { GiveawayFaq } from '@/components/giveaway/giveaway-faq';
 import { useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import {
@@ -30,17 +33,19 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import {
   filterGiveawaysByTier,
+  fragmentsUntilCheapestEntry,
   selectFeaturedGiveaway,
   sortGiveaways,
   type GiveawaySort,
   type GiveawayTierFilter,
 } from '@/lib/giveaway-presentation';
 
-const giveawayGridClass = 'grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3';
+const giveawayGridClass =
+  'grid items-stretch gap-6 [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]';
 
 export default function GiveawaysPage() {
-  const { user, isLoading: authLoading } = useAuth();
-  const { messages } = useLocale();
+  const { user, isLoading: authLoading, refreshUser } = useAuth();
+  const { messages, locale } = useLocale();
   const { isTourMode } = useTourMode();
   const [selectedTab, setSelectedTab] = useState('active');
   const [tierFilter, setTierFilter] = useState<GiveawayTierFilter>('all');
@@ -107,6 +112,7 @@ export default function GiveawaysPage() {
     try {
       const res = await participateInGiveaway(giveaway.id, entries);
       setUserFragments(res.newFragmentBalance);
+      await refreshUser();
       refetch();
       refetchEntries();
     } catch (error) {
@@ -148,6 +154,10 @@ export default function GiveawaysPage() {
       sort
     ),
     [giveaways, sort]
+  );
+  const fragmentsUntilNext = useMemo(
+    () => fragmentsUntilCheapestEntry(activeGiveaways, userFragments),
+    [activeGiveaways, userFragments]
   );
 
   if (giveawaysEnabled === null) {
@@ -264,11 +274,12 @@ export default function GiveawaysPage() {
     <>
       <GiveawayNotifications />
       <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[90rem]">
           <GiveawaysCompactHeader
             messages={messages}
             user={user}
             userFragments={userFragments}
+            fragmentsUntilNext={fragmentsUntilNext}
           />
 
           {featured && (
@@ -281,6 +292,8 @@ export default function GiveawaysPage() {
             />
           )}
 
+          <div className="min-[1440px]:grid min-[1440px]:grid-cols-[minmax(0,1fr)_320px] min-[1440px]:items-start min-[1440px]:gap-8">
+            <div className="min-w-0">
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-0">
             <GiveawayToolbar
               messages={messages}
@@ -345,7 +358,8 @@ export default function GiveawaysPage() {
 
                   {filteredPrivate.length > 0 && (
                     <section className="mt-10">
-                      <h2 className="mb-4 font-display text-lg font-semibold">
+                      <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold">
+                        <LockClosedIcon className="h-5 w-5 text-purple-300" aria-hidden />
                         {messages.giveaways.layout.privateSectionTitle}
                       </h2>
                       <div className={giveawayGridClass}>
@@ -473,6 +487,20 @@ export default function GiveawaysPage() {
               )}
             </TabsContent>
           </Tabs>
+            </div>
+            <aside className="mt-10 min-[1440px]:mt-0">
+              <GiveawayEarnFragments
+                messages={messages}
+                onClaimed={(earned) => {
+                  setUserFragments((prev) => prev + earned);
+                  void refreshUser();
+                }}
+              />
+            </aside>
+          </div>
+
+          <GiveawayPastWinners giveaways={giveaways} messages={messages} locale={locale} />
+          <GiveawayFaq messages={messages} />
         </div>
       </div>
     </>

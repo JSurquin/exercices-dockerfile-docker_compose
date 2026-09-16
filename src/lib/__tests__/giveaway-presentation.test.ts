@@ -1,5 +1,11 @@
 import {
+  collectPastWinners,
   filterGiveawaysByTier,
+  formatCompactCountdown,
+  formatGiveawayDate,
+  formatWinnerCount,
+  fragmentsUntilCheapestEntry,
+  getDisplayInitials,
   getGiveawayTier,
   getPrizeHaloColor,
   getPrizeValueCents,
@@ -181,5 +187,83 @@ describe('getTimeRemaining', () => {
     expect(getTimeRemaining('2026-09-15T00:00:00.000Z', Date.parse('2026-09-16T00:00:00.000Z')).expired).toBe(
       true
     );
+  });
+});
+
+describe('formatCompactCountdown', () => {
+  const fr = { days: 'j', hours: 'h', minutes: 'min', seconds: 's' };
+  const en = { days: 'd', hours: 'h', minutes: 'm', seconds: 's' };
+
+  it('uses locale unit suffixes without padding', () => {
+    const remaining = {
+      days: 30,
+      hours: 2,
+      minutes: 0,
+      seconds: 0,
+      expired: false,
+      totalMs: 1,
+    };
+    expect(formatCompactCountdown(remaining, fr, 'Terminé')).toBe('30j 2h');
+    expect(formatCompactCountdown(remaining, en, 'Ended')).toBe('30d 2h');
+  });
+});
+
+describe('formatGiveawayDate', () => {
+  it('formats according to language', () => {
+    expect(formatGiveawayDate('2026-09-23T12:00:00.000Z', 'en')).toContain('2026');
+    expect(formatGiveawayDate('2026-09-23T12:00:00.000Z', 'fr')).toContain('2026');
+  });
+});
+
+describe('formatWinnerCount / getDisplayInitials / fragmentsUntilCheapestEntry', () => {
+  it('picks the singular or plural template', () => {
+    expect(formatWinnerCount(1, '{count} gagnant', '{count} gagnants')).toBe('1 gagnant');
+    expect(formatWinnerCount(2, '{count} winner', '{count} winners')).toBe('2 winners');
+  });
+
+  it('uses Steam-style initials instead of a question mark', () => {
+    expect(getDisplayInitials('Kitsu')).toBe('KI');
+    expect(getDisplayInitials('John Doe')).toBe('JD');
+    expect(getDisplayInitials('')).toBe('');
+  });
+
+  it('returns fragments missing for the cheapest active giveaway', () => {
+    expect(
+      fragmentsUntilCheapestEntry(
+        [
+          { status: 'ACTIVE', ticketPrice: 50 },
+          { status: 'ACTIVE', ticketPrice: 10 },
+          { status: 'ENDED', ticketPrice: 1 },
+        ],
+        4
+      )
+    ).toBe(6);
+    expect(fragmentsUntilCheapestEntry([{ status: 'ACTIVE', ticketPrice: 10 }], 10)).toBeNull();
+  });
+});
+
+describe('collectPastWinners', () => {
+  it('flattens ended giveaway winners newest first', () => {
+    const rows = collectPastWinners([
+      {
+        ...giveaway({
+          id: 'old',
+          status: 'ENDED',
+          endDate: '2026-09-01T00:00:00.000Z',
+        }),
+        winners: [{ rank: 1, user: { steamUsername: 'Old', steamAvatar: 'a.png' } }],
+      },
+      {
+        ...giveaway({
+          id: 'new',
+          status: 'ENDED',
+          endDate: '2026-09-10T00:00:00.000Z',
+          prize: 'AWP | Asiimov',
+        }),
+        winners: [{ rank: 1, user: { steamUsername: 'New', steamAvatar: null } }],
+      },
+    ]);
+    expect(rows.map((row) => row.username)).toEqual(['New', 'Old']);
+    expect(rows[0]?.prize).toBe('AWP | Asiimov');
   });
 });

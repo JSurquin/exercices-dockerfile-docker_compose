@@ -25,7 +25,8 @@ const DEMO_GIVEAWAYS: Array<{
   prize: string;
   participants: number;
   ticketPrice: number;
-  endIn: string;
+  days: number;
+  hours: number;
   icon: DemoIcon;
 }> = [
   {
@@ -33,7 +34,8 @@ const DEMO_GIVEAWAYS: Array<{
     prize: '~€ 1 200',
     participants: 248,
     ticketPrice: 50,
-    endIn: '3j 12h',
+    days: 3,
+    hours: 12,
     icon: SparklesIcon,
   },
   {
@@ -41,7 +43,8 @@ const DEMO_GIVEAWAYS: Array<{
     prize: '~€ 450',
     participants: 91,
     ticketPrice: 25,
-    endIn: '6j 4h',
+    days: 6,
+    hours: 4,
     icon: GiftIcon,
   },
   {
@@ -49,7 +52,8 @@ const DEMO_GIVEAWAYS: Array<{
     prize: '€ 50',
     participants: 430,
     ticketPrice: 10,
-    endIn: '1j 18h',
+    days: 1,
+    hours: 18,
     icon: BanknotesIcon,
   },
 ];
@@ -124,7 +128,7 @@ export function GiveawaysTourDemo() {
                     <div className="shrink-0 text-right">
                       <Badge variant="outline" className="mb-1 text-xs">
                         <ClockIcon className="mr-1 h-3 w-3" />
-                        {giveaway.endIn}
+                        {giveaway.days}{g.layout.compactDays} {giveaway.hours}{g.layout.compactHours}
                       </Badge>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <UserGroupIcon className="h-3 w-3" />

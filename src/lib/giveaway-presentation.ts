@@ -31,6 +31,7 @@ export interface GiveawayPresentationInput {
   createdAt?: Date | string | null;
   endDate: Date | string;
   prize: string;
+  prizeImageUrl?: string | null;
   steamMarketHashName?: string | null;
 }
 
@@ -129,6 +130,114 @@ export function getTimeRemaining(endDate: Date | string, now = Date.now()): Time
   const minutes = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((totalMs % (1000 * 60)) / 1000);
   return { days, hours, minutes, seconds, expired: false, totalMs };
+}
+
+export interface CompactDurationLabels {
+  days: string;
+  hours: string;
+  minutes: string;
+  seconds: string;
+}
+
+export function formatCompactCountdown(
+  remaining: TimeRemaining,
+  labels: CompactDurationLabels,
+  expiredLabel: string
+): string {
+  if (remaining.expired) return expiredLabel;
+  if (remaining.days > 0) {
+    return `${remaining.days}${labels.days} ${remaining.hours}${labels.hours}`;
+  }
+  if (remaining.hours > 0) {
+    return `${remaining.hours}${labels.hours} ${remaining.minutes}${labels.minutes}`;
+  }
+  return `${remaining.minutes}${labels.minutes} ${remaining.seconds}${labels.seconds}`;
+}
+
+export function localeToDateLocale(locale: string): string {
+  if (locale === 'fr') return 'fr-FR';
+  if (locale === 'cn') return 'zh-CN';
+  return 'en-US';
+}
+
+export function formatGiveawayDate(value: Date | string, locale: string): string {
+  const date = toGiveawayDate(value);
+  if (!date) return '';
+  return date.toLocaleDateString(localeToDateLocale(locale), {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+export function getDisplayInitials(name: string | null | undefined): string {
+  const trimmed = (name ?? '').trim();
+  if (!trimmed) return '';
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    const first = parts[0]?.[0] ?? '';
+    const second = parts[1]?.[0] ?? '';
+    return `${first}${second}`.toUpperCase();
+  }
+  return trimmed.slice(0, 2).toUpperCase();
+}
+
+export function formatWinnerCount(count: number, one: string, other: string): string {
+  return (count === 1 ? one : other).replace('{count}', String(count));
+}
+
+export function fragmentsUntilCheapestEntry(
+  giveaways: { status?: string; ticketPrice: number }[],
+  available: number
+): number | null {
+  const active = giveaways.filter((giveaway) => giveaway.status === 'ACTIVE' && giveaway.ticketPrice > 0);
+  if (active.length === 0) return null;
+  const cheapest = Math.min(...active.map((giveaway) => giveaway.ticketPrice));
+  const missing = cheapest - available;
+  return missing > 0 ? Math.ceil(missing) : null;
+}
+
+export interface PastWinnerRow {
+  key: string;
+  username: string | null;
+  avatar: string | null;
+  prize: string;
+  prizeImageUrl: string | null;
+  steamMarketHashName?: string | null;
+  tier: GiveawayTier;
+  endDate: Date | string;
+  giveawayId: string;
+}
+
+export function collectPastWinners<
+  T extends GiveawayPresentationInput & {
+    winners?: { rank: number; user?: { steamUsername?: string | null; steamAvatar?: string | null } | null }[];
+  },
+>(giveaways: T[]): PastWinnerRow[] {
+  const rows: PastWinnerRow[] = [];
+  for (const giveaway of giveaways) {
+    if (giveaway.status !== 'ENDED') continue;
+    const winners = giveaway.winners ?? [];
+    for (const winner of winners) {
+      rows.push({
+        key: `${giveaway.id}-${winner.rank}`,
+        username: winner.user?.steamUsername ?? null,
+        avatar: winner.user?.steamAvatar ?? null,
+        prize: giveaway.prize,
+        prizeImageUrl: giveaway.prizeImageUrl ?? null,
+        steamMarketHashName: giveaway.steamMarketHashName,
+        tier: getGiveawayTier(giveaway),
+        endDate: giveaway.endDate,
+        giveawayId: giveaway.id,
+      });
+    }
+  }
+  rows.sort((a, b) => {
+    const aTime = toGiveawayDate(a.endDate)?.getTime() ?? 0;
+    const bTime = toGiveawayDate(b.endDate)?.getTime() ?? 0;
+    return bTime - aTime;
+  });
+  return rows;
 }
 
 function compareEndingSoon(a: GiveawayPresentationInput, b: GiveawayPresentationInput): number {

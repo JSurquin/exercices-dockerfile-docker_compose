@@ -8,6 +8,7 @@ import { TrophyIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { useLocale } from '@/components/providers/locale-provider';
+import { getDisplayInitials } from '@/lib/giveaway-presentation';
 
 interface DrawNotification {
   id: string;
@@ -120,7 +121,9 @@ export function GiveawayNotifications() {
                     <Avatar className="w-8 h-8 shrink-0">
                       <AvatarImage src={winner.steamAvatar || undefined} />
                       <AvatarFallback className="bg-yellow-500 text-white text-xs">
-                        {(winner.steamUsername || 'W').slice(0, 2).toUpperCase()}
+                        {getDisplayInitials(
+                          winner.steamUsername || messages.giveaways.notifications.anonymousPlayer
+                        ) || 'MS'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">

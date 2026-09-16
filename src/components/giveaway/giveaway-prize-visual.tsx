@@ -15,13 +15,15 @@ import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 export function GiveawayPrizeVisual({
   giveaway,
   size = 'card',
+  showDetails = true,
+  grayscale = false,
 }: {
   giveaway: GiveawayWithEntries;
   size?: 'card' | 'hero';
+  showDetails?: boolean;
+  grayscale?: boolean;
 }) {
-  const parsed = parsePrizeDisplay(giveaway.prize, giveaway.steamMarketHashName);
   const halo = getPrizeHaloColor(giveaway.prize, giveaway.steamMarketHashName);
-  const valueCents = getPrizeValueCents(giveaway);
   const isHero = size === 'hero';
 
   return (
@@ -33,7 +35,12 @@ export function GiveawayPrizeVisual({
         }}
         aria-hidden
       />
-      <div className={cn('relative flex flex-col items-center', isHero ? 'min-h-[220px]' : 'min-h-[132px]')}>
+      <div
+        className={cn(
+          'relative flex flex-col items-center justify-center',
+          isHero ? 'min-h-[220px]' : 'h-[132px]'
+        )}
+      >
         <SafeImage
           src={giveaway.prizeImageUrl}
           alt={giveaway.prize}
@@ -41,47 +48,71 @@ export function GiveawayPrizeVisual({
           height={isHero ? 200 : 110}
           className={cn(
             'object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]',
-            isHero ? 'h-[180px] w-auto sm:h-[200px]' : 'h-[96px] w-auto'
+            isHero ? 'h-[180px] w-auto sm:h-[200px]' : 'h-[96px] w-auto',
+            grayscale && 'grayscale'
           )}
           fallbackClassName={isHero ? 'h-[180px] w-[240px] rounded' : 'h-[96px] w-[140px] rounded'}
-          fallbackIcon={<TrophyIcon className={isHero ? 'h-16 w-16 text-theme-accent' : 'h-10 w-10 text-theme-accent'} />}
+          fallbackIcon={
+            <TrophyIcon className={isHero ? 'h-16 w-16 text-theme-accent' : 'h-10 w-10 text-theme-accent'} />
+          }
           unoptimized
         />
-        <div className="mt-3 w-full text-center">
-          {parsed.hasStructuredName ? (
-            <>
-              <p className={cn('font-display text-muted-foreground', isHero ? 'text-sm' : 'text-xs')}>
-                {parsed.weapon}
-              </p>
-              <p
-                className={cn('font-display font-semibold', isHero ? 'text-2xl sm:text-3xl' : 'text-base')}
-                style={{ color: halo }}
-              >
-                {parsed.finish}
-              </p>
-              {parsed.exterior && (
-                <p className={cn('mt-1 text-muted-foreground', isHero ? 'text-sm' : 'text-xs')}>
-                  {parsed.exterior}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className={cn('font-display font-semibold', isHero ? 'text-2xl sm:text-3xl' : 'text-base')}>
-              {parsed.fallbackName}
+      </div>
+      {showDetails && (
+        <div className="relative mt-3">
+          <GiveawayPrizeDetails giveaway={giveaway} size={size} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function GiveawayPrizeDetails({
+  giveaway,
+  size = 'card',
+}: {
+  giveaway: GiveawayWithEntries;
+  size?: 'card' | 'hero';
+}) {
+  const parsed = parsePrizeDisplay(giveaway.prize, giveaway.steamMarketHashName);
+  const halo = getPrizeHaloColor(giveaway.prize, giveaway.steamMarketHashName);
+  const valueCents = getPrizeValueCents(giveaway);
+  const isHero = size === 'hero';
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      {parsed.hasStructuredName ? (
+        <>
+          <p className={cn('font-display text-muted-foreground', isHero ? 'text-sm' : 'text-xs')}>
+            {parsed.weapon}
+          </p>
+          <p
+            className={cn('font-display font-semibold', isHero ? 'text-2xl sm:text-3xl' : 'text-base')}
+            style={{ color: halo }}
+          >
+            {parsed.finish}
+          </p>
+          {parsed.exterior && (
+            <p className={cn('mt-0.5 text-muted-foreground', isHero ? 'text-sm' : 'text-xs')}>
+              {parsed.exterior}
             </p>
           )}
-        </div>
-        {valueCents != null && (
-          <Badge
-            className={cn(
-              'mission-glass-badge mt-3 font-display font-semibold',
-              isHero ? 'px-4 py-1.5 text-lg' : 'px-2.5 py-1 text-sm'
-            )}
-          >
-            <ConvertedAmount cents={valueCents} className={isHero ? 'h-6' : 'h-4'} />
-          </Badge>
-        )}
-      </div>
+        </>
+      ) : (
+        <p className={cn('font-display font-semibold', isHero ? 'text-2xl sm:text-3xl' : 'text-base')}>
+          {parsed.fallbackName}
+        </p>
+      )}
+      {valueCents != null && (
+        <Badge
+          className={cn(
+            'mission-glass-badge mt-2 font-display font-semibold',
+            isHero ? 'px-4 py-1.5 text-lg' : 'px-2.5 py-1 text-sm'
+          )}
+        >
+          <ConvertedAmount cents={valueCents} className={isHero ? 'h-6' : 'h-4'} />
+        </Badge>
+      )}
     </div>
   );
 }
