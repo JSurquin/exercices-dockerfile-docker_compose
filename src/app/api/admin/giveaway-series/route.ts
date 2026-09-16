@@ -68,6 +68,8 @@ export async function POST(request: NextRequest) {
 
     const startDate = data.startDate ? new Date(data.startDate) : new Date();
     const endDate = data.endDate ? new Date(data.endDate) : null;
+    const now = new Date();
+    const status = data.enabled === false ? 'DISABLED' : 'ACTIVE';
 
     const series = await prisma.giveawaySeries.create({
       data: {
@@ -90,15 +92,22 @@ export async function POST(request: NextRequest) {
             : null,
         startDate,
         endDate,
-        status: data.enabled === false ? 'DISABLED' : 'ACTIVE',
+        status,
+        // Sans nextSpawnAt, le cron ignorait les séries (Prisma : null ≰ now).
+        nextSpawnAt: status === 'ACTIVE' && startDate > now ? startDate : null,
       },
     });
 
     let firstInstance = null;
-    if (series.status === 'ACTIVE' && startDate <= new Date()) {
+    if (series.status === 'ACTIVE' && startDate <= now) {
       const spawn = await spawnGiveawayFromSeries(series.id, startDate);
       if (spawn.ok) {
         firstInstance = spawn.giveaway;
+      } else if (spawn.error !== 'Instance déjà active') {
+        await prisma.giveawaySeries.update({
+          where: { id: series.id },
+          data: { nextSpawnAt: now },
+        });
       }
     }
 

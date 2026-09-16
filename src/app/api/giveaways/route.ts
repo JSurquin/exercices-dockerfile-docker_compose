@@ -13,6 +13,7 @@ import {
 import { resolveGiveawayViewerContext } from '@/lib/giveaway-viewer-context';
 import { getPointsConfig } from '@/lib/points-service';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
+import { processDueRecurringGiveaways } from '@/lib/giveaway-recurrence';
 import { safeParseJson, safeParseSearchParams } from '@/lib/validation/helpers';
 import {
   giveawayCreateBodySchema,
@@ -30,6 +31,12 @@ export async function GET(request: NextRequest) {
 
     const { viewerUserId: viewerId, affiliateRef, viewerIsAdmin } =
       await resolveGiveawayViewerContext(request);
+
+    try {
+      await processDueRecurringGiveaways();
+    } catch (recurrenceError) {
+      console.error('Error spawning due recurring giveaways:', recurrenceError);
+    }
 
     const accessOr = buildGiveawayVisibilityOr(affiliateRef, viewerId, viewerIsAdmin);
     const where: Prisma.GiveawayWhereInput = {

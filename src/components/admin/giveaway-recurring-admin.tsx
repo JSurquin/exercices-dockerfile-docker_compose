@@ -108,7 +108,7 @@ const defaultForm = (): SeriesForm => ({
   winnerCount: GIVEAWAY_DEFAULT_WINNER_COUNT,
   maxEntriesPerUser: '',
   rewardValueCents: 0,
-  startDate: new Date().toISOString().slice(0, 16),
+  startDate: toDatetimeLocalValue(new Date()),
   endDate: '',
   isPrivate: false,
   requiredAffiliateCode: '',

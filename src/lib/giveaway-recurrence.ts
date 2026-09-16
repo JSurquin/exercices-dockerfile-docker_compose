@@ -54,6 +54,20 @@ export function computeInstanceEndAt(startAt: Date, durationMinutes: number): Da
   return endAt;
 }
 
+/**
+ * Si la fenêtre demandée est déjà terminée (cron en retard, startDate trop ancienne),
+ * on démarre une instance fraîche maintenant pour qu'elle apparaisse côté user.
+ */
+export function resolveInstanceStartAt(
+  requestedStartAt: Date,
+  durationMinutes: number,
+  now = new Date()
+): Date {
+  const plannedEnd = computeInstanceEndAt(requestedStartAt, durationMinutes);
+  if (plannedEnd <= now) return now;
+  return requestedStartAt;
+}
+
 export function seriesHasCapacityForInstance(
   series: Pick<GiveawaySeries, 'endDate' | 'durationMinutes'>,
   startAt: Date
@@ -61,6 +75,25 @@ export function seriesHasCapacityForInstance(
   if (!series.endDate) return true;
   if (startAt >= series.endDate) return false;
   return computeInstanceEndAt(startAt, series.durationMinutes) <= series.endDate;
+}
+
+/** Une série doit créer une instance visible si elle est active, démarrée, sans instance live, et due. */
+export function isSeriesDueForSpawn(
+  series: {
+    status: string;
+    startDate: Date;
+    endDate: Date | null;
+    nextSpawnAt: Date | null;
+  },
+  hasLiveInstance: boolean,
+  now = new Date()
+): boolean {
+  if (series.status !== 'ACTIVE') return false;
+  if (series.startDate > now) return false;
+  if (series.endDate && series.endDate <= now) return false;
+  if (hasLiveInstance) return false;
+  if (series.nextSpawnAt && series.nextSpawnAt > now) return false;
+  return true;
 }
 
 export function seriesDataToGiveawayCreate(
@@ -145,7 +178,9 @@ export async function spawnGiveawayFromSeries(seriesId: string, startAt = new Da
   if (series.endDate && series.endDate <= now) {
     return { ok: false as const, error: 'Série terminée' };
   }
-  if (!seriesHasCapacityForInstance(series, startAt)) {
+
+  const effectiveStartAt = resolveInstanceStartAt(startAt, series.durationMinutes, now);
+  if (!seriesHasCapacityForInstance(series, effectiveStartAt)) {
     return { ok: false as const, error: 'Limite de la série atteinte' };
   }
 
@@ -160,12 +195,12 @@ export async function spawnGiveawayFromSeries(seriesId: string, startAt = new Da
 
   const giveaway = await prisma.$transaction(async (tx) => {
     const created = await tx.giveaway.create({
-      data: seriesDataToGiveawayCreate(seriesId, series, startAt),
+      data: seriesDataToGiveawayCreate(seriesId, series, effectiveStartAt),
     });
     await tx.giveawaySeries.update({
       where: { id: seriesId },
       data: {
-        lastSpawnAt: startAt,
+        lastSpawnAt: effectiveStartAt,
         nextSpawnAt: null,
         spawnCount: { increment: 1 },
       },
@@ -209,15 +244,26 @@ export async function scheduleNextSpawnAfterDraw(seriesId: string, endedAt = new
 
 export async function processDueRecurringGiveaways() {
   const now = new Date();
-  const dueSeries = await prisma.giveawaySeries.findMany({
+  const candidates = await prisma.giveawaySeries.findMany({
     where: {
       status: 'ACTIVE',
       frequency: { in: ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'] },
       startDate: { lte: now },
       OR: [{ endDate: null }, { endDate: { gt: now } }],
-      nextSpawnAt: { lte: now },
+      AND: [{ OR: [{ nextSpawnAt: null }, { nextSpawnAt: { lte: now } }] }],
+    },
+    include: {
+      instances: {
+        where: { status: { in: ['ACTIVE', 'PAUSED'] } },
+        select: { id: true },
+        take: 1,
+      },
     },
   });
+
+  const dueSeries = candidates.filter((series) =>
+    isSeriesDueForSpawn(series, series.instances.length > 0, now)
+  );
 
   const results: { seriesId: string; status: string; giveawayId?: string; error?: string }[] = [];
 

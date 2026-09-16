@@ -2,6 +2,8 @@ import {
   computeInstanceEndAt,
   computeNextSpawnAt,
   computeNextSpawnAtAfterDraw,
+  isSeriesDueForSpawn,
+  resolveInstanceStartAt,
   seriesHasCapacityForInstance,
 } from '@/lib/giveaway-recurrence';
 
@@ -49,5 +51,51 @@ describe('giveaway-recurrence', () => {
     const startAt = new Date('2026-07-01T00:00:00Z');
     const endAt = computeInstanceEndAt(startAt, 120);
     expect(endAt.getTime()).toBe(new Date('2026-07-01T02:00:00Z').getTime());
+  });
+
+  it('conserve un startAt encore dans sa fenêtre', () => {
+    const requested = new Date('2026-07-01T00:00:00Z');
+    const now = new Date('2026-07-01T10:00:00Z');
+    expect(resolveInstanceStartAt(requested, 24 * 60, now).getTime()).toBe(requested.getTime());
+  });
+
+  it('replaque le startAt à maintenant si la fenêtre demandée est déjà finie', () => {
+    const requested = new Date('2026-07-01T00:00:00Z');
+    const now = new Date('2026-07-03T00:00:00Z');
+    expect(resolveInstanceStartAt(requested, 24 * 60, now).getTime()).toBe(now.getTime());
+  });
+
+  it('considère due une série active sans nextSpawnAt ni instance live', () => {
+    const now = new Date('2026-07-02T00:00:00Z');
+    expect(
+      isSeriesDueForSpawn(
+        {
+          status: 'ACTIVE',
+          startDate: new Date('2026-07-01T00:00:00Z'),
+          endDate: null,
+          nextSpawnAt: null,
+        },
+        false,
+        now
+      )
+    ).toBe(true);
+  });
+
+  it('n’est pas due tant qu’une instance live existe ou que le prochain spawn est dans le futur', () => {
+    const now = new Date('2026-07-02T00:00:00Z');
+    const series = {
+      status: 'ACTIVE' as const,
+      startDate: new Date('2026-07-01T00:00:00Z'),
+      endDate: null,
+      nextSpawnAt: null as Date | null,
+    };
+    expect(isSeriesDueForSpawn(series, true, now)).toBe(false);
+    expect(
+      isSeriesDueForSpawn(
+        { ...series, nextSpawnAt: new Date('2026-07-08T00:00:00Z') },
+        false,
+        now
+      )
+    ).toBe(false);
   });
 });
