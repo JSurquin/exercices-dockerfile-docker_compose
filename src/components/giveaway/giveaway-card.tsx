@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { GiveawayCompactTime, useLiveNow } from '@/components/giveaway/giveaway-countdown';
+import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
 import { GiveawayParticipateDialog } from '@/components/giveaway/giveaway-participate-dialog';
 import {
   GiveawayPrizeDetails,
@@ -27,7 +28,6 @@ import {
 } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
 import {
-  ArrowPathIcon,
   ClockIcon,
   InformationCircleIcon,
   LockClosedIcon,
@@ -36,10 +36,6 @@ import {
 } from '@heroicons/react/24/outline';
 import type { CSSProperties } from 'react';
 import type { Messages } from '~/utils/types';
-
-function scrollToEarnFragments() {
-  document.getElementById('earn-fragments')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
 
 export function GiveawayCard({
   giveaway,
@@ -180,50 +176,23 @@ export function GiveawayCard({
             </p>
           )}
 
-          <div className="mt-auto pt-1">
+          <div
+            className="mt-auto pt-1"
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
             {isEnded ? (
               <Button type="button" variant="secondary" className="w-full" disabled>
                 {card.status.ended}
               </Button>
-            ) : submitting ? (
-              <Button type="button" variant="chrome" className="w-full" disabled aria-busy>
-                <ArrowPathIcon className="h-4 w-4 animate-spin" />
-              </Button>
-            ) : action.type === 'reserved' ? (
-              <Button type="button" variant="secondary" className="w-full opacity-100" disabled>
-                <LockClosedIcon className="h-4 w-4" aria-hidden />
-                {card.accessReserved}
-              </Button>
-            ) : action.type === 'maxReached' ? (
-              <Button type="button" variant="secondary" className="w-full" disabled>
-                {card.maxEntriesReached}
-              </Button>
-            ) : action.type === 'unaffordable' ? (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full opacity-100"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  scrollToEarnFragments();
-                }}
-              >
-                {card.missingFragmentsCta.split('{count}')[0]}
-                <FragmentAmount amount={action.missing} size="xs" />
-                {card.missingFragmentsCta.split('{count}')[1]}
-              </Button>
             ) : (
-              <Button
-                type="button"
-                variant="chrome"
-                className="w-full"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setModalOpen(true);
-                }}
-              >
-                {card.participate}
-              </Button>
+              <GiveawayCtaButton
+                action={action}
+                submitting={submitting}
+                messages={messages}
+                ticketPrice={giveaway.ticketPrice}
+                onParticipate={() => setModalOpen(true)}
+              />
             )}
           </div>
         </CardContent>

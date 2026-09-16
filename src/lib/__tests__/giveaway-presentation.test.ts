@@ -10,6 +10,7 @@ import {
   fragmentsUntilCheapestEntry,
   getDisplayInitials,
   getGiveawayCardAction,
+  getGiveawayEntryLimits,
   getGiveawayKicker,
   getGiveawayTier,
   getPrizeHaloColor,
@@ -18,7 +19,11 @@ import {
   hexContrastRatio,
   nextUtcMidnightMs,
   parsePrizeDisplay,
+  resolveAvatarSrc,
   selectFeaturedGiveaway,
+  selectHighestValueIndex,
+  selectRecurringActiveGiveaways,
+  carouselSignedOffset,
   sortGiveaways,
   sortGiveawaysByTierThenEnd,
   viewerIsWinner,
@@ -138,6 +143,51 @@ describe('selectFeaturedGiveaway', () => {
       giveaway({ id: 'high', ticketPrice: 40 }),
     ]);
     expect(featured?.id).toBe('high');
+  });
+});
+
+describe('selectRecurringActiveGiveaways', () => {
+  it('keeps public active paliers in daily → weekly → monthly → yearly order', () => {
+    const sorted = selectRecurringActiveGiveaways([
+      giveaway({
+        id: 'year',
+        durationType: 'YEARLY',
+        startDate: '2025-09-16T00:00:00.000Z',
+        endDate: '2026-09-16T00:00:00.000Z',
+        rewardValueCents: 80_000,
+      }),
+      giveaway({
+        id: 'month-late',
+        startDate: '2026-09-16T00:00:00.000Z',
+        endDate: '2026-10-16T00:00:00.000Z',
+        rewardValueCents: 5_000,
+      }),
+      giveaway({
+        id: 'week',
+        startDate: '2026-09-16T00:00:00.000Z',
+        endDate: '2026-09-23T00:00:00.000Z',
+        rewardValueCents: 250,
+      }),
+      giveaway({
+        id: 'private',
+        isPrivate: true,
+        startDate: '2026-09-16T00:00:00.000Z',
+        endDate: '2026-10-16T00:00:00.000Z',
+      }),
+      giveaway({
+        id: 'special',
+        startDate: '2026-09-01T00:00:00.000Z',
+        endDate: '2026-11-15T00:00:00.000Z',
+      }),
+    ]);
+    expect(sorted.map((item) => item.id)).toEqual(['week', 'month-late', 'year']);
+    expect(selectHighestValueIndex(sorted)).toBe(2);
+  });
+
+  it('wraps carousel offsets around the center card', () => {
+    expect(carouselSignedOffset(2, 2, 3)).toBe(0);
+    expect(carouselSignedOffset(0, 2, 3)).toBe(1);
+    expect(carouselSignedOffset(1, 2, 3)).toBe(-1);
   });
 });
 
@@ -312,6 +362,19 @@ describe('formatWinnerCount / getDisplayInitials / fragmentsUntilCheapestEntry',
     expect(getDisplayInitials('')).toBe('');
   });
 
+  it('upgrades protocol-relative and http avatar URLs', () => {
+    expect(resolveAvatarSrc('')).toBeUndefined();
+    expect(resolveAvatarSrc('https://avatars.steamstatic.com/a.jpg')).toBe(
+      'https://avatars.steamstatic.com/a.jpg'
+    );
+    expect(resolveAvatarSrc('http://avatars.steamstatic.com/a.jpg')).toBe(
+      'https://avatars.steamstatic.com/a.jpg'
+    );
+    expect(resolveAvatarSrc('//avatars.steamstatic.com/a.jpg')).toBe(
+      'https://avatars.steamstatic.com/a.jpg'
+    );
+  });
+
   it('returns fragments missing for the cheapest active giveaway', () => {
     expect(
       fragmentsUntilCheapestEntry(
@@ -442,6 +505,62 @@ describe('collectPastWinnerGroups / formatCommunityName / card action', () => {
     expect(
       getGiveawayCardAction({ ticketPrice: 50, maxTickets: 100, soldTickets: 1 }, 10)
     ).toEqual({ type: 'unaffordable', missing: 40 });
+  });
+
+  it('does not treat an unaffordable ticket or a zero user cap as max reached', () => {
+    expect(
+      getGiveawayCardAction(
+        { ticketPrice: 500, maxTickets: 10_000, soldTickets: 3, maxEntriesPerUser: 0, myEntries: 0 },
+        114
+      )
+    ).toEqual({ type: 'unaffordable', missing: 386 });
+    expect(
+      getGiveawayCardAction(
+        { ticketPrice: 500, maxTickets: 1_000_000, soldTickets: 0, maxEntriesPerUser: null },
+        114
+      )
+    ).toEqual({ type: 'unaffordable', missing: 386 });
+    expect(getGiveawayEntryLimits({ ticketPrice: 500, maxTickets: 10_000, soldTickets: 3 }, 114)).toMatchObject({
+      maxAffordable: 0,
+      maxSelectable: 0,
+      userLimitReached: false,
+      maxReached: false,
+    });
+    expect(
+      getGiveawayEntryLimits(
+        { ticketPrice: 500, maxTickets: 10_000, soldTickets: 3, maxEntriesPerUser: 0 },
+        114
+      )
+    ).toMatchObject({
+      maxAffordable: 0,
+      maxSelectable: 0,
+      userLimitReached: false,
+      maxReached: false,
+    });
+  });
+
+  it('caps Max to remaining entries only when a positive per-user limit exists', () => {
+    expect(
+      getGiveawayEntryLimits(
+        { ticketPrice: 10, maxTickets: 100, soldTickets: 1, maxEntriesPerUser: 5, myEntries: 3 },
+        80
+      )
+    ).toMatchObject({
+      maxAffordable: 8,
+      maxSelectable: 2,
+      userLimitReached: false,
+      maxReached: false,
+    });
+    expect(
+      getGiveawayEntryLimits(
+        { ticketPrice: 10, maxTickets: 100, soldTickets: 1, maxEntriesPerUser: 5, myEntries: 5 },
+        80
+      )
+    ).toMatchObject({
+      maxSelectable: 0,
+      userLimitReached: true,
+      maxReached: true,
+    });
   });
 
   it('matches the viewer among public winner names', () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { GiveawaysTourDemo } from '@/components/tour-demos/giveaways-tour-demo';
 import { useGiveaways, type GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
 import { GiveawaysCompactHeader } from '@/components/giveaway/giveaways-compact-header';
-import { GiveawayHero } from '@/components/giveaway/giveaway-hero';
+import { GiveawayRecurringCarousel } from '@/components/giveaway/giveaway-recurring-carousel';
 import { GiveawayCard } from '@/components/giveaway/giveaway-card';
 import { GiveawayEarnFragments } from '@/components/giveaway/giveaway-earn-fragments';
 import { GiveawayPastWinners } from '@/components/giveaway/giveaway-past-winners';
@@ -25,8 +25,8 @@ import { GiveawayFaq } from '@/components/giveaway/giveaway-faq';
 import { GiveawayWalletBar } from '@/components/giveaway/giveaway-wallet-bar';
 import { GiveawayEmptyState } from '@/components/giveaway/giveaway-empty-state';
 import {
+  GiveawayCarouselSkeleton,
   GiveawayGridSkeleton,
-  GiveawayHeroSkeleton,
 } from '@/components/giveaway/giveaway-card-skeleton';
 import { useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { FragmentAmount } from '@/components/ui/level-badge';
@@ -41,7 +41,8 @@ import Link from 'next/link';
 import {
   cheapestActiveTicketPrice,
   fragmentsUntilCheapestEntry,
-  selectFeaturedGiveaway,
+  selectHighestValueIndex,
+  selectRecurringActiveGiveaways,
   sortGiveawaysByTierThenEnd,
 } from '@/lib/giveaway-presentation';
 
@@ -53,7 +54,7 @@ export default function GiveawaysPage() {
   const { messages, locale } = useLocale();
   const { isTourMode } = useTourMode();
   const reduceMotion = useReducedMotion();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
   const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
   const [userFragments, setUserFragments] = useState(0);
   const [giveawaysEnabled, setGiveawaysEnabled] = useState<boolean | null>(null);
@@ -122,19 +123,39 @@ export default function GiveawaysPage() {
     () => activeGiveaways.filter((g) => g.isPrivate),
     [activeGiveaways]
   );
-  const defaultFeatured = useMemo(() => selectFeaturedGiveaway(publicActive), [publicActive]);
-  const featured = useMemo(() => {
-    const selected = activeGiveaways.find((g) => g.id === selectedId);
-    return selected ?? defaultFeatured;
-  }, [activeGiveaways, selectedId, defaultFeatured]);
-  const listedPublic = useMemo(
-    () => sortGiveawaysByTierThenEnd(publicActive.filter((g) => g.id !== featured?.id)),
-    [publicActive, featured?.id]
-  );
   const listedPrivate = useMemo(
-    () => sortGiveawaysByTierThenEnd(privateActive.filter((g) => g.id !== featured?.id)),
-    [privateActive, featured?.id]
+    () => sortGiveawaysByTierThenEnd(privateActive),
+    [privateActive]
   );
+  const recurringGiveaways = useMemo(
+    () => selectRecurringActiveGiveaways(publicActive),
+    [publicActive]
+  );
+  const otherPublic = useMemo(
+    () =>
+      sortGiveawaysByTierThenEnd(
+        publicActive.filter((giveaway) => !recurringGiveaways.some((item) => item.id === giveaway.id))
+      ),
+    [publicActive, recurringGiveaways]
+  );
+  const recurringKey = recurringGiveaways.map((giveaway) => giveaway.id).join('|');
+  const lastRecurringKey = useRef('');
+
+  useEffect(() => {
+    if (!recurringKey) {
+      lastRecurringKey.current = '';
+      setCarouselIndex(0);
+      return;
+    }
+    if (lastRecurringKey.current !== recurringKey) {
+      lastRecurringKey.current = recurringKey;
+      setCarouselIndex(Math.max(0, selectHighestValueIndex(recurringGiveaways)));
+      return;
+    }
+    if (carouselIndex >= recurringGiveaways.length) {
+      setCarouselIndex(Math.max(0, recurringGiveaways.length - 1));
+    }
+  }, [carouselIndex, recurringGiveaways, recurringKey]);
   const fragmentsUntilNext = useMemo(
     () => fragmentsUntilCheapestEntry(activeGiveaways, userFragments),
     [activeGiveaways, userFragments]
@@ -145,8 +166,17 @@ export default function GiveawaysPage() {
   );
 
   const selectGiveaway = (giveaway: GiveawayWithEntries) => {
-    setSelectedId(giveaway.id);
-    document.getElementById('giveaway-hero')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const recurringIndex = recurringGiveaways.findIndex((item) => item.id === giveaway.id);
+    if (recurringIndex >= 0) {
+      setCarouselIndex(recurringIndex);
+      document
+        .getElementById('recurring-giveaways')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    document
+      .querySelector(`[data-giveaway="${giveaway.id}"]`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   if (giveawaysEnabled === null) {
@@ -272,24 +302,19 @@ export default function GiveawaysPage() {
             cheapestTicketPrice={cheapestTicket}
           />
 
-          <div id="giveaway-hero" className="scroll-mt-24">
-            {loading && !featured ? (
-              <div role="status" aria-label={messages.giveawaysPage.loadingGiveaways}>
-                <GiveawayHeroSkeleton />
-              </div>
-            ) : null}
-            {featured && (
-              <GiveawayHero
-                giveaway={featured}
-                messages={messages}
-                locale={locale}
-                userFragments={userFragments}
-                onParticipate={handleParticipate}
-                currentUser={{ username: user.username, avatar: user.avatar }}
-                now={now}
-              />
-            )}
-          </div>
+          {loading ? (
+            <GiveawayCarouselSkeleton label={messages.giveawaysPage.loadingGiveaways} />
+          ) : (
+            <GiveawayRecurringCarousel
+              giveaways={recurringGiveaways}
+              messages={messages}
+              userFragments={userFragments}
+              onParticipate={handleParticipate}
+              now={now}
+              activeIndex={carouselIndex}
+              onActiveIndexChange={setCarouselIndex}
+            />
+          )}
 
           <div className="giveaway-board">
             <aside className="giveaway-board-aside">
@@ -314,38 +339,19 @@ export default function GiveawaysPage() {
               />
             </aside>
             <div className="giveaway-board-main">
-              <div
-                data-tour="giveaways-tabs"
-                className="mb-6 flex flex-wrap items-center justify-between gap-3"
-              >
-                <h2 className="font-display text-lg font-semibold">
-                  {messages.giveaways.layout.activeSectionTitle}
-                </h2>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    document
-                      .getElementById('past-winners')
-                      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                  }
-                >
-                  {messages.giveaways.layout.history}
-                </Button>
-              </div>
-
               {loading ? (
-                <GiveawayGridSkeleton
-                  className={giveawayGridClass}
-                  count={6}
-                  label={messages.giveawaysPage.loadingGiveaways}
-                />
+                listedPrivate.length > 0 || otherPublic.length > 0 ? (
+                  <GiveawayGridSkeleton
+                    className={giveawayGridClass}
+                    count={3}
+                    label={messages.giveawaysPage.loadingGiveaways}
+                  />
+                ) : null
               ) : (
                 <>
-                  {listedPublic.length > 0 && (
-                    <div className={giveawayGridClass}>
-                      {listedPublic.map((giveaway, index) => (
+                  {otherPublic.length > 0 && (
+                    <div className={`mb-10 ${giveawayGridClass}`}>
+                      {otherPublic.map((giveaway, index) => (
                         <motion.div
                           key={giveaway.id}
                           className="h-full"
@@ -359,8 +365,6 @@ export default function GiveawaysPage() {
                             locale={locale}
                             now={now}
                             userFragments={userFragments}
-                            selected={featured?.id === giveaway.id}
-                            onSelect={() => selectGiveaway(giveaway)}
                             onParticipate={handleParticipate}
                           />
                         </motion.div>
@@ -368,7 +372,9 @@ export default function GiveawaysPage() {
                     </div>
                   )}
 
-                  {listedPublic.length === 0 && listedPrivate.length === 0 && !featured && (
+                  {recurringGiveaways.length === 0 &&
+                    listedPrivate.length === 0 &&
+                    otherPublic.length === 0 && (
                     <GiveawayEmptyState
                       title={messages.giveaways.empty.noActive}
                       description={messages.giveaways.empty.noActiveDescription}
@@ -376,7 +382,7 @@ export default function GiveawaysPage() {
                   )}
 
                   {listedPrivate.length > 0 && (
-                    <section className="mt-10">
+                    <section>
                       <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold">
                         <LockClosedIcon className="h-5 w-5 text-purple-300" aria-hidden />
                         {messages.giveaways.layout.privateSectionTitle}
@@ -396,8 +402,6 @@ export default function GiveawaysPage() {
                               locale={locale}
                               now={now}
                               userFragments={userFragments}
-                              selected={featured?.id === giveaway.id}
-                              onSelect={() => selectGiveaway(giveaway)}
                               onParticipate={handleParticipate}
                             />
                           </motion.div>

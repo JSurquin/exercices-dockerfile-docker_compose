@@ -880,6 +880,9 @@ export const messages: Record<Locale, Messages> = {
         leaderboardYou: "Toi",
         featured: "À la une",
         walletBarLabel: "Portefeuille de fragments",
+        recurringSectionTitle: "Giveaways récurrents",
+        carouselPrevious: "Giveaway précédent",
+        carouselNext: "Giveaway suivant",
       },
       earn: {
         title: "Gagner des fragments",
@@ -9176,6 +9179,9 @@ export const messages: Record<Locale, Messages> = {
         leaderboardYou: "You",
         featured: "Featured",
         walletBarLabel: "Fragment wallet",
+        recurringSectionTitle: "Recurring giveaways",
+        carouselPrevious: "Previous giveaway",
+        carouselNext: "Next giveaway",
       },
       earn: {
         title: "Earn fragments",
@@ -17467,6 +17473,9 @@ export const messages: Record<Locale, Messages> = {
         leaderboardYou: "你",
         featured: "精选",
         walletBarLabel: "碎片钱包",
+        recurringSectionTitle: "常规抽奖",
+        carouselPrevious: "上一个抽奖",
+        carouselNext: "下一个抽奖",
       },
       earn: {
         title: "获取碎片",

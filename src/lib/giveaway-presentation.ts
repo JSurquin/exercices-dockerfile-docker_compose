@@ -412,6 +412,40 @@ const TIER_SORT_ORDER: Record<GiveawayTier, number> = {
   yearly: 4,
 };
 
+export const RECURRING_GIVEAWAY_TIERS: Exclude<GiveawayTier, 'special'>[] = [
+  'daily',
+  'weekly',
+  'monthly',
+  'yearly',
+];
+
+const RECURRING_TIER_SORT_ORDER: Record<Exclude<GiveawayTier, 'special'>, number> = {
+  daily: 0,
+  weekly: 1,
+  monthly: 2,
+  yearly: 3,
+};
+
+export function isRecurringGiveawayTier(
+  tier: GiveawayTier
+): tier is Exclude<GiveawayTier, 'special'> {
+  return tier !== 'special';
+}
+
+export function hasConfiguredUserEntryLimit(
+  maxEntriesPerUser: number | null | undefined
+): boolean {
+  return typeof maxEntriesPerUser === 'number' && Number.isFinite(maxEntriesPerUser) && maxEntriesPerUser > 0;
+}
+
+export function resolveAvatarSrc(avatar: string | null | undefined): string | undefined {
+  const raw = (avatar ?? '').trim();
+  if (!raw) return undefined;
+  if (raw.startsWith('//')) return `https:${raw}`;
+  if (raw.startsWith('http://')) return `https://${raw.slice('http://'.length)}`;
+  return raw;
+}
+
 export function collectPastWinners<
   T extends GiveawayPresentationInput & {
     winners?: { rank: number; user?: { steamUsername?: string | null; steamAvatar?: string | null } | null }[];
@@ -521,26 +555,36 @@ export function getGiveawayEntryLimits(
   maxReached: boolean;
 } {
   const myEntries = giveaway.myEntries ?? 0;
-  const poolLeft = Math.max(0, giveaway.maxTickets - giveaway.soldTickets);
-  const hasUserLimit = giveaway.maxEntriesPerUser != null;
+  const hasUserLimit = hasConfiguredUserEntryLimit(giveaway.maxEntriesPerUser);
   const remainingPerUser = hasUserLimit
     ? Math.max(0, (giveaway.maxEntriesPerUser ?? 0) - myEntries)
-    : poolLeft;
-  const maxByRules = Math.max(0, Math.min(poolLeft, remainingPerUser));
+    : null;
+  const hasPoolCap = typeof giveaway.maxTickets === 'number' && giveaway.maxTickets > 0;
+  const poolLeft = hasPoolCap
+    ? Math.max(0, giveaway.maxTickets - (giveaway.soldTickets ?? 0))
+    : Number.POSITIVE_INFINITY;
+  const finitePoolLeft = Number.isFinite(poolLeft) ? poolLeft : 0;
   const maxAffordable =
-    giveaway.ticketPrice > 0 ? Math.floor(userFragments / giveaway.ticketPrice) : maxByRules;
+    giveaway.ticketPrice > 0 ? Math.floor(Math.max(0, userFragments) / giveaway.ticketPrice) : 0;
+  const maxByRules = Math.max(
+    0,
+    Math.min(
+      Number.isFinite(poolLeft) ? poolLeft : Number.MAX_SAFE_INTEGER,
+      remainingPerUser ?? Number.MAX_SAFE_INTEGER
+    )
+  );
   const maxSelectable = Math.max(0, Math.min(maxByRules, maxAffordable));
   const userLimitReached = hasUserLimit && myEntries >= (giveaway.maxEntriesPerUser ?? 0);
-  const poolSoldOut = poolLeft < 1;
+  const poolSoldOut = hasPoolCap && poolLeft < 1;
   return {
     myEntries,
-    poolLeft,
+    poolLeft: finitePoolLeft,
     maxByRules,
     maxAffordable,
     maxSelectable,
     userLimitReached,
     poolSoldOut,
-    maxReached: userLimitReached || poolSoldOut,
+    maxReached: userLimitReached,
   };
 }
 
@@ -560,7 +604,7 @@ export function getGiveawayCardAction(
     return { type: 'reserved' };
   }
   const limits = getGiveawayEntryLimits(giveaway, userFragments);
-  if (limits.userLimitReached || limits.poolSoldOut) {
+  if (limits.userLimitReached) {
     return { type: 'maxReached' };
   }
   const missing = Math.max(0, giveaway.ticketPrice - userFragments);
@@ -568,6 +612,46 @@ export function getGiveawayCardAction(
     return { type: 'unaffordable', missing };
   }
   return { type: 'participate' };
+}
+
+export function selectRecurringActiveGiveaways<T extends GiveawayPresentationInput>(
+  giveaways: T[]
+): T[] {
+  const recurring = giveaways.filter((giveaway) => {
+    if (giveaway.status !== 'ACTIVE' || giveaway.isPrivate) return false;
+    return isRecurringGiveawayTier(getGiveawayTier(giveaway));
+  });
+  return [...recurring].sort((a, b) => {
+    const aTier = getGiveawayTier(a);
+    const bTier = getGiveawayTier(b);
+    const aOrder = isRecurringGiveawayTier(aTier) ? RECURRING_TIER_SORT_ORDER[aTier] : 99;
+    const bOrder = isRecurringGiveawayTier(bTier) ? RECURRING_TIER_SORT_ORDER[bTier] : 99;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return compareEndingSoon(a, b);
+  });
+}
+
+export function selectHighestValueIndex<T extends GiveawayPresentationInput>(giveaways: T[]): number {
+  if (giveaways.length === 0) return -1;
+  let best = 0;
+  for (let index = 1; index < giveaways.length; index += 1) {
+    const current = giveaways[index];
+    const leader = giveaways[best];
+    if (!current || !leader) continue;
+    if (compareHighestValue(current, leader) < 0) {
+      best = index;
+    }
+  }
+  return best;
+}
+
+export function carouselSignedOffset(index: number, active: number, count: number): number {
+  if (count <= 1) return 0;
+  let diff = index - active;
+  const half = count / 2;
+  if (diff > half) diff -= count;
+  if (diff < -half) diff += count;
+  return diff;
 }
 
 export function sortGiveawaysByTierThenEnd<T extends GiveawayPresentationInput>(giveaways: T[]): T[] {

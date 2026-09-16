@@ -2,16 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FragmentAmount } from '@/components/ui/level-badge';
+import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { getGiveawayCardAction, getGiveawayEntryLimits } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
-import { ArrowPathIcon, LockClosedIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
-
-function scrollToEarnFragments() {
-  document.getElementById('earn-fragments')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
 
 export function GiveawayEntryControl({
   giveaway,
@@ -32,35 +28,23 @@ export function GiveawayEntryControl({
   const action = getGiveawayCardAction(giveaway, userFragments);
   const limits = getGiveawayEntryLimits(giveaway, userFragments);
   const maxSelectable = limits.maxSelectable;
-  const maxReached = limits.maxReached;
+  const limitReached = action.type === 'maxReached';
   const totalCost = entriesToBuy * giveaway.ticketPrice;
-  const missing = Math.max(0, totalCost - userFragments);
-  const unaffordable = !maxReached && missing > 0;
 
   useEffect(() => {
     setEntriesToBuy((current) => {
-      if (maxReached) return 1;
-      const upper = Math.max(1, maxSelectable || 1);
-      return Math.min(Math.max(1, current), upper);
+      if (limitReached || maxSelectable < 1) return 1;
+      return Math.min(Math.max(1, current), maxSelectable);
     });
-  }, [maxReached, maxSelectable]);
-
-  if (action.type === 'reserved') {
-    return (
-      <Button type="button" variant="secondary" className="w-full opacity-100" disabled>
-        <LockClosedIcon className="h-4 w-4" aria-hidden />
-        {card.accessReserved}
-      </Button>
-    );
-  }
+  }, [limitReached, maxSelectable]);
 
   const setQuantity = (value: number) => {
-    const upper = Math.max(1, maxSelectable || 1);
-    setEntriesToBuy(Math.min(Math.max(1, value), upper));
+    if (maxSelectable < 1) return;
+    setEntriesToBuy(Math.min(Math.max(1, value), maxSelectable));
   };
 
   const handleParticipate = async () => {
-    if (submitting || maxReached || unaffordable) return;
+    if (submitting || action.type !== 'participate') return;
     setSubmitting(true);
     try {
       await onParticipate(giveaway, entriesToBuy);
@@ -69,11 +53,12 @@ export function GiveawayEntryControl({
     }
   };
 
-  const quantityDisabled = submitting || maxReached || maxSelectable < 1;
+  const quantityDisabled = submitting || limitReached || maxSelectable < 1;
+  const showQuantity = action.type === 'participate' || action.type === 'unaffordable';
 
   return (
     <div className={cn('space-y-2', compact ? '' : 'space-y-3')}>
-      {!maxReached && (
+      {showQuantity && (
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center overflow-hidden rounded-md border border-white/10 bg-white/5">
             <button
@@ -110,41 +95,19 @@ export function GiveawayEntryControl({
         </div>
       )}
 
-      {maxReached ? (
-        <Button type="button" variant="secondary" className="w-full" disabled>
-          {card.maxEntriesReached}
-        </Button>
-      ) : unaffordable ? (
-        <Button
-          type="button"
-          variant="secondary"
-          className="w-full opacity-100"
-          onClick={scrollToEarnFragments}
-        >
-          {card.missingFragmentsCta.replace('{count}', String(missing))}
-        </Button>
-      ) : (
-        <Button
-          type="button"
-          variant="chrome"
-          className="w-full"
-          onClick={() => void handleParticipate()}
-          disabled={submitting}
-          aria-busy={submitting}
-          aria-label={card.participateCost.replace('{cost}', String(totalCost))}
-        >
-          {submitting ? (
-            <ArrowPathIcon className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              {card.participateCost.split('{cost}')[0]}
-              <FragmentAmount amount={totalCost} size="xs" className="font-semibold" />
-            </>
-          )}
-        </Button>
-      )}
+      <GiveawayCtaButton
+        action={
+          action.type === 'participate' && entriesToBuy > 1
+            ? { type: 'participate' }
+            : action
+        }
+        submitting={submitting}
+        messages={messages}
+        ticketPrice={action.type === 'participate' ? totalCost : giveaway.ticketPrice}
+        onParticipate={() => void handleParticipate()}
+      />
 
-      {!maxReached && (
+      {showQuantity && action.type === 'participate' && (
         <p className="text-xs text-foreground/70">
           {card.costLabel.replace('{cost}', String(totalCost))}
         </p>

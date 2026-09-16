@@ -1,10 +1,10 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import { GiveawayHowItWorksDialog } from '@/components/giveaway/giveaway-how-it-works-dialog';
-import { fragmentsEntryProgressPercent, getDisplayInitials } from '@/lib/giveaway-presentation';
+import { GiveawayUserAvatar } from '@/components/giveaway/giveaway-user-avatar';
+import { fragmentsEntryProgressPercent } from '@/lib/giveaway-presentation';
 import { GiftIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
 
@@ -26,7 +26,6 @@ export function GiveawaysCompactHeader({
   cheapestTicketPrice?: number | null;
 }) {
   const layout = messages.giveaways.layout;
-  const initials = getDisplayInitials(user.username) || 'MS';
   const progress = fragmentsEntryProgressPercent(userFragments, cheapestTicketPrice ?? null);
   const levelLabel = layout.levelBadge.replace('{level}', String(user.level));
 
@@ -54,10 +53,12 @@ export function GiveawaysCompactHeader({
         data-tour="giveaways-fragments"
         className="hidden min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md md:flex dark:border-white/10"
       >
-        <Avatar className="h-11 w-11 shrink-0 ring-1 ring-white/15">
-          <AvatarImage src={user.avatar || undefined} alt={user.username} />
-          <AvatarFallback className="text-xs font-semibold">{initials}</AvatarFallback>
-        </Avatar>
+        <GiveawayUserAvatar
+          name={user.username}
+          avatar={user.avatar}
+          fallbackName={user.username || 'MS'}
+          className="h-11 w-11 shrink-0 ring-1 ring-white/15"
+        />
         <span className="shrink-0 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-semibold text-foreground">
           {levelLabel}
         </span>

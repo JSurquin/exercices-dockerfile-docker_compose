@@ -64,6 +64,22 @@ export function GiveawayHeroSkeleton() {
   );
 }
 
+export function GiveawayCarouselSkeleton({ label }: { label?: string }) {
+  return (
+    <div className="mb-8" role="status" aria-busy="true" aria-label={label}>
+      <div className="mb-4 flex items-center justify-between">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-8 w-24" />
+      </div>
+      <div className="giveaway-recurring-carousel__stage">
+        <div className="mx-auto w-full max-w-md">
+          <GiveawayCardSkeleton />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function GiveawayGridSkeleton({
   count = 6,
   className,

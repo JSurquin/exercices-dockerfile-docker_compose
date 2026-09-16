@@ -4088,6 +4088,9 @@ export interface Messages {
       leaderboardYou: string;
       featured: string;
       walletBarLabel: string;
+      recurringSectionTitle: string;
+      carouselPrevious: string;
+      carouselNext: string;
     };
     earn: {
       title: string;
