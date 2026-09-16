@@ -30,6 +30,7 @@ import {
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { SafeImage } from '@/components/ui/safe-image';
 import Image from 'next/image';
 import {
@@ -213,8 +214,9 @@ export default function GiveawayDetailsPage() {
         transition={{ duration: 0.5 }}
         className="text-center mb-8"
       >
-        <div className="flex items-center justify-center gap-3 mb-3">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-3">
           <h1 className="text-3xl md:text-4xl font-bold">{giveaway.title}</h1>
+          <GiveawayPartnerBadge giveaway={giveaway} messages={messages} />
           <Badge
             className={
               giveaway.status === 'ACTIVE'

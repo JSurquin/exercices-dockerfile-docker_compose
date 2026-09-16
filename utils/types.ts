@@ -3991,6 +3991,7 @@ export interface Messages {
       winnerOther: string;
       yourEntriesLine: string;
       communityName: string;
+      partnerBadge: string;
       maxEntriesReached: string;
       participateCost: string;
       missingFragmentsCta: string;
@@ -4052,6 +4053,7 @@ export interface Messages {
       howItWorksLink: string;
       availableFragments: string;
       privateSectionTitle: string;
+      specialSectionTitle: string;
       emptyFiltered: string;
       sortLabel: string;
       sortEndingSoon: string;
@@ -4089,6 +4091,8 @@ export interface Messages {
       featured: string;
       walletBarLabel: string;
       recurringSectionTitle: string;
+      carouselRole: string;
+      carouselGoTo: string;
       carouselPrevious: string;
       carouselNext: string;
     };
@@ -4098,6 +4102,10 @@ export interface Messages {
       sellLabel: string;
       sellReward: string;
       sellCta: string;
+      missionsLabel: string;
+      missionsReward: string;
+      missionsCta: string;
+      missionsAvailable: string;
       dailyLabel: string;
       dailyReward: string;
       dailyCta: string;

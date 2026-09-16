@@ -1,6 +1,7 @@
 'use client';
 
 import { GiveawayCompactTime, useLiveNow } from '@/components/giveaway/giveaway-countdown';
+import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayUserAvatar } from '@/components/giveaway/giveaway-user-avatar';
 import { SafeImage } from '@/components/ui/safe-image';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
@@ -70,6 +71,7 @@ export function GiveawayMyParticipations({
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{shortPrizeName(giveaway)}</p>
+                    <GiveawayPartnerBadge giveaway={giveaway} messages={messages} className="mt-1 max-w-full" />
                     <p className="truncate text-[11px] text-foreground/70">
                       {myEntries} · {formatChancePercent(chance, locale)}
                     </p>
@@ -131,7 +133,10 @@ export function GiveawayMyWinnings({
                 fallbackIcon={<TrophyIcon className="h-4 w-4 text-theme-accent" />}
                 unoptimized
               />
-              <p className="min-w-0 flex-1 truncate text-sm font-medium">{shortPrizeName(giveaway)}</p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{shortPrizeName(giveaway)}</p>
+                <GiveawayPartnerBadge giveaway={giveaway} messages={messages} className="mt-1 max-w-full" />
+              </div>
               <GiveawayUserAvatar
                 name={username}
                 avatar={null}

@@ -8,7 +8,10 @@ import {
   SupportedCurrency,
 } from '@/lib/currency-converter';
 import { useCurrency } from '@/components/providers/currency-provider';
+import { useLocale } from '@/components/providers/locale-provider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { splitCurrencyDisplay } from '@/lib/giveaway-presentation';
+import { cn } from '@/lib/utils';
 
 interface ConvertedAmountProps {
   cents: number;
@@ -16,6 +19,7 @@ interface ConvertedAmountProps {
   className?: string;
   countUp?: boolean;
   countUpDuration?: number;
+  split?: boolean;
 }
 
 function getAffixes(currency: SupportedCurrency) {
@@ -32,8 +36,10 @@ export function ConvertedAmount({
   className = '',
   countUp = false,
   countUpDuration = 1.5,
+  split = false,
 }: ConvertedAmountProps) {
   const { selectedCurrency } = useCurrency();
+  const { locale } = useLocale();
   const [displayCents, setDisplayCents] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -84,6 +90,22 @@ export function ConvertedAmount({
           suffix={suffix}
           separator=" "
         />
+      </span>
+    );
+  }
+
+  if (split) {
+    const parts = splitCurrencyDisplay(displayCents, locale, selectedCurrency);
+    return (
+      <span className={cn('inline-flex items-baseline whitespace-nowrap', className)}>
+        {parts.symbolFirst ? (
+          <span className="mr-0.5 text-[0.55em] font-medium text-foreground/70">{parts.symbol}</span>
+        ) : null}
+        <span>{parts.integer}</span>
+        <span className="text-[0.45em] font-medium leading-none text-foreground/55">{parts.fraction}</span>
+        {parts.symbolFirst ? null : (
+          <span className="ml-1 text-[0.55em] font-medium text-foreground/80">{parts.symbol}</span>
+        )}
       </span>
     );
   }

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayTierBadge } from '@/components/giveaway/giveaway-tier-badge';
 import {
   Select,
@@ -187,6 +188,14 @@ export function GiveawayPastWinners({
                         unoptimized
                       />
                       <span className="truncate text-sm">{prizeLabel(group)}</span>
+                      <GiveawayPartnerBadge
+                        giveaway={{
+                          isPrivate: group.isPrivate,
+                          requiredAffiliateCode: group.requiredAffiliateCode,
+                        }}
+                        messages={messages}
+                        className="max-w-[9rem]"
+                      />
                     </div>
                     <GiveawayTierBadge tier={group.tier} className="w-fit">
                       {getGiveawayTierLabel(group.tier, labels)}

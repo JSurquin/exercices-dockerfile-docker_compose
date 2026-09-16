@@ -28,11 +28,13 @@ export function GiveawayCountdown({
   labels,
   className,
   now,
+  compact = false,
 }: {
   endDate: Date | string;
   labels: { days: string; hours: string; minutes: string; seconds: string };
   className?: string;
   now?: number;
+  compact?: boolean;
 }) {
   const liveNow = useLiveNow(1000, now === undefined);
   const remaining = getTimeRemaining(endDate, now ?? liveNow);
@@ -46,22 +48,33 @@ export function GiveawayCountdown({
 
   return (
     <div
-      className={cn('flex items-end gap-2 sm:gap-3', className)}
+      className={cn('flex items-end gap-2 sm:gap-3', compact && 'gap-1.5 sm:gap-2', className)}
       data-countdown
       role="timer"
       aria-label={accessibleLabel}
     >
       {units.map((unit, index) => (
-        <div key={unit.label} className="flex items-end gap-2 sm:gap-3" aria-hidden>
+        <div key={unit.label} className={cn('flex items-end gap-2 sm:gap-3', compact && 'gap-1.5 sm:gap-2')} aria-hidden>
           {index > 0 && (
-            <span className="font-display pb-4 text-2xl text-foreground/55 sm:text-3xl">
+            <span
+              className={cn(
+                'font-display pb-4 text-2xl text-foreground/55 sm:text-3xl',
+                compact && 'pb-3 text-xl sm:text-2xl'
+              )}
+            >
               :
             </span>
           )}
-          <div className="flex min-w-[2.75rem] flex-col items-center sm:min-w-[3.25rem]">
+          <div
+            className={cn(
+              'flex min-w-[2.75rem] flex-col items-center sm:min-w-[3.25rem]',
+              compact && 'min-w-[2.25rem] sm:min-w-[2.75rem]'
+            )}
+          >
             <span
               className={cn(
                 'font-display text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl',
+                compact && 'text-2xl sm:text-3xl',
                 remaining.expired && 'text-foreground/70'
               )}
             >

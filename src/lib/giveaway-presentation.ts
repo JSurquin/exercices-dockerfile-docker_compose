@@ -90,6 +90,7 @@ export interface GiveawayPresentationInput {
   id: string;
   status?: string;
   isPrivate?: boolean;
+  requiredAffiliateCode?: string | null;
   ticketPrice: number;
   rewardValueCents?: number | null;
   durationType?: string | null;
@@ -395,7 +396,60 @@ export interface PastWinnerGroup {
   tier: GiveawayTier;
   endDate: Date | string;
   rewardValueCents?: number | null;
+  isPrivate?: boolean;
+  requiredAffiliateCode?: string | null;
   winners: PastWinnerPerson[];
+}
+
+export const CAROUSEL_MAX_OFFSET = 2;
+
+export function carouselCoverflowTransform(offset: number): {
+  scale: number;
+  translateY: number;
+  opacity: number;
+  visible: boolean;
+} {
+  const abs = Math.abs(offset);
+  if (abs === 0) return { scale: 1, translateY: -24, opacity: 1, visible: true };
+  if (abs === 1) return { scale: 0.82, translateY: 16, opacity: 0.7, visible: true };
+  if (abs === 2) return { scale: 0.68, translateY: 32, opacity: 0.4, visible: true };
+  return { scale: 0.5, translateY: 40, opacity: 0, visible: false };
+}
+
+export function findPartnerLogo<T extends { name: string; logoUrl: string }>(
+  code: string | null | undefined,
+  logos: T[]
+): T | null {
+  const needle = (code ?? '').trim().toLowerCase();
+  if (!needle) return null;
+  return (
+    logos.find((logo) => logo.name.trim().toLowerCase() === needle) ??
+    logos.find((logo) => {
+      const name = logo.name.trim().toLowerCase();
+      return name.includes(needle) || needle.includes(name);
+    }) ??
+    null
+  );
+}
+
+export function splitCurrencyDisplay(
+  cents: number,
+  locale: string,
+  currency: 'EUR' | 'USD' | 'CNY'
+): { integer: string; fraction: string; symbol: string; symbolFirst: boolean } {
+  const amount = Math.max(0, Math.floor(Number.isFinite(cents) ? cents : 0));
+  const integerValue = Math.floor(amount / 100);
+  const fractionValue = amount % 100;
+  const integer = integerValue.toLocaleString(localeToDateLocale(locale), { maximumFractionDigits: 0 });
+  const separator = locale === 'fr' ? ',' : '.';
+  const fraction = `${separator}${String(fractionValue).padStart(2, '0')}`;
+  const symbol = currency === 'USD' ? '$' : currency === 'CNY' ? '¥' : '€';
+  return {
+    integer,
+    fraction,
+    symbol,
+    symbolFirst: currency === 'USD' || currency === 'CNY',
+  };
 }
 
 export type GiveawayCardAction =
@@ -502,6 +556,8 @@ export function collectPastWinnerGroups<
       tier: getGiveawayTier(giveaway),
       endDate: giveaway.endDate,
       rewardValueCents: giveaway.rewardValueCents,
+      isPrivate: giveaway.isPrivate === true,
+      requiredAffiliateCode: giveaway.requiredAffiliateCode ?? null,
       winners,
     });
   }
@@ -652,6 +708,12 @@ export function carouselSignedOffset(index: number, active: number, count: numbe
   if (diff > half) diff -= count;
   if (diff < -half) diff += count;
   return diff;
+}
+
+export function carouselCoverflowXPercent(offset: number): number {
+  const abs = Math.min(Math.abs(offset), CAROUSEL_MAX_OFFSET + 1);
+  const shift = abs === 0 ? 0 : abs === 1 ? 74 : abs === 2 ? 132 : 160;
+  return Math.sign(offset) * shift;
 }
 
 export function sortGiveawaysByTierThenEnd<T extends GiveawayPresentationInput>(giveaways: T[]): T[] {

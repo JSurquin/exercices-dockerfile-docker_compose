@@ -30,6 +30,7 @@ import {
 } from '@/components/giveaway/giveaway-card-skeleton';
 import { useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { FragmentAmount } from '@/components/ui/level-badge';
+import { Handshake } from 'lucide-react';
 import {
   GiftIcon,
   TrophyIcon,
@@ -46,8 +47,7 @@ import {
   sortGiveawaysByTierThenEnd,
 } from '@/lib/giveaway-presentation';
 
-const giveawayGridClass =
-  'grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 min-[1200px]:[grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))]';
+const giveawayGridClass = 'grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 min-[1200px]:grid-cols-3';
 
 export default function GiveawaysPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
@@ -317,27 +317,6 @@ export default function GiveawaysPage() {
           )}
 
           <div className="giveaway-board">
-            <aside className="giveaway-board-aside">
-              <GiveawayEarnFragments
-                messages={messages}
-                onClaimed={(earned) => {
-                  setUserFragments((prev) => prev + earned);
-                  void refreshUser();
-                }}
-              />
-              <GiveawayMyParticipations
-                giveaways={activeGiveaways}
-                messages={messages}
-                locale={locale}
-                now={now}
-                onSelect={selectGiveaway}
-              />
-              <GiveawayMyWinnings
-                giveaways={giveaways}
-                messages={messages}
-                username={user.username}
-              />
-            </aside>
             <div className="giveaway-board-main">
               {loading ? (
                 listedPrivate.length > 0 || otherPublic.length > 0 ? (
@@ -349,42 +328,10 @@ export default function GiveawaysPage() {
                 ) : null
               ) : (
                 <>
-                  {otherPublic.length > 0 && (
-                    <div className={`mb-10 ${giveawayGridClass}`}>
-                      {otherPublic.map((giveaway, index) => (
-                        <motion.div
-                          key={giveaway.id}
-                          className="h-full"
-                          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.4, delay: index * 0.05 }}
-                        >
-                          <GiveawayCard
-                            giveaway={giveaway}
-                            messages={messages}
-                            locale={locale}
-                            now={now}
-                            userFragments={userFragments}
-                            onParticipate={handleParticipate}
-                          />
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-
-                  {recurringGiveaways.length === 0 &&
-                    listedPrivate.length === 0 &&
-                    otherPublic.length === 0 && (
-                    <GiveawayEmptyState
-                      title={messages.giveaways.empty.noActive}
-                      description={messages.giveaways.empty.noActiveDescription}
-                    />
-                  )}
-
                   {listedPrivate.length > 0 && (
-                    <section>
+                    <section className="mb-10">
                       <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold">
-                        <LockClosedIcon className="h-5 w-5 text-purple-300" aria-hidden />
+                        <Handshake className="h-5 w-5 text-purple-300" aria-hidden />
                         {messages.giveaways.layout.privateSectionTitle}
                       </h2>
                       <div className={giveawayGridClass}>
@@ -409,13 +356,63 @@ export default function GiveawaysPage() {
                       </div>
                     </section>
                   )}
+
+                  {otherPublic.length > 0 && (
+                    <section className="mb-10">
+                      <h2 className="mb-4 font-display text-lg font-semibold">
+                        {messages.giveaways.layout.specialSectionTitle}
+                      </h2>
+                      <div className={giveawayGridClass}>
+                        {otherPublic.map((giveaway, index) => (
+                          <motion.div
+                            key={giveaway.id}
+                            className="h-full"
+                            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: index * 0.05 }}
+                          >
+                            <GiveawayCard
+                              giveaway={giveaway}
+                              messages={messages}
+                              locale={locale}
+                              now={now}
+                              userFragments={userFragments}
+                              onParticipate={handleParticipate}
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {recurringGiveaways.length === 0 &&
+                    listedPrivate.length === 0 &&
+                    otherPublic.length === 0 && (
+                    <GiveawayEmptyState
+                      title={messages.giveaways.empty.noActive}
+                      description={messages.giveaways.empty.noActiveDescription}
+                    />
+                  )}
                 </>
               )}
-            </div>
-            <div className="giveaway-board-history">
               <GiveawayPastWinners giveaways={giveaways} messages={messages} locale={locale} />
               <GiveawayFaq messages={messages} />
             </div>
+            <aside className="giveaway-board-aside">
+              <GiveawayEarnFragments messages={messages} />
+              <GiveawayMyParticipations
+                giveaways={activeGiveaways}
+                messages={messages}
+                locale={locale}
+                now={now}
+                onSelect={selectGiveaway}
+              />
+              <GiveawayMyWinnings
+                giveaways={giveaways}
+                messages={messages}
+                username={user.username}
+              />
+            </aside>
           </div>
         </div>
       </div>

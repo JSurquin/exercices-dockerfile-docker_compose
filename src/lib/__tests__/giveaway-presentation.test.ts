@@ -24,6 +24,10 @@ import {
   selectHighestValueIndex,
   selectRecurringActiveGiveaways,
   carouselSignedOffset,
+  carouselCoverflowTransform,
+  carouselCoverflowXPercent,
+  findPartnerLogo,
+  splitCurrencyDisplay,
   sortGiveaways,
   sortGiveawaysByTierThenEnd,
   viewerIsWinner,
@@ -188,6 +192,19 @@ describe('selectRecurringActiveGiveaways', () => {
     expect(carouselSignedOffset(2, 2, 3)).toBe(0);
     expect(carouselSignedOffset(0, 2, 3)).toBe(1);
     expect(carouselSignedOffset(1, 2, 3)).toBe(-1);
+    expect([carouselSignedOffset(0, 2, 3), carouselSignedOffset(1, 2, 3)].every((offset) => Math.abs(offset) <= 1)).toBe(
+      true
+    );
+  });
+
+  it('exposes unique circular offsets within ±2 for five cards', () => {
+    const offsets = [0, 1, 2, 3, 4].map((index) => carouselSignedOffset(index, 2, 5));
+    expect(offsets.sort((a, b) => a - b)).toEqual([-2, -1, 0, 1, 2]);
+    expect(carouselCoverflowTransform(0)).toMatchObject({ scale: 1, translateY: -24, opacity: 1, visible: true });
+    expect(carouselCoverflowTransform(1)).toMatchObject({ scale: 0.82, translateY: 16, opacity: 0.7 });
+    expect(carouselCoverflowTransform(-2)).toMatchObject({ scale: 0.68, translateY: 32, opacity: 0.4 });
+    expect(carouselCoverflowXPercent(1)).toBe(74);
+    expect(carouselCoverflowXPercent(-2)).toBe(-132);
   });
 });
 
@@ -440,6 +457,45 @@ describe('collectPastWinnerGroups / formatCommunityName / card action', () => {
   it('capitalizes the community name', () => {
     expect(formatCommunityName('kitsu')).toBe('Kitsu');
     expect(formatCommunityName('  kitsu')).toBe('Kitsu');
+  });
+
+  it('matches a partner logo by affiliate code and splits prize amounts', () => {
+    const logos = [
+      { name: 'Kitsu', logoUrl: 'https://cdn.example/kitsu.png' },
+      { name: 'Nova', logoUrl: 'https://cdn.example/nova.png' },
+    ];
+    expect(findPartnerLogo('kitsu', logos)?.logoUrl).toBe('https://cdn.example/kitsu.png');
+    expect(findPartnerLogo('unknown', logos)).toBeNull();
+    expect(splitCurrencyDisplay(80000, 'fr', 'EUR')).toEqual({
+      integer: '800',
+      fraction: ',00',
+      symbol: '€',
+      symbolFirst: false,
+    });
+    expect(splitCurrencyDisplay(123456, 'en', 'USD')).toMatchObject({
+      fraction: '.56',
+      symbol: '$',
+      symbolFirst: true,
+    });
+  });
+
+  it('keeps partner metadata on past winner groups', () => {
+    const groups = collectPastWinnerGroups([
+      {
+        ...giveaway({
+          id: 'partner-win',
+          status: 'ENDED',
+          isPrivate: true,
+          prize: 'AWP | Asiimov',
+        }),
+        requiredAffiliateCode: 'kitsu',
+        winners: [{ rank: 1, user: { steamUsername: 'A', steamAvatar: null } }],
+      },
+    ]);
+    expect(groups[0]).toMatchObject({
+      isPrivate: true,
+      requiredAffiliateCode: 'kitsu',
+    });
   });
 
   it('sorts by palier then end date: daily, weekly, monthly, special, yearly', () => {
