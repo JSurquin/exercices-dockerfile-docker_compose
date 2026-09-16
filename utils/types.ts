@@ -4027,6 +4027,29 @@ export interface Messages {
       entriesToBuy: string;
       entriesAvailable: string;
     };
+    layout: {
+      howItWorksLink: string;
+      availableFragments: string;
+      privateSectionTitle: string;
+      emptyFiltered: string;
+      sortLabel: string;
+      sortEndingSoon: string;
+      sortHighestValue: string;
+      sortLowestCost: string;
+      filterAll: string;
+      tierDaily: string;
+      tierWeekly: string;
+      tierMonthly: string;
+      tierSpecial: string;
+      countdownDays: string;
+      countdownHours: string;
+      countdownMinutes: string;
+      countdownSeconds: string;
+      leaderboardTitle: string;
+      leaderboardEmpty: string;
+      leaderboardYou: string;
+      featured: string;
+    };
   };
   missions: {
     loading: string;

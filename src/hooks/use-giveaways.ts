@@ -65,6 +65,8 @@ export function useGiveaways(status?: 'ACTIVE' | 'ENDED' | 'CANCELLED') {
       }
       return response.json();
     },
+    refetchOnWindowFocus: true,
+    refetchInterval: 15_000,
   });
 
   const error = queryError

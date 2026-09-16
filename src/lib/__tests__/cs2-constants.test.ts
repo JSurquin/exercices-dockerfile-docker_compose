@@ -6,6 +6,7 @@ import {
   RARITY_ORDER,
   extractCs2WeaponType,
   extractCs2SkinName,
+  extractCs2Exterior,
   formatCs2SkinDisplayName,
   extractCs2SkinDisplayName,
 } from '../cs2-constants';
@@ -142,6 +143,21 @@ describe('extractCs2WeaponType() / extractCs2SkinName()', () => {
     const name = 'StatTrak™ AK-47 | Redline (Minimal Wear)';
     expect(extractCs2WeaponType(name)).toBe('AK-47');
     expect(extractCs2SkinName(name)).toBe('Redline');
+  });
+});
+
+describe('extractCs2Exterior()', () => {
+  it('extrait l’extérieur canonique', () => {
+    expect(extractCs2Exterior('AK-47 | Redline (Field-Tested)')).toBe('Field-Tested');
+    expect(extractCs2Exterior('★ Karambit | Fade (Factory New)')).toBe('Factory New');
+  });
+
+  it('accepte l’abréviation officielle', () => {
+    expect(extractCs2Exterior('AWP | Asiimov (FT)')).toBe('Field-Tested');
+  });
+
+  it('retourne null sans extérieur', () => {
+    expect(extractCs2Exterior('50€ cash')).toBeNull();
   });
 });
 

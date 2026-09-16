@@ -76,6 +76,18 @@ export function extractCs2SkinName(marketName: string): string {
   return base;
 }
 
+/** Extract exterior from market_name e.g. "AK-47 | Redline (Field-Tested)" → "Field-Tested". */
+export function extractCs2Exterior(marketName: string): CS2Exterior | null {
+  const match = marketName.match(/\(([^)]+)\)\s*$/);
+  if (!match) return null;
+  const inner = match[1]?.trim() ?? '';
+  if (inner in CS2_EXTERIORS) return inner as CS2Exterior;
+  const byShort = (Object.entries(CS2_EXTERIORS) as [CS2Exterior, { short: string }][]).find(
+    ([, value]) => value.short.toLowerCase() === inner.toLowerCase()
+  );
+  return byShort?.[0] ?? null;
+}
+
 /** Append Doppler/Gamma Doppler phase when provided by Skinplace (e.g. "Doppler" + "Ruby" → "Doppler Ruby"). */
 export function formatCs2SkinDisplayName(
   skinName: string,

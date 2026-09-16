@@ -1,333 +1,54 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { PageLoading } from '@/components/ui/page-loading';
 import { useTourMode } from '@/components/providers/tour-provider';
 import { GiveawaysTourDemo } from '@/components/tour-demos/giveaways-tour-demo';
-import { Messages } from '~/utils/types';
-import { useGiveaways, GiveawayWithEntries } from '@/hooks/use-giveaways';
+import { useGiveaways, type GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
-import { SafeImage } from '@/components/ui/safe-image';
-import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
+import { GiveawaysCompactHeader } from '@/components/giveaway/giveaways-compact-header';
+import { GiveawayHero } from '@/components/giveaway/giveaway-hero';
+import { GiveawayCard } from '@/components/giveaway/giveaway-card';
+import { GiveawayToolbar } from '@/components/giveaway/giveaway-toolbar';
+import { useLiveNow } from '@/components/giveaway/giveaway-countdown';
+import { FragmentAmount } from '@/components/ui/level-badge';
 import {
   GiftIcon,
-  TicketIcon,
-  ClockIcon,
-  UserGroupIcon,
   TrophyIcon,
-  StarIcon,
-  CalendarIcon,
-  CurrencyDollarIcon,
   LockClosedIcon,
   BellAlertIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
+import {
+  filterGiveawaysByTier,
+  selectFeaturedGiveaway,
+  sortGiveaways,
+  type GiveawaySort,
+  type GiveawayTierFilter,
+} from '@/lib/giveaway-presentation';
 
-const getTimeRemaining = (endDate: Date) => {
-  const now = new Date();
-  const diff = endDate.getTime() - now.getTime();
-  
-  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
-  
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  
-  return { days, hours, minutes, seconds, expired: false };
-};
-
-const formatTimeRemaining = (timeRemaining: ReturnType<typeof getTimeRemaining>, messages: Messages) => {
-  if (timeRemaining.expired) return messages.giveaways.card.status.ended;
-  
-  if (timeRemaining.days > 0) {
-    return `${timeRemaining.days}j ${timeRemaining.hours}h`;
-  } else if (timeRemaining.hours > 0) {
-    return `${timeRemaining.hours}h ${timeRemaining.minutes}m`;
-  } else {
-    return `${timeRemaining.minutes}m ${timeRemaining.seconds}s`;
-  }
-};
-
-const giveawayIconClass =
-  'how-it-works-benefit-icon flex h-12 w-12 items-center justify-center rounded-full border border-theme-accent/30 bg-gradient-to-br from-white/10 to-theme-accent/10 ring-2 ring-theme-accent/15 mx-auto mb-3';
-
-const getGiveawayGridClass = (count: number) =>
-  cn(
-    'grid gap-6',
-    count === 1 ? 'grid-cols-1 max-w-lg mx-auto' : 'md:grid-cols-2 lg:grid-cols-3',
-  );
-
-const defaultFragmentLabels = {
-  costPerEntry: 'fragments / entry',
-  totalEntries: 'entries',
-  participants: 'participants',
-  yourEntries: 'Your entries',
-  yourChance: 'Your odds',
-  winnerCount: 'winners',
-  entriesToBuy: 'Entries to buy',
-  entriesAvailable: 'fragments available',
-};
-
-const GiveawayCard = ({
-  giveaway,
-  onParticipate,
-  messages,
-  userFragments,
-  locale,
-}: {
-  giveaway: GiveawayWithEntries;
-  onParticipate: (giveaway: GiveawayWithEntries, entries: number) => void;
-  messages: Messages;
-  userFragments: number;
-  locale: string;
-}) => {
-  const [entriesToBuy, setEntriesToBuy] = useState(1);
-  const endDate = typeof giveaway.endDate === 'string' ? new Date(giveaway.endDate) : giveaway.endDate;
-  const timeRemaining = getTimeRemaining(endDate);
-  const progress = (giveaway.soldTickets / giveaway.maxTickets) * 100;
-  const fg = { ...defaultFragmentLabels, ...messages.giveaways.fragments };
-  const myEntries = giveaway.myEntries ?? 0;
-  const totalParticipants = giveaway.totalParticipants ?? 0;
-  const totalEntries = giveaway.totalEntries ?? giveaway.soldTickets;
-  const myChance = giveaway.myChancePercent ?? (totalEntries > 0 ? (100 * myEntries) / totalEntries : 0);
-  const poolLeft = giveaway.maxTickets - giveaway.soldTickets;
-  const maxPerUser =
-    giveaway.maxEntriesPerUser != null ? Math.max(0, giveaway.maxEntriesPerUser - myEntries) : poolLeft;
-  const maxAffordable =
-    giveaway.ticketPrice > 0 ? Math.floor(userFragments / giveaway.ticketPrice) : 0;
-  const maxSelectable = Math.max(0, Math.min(poolLeft, maxPerUser, maxAffordable));
-  const totalCost = entriesToBuy * giveaway.ticketPrice;
-  const isParticipationLocked =
-    giveaway.isPrivate &&
-    !!giveaway.requiredAffiliateCode &&
-    giveaway.canParticipate === false;
-
-  return (
-    <Card
-      className={cn(
-        'h-full transition-all duration-300',
-        isParticipationLocked
-          ? 'opacity-60 grayscale-[0.35] hover:shadow-none'
-          : 'hover:shadow-lg'
-      )}
-    >
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg mb-2">{giveaway.title}</CardTitle>
-            <p className="text-sm text-muted-foreground mb-3">{giveaway.description}</p>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            {giveaway.status === 'ACTIVE' ? (
-              <Badge className="mission-glass-badge gap-1.5 font-normal">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-green-500/70 animate-pulse" />
-                {messages.giveaways.card.status.active}
-              </Badge>
-            ) : (
-              <Badge variant="secondary">
-                {giveaway.status === 'ENDED'
-                  ? messages.giveaways.card.status.ended
-                  : messages.giveaways.card.status.cancelled}
-              </Badge>
-            )}
-            {giveaway.isPrivate && (
-              <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs flex items-center gap-1">
-                <LockClosedIcon className="h-3 w-3 shrink-0" aria-hidden />
-                {messages.giveaways.card.privateLabel}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-3 sm:space-y-4">
-        <div className="bg-gradient-to-r from-theme-accent/5 to-theme-accent/10 dark:from-theme-accent/10 dark:to-theme-accent/15 rounded-lg p-4 border">
-          <div className="flex items-center space-x-3">
-            <SafeImage
-              src={giveaway.prizeImageUrl}
-              alt={giveaway.prize}
-              width={72}
-              height={52}
-              className="object-contain rounded shrink-0 drop-shadow"
-              fallbackClassName="w-[72px] h-[52px] rounded shrink-0"
-              fallbackIcon={<TrophyIcon className="w-8 h-8 text-theme-accent" />}
-              unoptimized
-            />
-            <div>
-              <h4 className="font-semibold text-theme-accent dark:text-theme-highlight">{messages.giveaways.card.prize}</h4>
-              <p className="text-theme-accent">{giveaway.prize}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-lg border bg-muted/30 p-3 text-sm space-y-1.5">
-          <div className="flex items-center gap-2">
-            <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
-            <span>{fg.costPerEntry}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <UserGroupIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-            <span>
-              {totalParticipants} {fg.participants} · {totalEntries} {fg.totalEntries}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <TicketIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-            <span>
-              {fg.yourEntries}: {myEntries} · {fg.yourChance}: {myChance.toFixed(2)}%
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <TrophyIcon className="w-4 h-4 shrink-0" />
-            <span>
-              {giveaway.winnerCount ?? 1} {fg.winnerCount}
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <ClockIcon className="w-4 h-4 text-muted-foreground" />
-            <span>{formatTimeRemaining(timeRemaining, messages)}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-            <span>{endDate.toLocaleDateString(locale === 'cn' ? 'zh-CN' : locale)}</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>{messages.giveaways.card.ticketsSold}</span>
-            <span>{progress.toFixed(1)}%</span>
-          </div>
-          <Progress value={progress} className="h-2" />
-        </div>
-
-        {giveaway.status === 'ENDED' && (giveaway.winnerId || (giveaway.winners && giveaway.winners.length > 0)) && (
-          <div className="bg-green-50 dark:bg-green-950/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center space-x-2 min-w-0">
-                <StarIcon className="w-5 h-5 text-green-600 shrink-0" />
-                <span className="text-sm font-medium text-green-800 dark:text-green-200 truncate">
-                  {messages.giveaways.card.winner}{' '}
-                  {giveaway.winners && giveaway.winners.length > 0
-                    ? `${giveaway.winners.length} ${messages.giveaways.card.winnersCount}`
-                    : giveaway.winnerId?.slice(-6)}
-                </span>
-              </div>
-              <Link href={`/giveaways/${giveaway.id}`}>
-                <Button variant="outline" size="sm" className="text-xs shrink-0">
-                  {messages.giveawaysPage.viewDetails}
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {isParticipationLocked && (
-          <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-3 text-sm text-purple-200/90 space-y-1">
-            <div className="flex items-start gap-2">
-              <LockClosedIcon className="h-4 w-4 shrink-0 mt-0.5" aria-hidden />
-              <p>
-                {messages.giveaways.card.reservedForAffiliateCode.replace(
-                  '{code}',
-                  giveaway.requiredAffiliateCode ?? ''
-                )}
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground pl-6">
-              {messages.giveaways.card.reservedForAffiliateCodeHint}
-            </p>
-          </div>
-        )}
-
-        {giveaway.status === 'ACTIVE' && !timeRemaining.expired && !isParticipationLocked && (
-          <div className="border-t pt-4 space-y-3">
-            {/* Barre de progression vers la participation */}
-            {userFragments < giveaway.ticketPrice && (
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <FragmentAmount amount={userFragments} size="xs" />
-                    <span>/</span>
-                    <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
-                    <span>{messages.giveaways.card.fragmentsLabel}</span>
-                  </span>
-                  <span className="text-theme-stat font-medium">
-                    {messages.giveaways.card.fragmentsRemaining.replace('{count}', String(giveaway.ticketPrice - userFragments))}
-                  </span>
-                </div>
-                <Progress
-                  value={Math.min(100, (userFragments / giveaway.ticketPrice) * 100)}
-                  className="h-1.5 bg-muted [&>div]:bg-theme-stat"
-                />
-              </div>
-            )}
-            <Label htmlFor={`entries-${giveaway.id}`} className="text-sm">
-              {fg.entriesToBuy}
-            </Label>
-            <div className="flex space-x-2">
-              <Input
-                id={`entries-${giveaway.id}`}
-                type="number"
-                min="1"
-                max={Math.max(1, maxSelectable)}
-                value={entriesToBuy}
-                onChange={(e) => {
-                  const v = Math.max(1, parseInt(e.target.value, 10) || 1);
-                  setEntriesToBuy(Math.min(v, Math.max(1, maxSelectable)));
-                }}
-                className="flex-1"
-              />
-              <Button
-                variant="chrome"
-                onClick={() => onParticipate(giveaway, entriesToBuy)}
-                disabled={
-                  maxSelectable < 1 ||
-                  userFragments < totalCost ||
-                  entriesToBuy > poolLeft ||
-                  entriesToBuy > maxPerUser
-                }
-              >
-                {messages.giveaways.card.participate}
-              </Button>
-            </div>
-              <p className="text-xs text-muted-foreground">
-                {messages.giveaways.youHave} {userFragments} {fg.entriesAvailable}, {messages.giveaways.card.costLabel.replace('{cost}', String(totalCost))}
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
+const giveawayGridClass = 'grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3';
 
 export default function GiveawaysPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { messages, locale } = useLocale();
+  const { messages } = useLocale();
   const { isTourMode } = useTourMode();
   const [selectedTab, setSelectedTab] = useState('active');
+  const [tierFilter, setTierFilter] = useState<GiveawayTierFilter>('all');
+  const [sort, setSort] = useState<GiveawaySort>('endingSoon');
   const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
   const [userFragments, setUserFragments] = useState(0);
   const [giveawaysEnabled, setGiveawaysEnabled] = useState<boolean | null>(null);
+  const now = useLiveNow();
 
   useEffect(() => {
     if (user) {
@@ -337,8 +58,8 @@ export default function GiveawaysPage() {
 
   useEffect(() => {
     fetch('/api/giveaways/status')
-      .then(r => r.json())
-      .then(d => setGiveawaysEnabled(d.enabled ?? true))
+      .then((r) => r.json())
+      .then((d) => setGiveawaysEnabled(d.enabled ?? true))
       .catch(() => setGiveawaysEnabled(true));
   }, []);
 
@@ -348,7 +69,7 @@ export default function GiveawaysPage() {
         await fetch('/api/giveaways/init', { method: 'POST' });
         refetch();
       } catch (error) {
-        console.error('Erreur lors de l\'initialisation:', error);
+        console.error("Erreur lors de l'initialisation:", error);
       }
     };
 
@@ -363,6 +84,8 @@ export default function GiveawaysPage() {
       return data.success ? data.data : [];
     },
     enabled: !!user,
+    refetchOnWindowFocus: true,
+    refetchInterval: 15_000,
   });
   const myEntries = myEntriesData ?? [];
 
@@ -391,29 +114,42 @@ export default function GiveawaysPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-          {messages.giveaways.myEntries.entries.inProgress}
-        </Badge>;
-      case 'won':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800">
-          {messages.giveaways.myEntries.entries.won}
-        </Badge>;
-      case 'lost':
-        return <Badge variant="secondary" className="bg-red-100 text-red-800">
-          {messages.giveaways.myEntries.entries.lost}
-        </Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
+  const activeGiveaways = useMemo(
+    () => giveaways.filter((g) => g.status === 'ACTIVE'),
+    [giveaways]
+  );
+  const publicActive = useMemo(
+    () => activeGiveaways.filter((g) => !g.isPrivate),
+    [activeGiveaways]
+  );
+  const privateActive = useMemo(
+    () => activeGiveaways.filter((g) => g.isPrivate),
+    [activeGiveaways]
+  );
+  const endedGiveaways = useMemo(
+    () => sortGiveaways(
+      giveaways.filter((g) => g.status === 'ENDED'),
+      sort
+    ),
+    [giveaways, sort]
+  );
+  const featured = useMemo(() => selectFeaturedGiveaway(publicActive), [publicActive]);
+  const filteredPublic = useMemo(() => {
+    const withoutFeatured = publicActive.filter((g) => g.id !== featured?.id);
+    return sortGiveaways(filterGiveawaysByTier(withoutFeatured, tierFilter), sort);
+  }, [publicActive, featured?.id, tierFilter, sort]);
+  const filteredPrivate = useMemo(
+    () => sortGiveaways(filterGiveawaysByTier(privateActive, tierFilter), sort),
+    [privateActive, tierFilter, sort]
+  );
+  const myGiveaways = useMemo(
+    () => sortGiveaways(
+      giveaways.filter((g) => (g.myEntries ?? 0) > 0),
+      sort
+    ),
+    [giveaways, sort]
+  );
 
-  const activeGiveaways = giveaways.filter(g => g.status === 'ACTIVE');
-  const endedGiveaways = giveaways.filter(g => g.status === 'ENDED');
-
-  // Chargement de l'état
   if (giveawaysEnabled === null) {
     return (
       <PageLoading
@@ -446,79 +182,74 @@ export default function GiveawaysPage() {
     );
   }
 
-  // Page désactivée par l'admin
   if (!giveawaysEnabled) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <div className="max-w-2xl mx-auto">
+        <div className="mx-auto max-w-2xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            {/* Icône animée */}
             <div className="relative mb-8 inline-block">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-theme-accent/20 to-theme-accent/30 border border-theme-accent/30 flex items-center justify-center mx-auto">
-                <LockClosedIcon className="w-16 h-16 text-theme-accent" />
+              <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-full border border-theme-accent/30 bg-gradient-to-br from-theme-accent/20 to-theme-accent/30">
+                <LockClosedIcon className="h-16 w-16 text-theme-accent" />
               </div>
-              <div className="absolute -top-1 -right-1 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">!</span>
+              <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-red-500">
+                <span className="text-xs font-bold text-white">!</span>
               </div>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
+            <h1 className="mb-4 text-3xl font-bold md:text-4xl">
               <span className="bg-cta-gradient bg-clip-text text-transparent">
-                Giveaways
+                {messages.giveaways.title}
               </span>{' '}
               {messages.giveawaysPage.comingSoon}
             </h1>
-            <p className="text-xl text-muted-foreground mb-3">
+            <p className="mb-3 text-xl text-muted-foreground">
               {messages.giveawaysPage.temporarilyClosed}
             </p>
-            <p className="text-muted-foreground mb-10 max-w-md mx-auto">
+            <p className="mx-auto mb-10 max-w-md text-muted-foreground">
               {messages.giveawaysPage.comingSoonDescription}
             </p>
 
-            {/* Infos sur les tickets */}
-            <Card className="mb-8 bg-gradient-to-br from-theme-accent/5 to-theme-accent/10 dark:from-theme-accent/10 dark:to-theme-accent/15 border-theme-accent/20 dark:border-theme-accent/30">
+            <Card className="mb-8 border-theme-accent/20 bg-gradient-to-br from-theme-accent/5 to-theme-accent/10 dark:border-theme-accent/30 dark:from-theme-accent/10 dark:to-theme-accent/15">
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
-                  <BellAlertIcon className="w-6 h-6 text-theme-accent flex-shrink-0 mt-0.5" />
+                  <BellAlertIcon className="mt-0.5 h-6 w-6 flex-shrink-0 text-theme-accent" />
                   <div className="text-left">
-                    <h3 className="font-semibold text-theme-accent dark:text-theme-highlight mb-1">
+                    <h3 className="mb-1 font-semibold text-theme-accent dark:text-theme-highlight">
                       {messages.giveawaysPage.keepAccumulating}
                     </h3>
                     <p className="text-sm text-theme-accent">
                       {messages.giveawaysPage.keepAccumulatingDescription}
                     </p>
-                    {user && (
-                      <div className="mt-3">
-                        <FragmentAmount
-                          amount={user.fragments ?? 0}
-                          size="xs"
-                          className="font-bold text-theme-highlight"
-                        />
-                        <span className="ml-1 text-sm text-theme-highlight">
-                          {messages.giveaways.card.fragmentsLabel}
-                        </span>
-                      </div>
-                    )}
+                    <div className="mt-3">
+                      <FragmentAmount
+                        amount={user.fragments ?? 0}
+                        size="xs"
+                        className="font-bold text-theme-highlight"
+                      />
+                      <span className="ml-1 text-sm text-theme-highlight">
+                        {messages.giveaways.card.fragmentsLabel}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Link href="/dashboard">
                 <Button variant="cta">
-                  <TrophyIcon className="w-4 h-4 mr-2" />
+                  <TrophyIcon className="mr-2 h-4 w-4" />
                   {messages.giveawaysPage.viewDashboard}
                 </Button>
               </Link>
               <Link href="/">
                 <Button variant="outline">
-                  <GiftIcon className="w-4 h-4 mr-2" />
+                  <GiftIcon className="mr-2 h-4 w-4" />
                   {messages.giveawaysPage.sellMySkins}
                 </Button>
               </Link>
@@ -532,288 +263,216 @@ export default function GiveawaysPage() {
   return (
     <>
       <GiveawayNotifications />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-6 sm:mb-8"
-        >
-          <h1 className="text-3xl md:text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-            <GiftIcon className="w-8 h-8 inline-block mr-2 text-theme-accent" />
-            {messages.giveaways.title}
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
-            {messages.giveaways.subtitle}
-          </p>
-          <Button 
-            onClick={() => refetch()} 
-            variant="outline" 
-            disabled={loading}
-            className="mb-4"
-          >
-            {loading ? messages.giveawaysPage.loading : messages.giveawaysPage.refreshGiveaways}
-          </Button>
-        </motion.div>
+      <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <GiveawaysCompactHeader
+            messages={messages}
+            user={user}
+            userFragments={userFragments}
+          />
 
-        {user && (
-          <motion.div
-            data-tour="giveaways-fragments"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-6 sm:mb-8"
-          >
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={user.avatar} alt={user.username} />
-                      <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold">{user.username}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {messages.giveaways.userTickets.level} {user.level}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center justify-end gap-2 mb-1">
-                      <FragmentAmount amount={userFragments} size="sm" className="text-2xl font-bold" />
-                      <span className="text-muted-foreground">{messages.giveaways.card.fragmentsLabel}</span>
-                    </div>
-                    {/* Progression vers le prochain giveaway actif le moins cher */}
-                    {(() => {
-                      const activeGiveaways = giveaways.filter((g) => g.status === 'ACTIVE');
-                      if (activeGiveaways.length === 0) return null;
-                      const cheapest = activeGiveaways.reduce((min, g) =>
-                        g.ticketPrice < min.ticketPrice ? g : min
-                      );
-                      if (userFragments >= cheapest.ticketPrice) return null;
-                      const pct = Math.min(100, (userFragments / cheapest.ticketPrice) * 100);
-                      return (
-                        <div className="mt-2 space-y-1 text-xs text-left min-w-[180px]">
-                          <div className="flex justify-between text-muted-foreground">
-                            <span>{messages.giveaways.card.nextGiveaway}</span>
-                            <span className="text-theme-stat font-medium">
-                              {messages.giveaways.card.moreNeeded.replace('{count}', String(cheapest.ticketPrice - userFragments))}
-                            </span>
-                          </div>
-                          <Progress value={pct} className="h-1.5 bg-muted [&>div]:bg-theme-stat" />
-                        </div>
-                      );
-                    })()}
-                    <div className="flex flex-wrap justify-end gap-2 text-sm text-muted-foreground mt-1">
-                      <span>{messages.giveaways.userTickets.tickets}: {user.tickets ?? 0}</span>
-                      <Link href="/missions" className="text-theme-accent hover:underline">
-                        {messages.giveaways.card.missionsLink}
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+          {featured && (
+            <GiveawayHero
+              giveaway={featured}
+              messages={messages}
+              userFragments={userFragments}
+              onParticipate={handleParticipate}
+              currentUser={{ username: user.username, avatar: user.avatar }}
+            />
+          )}
 
-        {/* How Tickets Work */}
-        <motion.div
-          data-tour="giveaways-how"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-6 sm:mb-8"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <TicketIcon className="w-5 h-5 text-theme-accent" />
-                <span>{messages.giveaways.howTicketsWork.title}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                <div className="text-center">
-                  <div className={giveawayIconClass}>
-                    <CurrencyDollarIcon className="w-6 h-6 text-theme-accent" />
-                  </div>
-                  <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.earn.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {messages.giveaways.howTicketsWork.earn.description}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className={giveawayIconClass}>
-                    <GiftIcon className="w-6 h-6 text-theme-accent" />
-                  </div>
-                  <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.participate.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {messages.giveaways.howTicketsWork.participate.description}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className={giveawayIconClass}>
-                    <TrophyIcon className="w-6 h-6 text-theme-accent" />
-                  </div>
-                  <h4 className="font-semibold mb-2">{messages.giveaways.howTicketsWork.win.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {messages.giveaways.howTicketsWork.win.description}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-0">
+            <GiveawayToolbar
+              messages={messages}
+              counts={{
+                active: activeGiveaways.length,
+                mine: myGiveaways.length,
+                ended: endedGiveaways.length,
+              }}
+              selectedTab={selectedTab}
+              tierFilter={tierFilter}
+              onTierFilterChange={setTierFilter}
+              sort={sort}
+              onSortChange={setSort}
+            />
 
-        {/* Giveaways Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4 sm:space-y-6" data-tour="giveaways-tabs">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 gap-2 h-auto">
-              <TabsTrigger value="active">
-                {messages.giveaways.tabs.active} ({activeGiveaways.length})
-              </TabsTrigger>
-              <TabsTrigger value="ended">
-                {messages.giveaways.tabs.ended} ({endedGiveaways.length})
-              </TabsTrigger>
-              <TabsTrigger value="my-entries" className="col-span-2 sm:col-span-1">
-                {messages.giveaways.tabs.myEntries}
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Active Giveaways */}
             <TabsContent value="active">
               {loading ? (
                 <PageLoading variant="compact" message={messages.giveawaysPage.loadingGiveaways} />
               ) : (
-                <div className={getGiveawayGridClass(activeGiveaways.length)}>
-                  {activeGiveaways.map((giveaway, index) => (
-                    <motion.div
-                      key={giveaway.id}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                    >
-                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userFragments={userFragments} locale={locale} />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-              {activeGiveaways.length === 0 && (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <GiftIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-semibold mb-2">{messages.giveaways.empty.noActive}</h3>
-                    <p className="text-muted-foreground">
-                      {messages.giveaways.empty.noActiveDescription}
+                <>
+                  {filteredPublic.length > 0 && (
+                    <div className={giveawayGridClass}>
+                      {filteredPublic.map((giveaway, index) => (
+                        <motion.div
+                          key={giveaway.id}
+                          className="h-full"
+                          initial={{ opacity: 0, y: 24 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: index * 0.05 }}
+                        >
+                          <GiveawayCard
+                            giveaway={giveaway}
+                            onParticipate={handleParticipate}
+                            messages={messages}
+                            userFragments={userFragments}
+                            now={now}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+
+                  {filteredPublic.length === 0 &&
+                    filteredPrivate.length === 0 &&
+                    !featured && (
+                      <Card>
+                        <CardContent className="p-8 text-center">
+                          <GiftIcon className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                          <h3 className="mb-2 text-xl font-semibold">{messages.giveaways.empty.noActive}</h3>
+                          <p className="text-muted-foreground">
+                            {messages.giveaways.empty.noActiveDescription}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                  {filteredPublic.length === 0 && tierFilter !== 'all' && (
+                    <p className="text-sm text-muted-foreground">
+                      {messages.giveaways.layout.emptyFiltered}
                     </p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+                  )}
 
-            {/* Ended Giveaways */}
-            <TabsContent value="ended">
-              {loading ? (
-                <PageLoading variant="compact" message={messages.giveawaysPage.loadingEndedGiveaways} />
-              ) : (
-                <div className={getGiveawayGridClass(endedGiveaways.length)}>
-                  {endedGiveaways.map((giveaway, index) => (
-                    <motion.div
-                      key={giveaway.id}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                    >
-                      <GiveawayCard giveaway={giveaway} onParticipate={handleParticipate} messages={messages} userFragments={userFragments} locale={locale} />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            {/* My Entries */}
-            <TabsContent value="my-entries">
-              {user ? (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{messages.giveaways.myEntries.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {loadingEntries ? (
-                      <PageLoading variant="compact" message={messages.giveawaysPage.loadingParticipations} />
-                    ) : myEntries.length > 0 ? (
-                      <div className="space-y-3 sm:space-y-4">
-                        {myEntries.map((entry: { id: string; ticketsUsed: number; enteredAt: string; participationStatus: string; giveaway: { id: string; title: string; status: string; endDate: string } }) => (
-                          <div key={entry.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <Link href={`/giveaways/${entry.giveaway.id}`}>
-                                  <h4 className="font-semibold hover:text-theme-accent transition-colors cursor-pointer">
-                                    {entry.giveaway.title}
-                                  </h4>
-                                </Link>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {entry.ticketsUsed} {entry.ticketsUsed > 1 ? messages.giveawaysPage.ticketsUsed : messages.giveawaysPage.ticketUsed}
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {messages.giveawaysPage.participatedOn} {new Date(entry.enteredAt).toLocaleDateString(locale === 'cn' ? 'zh-CN' : locale, {
-                                    day: '2-digit',
-                                    month: 'long',
-                                    year: 'numeric'
-                                  })}
-                                </p>
-                              </div>
-                              <div className="flex flex-col items-end gap-2">
-                                {getStatusBadge(entry.participationStatus)}
-                                {entry.giveaway.status === 'ENDED' && (
-                                  <p className="text-xs text-muted-foreground">
-                                    {messages.giveawaysPage.endedOn} {new Date(entry.giveaway.endDate).toLocaleDateString(locale === 'cn' ? 'zh-CN' : locale)}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                  {filteredPrivate.length > 0 && (
+                    <section className="mt-10">
+                      <h2 className="mb-4 font-display text-lg font-semibold">
+                        {messages.giveaways.layout.privateSectionTitle}
+                      </h2>
+                      <div className={giveawayGridClass}>
+                        {filteredPrivate.map((giveaway, index) => (
+                          <motion.div
+                            key={giveaway.id}
+                            className="h-full"
+                            initial={{ opacity: 0, y: 24 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: index * 0.05 }}
+                          >
+                            <GiveawayCard
+                              giveaway={giveaway}
+                              onParticipate={handleParticipate}
+                              messages={messages}
+                              userFragments={userFragments}
+                              now={now}
+                            />
+                          </motion.div>
                         ))}
                       </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <GiftIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-xl font-semibold mb-2">{messages.giveawaysPage.noEntries}</h3>
-                        <p className="text-muted-foreground mb-6">
-                          {messages.giveawaysPage.noEntriesDescription}
-                        </p>
-                        <Button onClick={() => setSelectedTab('active')}>
-                          {messages.giveawaysPage.viewActive}
-                        </Button>
-                      </div>
+                    </section>
+                  )}
+                </>
+              )}
+            </TabsContent>
+
+            <TabsContent value="my-entries">
+              {loading || loadingEntries ? (
+                <PageLoading variant="compact" message={messages.giveawaysPage.loadingParticipations} />
+              ) : myGiveaways.length > 0 ? (
+                <div className={giveawayGridClass}>
+                  {myGiveaways.map((giveaway, index) => (
+                    <motion.div
+                      key={giveaway.id}
+                      className="h-full"
+                      initial={{ opacity: 0, y: 24 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.05 }}
+                    >
+                      <GiveawayCard
+                        giveaway={giveaway}
+                        onParticipate={handleParticipate}
+                        messages={messages}
+                        userFragments={userFragments}
+                        now={now}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              ) : myEntries.length > 0 ? (
+                <Card>
+                  <CardContent className="space-y-3 p-4 sm:p-6">
+                    {myEntries.map(
+                      (entry: {
+                        id: string;
+                        ticketsUsed: number;
+                        enteredAt: string;
+                        participationStatus: string;
+                        giveaway: { id: string; title: string; status: string; endDate: string };
+                      }) => (
+                        <Link
+                          key={entry.id}
+                          href={`/giveaways/${entry.giveaway.id}`}
+                          className="block rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                        >
+                          <h4 className="font-semibold">{entry.giveaway.title}</h4>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {entry.ticketsUsed}{' '}
+                            {entry.ticketsUsed > 1
+                              ? messages.giveawaysPage.ticketsUsed
+                              : messages.giveawaysPage.ticketUsed}
+                          </p>
+                        </Link>
+                      )
                     )}
                   </CardContent>
                 </Card>
               ) : (
                 <Card>
                   <CardContent className="p-8 text-center">
-                    <UserGroupIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-xl font-semibold mb-2">{messages.giveaways.empty.loginRequired}</h3>
-                    <p className="text-muted-foreground mb-6">
-                      {messages.giveaways.empty.loginRequiredDescription}
+                    <GiftIcon className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                    <h3 className="mb-2 text-xl font-semibold">{messages.giveawaysPage.noEntries}</h3>
+                    <p className="mb-6 text-muted-foreground">
+                      {messages.giveawaysPage.noEntriesDescription}
                     </p>
-                    <Button onClick={() => window.location.href = '/'}>
-                      {messages.giveaways.empty.loginButton}
+                    <Button onClick={() => setSelectedTab('active')}>
+                      {messages.giveawaysPage.viewActive}
                     </Button>
                   </CardContent>
                 </Card>
               )}
             </TabsContent>
+
+            <TabsContent value="ended">
+              {loading ? (
+                <PageLoading variant="compact" message={messages.giveawaysPage.loadingEndedGiveaways} />
+              ) : endedGiveaways.length > 0 ? (
+                <div className={giveawayGridClass}>
+                  {endedGiveaways.map((giveaway, index) => (
+                    <motion.div
+                      key={giveaway.id}
+                      className="h-full"
+                      initial={{ opacity: 0, y: 24 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.05 }}
+                    >
+                      <GiveawayCard
+                        giveaway={giveaway}
+                        onParticipate={handleParticipate}
+                        messages={messages}
+                        userFragments={userFragments}
+                        now={now}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <GiftIcon className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+                    <h3 className="mb-2 text-xl font-semibold">{messages.giveaways.card.status.ended}</h3>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
           </Tabs>
-        </motion.div>
         </div>
       </div>
     </>
