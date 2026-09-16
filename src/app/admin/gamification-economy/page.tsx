@@ -30,6 +30,10 @@ interface EconomyData {
     circulationTheoretical: number;
     unusedOnBalances: number;
     utilizationRate30d: number;
+    demandIfSoldOut: number;
+    demandRemaining: number;
+    demandRecurring30d: number;
+    coverageRatio: number | null;
     byType: { type: string; _sum: { amount: number | null } }[];
   };
   giveaways: {
@@ -372,10 +376,11 @@ export default function AdminGamificationEconomyPage() {
 
       {/* Bloc 2, Fragments */}
       <div>
-        <h2 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wider">
+        <h2 className="text-white font-semibold mb-1 flex items-center gap-2 text-sm uppercase tracking-wider">
           <SparklesIcon className="w-4 h-4 text-theme-stat" />
           {ge.fragments.title}
         </h2>
+        <p className="text-slate-500 text-xs mb-3">{ge.fragments.demandHelp}</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <KpiCard
             label={ge.fragments.generatedTotal}
@@ -420,6 +425,41 @@ export default function AdminGamificationEconomyPage() {
             label={ge.fragments.spent30d}
             value={fmtNum(data.fragments.spent30dAbs)}
             icon={<SparklesIcon className="w-4 h-4" />}
+          />
+          <KpiCard
+            label={ge.fragments.demandRemaining}
+            value={fmtNum(data.fragments.demandRemaining)}
+            sub={ge.fragments.demandRemainingSub}
+            icon={<SparklesIcon className="w-4 h-4" />}
+            color="text-theme-highlight"
+          />
+          <KpiCard
+            label={ge.fragments.demandSoldOut}
+            value={fmtNum(data.fragments.demandIfSoldOut)}
+            sub={ge.fragments.demandSoldOutSub}
+            icon={<SparklesIcon className="w-4 h-4" />}
+          />
+          <KpiCard
+            label={ge.fragments.demandRecurring30d}
+            value={fmtNum(data.fragments.demandRecurring30d)}
+            sub={ge.fragments.demandRecurring30dSub}
+            icon={<SparklesIcon className="w-4 h-4" />}
+          />
+          <KpiCard
+            label={ge.fragments.coverage}
+            value={
+              data.fragments.coverageRatio != null
+                ? `${(data.fragments.coverageRatio * 100).toFixed(0)}%`
+                : ge.fragments.coverageNone
+            }
+            sub={ge.fragments.coverageSub}
+            icon={<SparklesIcon className="w-4 h-4" />}
+            color={
+              data.fragments.coverageRatio == null ? 'text-slate-300' :
+              data.fragments.coverageRatio < 0.3 ? 'text-red-400' :
+              data.fragments.coverageRatio > 5 ? 'text-blue-400' :
+              'text-green-400'
+            }
           />
         </div>
       </div>

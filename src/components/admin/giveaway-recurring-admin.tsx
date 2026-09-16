@@ -15,6 +15,7 @@ import {
   PlayIcon,
   PowerIcon,
   PlusIcon,
+  PencilIcon,
   CubeIcon,
   XMarkIcon,
   TrashIcon,
@@ -24,6 +25,7 @@ import { PageLoading } from '@/components/ui/page-loading';
 import { SafeImage } from '@/components/ui/safe-image';
 import { SkinPickerModal } from '@/components/admin/skin-picker-modal';
 import { GiveawayDurationPresets } from '@/components/admin/giveaway-duration-presets';
+import { toDatetimeLocalValue } from '@/lib/giveaway-duration-presets';
 import {
   GIVEAWAY_DEFAULT_MAX_TICKETS,
   GIVEAWAY_DEFAULT_TICKET_PRICE,
@@ -50,8 +52,16 @@ interface GiveawaySeriesRow {
   description: string;
   prize: string;
   prizeImageUrl?: string | null;
+  steamMarketHashName?: string | null;
+  ticketPrice: number;
+  maxTickets: number;
   frequency: RecurringFrequency;
   durationMinutes: number;
+  winnerCount: number;
+  maxEntriesPerUser?: number | null;
+  rewardValueCents: number;
+  isPrivate: boolean;
+  requiredAffiliateCode?: string | null;
   status: SeriesStatus;
   startDate: string;
   endDate: string | null;
@@ -104,18 +114,56 @@ const defaultForm = (): SeriesForm => ({
   requiredAffiliateCode: '',
 });
 
+function seriesToForm(row: GiveawaySeriesRow): SeriesForm {
+  return {
+    title: row.title,
+    description: row.description,
+    prize: row.prize,
+    prizeImageUrl: row.prizeImageUrl ?? '',
+    steamMarketHashName: row.steamMarketHashName ?? '',
+    ticketPrice: row.ticketPrice,
+    maxTickets: row.maxTickets,
+    durationMinutes: row.durationMinutes,
+    frequency: row.frequency,
+    winnerCount: row.winnerCount,
+    maxEntriesPerUser: row.maxEntriesPerUser != null ? String(row.maxEntriesPerUser) : '',
+    rewardValueCents: row.rewardValueCents ?? 0,
+    startDate: toDatetimeLocalValue(new Date(row.startDate)),
+    endDate: row.endDate ? toDatetimeLocalValue(new Date(row.endDate)) : '',
+    isPrivate: row.isPrivate === true,
+    requiredAffiliateCode: row.requiredAffiliateCode ?? '',
+  };
+}
+
+function skinFromSeries(row: GiveawaySeriesRow): SkinItem | null {
+  if (!row.steamMarketHashName && !row.prizeImageUrl) return null;
+  return {
+    steam_market_hash_name: row.steamMarketHashName || row.prize,
+    icon_url: row.prizeImageUrl ?? null,
+    price: row.rewardValueCents != null ? row.rewardValueCents / 100 : null,
+    rarity: null,
+    rarity_color: null,
+    exterior: null,
+    item_type: null,
+    phase: null,
+  };
+}
+
 export function GiveawayRecurringAdmin() {
   const { messages } = useLocale();
   const t = messages.admin.giveaways.recurring;
   const formT = messages.admin.giveaways.form;
   const [series, setSeries] = useState<GiveawaySeriesRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<SeriesForm>(defaultForm);
   const [selectedSkin, setSelectedSkin] = useState<SkinItem | null>(null);
   const [skinPickerOpen, setSkinPickerOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const instanceDemand = Math.max(0, form.ticketPrice) * Math.max(0, form.maxTickets);
 
   const handleSelectSkin = (skin: SkinItem) => {
     setSelectedSkin(skin);
@@ -131,6 +179,27 @@ export function GiveawayRecurringAdmin() {
   const handleClearSkin = () => {
     setSelectedSkin(null);
     setForm((prev) => ({ ...prev, prize: '', prizeImageUrl: '', steamMarketHashName: '' }));
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setForm(defaultForm());
+    setSelectedSkin(null);
+  };
+
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(defaultForm());
+    setSelectedSkin(null);
+    setShowForm(true);
+  };
+
+  const handleStartEdit = (row: GiveawaySeriesRow) => {
+    setEditingId(row.id);
+    setForm(seriesToForm(row));
+    setSelectedSkin(skinFromSeries(row));
+    setShowForm(true);
   };
 
   const loadSeries = useCallback(async () => {
@@ -185,6 +254,7 @@ export function GiveawayRecurringAdmin() {
         throw new Error(data.error || t.deleteError);
       }
       toast.success(t.deleteSuccess);
+      if (editingId === id) closeForm();
       await loadSeries();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t.deleteError);
@@ -193,48 +263,67 @@ export function GiveawayRecurringAdmin() {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const seriesPayload = () => {
+    const prizeValue = selectedSkin?.steam_market_hash_name || form.prize;
+    return {
+      title: form.title,
+      description: form.description,
+      prize: prizeValue,
+      prizeImageUrl: form.prizeImageUrl || null,
+      steamMarketHashName: form.steamMarketHashName || null,
+      ticketPrice: form.ticketPrice,
+      maxTickets: form.maxTickets,
+      durationMinutes: form.durationMinutes,
+      frequency: form.frequency,
+      winnerCount: form.winnerCount,
+      maxEntriesPerUser: form.maxEntriesPerUser.trim()
+        ? parseInt(form.maxEntriesPerUser, 10)
+        : null,
+      rewardValueCents: form.rewardValueCents,
+      startDate: new Date(form.startDate).toISOString(),
+      endDate: form.endDate ? new Date(form.endDate).toISOString() : null,
+      isPrivate: form.isPrivate,
+      requiredAffiliateCode:
+        form.isPrivate && form.requiredAffiliateCode.trim()
+          ? form.requiredAffiliateCode.trim()
+          : null,
+    };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const prizeValue = selectedSkin?.steam_market_hash_name || form.prize;
     if (!form.title || !form.description || !prizeValue) {
       toast.error(t.requiredFields);
       return;
     }
-    setCreating(true);
+    setSaving(true);
     try {
-      const res = await fetch('/api/admin/giveaway-series', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          prize: prizeValue,
-          prizeImageUrl: form.prizeImageUrl || null,
-          steamMarketHashName: form.steamMarketHashName || null,
-          maxEntriesPerUser: form.maxEntriesPerUser.trim()
-            ? parseInt(form.maxEntriesPerUser, 10)
-            : null,
-          startDate: new Date(form.startDate).toISOString(),
-          endDate: form.endDate ? new Date(form.endDate).toISOString() : null,
-          requiredAffiliateCode:
-            form.isPrivate && form.requiredAffiliateCode.trim()
-              ? form.requiredAffiliateCode.trim()
-              : null,
-        }),
-      });
+      const payload = seriesPayload();
+      const res = editingId
+        ? await fetch(`/api/admin/giveaway-series/${editingId}`, {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...payload, syncActiveInstance: true }),
+          })
+        : await fetch('/api/admin/giveaway-series', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || t.createError);
+        throw new Error(data.error || (editingId ? t.updateError : t.createError));
       }
-      toast.success(t.createSuccess);
-      setForm(defaultForm());
-      setSelectedSkin(null);
-      setShowForm(false);
+      toast.success(editingId ? t.updateSuccess : t.createSuccess);
+      closeForm();
       await loadSeries();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.createError);
+      toast.error(err instanceof Error ? err.message : editingId ? t.updateError : t.createError);
     } finally {
-      setCreating(false);
+      setSaving(false);
     }
   };
 
@@ -262,7 +351,10 @@ export function GiveawayRecurringAdmin() {
           <Button variant="outline" onClick={loadSeries} disabled={loading}>
             {loading ? t.loading : t.refresh}
           </Button>
-          <Button onClick={() => setShowForm((v) => !v)} className="bg-primary hover:bg-primary/90">
+          <Button
+            onClick={() => (showForm ? closeForm() : openCreate())}
+            className="bg-primary hover:bg-primary/90"
+          >
             <PlusIcon className="w-4 h-4 mr-2" />
             {showForm ? t.cancelCreate : t.createSeries}
           </Button>
@@ -272,10 +364,10 @@ export function GiveawayRecurringAdmin() {
       {showForm && (
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">{t.createTitle}</CardTitle>
+            <CardTitle className="text-white">{editingId ? t.editTitle : t.createTitle}</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleCreate} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>{t.formTitle}</Label>
@@ -393,6 +485,17 @@ export function GiveawayRecurringAdmin() {
                   />
                 </div>
                 <div>
+                  <Label>{formT.maxTicketsLabel}</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={form.maxTickets}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, maxTickets: parseInt(e.target.value, 10) || 1 }))
+                    }
+                  />
+                </div>
+                <div>
                   <Label>{formT.rewardValueLabel}</Label>
                   <Input
                     type="number"
@@ -412,6 +515,16 @@ export function GiveawayRecurringAdmin() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, winnerCount: parseInt(e.target.value, 10) || 1 }))
                     }
+                  />
+                </div>
+                <div>
+                  <Label>{formT.maxEntriesPerUserLabel}</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    placeholder={formT.maxEntriesPlaceholder}
+                    value={form.maxEntriesPerUser}
+                    onChange={(e) => setForm((p) => ({ ...p, maxEntriesPerUser: e.target.value }))}
                   />
                 </div>
               </div>
@@ -441,8 +554,18 @@ export function GiveawayRecurringAdmin() {
                   />
                 )}
               </div>
-              <Button type="submit" disabled={creating} className="bg-primary hover:bg-primary/90">
-                {creating ? t.creating : t.submitCreate}
+              <p className="text-sm text-theme-highlight">
+                {t.instanceDemand.replace('{count}', instanceDemand.toLocaleString('fr-FR'))}
+              </p>
+              {editingId && <p className="text-xs text-slate-400">{t.syncHint}</p>}
+              <Button type="submit" disabled={saving} className="bg-primary hover:bg-primary/90">
+                {editingId
+                  ? saving
+                    ? t.updating
+                    : t.submitUpdate
+                  : saving
+                    ? t.creating
+                    : t.submitCreate}
               </Button>
             </form>
           </CardContent>
@@ -503,6 +626,14 @@ export function GiveawayRecurringAdmin() {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleStartEdit(row)}
+                      >
+                        <PencilIcon className="w-4 h-4 mr-1" />
+                        {t.edit}
+                      </Button>
                       {row.status === 'ACTIVE' && (
                         <Button
                           size="sm"

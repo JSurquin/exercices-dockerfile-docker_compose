@@ -2897,6 +2897,14 @@ export interface Messages {
         createSeries: string;
         cancelCreate: string;
         createTitle: string;
+        edit: string;
+        editTitle: string;
+        updating: string;
+        submitUpdate: string;
+        updateSuccess: string;
+        updateError: string;
+        syncHint: string;
+        instanceDemand: string;
         loading: string;
         refresh: string;
         empty: string;
@@ -6523,6 +6531,16 @@ export interface Messages {
           generated7d: string;
           generated30d: string;
           spent30d: string;
+          demandHelp: string;
+          demandRemaining: string;
+          demandRemainingSub: string;
+          demandSoldOut: string;
+          demandSoldOutSub: string;
+          demandRecurring30d: string;
+          demandRecurring30dSub: string;
+          coverage: string;
+          coverageSub: string;
+          coverageNone: string;
         };
         giveaways: {
           title: string;

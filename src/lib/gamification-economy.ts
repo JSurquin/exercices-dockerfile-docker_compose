@@ -2,6 +2,63 @@ import { prisma } from '../../prisma/prisma';
 
 const MARGIN_RATE_DEFAULT = 0.05;
 
+export type FragmentDemandGiveaway = {
+  ticketPrice: number;
+  maxTickets: number;
+  soldTickets: number;
+};
+
+export type FragmentDemandSeries = {
+  frequency: string;
+  ticketPrice: number;
+  maxTickets: number;
+};
+
+/** Nombre d'instances attendues sur 30 jours pour une série récurrente. */
+export function spawnsPer30Days(frequency: string): number {
+  switch (frequency) {
+    case 'DAILY':
+      return 30;
+    case 'WEEKLY':
+      return 30 / 7;
+    case 'MONTHLY':
+      return 1;
+    case 'YEARLY':
+      return 1 / 12;
+    default:
+      return 0;
+  }
+}
+
+/** Fragments nécessaires pour remplir les giveaways (prix × places). */
+export function estimateGiveawayFragmentDemand(
+  activeGiveaways: FragmentDemandGiveaway[],
+  activeSeries: FragmentDemandSeries[] = []
+) {
+  let demandIfSoldOut = 0;
+  let demandRemaining = 0;
+
+  for (const giveaway of activeGiveaways) {
+    const price = Math.max(0, giveaway.ticketPrice);
+    const maxTickets = Math.max(0, giveaway.maxTickets);
+    const soldTickets = Math.min(maxTickets, Math.max(0, giveaway.soldTickets));
+    demandIfSoldOut += price * maxTickets;
+    demandRemaining += price * (maxTickets - soldTickets);
+  }
+
+  let demandRecurring30d = 0;
+  for (const series of activeSeries) {
+    const perInstance = Math.max(0, series.ticketPrice) * Math.max(0, series.maxTickets);
+    demandRecurring30d += Math.round(perInstance * spawnsPer30Days(series.frequency));
+  }
+
+  return {
+    demandIfSoldOut,
+    demandRemaining,
+    demandRecurring30d,
+  };
+}
+
 function startUtc(daysAgo: number): Date {
   const d = new Date();
   d.setUTCHours(0, 0, 0, 0);
@@ -30,6 +87,8 @@ export async function getGamificationEconomyDashboard(marginRate = MARGIN_RATE_D
     tradesVol7d,
     tradesVol30d,
     endedGiveawaysWithWinners,
+    activeGiveawaysForDemand,
+    activeSeriesForDemand,
   ] = await Promise.all([
     prisma.fragmentTransaction.aggregate({
       where: { createdAt: { gte: d1 }, amount: { gt: 0 } },
@@ -90,6 +149,14 @@ export async function getGamificationEconomyDashboard(marginRate = MARGIN_RATE_D
         winnerId: true,
       },
     }),
+    prisma.giveaway.findMany({
+      where: { status: { in: ['ACTIVE', 'PAUSED'] } },
+      select: { ticketPrice: true, maxTickets: true, soldTickets: true },
+    }),
+    prisma.giveawaySeries.findMany({
+      where: { status: 'ACTIVE' },
+      select: { frequency: true, ticketPrice: true, maxTickets: true },
+    }),
   ]);
 
   const generatedTotal = fragByType
@@ -101,6 +168,12 @@ export async function getGamificationEconomyDashboard(marginRate = MARGIN_RATE_D
 
   const circulationTheoretical = generatedTotal - spentTotal;
   const fragmentsUnused = sumUserFragments._sum.fragments ?? 0;
+  const fragmentDemand = estimateGiveawayFragmentDemand(
+    activeGiveawaysForDemand,
+    activeSeriesForDemand
+  );
+  const coverageRatio =
+    fragmentDemand.demandRemaining > 0 ? fragmentsUnused / fragmentDemand.demandRemaining : null;
 
   const volume7c = tradesVol7d._sum.grossCents ?? 0;
   const volume30c = tradesVol30d._sum.grossCents ?? 0;
@@ -164,6 +237,15 @@ export async function getGamificationEconomyDashboard(marginRate = MARGIN_RATE_D
   else if (ratioGame30 != null && ratioGame30 > 0.12) alerts.push('Giveaways coûteux vs marge — à surveiller');
   if (utilRate30 < 0.25 && gen30 > 100) alerts.push('Faible utilisation des fragments sur 30j');
   if (utilRate30 > 0.85 && gen30 > 100) alerts.push('Très forte consommation de fragments sur 30j');
+  if (fragmentDemand.demandRemaining > fragmentsUnused * 3 && fragmentDemand.demandRemaining > 100) {
+    alerts.push('Les giveaways actifs demandent bien plus de fragments que les soldes joueurs');
+  } else if (
+    fragmentsUnused > fragmentDemand.demandRemaining * 5 &&
+    fragmentDemand.demandRemaining > 0 &&
+    fragmentsUnused > 100
+  ) {
+    alerts.push('Les soldes fragments dépassent largement la demande des giveaways actifs');
+  }
 
   const costByDuration = await prisma.giveaway.groupBy({
     by: ['durationType'],
@@ -186,6 +268,10 @@ export async function getGamificationEconomyDashboard(marginRate = MARGIN_RATE_D
       circulationTheoretical,
       unusedOnBalances: fragmentsUnused,
       utilizationRate30d: utilRate30,
+      demandIfSoldOut: fragmentDemand.demandIfSoldOut,
+      demandRemaining: fragmentDemand.demandRemaining,
+      demandRecurring30d: fragmentDemand.demandRecurring30d,
+      coverageRatio,
       byType: fragByType,
     },
     giveaways: {

@@ -6,6 +6,7 @@ import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { giveawaySeriesPatchBodySchema } from '@/lib/validation/schemas/admin-bodies';
 import {
+  computeInstanceEndAt,
   disableGiveawaySeries,
   isRecurringFrequency,
   pauseGiveawaySeries,
@@ -133,34 +134,43 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       updateData.endDate = body.endDate ? new Date(body.endDate) : null;
     }
 
-    const series = await prisma.giveawaySeries.update({
-      where: { id },
-      data: updateData,
-    });
-
     const activeInstance = await prisma.giveaway.findFirst({
       where: { seriesId: id, status: { in: ['ACTIVE', 'PAUSED'] } },
     });
-    if (activeInstance && body.syncActiveInstance) {
-      await prisma.giveaway.update({
-        where: { id: activeInstance.id },
-        data: {
-          title: series.title,
-          description: series.description,
-          prize: series.prize,
-          prizeImageUrl: series.prizeImageUrl,
-          steamMarketHashName: series.steamMarketHashName,
-          ticketPrice: series.ticketPrice,
-          maxTickets: series.maxTickets,
-          winnerCount: series.winnerCount,
-          maxEntriesPerUser: series.maxEntriesPerUser,
-          rewardValueCents: series.rewardValueCents,
-          isPrivate: series.isPrivate,
-          requiredAffiliateCode: series.requiredAffiliateCode,
-          durationType: series.frequency,
-        },
+
+    const series = await prisma.$transaction(async (tx) => {
+      const updated = await tx.giveawaySeries.update({
+        where: { id },
+        data: updateData,
       });
-    }
+
+      if (activeInstance && body.syncActiveInstance) {
+        const instanceStart = activeInstance.startDate ?? activeInstance.createdAt;
+        await tx.giveaway.update({
+          where: { id: activeInstance.id },
+          data: {
+            title: updated.title,
+            description: updated.description,
+            prize: updated.prize,
+            prizeImageUrl: updated.prizeImageUrl,
+            steamMarketHashName: updated.steamMarketHashName,
+            ticketPrice: updated.ticketPrice,
+            maxTickets: updated.maxTickets,
+            winnerCount: updated.winnerCount,
+            maxEntriesPerUser: updated.maxEntriesPerUser,
+            rewardValueCents: updated.rewardValueCents,
+            isPrivate: updated.isPrivate,
+            requiredAffiliateCode: updated.requiredAffiliateCode,
+            durationType: updated.frequency,
+            ...(body.durationMinutes !== undefined
+              ? { endDate: computeInstanceEndAt(instanceStart, updated.durationMinutes) }
+              : {}),
+          },
+        });
+      }
+
+      return updated;
+    });
 
     return NextResponse.json(series);
   } catch (error) {
