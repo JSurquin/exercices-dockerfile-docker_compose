@@ -12,11 +12,15 @@ import {
   nextUnaffordableEntry,
   localizedGiveawayBlurb,
   getDisplayInitials,
+  getDisplayedWinChance,
   getGiveawayCardAction,
   getGiveawayEntryLimits,
   getGiveawayKicker,
   getGiveawayTier,
+  getGiveawayVisualTier,
+  giveawayVisualTierAttr,
   getPrizeHaloColor,
+  getPrizeRarityColor,
   getPrizeValueCents,
   getTimeRemaining,
   getGiveawayTierCtaColors,
@@ -41,9 +45,11 @@ import {
   sortGiveawaysByTierThenEnd,
   viewerIsWinner,
   visibleLeaderboardRows,
+  GIVEAWAY_TIER_HEX,
   GIVEAWAY_TIER_TOKENS_DARK,
   GIVEAWAY_TIER_TOKENS_LIGHT,
   GIVEAWAY_PARTNER_TOKENS,
+  GIVEAWAY_RARITY_COLORS,
   type GiveawayPresentationInput,
   type GiveawayTier,
 } from '@/lib/giveaway-presentation';
@@ -324,8 +330,11 @@ describe('parsePrizeDisplay / getPrizeHaloColor', () => {
   });
 
   it('uses gold halo for knives/gloves without inventing a rifle rarity', () => {
-    expect(getPrizeHaloColor('★ Karambit | Fade (Factory New)')).toBe('#ffd700');
+    expect(getPrizeHaloColor('★ Karambit | Fade (Factory New)')).toBe('#FFD700');
     expect(getPrizeHaloColor('AK-47 | Redline (Field-Tested)')).toBe('#7eb8ff');
+    expect(getPrizeRarityColor('★ Karambit | Fade (Factory New)')).toBe(GIVEAWAY_RARITY_COLORS.extraordinary);
+    expect(getPrizeRarityColor('AK-47 | Redline (Field-Tested)')).toBeNull();
+    expect(getPrizeRarityColor('AWP | Asiimov (Covert)')).toBe(GIVEAWAY_RARITY_COLORS.covert);
   });
 });
 
@@ -784,9 +793,38 @@ describe('giveaway palier tokens contrast', () => {
   });
 
   it('keeps participate button text AA on --tier fills', () => {
-    for (const tier of tiers) {
+    for (const tier of [...tiers, 'partner'] as const) {
       const { bg, fg } = getGiveawayTierCtaColors(tier);
       expect(hexContrastRatio(fg, bg)).toBeGreaterThanOrEqual(4.5);
     }
+  });
+
+  it('exposes the requested palier hex colors', () => {
+    expect(GIVEAWAY_TIER_HEX.weekly).toBe('#4F8CFF');
+    expect(GIVEAWAY_TIER_HEX.monthly).toBe('#9B5CFF');
+    expect(GIVEAWAY_TIER_HEX.yearly).toBe('#F5B83D');
+    expect(GIVEAWAY_PARTNER_TOKENS.fg).toBe('#FF4FA3');
+  });
+});
+
+describe('getGiveawayVisualTier', () => {
+  it('uses partenaire for private giveaways without changing duration logic', () => {
+    const privateWeekly = giveaway({
+      id: 'p',
+      isPrivate: true,
+      durationType: 'WEEKLY',
+      startDate: '2026-09-16T00:00:00.000Z',
+      endDate: '2026-09-22T00:00:00.000Z',
+    });
+    expect(getGiveawayTier(privateWeekly)).toBe('weekly');
+    expect(getGiveawayVisualTier(privateWeekly)).toBe('partner');
+    expect(giveawayVisualTierAttr('partner')).toBe('partenaire');
+  });
+});
+
+describe('getDisplayedWinChance', () => {
+  it('projects the chance a first entry would have', () => {
+    expect(getDisplayedWinChance(0, 1)).toEqual({ percent: 50, hypothetical: true });
+    expect(getDisplayedWinChance(2, 3, 66.67)).toEqual({ percent: 66.67, hypothetical: false });
   });
 });

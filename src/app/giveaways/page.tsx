@@ -311,7 +311,13 @@ export default function GiveawaysPage() {
               nextTicketPrice={nextEntry?.ticketPrice ?? null}
               nextTierLabel={nextTierLabel}
             />
-            <GiveawayEarnFragments messages={messages} />
+            <GiveawayEarnFragments
+              messages={messages}
+              boostGlow={Boolean(
+                recurringGiveaways[carouselIndex] &&
+                  userFragments < (recurringGiveaways[carouselIndex]?.ticketPrice ?? 0)
+              )}
+            />
             <GiveawayMyParticipations
               giveaways={activeGiveaways}
               messages={messages}

@@ -37,6 +37,7 @@ const messages = {
       maxEntriesReached: 'Maximum atteint',
       entryBurstOne: '+{count} entrée',
       entryBurstOther: '+{count} entrées',
+      missionsLink: 'Gagner des fragments →',
     },
   },
 } as unknown as Messages;
@@ -84,6 +85,21 @@ describe('GiveawayCountdown', () => {
 });
 
 describe('GiveawayCtaButton', () => {
+  it('shows an earn-fragments link when the viewer cannot afford an entry', () => {
+    render(
+      <GiveawayCtaButton
+        action={{ type: 'unaffordable', missing: 386 }}
+        messages={messages}
+        ticketPrice={500}
+        userFragments={114}
+        layout="card"
+        tier="weekly"
+        onEarnFragments={() => {}}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Gagner des fragments →' })).toBeInTheDocument();
+  });
+
   it('applies AA --tier colors on the participate button', () => {
     const colors = getGiveawayTierCtaColors('yearly');
     const { container } = render(

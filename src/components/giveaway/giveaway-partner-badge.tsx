@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { SafeImage } from '@/components/ui/safe-image';
 import { usePartnerLogos } from '@/hooks/use-partner-logos';
-import { findPartnerLogo, formatCommunityName, GIVEAWAY_PARTNER_TOKENS } from '@/lib/giveaway-presentation';
+import { findPartnerLogo, formatCommunityName } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
 import { Handshake } from 'lucide-react';
 import type { Messages } from '~/utils/types';
@@ -35,15 +35,11 @@ export function GiveawayPartnerBadge({
   return (
     <Badge
       variant="outline"
+      data-tier="partenaire"
       className={cn(
-        'giveaway-partner-badge flex max-w-full items-center gap-1 text-xs font-normal',
+        'giveaway-partner-badge giveaway-tier-badge flex max-w-full items-center gap-1 text-xs font-normal',
         className
       )}
-      style={{
-        background: GIVEAWAY_PARTNER_TOKENS.bg,
-        color: GIVEAWAY_PARTNER_TOKENS.fg,
-        borderColor: GIVEAWAY_PARTNER_TOKENS.border,
-      }}
     >
       {logo ? (
         <SafeImage

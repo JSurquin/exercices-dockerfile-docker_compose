@@ -1,5 +1,4 @@
 import {
-  CS2_RARITIES,
   extractCs2Exterior,
   extractCs2SkinName,
   extractCs2WeaponType,
@@ -8,6 +7,7 @@ import {
 
 export type GiveawaySort = 'endingSoon' | 'highestValue' | 'lowestCost';
 export type GiveawayTier = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'special';
+export type GiveawayVisualTier = GiveawayTier | 'partner';
 export type GiveawayTierFilter = 'all' | GiveawayTier;
 
 export interface GiveawayTierTokens {
@@ -16,40 +16,58 @@ export interface GiveawayTierTokens {
   border: string;
 }
 
-/** Thème sombre : fond teinté + texte clair (contraste AA ≥ 4.5:1). */
+/** Accents palier (bordure, glow, badge, barre, bouton). */
+export const GIVEAWAY_TIER_HEX: Record<GiveawayTier, string> = {
+  daily: '#4F8CFF',
+  weekly: '#4F8CFF',
+  monthly: '#9B5CFF',
+  yearly: '#F5B83D',
+  special: '#FF4FA3',
+};
+
+export const GIVEAWAY_PARTNER_HEX = '#FF4FA3';
+
+/** Thème sombre : texte --tier sur fond glass (contraste AA ≥ 4.5:1). */
 export const GIVEAWAY_TIER_TOKENS_DARK: Record<GiveawayTier, GiveawayTierTokens> = {
-  daily: { bg: '#082f44', fg: '#7dd3fc', border: '#38bdf8' },
-  weekly: { bg: '#0b2744', fg: '#bfdbfe', border: '#7eb8ff' },
-  monthly: { bg: '#1e1248', fg: '#ddd6fe', border: '#a78bfa' },
-  yearly: { bg: '#422006', fg: '#fef3c7', border: '#fbbf24' },
-  special: { bg: '#4c0519', fg: '#fecdd3', border: '#fb7185' },
+  daily: { bg: '#0d0d12', fg: GIVEAWAY_TIER_HEX.daily, border: GIVEAWAY_TIER_HEX.daily },
+  weekly: { bg: '#0d0d12', fg: GIVEAWAY_TIER_HEX.weekly, border: GIVEAWAY_TIER_HEX.weekly },
+  monthly: { bg: '#0d0d12', fg: GIVEAWAY_TIER_HEX.monthly, border: GIVEAWAY_TIER_HEX.monthly },
+  yearly: { bg: '#0d0d12', fg: GIVEAWAY_TIER_HEX.yearly, border: GIVEAWAY_TIER_HEX.yearly },
+  special: { bg: '#0d0d12', fg: GIVEAWAY_TIER_HEX.special, border: GIVEAWAY_TIER_HEX.special },
 };
 
 /** Thème clair : fond clair + texte foncé (contraste AA ≥ 4.5:1). */
 export const GIVEAWAY_TIER_TOKENS_LIGHT: Record<GiveawayTier, GiveawayTierTokens> = {
-  daily: { bg: '#e0f2fe', fg: '#0c4a6e', border: '#0284c7' },
-  weekly: { bg: '#dbeafe', fg: '#1e3a8a', border: '#3b82f6' },
-  monthly: { bg: '#ede9fe', fg: '#4c1d95', border: '#8b5cf6' },
-  yearly: { bg: '#fef3c7', fg: '#78350f', border: '#d97706' },
-  special: { bg: '#ffe4e6', fg: '#9f1239', border: '#e11d48' },
+  daily: { bg: '#dbeafe', fg: '#1e3a8a', border: GIVEAWAY_TIER_HEX.daily },
+  weekly: { bg: '#dbeafe', fg: '#1e3a8a', border: GIVEAWAY_TIER_HEX.weekly },
+  monthly: { bg: '#ede9fe', fg: '#4c1d95', border: GIVEAWAY_TIER_HEX.monthly },
+  yearly: { bg: '#fef3c7', fg: '#78350f', border: GIVEAWAY_TIER_HEX.yearly },
+  special: { bg: '#fce7f3', fg: '#9f1239', border: GIVEAWAY_TIER_HEX.special },
 };
 
 export const GIVEAWAY_TIER_TOKENS = GIVEAWAY_TIER_TOKENS_DARK;
 
-/** Badge partenaire : fond sombre teinté + texte clair (contraste AA ≥ 4.5:1). */
+/** Badge partenaire : rose/magenta #FF4FA3. */
 export const GIVEAWAY_PARTNER_TOKENS = {
-  bg: '#2e1065',
-  fg: '#f3e8ff',
-  border: '#d8b4fe',
+  bg: '#0d0d12',
+  fg: GIVEAWAY_PARTNER_HEX,
+  border: GIVEAWAY_PARTNER_HEX,
 } as const;
 
-export const GIVEAWAY_TIER_ACCENTS: Record<GiveawayTier, string> = {
-  daily: GIVEAWAY_TIER_TOKENS.daily.border,
-  weekly: GIVEAWAY_TIER_TOKENS.weekly.border,
-  monthly: GIVEAWAY_TIER_TOKENS.monthly.border,
-  yearly: GIVEAWAY_TIER_TOKENS.yearly.border,
-  special: GIVEAWAY_TIER_TOKENS.special.border,
+export const GIVEAWAY_TIER_ACCENTS: Record<GiveawayTier, string> = { ...GIVEAWAY_TIER_HEX };
+
+export const GIVEAWAY_VISUAL_TIER_HEX: Record<GiveawayVisualTier, string> = {
+  ...GIVEAWAY_TIER_HEX,
+  partner: GIVEAWAY_PARTNER_HEX,
 };
+
+export const GIVEAWAY_RARITY_COLORS = {
+  covert: '#EB4B4B',
+  classified: '#D32CE6',
+  restricted: '#8847FF',
+  milspec: '#4B69FF',
+  extraordinary: '#FFD700',
+} as const;
 
 function srgbChannelToLinear(channel: number): number {
   const value = channel / 255;
@@ -88,8 +106,17 @@ export const GIVEAWAY_TIER_CTA_FG = '#111827';
 const GIVEAWAY_TIER_CTA_FG_LIGHT = '#ffffff';
 export const GIVEAWAY_URGENT_MS = 60 * 60 * 1000;
 
-export function getGiveawayTierCtaColors(tier: GiveawayTier): { bg: string; fg: string } {
-  const bg = GIVEAWAY_TIER_ACCENTS[tier];
+export function getGiveawayVisualAccent(tier: GiveawayVisualTier): string {
+  return GIVEAWAY_VISUAL_TIER_HEX[tier];
+}
+
+export function getGiveawayVisualTokens(tier: GiveawayVisualTier): GiveawayTierTokens {
+  if (tier === 'partner') return GIVEAWAY_PARTNER_TOKENS;
+  return GIVEAWAY_TIER_TOKENS[tier];
+}
+
+export function getGiveawayTierCtaColors(tier: GiveawayVisualTier): { bg: string; fg: string } {
+  const bg = getGiveawayVisualAccent(tier);
   const darkRatio = hexContrastRatio(GIVEAWAY_TIER_CTA_FG, bg);
   const lightRatio = hexContrastRatio(GIVEAWAY_TIER_CTA_FG_LIGHT, bg);
   if (darkRatio >= 4.5 && darkRatio >= lightRatio) {
@@ -98,7 +125,7 @@ export function getGiveawayTierCtaColors(tier: GiveawayTier): { bg: string; fg: 
   if (lightRatio >= 4.5) {
     return { bg, fg: GIVEAWAY_TIER_CTA_FG_LIGHT };
   }
-  const tokens = GIVEAWAY_TIER_TOKENS[tier];
+  const tokens = getGiveawayVisualTokens(tier);
   return { bg: tokens.bg, fg: tokens.fg };
 }
 
@@ -170,6 +197,17 @@ export function getGiveawayTier(
   return tierFromDurationType((giveaway.durationType ?? '').toUpperCase()) ?? 'special';
 }
 
+export function getGiveawayVisualTier(
+  giveaway: Pick<GiveawayPresentationInput, 'isPrivate' | 'durationType' | 'startDate' | 'createdAt' | 'endDate'>
+): GiveawayVisualTier {
+  if (giveaway.isPrivate) return 'partner';
+  return getGiveawayTier(giveaway);
+}
+
+export function giveawayVisualTierAttr(tier: GiveawayVisualTier): string {
+  return tier === 'partner' ? 'partenaire' : tier;
+}
+
 export function getGiveawayTierLabel(
   tier: GiveawayTier,
   labels: Record<GiveawayTier, string>
@@ -227,6 +265,23 @@ export function formatChancePercent(value: number, locale: string): string {
   return `${formatted}%`;
 }
 
+export function getDisplayedWinChance(
+  myEntries: number,
+  totalEntries: number,
+  myChancePercent?: number | null
+): { percent: number; hypothetical: boolean } {
+  if (myEntries > 0) {
+    const fromApi = typeof myChancePercent === 'number' && Number.isFinite(myChancePercent);
+    const percent = fromApi
+      ? myChancePercent
+      : totalEntries > 0
+        ? (100 * myEntries) / totalEntries
+        : 100;
+    return { percent, hypothetical: false };
+  }
+  return { percent: 100 / (Math.max(0, totalEntries) + 1), hypothetical: true };
+}
+
 export function visibleLeaderboardRows(
   rows: GiveawayLeaderboardRow[],
   topN = 5,
@@ -248,12 +303,12 @@ export function visibleLeaderboardRows(
   return top;
 }
 
-export function getGiveawayTierAccent(tier: GiveawayTier): string {
-  return GIVEAWAY_TIER_TOKENS[tier].border;
+export function getGiveawayTierAccent(tier: GiveawayVisualTier): string {
+  return getGiveawayVisualAccent(tier);
 }
 
-export function getGiveawayTierTokens(tier: GiveawayTier): GiveawayTierTokens {
-  return GIVEAWAY_TIER_TOKENS[tier];
+export function getGiveawayTierTokens(tier: GiveawayVisualTier): GiveawayTierTokens {
+  return getGiveawayVisualTokens(tier);
 }
 
 export interface PrizeDisplay {
@@ -282,12 +337,20 @@ export function parsePrizeDisplay(
   };
 }
 
-export function getPrizeHaloColor(prize: string, steamMarketHashName?: string | null): string {
+export function getPrizeRarityColor(prize: string, steamMarketHashName?: string | null): string | null {
   const source = `${steamMarketHashName ?? ''} ${prize}`;
-  if (/★/.test(source) || /\b(knife|gloves|wraps)\b/i.test(source)) {
-    return CS2_RARITIES['Exceedingly Rare'].color;
+  if (/★/.test(source) || /\b(knife|gloves|wraps|karambit|bayonet|butterfly)\b/i.test(source)) {
+    return GIVEAWAY_RARITY_COLORS.extraordinary;
   }
-  return CHROME_HALO;
+  if (/\bcovert\b/i.test(source)) return GIVEAWAY_RARITY_COLORS.covert;
+  if (/\bclassified\b/i.test(source)) return GIVEAWAY_RARITY_COLORS.classified;
+  if (/\brestricted\b/i.test(source)) return GIVEAWAY_RARITY_COLORS.restricted;
+  if (/\bmil-?spec\b/i.test(source)) return GIVEAWAY_RARITY_COLORS.milspec;
+  return null;
+}
+
+export function getPrizeHaloColor(prize: string, steamMarketHashName?: string | null): string {
+  return getPrizeRarityColor(prize, steamMarketHashName) ?? CHROME_HALO;
 }
 
 export interface TimeRemaining {

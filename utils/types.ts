@@ -4005,6 +4005,11 @@ export interface Messages {
       participateModalTitle: string;
       entryBurstOne: string;
       entryBurstOther: string;
+      chanceToWin: string;
+      chanceWithOneEntry: string;
+      socialEntries: string;
+      metaYourEntries: string;
+      metaParticipants: string;
     };
     empty: {
       noActive: string;
@@ -4120,6 +4125,7 @@ export interface Messages {
       dailyCta: string;
       dailyClaimed: string;
       nextClaimIn: string;
+      dailyAvailable: string;
     };
     pastWinners: {
       title: string;

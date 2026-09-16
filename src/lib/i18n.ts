@@ -797,6 +797,11 @@ export const messages: Record<Locale, Messages> = {
         participateModalTitle: "Participer au giveaway",
         entryBurstOne: "+{count} entrée",
         entryBurstOther: "+{count} entrées",
+        chanceToWin: "de chance de gagner",
+        chanceWithOneEntry: "Jusqu'à {percent} avec 1 entrée",
+        socialEntries: "{count} entrées",
+        metaYourEntries: "{count} tes entrées",
+        metaParticipants: "{count} participants",
       },
       notifications: {
         newWinner: "Nouveau gagnant !",
@@ -912,6 +917,7 @@ export const messages: Record<Locale, Messages> = {
         dailyCta: "Réclamer",
         dailyClaimed: "Réclamé",
         nextClaimIn: "{time}",
+        dailyAvailable: "Récompense quotidienne dispo !",
       },
       pastWinners: {
         title: "Anciens gagnants",
@@ -9113,6 +9119,11 @@ export const messages: Record<Locale, Messages> = {
         participateModalTitle: "Enter this giveaway",
         entryBurstOne: "+{count} entry",
         entryBurstOther: "+{count} entries",
+        chanceToWin: "chance to win",
+        chanceWithOneEntry: "Up to {percent} with 1 entry",
+        socialEntries: "{count} entries",
+        metaYourEntries: "{count} your entries",
+        metaParticipants: "{count} participants",
       },
       notifications: {
         newWinner: "New winner!",
@@ -9228,6 +9239,7 @@ export const messages: Record<Locale, Messages> = {
         dailyCta: "Claim",
         dailyClaimed: "Claimed",
         nextClaimIn: "{time}",
+        dailyAvailable: "Daily reward available!",
       },
       pastWinners: {
         title: "Past winners",
@@ -17424,6 +17436,11 @@ export const messages: Record<Locale, Messages> = {
         participateModalTitle: "参与抽奖",
         entryBurstOne: "+{count} 次",
         entryBurstOther: "+{count} 次",
+        chanceToWin: "的中奖几率",
+        chanceWithOneEntry: "1 次参与最高 {percent}",
+        socialEntries: "{count} 次参与",
+        metaYourEntries: "你的 {count} 次参与",
+        metaParticipants: "{count} 名参与者",
       },
       notifications: {
         newWinner: "新获胜者！",
@@ -17539,6 +17556,7 @@ export const messages: Record<Locale, Messages> = {
         dailyCta: "领取",
         dailyClaimed: "已领取",
         nextClaimIn: "{time}",
+        dailyAvailable: "每日奖励可领取！",
       },
       pastWinners: {
         title: "往期获奖者",

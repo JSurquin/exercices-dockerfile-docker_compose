@@ -49,6 +49,17 @@ const PREVIEW_GIVEAWAYS: GiveawayWithEntries[] = [
     rewardValueCents: 8900,
   }),
   mockGiveaway({
+    id: 'preview-monthly',
+    prize: 'M4A4 | Howl (Field-Tested)',
+    steamMarketHashName: 'M4A4 | Howl (Field-Tested)',
+    durationType: 'MONTHLY',
+    ticketPrice: 40,
+    rewardValueCents: 45230,
+    startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    endDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+  }),
+  mockGiveaway({
     id: 'preview-yearly',
     prize: '★ Karambit | Fade (Factory New)',
     steamMarketHashName: '★ Karambit | Fade (Factory New)',

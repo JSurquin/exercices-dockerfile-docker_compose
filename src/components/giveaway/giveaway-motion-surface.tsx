@@ -111,6 +111,8 @@ export function giveawayTierSurfaceStyle(
   return {
     '--giveaway-accent': accent,
     '--tier': accent,
+    '--tier-soft': `color-mix(in srgb, ${accent} 15%, transparent)`,
+    '--tier-glow': `color-mix(in srgb, ${accent} 40%, transparent)`,
     '--giveaway-tier-bg': tokens.bg,
     '--giveaway-tier-fg': tokens.fg,
     '--giveaway-tier-border': tokens.border,
