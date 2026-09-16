@@ -70,10 +70,38 @@ export function useAdminGiveaways() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Record<string, unknown>;
+    }) => {
+      const res = await fetch(`/api/giveaways/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Erreur lors de la mise à jour');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminGiveaways });
+      queryClient.invalidateQueries({ queryKey: queryKeys.giveaways() });
+    },
+  });
+
   return {
     giveaways,
     loading,
     refetch,
     drawGiveaway: (id: string) => drawMutation.mutateAsync(id),
+    updateGiveaway: (id: string, data: Record<string, unknown>) =>
+      updateMutation.mutateAsync({ id, data }),
   };
 }

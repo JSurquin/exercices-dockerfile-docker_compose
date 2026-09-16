@@ -49,6 +49,18 @@ export const GIVEAWAY_DEFAULT_DURATION_MINUTES = 60;
 export const GIVEAWAY_DEFAULT_DURATION_TYPE = 'WEEKLY';
 export const GIVEAWAY_DEFAULT_WINNER_COUNT = 1;
 
+/** Presets de durée d’un giveaway (en minutes), 60 min par défaut. */
+export const GIVEAWAY_DURATION_PRESETS = [
+  { id: 'minutes60', minutes: 60 },
+  { id: 'hours12', minutes: 12 * 60 },
+  { id: 'days1', minutes: 24 * 60 },
+  { id: 'days3', minutes: 3 * 24 * 60 },
+  { id: 'weeks1', minutes: 7 * 24 * 60 },
+  { id: 'months1', minutes: 30 * 24 * 60 },
+] as const;
+
+export type GiveawayDurationPresetId = (typeof GIVEAWAY_DURATION_PRESETS)[number]['id'];
+
 // ─── Paramètres admin par défaut ──────────────────────────────────────────────
 export const ADMIN_DEFAULT_TIMEZONE = 'Europe/Paris';
 export const ADMIN_DEFAULT_SESSION_TIMEOUT_MINUTES = 30;

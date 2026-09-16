@@ -31,9 +31,11 @@ import {
   LinkIcon,
   ClipboardDocumentIcon,
   ExclamationTriangleIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
 import { SkinPickerModal } from '@/components/admin/skin-picker-modal';
+import { GiveawayDurationPresets } from '@/components/admin/giveaway-duration-presets';
 import {
   GIVEAWAY_DEFAULT_TICKET_PRICE,
   GIVEAWAY_DEFAULT_MAX_TICKETS,
@@ -41,6 +43,12 @@ import {
   GIVEAWAY_DEFAULT_DURATION_TYPE,
   GIVEAWAY_DEFAULT_WINNER_COUNT,
 } from '@/lib/admin-constants';
+import {
+  endDateFromDurationMinutes,
+  remainingMinutesUntil,
+  toDatetimeLocalValue,
+} from '@/lib/giveaway-duration-presets';
+import type { AdminGiveaway } from '@/hooks/use-admin-giveaways';
 
 interface SkinItem {
   steam_market_hash_name: string;
@@ -68,32 +76,37 @@ interface CreateGiveawayForm {
   maxEntriesPerUser: string;
   isPrivate: boolean;
   requiredAffiliateCode: string;
+  endDateLocal: string;
 }
+
+const emptyCreateForm = (): CreateGiveawayForm => ({
+  title: '',
+  description: '',
+  prize: '',
+  prizeImageUrl: '',
+  steamMarketHashName: '',
+  ticketPrice: GIVEAWAY_DEFAULT_TICKET_PRICE,
+  maxTickets: GIVEAWAY_DEFAULT_MAX_TICKETS,
+  isPrivate: false,
+  requiredAffiliateCode: '',
+  durationMinutes: GIVEAWAY_DEFAULT_DURATION_MINUTES,
+  rewardValueCents: 0,
+  durationType: GIVEAWAY_DEFAULT_DURATION_TYPE,
+  winnerCount: GIVEAWAY_DEFAULT_WINNER_COUNT,
+  maxEntriesPerUser: '',
+  endDateLocal: '',
+});
 
 export default function AdminGiveawaysPage() {
   const { giveaways: publicGiveaways, createGiveaway, refetch: refetchPublic } = useGiveaways();
-  const { giveaways, loading, refetch, drawGiveaway: drawAdminGiveaway } = useAdminGiveaways();
+  const { giveaways, loading, refetch, drawGiveaway: drawAdminGiveaway, updateGiveaway } = useAdminGiveaways();
   const { messages } = useLocale();
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTab, setSelectedTab] = useState('list');
   const [giveawaysEnabled, setGiveawaysEnabled] = useState(true);
   const [togglingEnabled, setTogglingEnabled] = useState(false);
-  const [form, setForm] = useState<CreateGiveawayForm>({
-    title: '',
-    description: '',
-    prize: '',
-    prizeImageUrl: '',
-    steamMarketHashName: '',
-    ticketPrice: GIVEAWAY_DEFAULT_TICKET_PRICE,
-    maxTickets: GIVEAWAY_DEFAULT_MAX_TICKETS,
-    isPrivate: false,
-    requiredAffiliateCode: '',
-    durationMinutes: GIVEAWAY_DEFAULT_DURATION_MINUTES,
-    rewardValueCents: 0,
-    durationType: GIVEAWAY_DEFAULT_DURATION_TYPE,
-    winnerCount: GIVEAWAY_DEFAULT_WINNER_COUNT,
-    maxEntriesPerUser: '',
-  });
+  const [editingGiveawayId, setEditingGiveawayId] = useState<string | null>(null);
+  const [form, setForm] = useState<CreateGiveawayForm>(emptyCreateForm);
 
   const [selectedSkin, setSelectedSkin] = useState<SkinItem | null>(null);
   const [skinPickerOpen, setSkinPickerOpen] = useState(false);
@@ -112,6 +125,58 @@ export default function AdminGiveawaysPage() {
   const handleClearSkin = () => {
     setSelectedSkin(null);
     setForm((prev) => ({ ...prev, prize: '', prizeImageUrl: '', steamMarketHashName: '' }));
+  };
+
+  const resetCreateForm = () => {
+    setForm(emptyCreateForm());
+    setSelectedSkin(null);
+    setEditingGiveawayId(null);
+  };
+
+  const applyDurationMinutes = (minutes: number) => {
+    setForm((prev) => {
+      const next = { ...prev, durationMinutes: minutes };
+      if (editingGiveawayId) {
+        next.endDateLocal = toDatetimeLocalValue(endDateFromDurationMinutes(minutes));
+      }
+      return next;
+    });
+  };
+
+  const handleStartEdit = (giveaway: AdminGiveaway) => {
+    setEditingGiveawayId(giveaway.id);
+    setForm({
+      title: giveaway.title,
+      description: giveaway.description,
+      prize: giveaway.prize,
+      prizeImageUrl: giveaway.prizeImageUrl ?? '',
+      steamMarketHashName: giveaway.steamMarketHashName ?? '',
+      ticketPrice: giveaway.ticketPrice,
+      maxTickets: giveaway.maxTickets,
+      isPrivate: giveaway.isPrivate === true,
+      requiredAffiliateCode: giveaway.requiredAffiliateCode ?? '',
+      durationMinutes: remainingMinutesUntil(giveaway.endDate),
+      rewardValueCents: giveaway.rewardValueCents ?? 0,
+      durationType: giveaway.durationType ?? GIVEAWAY_DEFAULT_DURATION_TYPE,
+      winnerCount: giveaway.winnerCount ?? GIVEAWAY_DEFAULT_WINNER_COUNT,
+      maxEntriesPerUser: giveaway.maxEntriesPerUser != null ? String(giveaway.maxEntriesPerUser) : '',
+      endDateLocal: toDatetimeLocalValue(new Date(giveaway.endDate)),
+    });
+    if (giveaway.steamMarketHashName || giveaway.prizeImageUrl) {
+      setSelectedSkin({
+        steam_market_hash_name: giveaway.steamMarketHashName || giveaway.prize,
+        icon_url: giveaway.prizeImageUrl ?? null,
+        price: giveaway.rewardValueCents != null ? giveaway.rewardValueCents / 100 : null,
+        rarity: null,
+        rarity_color: null,
+        exterior: null,
+        item_type: null,
+        phase: null,
+      });
+    } else {
+      setSelectedSkin(null);
+    }
+    setSelectedTab('create');
   };
 
   useEffect(() => {
@@ -153,20 +218,16 @@ export default function AdminGiveawaysPage() {
 
     try {
       setIsCreating(true);
-      
-      const endDate = new Date();
-      endDate.setMinutes(endDate.getMinutes() + form.durationMinutes);
 
       const maxEu = form.maxEntriesPerUser.trim();
-      await createGiveaway({
+      const payload = {
         title: form.title,
         description: form.description,
-        prize: form.prize,
+        prize: form.prize || prizeValue,
         prizeImageUrl: form.prizeImageUrl || null,
         steamMarketHashName: form.steamMarketHashName || null,
         ticketPrice: form.ticketPrice,
         maxTickets: form.maxTickets,
-        endDate: endDate.toISOString(),
         rewardValueCents: form.rewardValueCents,
         durationType: form.durationType,
         winnerCount: form.winnerCount,
@@ -175,28 +236,32 @@ export default function AdminGiveawaysPage() {
         requiredAffiliateCode: form.isPrivate && form.requiredAffiliateCode.trim()
           ? form.requiredAffiliateCode.trim()
           : null,
-      });
+      };
 
-      setForm({
-        title: '',
-        description: '',
-        prize: '',
-        prizeImageUrl: '',
-        steamMarketHashName: '',
-        ticketPrice: 100,
-        maxTickets: 10000,
-        isPrivate: false,
-        requiredAffiliateCode: '',
-        durationMinutes: 60,
-        rewardValueCents: 0,
-        durationType: 'WEEKLY',
-        winnerCount: 1,
-        maxEntriesPerUser: '',
-      });
-      setSelectedSkin(null);
+      if (editingGiveawayId) {
+        const endDate = form.endDateLocal
+          ? new Date(form.endDateLocal).toISOString()
+          : endDateFromDurationMinutes(form.durationMinutes).toISOString();
+        await updateGiveaway(editingGiveawayId, { ...payload, endDate });
+        toast.success(messages.admin.giveaways.toasts.updateSuccess);
+      } else {
+        await createGiveaway({
+          ...payload,
+          endDate: endDateFromDurationMinutes(form.durationMinutes).toISOString(),
+        });
+      }
+
+      resetCreateForm();
       setSelectedTab('list');
+      refetch();
+      refetchPublic();
     } catch (error) {
-      console.error('Erreur lors de la création:', error);
+      console.error('Erreur lors de la sauvegarde du giveaway:', error);
+      if (editingGiveawayId) {
+        toast.error(
+          error instanceof Error ? error.message : messages.admin.giveaways.toasts.updateError
+        );
+      }
     } finally {
       setIsCreating(false);
     }
@@ -229,6 +294,7 @@ export default function AdminGiveawaysPage() {
     try {
       const response = await fetch(`/api/giveaways/${giveawayId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -345,9 +411,13 @@ export default function AdminGiveawaysPage() {
               <span className="sm:hidden text-[10px] leading-tight text-center">{messages.admin.giveaways.tabs.list}</span>
             </TabsTrigger>
             <TabsTrigger value="create" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white">
-              <PlusIcon className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline truncate">{messages.admin.giveaways.tabs.create}</span>
-              <span className="sm:hidden text-[10px] leading-tight text-center">{messages.admin.giveaways.tabs.create}</span>
+              {editingGiveawayId ? <PencilIcon className="w-4 h-4 shrink-0" /> : <PlusIcon className="w-4 h-4 shrink-0" />}
+              <span className="hidden sm:inline truncate">
+                {editingGiveawayId ? messages.admin.giveaways.list.edit : messages.admin.giveaways.tabs.create}
+              </span>
+              <span className="sm:hidden text-[10px] leading-tight text-center">
+                {editingGiveawayId ? messages.admin.giveaways.list.edit : messages.admin.giveaways.tabs.create}
+              </span>
             </TabsTrigger>
             <TabsTrigger value="recurring" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-white">
               <GiftIcon className="w-4 h-4 shrink-0" />
@@ -464,6 +534,17 @@ export default function AdminGiveawaysPage() {
                           </div>
 
                           <div className="flex sm:flex-col flex-row gap-2 sm:ml-4 shrink-0">
+                            {(giveaway.status === 'ACTIVE' || giveaway.status === 'PAUSED') && (
+                              <Button
+                                onClick={() => handleStartEdit(giveaway)}
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 sm:flex-none"
+                              >
+                                <PencilIcon className="w-4 h-4 mr-1" />
+                                {messages.admin.giveaways.list.edit}
+                              </Button>
+                            )}
                             {giveaway.status === 'ACTIVE' && (
                               <Button
                                 onClick={() => handleManualDraw(giveaway.id)}
@@ -500,7 +581,7 @@ export default function AdminGiveawaysPage() {
                         <p className="text-slate-400 mb-6">
                           {messages.admin.giveaways.list.noGiveawaysDesc}
                         </p>
-                        <Button onClick={() => setSelectedTab('create')}>
+                        <Button onClick={() => { resetCreateForm(); setSelectedTab('create'); }}>
                           <PlusIcon className="w-4 h-4 mr-2" />
                           {messages.admin.giveaways.list.createGiveaway}
                         </Button>
@@ -516,7 +597,11 @@ export default function AdminGiveawaysPage() {
           <TabsContent value="create">
             <Card className="bg-slate-800/50 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">{messages.admin.giveaways.create.title}</CardTitle>
+                <CardTitle className="text-white">
+                  {editingGiveawayId
+                    ? messages.admin.giveaways.form.editTitle
+                    : messages.admin.giveaways.create.title}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateGiveaway} className="space-y-6">
@@ -663,18 +748,25 @@ export default function AdminGiveawaysPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="duration">{messages.admin.giveaways.form.durationLabel}</Label>
-                        <Input
-                          id="duration"
-                          type="number"
-                          min="1"
+                        <GiveawayDurationPresets
                           value={form.durationMinutes}
-                          onChange={(e) => setForm(prev => ({ ...prev, durationMinutes: parseInt(e.target.value) || 1 }))}
+                          onChange={applyDurationMinutes}
+                          labels={messages.admin.giveaways.form.durationPresets}
+                          durationLabel={messages.admin.giveaways.form.durationLabel}
+                          durationHelp={messages.admin.giveaways.form.durationHelp}
                         />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {messages.admin.giveaways.form.durationHelp}
-                        </p>
                       </div>
+                      {editingGiveawayId && (
+                        <div>
+                          <Label htmlFor="endDate">{messages.admin.giveaways.form.endDateLabel}</Label>
+                          <Input
+                            id="endDate"
+                            type="datetime-local"
+                            value={form.endDateLocal}
+                            onChange={(e) => setForm((prev) => ({ ...prev, endDateLocal: e.target.value }))}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -726,13 +818,25 @@ export default function AdminGiveawaysPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setSelectedTab('list')}
+                      onClick={() => {
+                        resetCreateForm();
+                        setSelectedTab('list');
+                      }}
                     >
                       {messages.admin.giveaways.form.cancel}
                     </Button>
                     <Button type="submit" disabled={isCreating}>
-                      <PlusIcon className="w-4 h-4 mr-2" />
-                      {isCreating ? messages.admin.giveaways.form.creating : messages.admin.giveaways.form.create}
+                      {editingGiveawayId ? (
+                        <>
+                          <PencilIcon className="w-4 h-4 mr-2" />
+                          {isCreating ? messages.admin.giveaways.form.saving : messages.admin.giveaways.form.save}
+                        </>
+                      ) : (
+                        <>
+                          <PlusIcon className="w-4 h-4 mr-2" />
+                          {isCreating ? messages.admin.giveaways.form.creating : messages.admin.giveaways.form.create}
+                        </>
+                      )}
                     </Button>
                   </div>
                 </form>

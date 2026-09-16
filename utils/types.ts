@@ -2800,6 +2800,7 @@ export interface Messages {
         drawSuccess: string;
         deleteSuccess: string;
         deleteError: string;
+        updateSuccess: string;
         tradeLinkCopied: string;
       };
       copyTradeLink: string;
@@ -2819,6 +2820,7 @@ export interface Messages {
         winner: string;
         drawNow: string;
         delete: string;
+        edit: string;
         noGiveaways: string;
         noGiveawaysDesc: string;
         createGiveaway: string;
@@ -2862,10 +2864,23 @@ export interface Messages {
         maxEntriesPlaceholder: string;
         durationLabel: string;
         durationHelp: string;
+        durationPresets: {
+          minutes60: string;
+          hours12: string;
+          days1: string;
+          days3: string;
+          weeks1: string;
+          months1: string;
+          custom: string;
+        };
+        endDateLabel: string;
         descriptionLabel: string;
         cancel: string;
         creating: string;
         create: string;
+        editTitle: string;
+        save: string;
+        saving: string;
         privateTitle: string;
         privateDescription: string;
         affiliateCodeLabel: string;
@@ -2914,6 +2929,10 @@ export interface Messages {
         resume: string;
         disable: string;
         restart: string;
+        delete: string;
+        confirmDelete: string;
+        deleteSuccess: string;
+        deleteError: string;
         frequency: {
           daily: string;
           weekly: string;

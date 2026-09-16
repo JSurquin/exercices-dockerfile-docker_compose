@@ -84,6 +84,17 @@ export async function PATCH(
     }
 
     const { id } = await Promise.resolve(params);
+    const existing = await prisma.giveaway.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: 'Giveaway introuvable' }, { status: 404 });
+    }
+    if (existing.status !== 'ACTIVE' && existing.status !== 'PAUSED') {
+      return NextResponse.json(
+        { error: 'Seuls les giveaways en cours peuvent être modifiés' },
+        { status: 400 }
+      );
+    }
+
     const raw = await request.json();
     const parsed = safeParseJson(raw, giveawayPatchBodySchema);
     if (!parsed.ok) {
@@ -139,6 +150,16 @@ export async function PATCH(
       if (typeof v === 'string' || typeof v === 'number' || v === null) {
         data[k] = v;
       }
+    }
+
+    if (
+      typeof data.maxTickets === 'number' &&
+      data.maxTickets < existing.soldTickets
+    ) {
+      return NextResponse.json(
+        { error: 'Le nombre max d’entrées ne peut pas être inférieur aux tickets déjà vendus' },
+        { status: 400 }
+      );
     }
 
     const giveaway = await prisma.giveaway.update({

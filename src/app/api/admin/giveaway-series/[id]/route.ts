@@ -177,6 +177,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
+    const series = await prisma.giveawaySeries.findUnique({ where: { id } });
+    if (!series) {
+      return NextResponse.json({ error: 'Série introuvable' }, { status: 404 });
+    }
+
     await disableGiveawaySeries(id);
     await prisma.giveawaySeries.delete({ where: { id } });
 

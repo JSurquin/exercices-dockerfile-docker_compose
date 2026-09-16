@@ -17,11 +17,13 @@ import {
   PlusIcon,
   CubeIcon,
   XMarkIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
 import { PageLoading } from '@/components/ui/page-loading';
 import { SafeImage } from '@/components/ui/safe-image';
 import { SkinPickerModal } from '@/components/admin/skin-picker-modal';
+import { GiveawayDurationPresets } from '@/components/admin/giveaway-duration-presets';
 import {
   GIVEAWAY_DEFAULT_MAX_TICKETS,
   GIVEAWAY_DEFAULT_TICKET_PRICE,
@@ -165,6 +167,27 @@ export function GiveawayRecurringAdmin() {
       await loadSeries();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t.actionError);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(t.confirmDelete)) return;
+    setActionLoading(`${id}-delete`);
+    try {
+      const res = await fetch(`/api/admin/giveaway-series/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || t.deleteError);
+      }
+      toast.success(t.deleteSuccess);
+      await loadSeries();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t.deleteError);
     } finally {
       setActionLoading(null);
     }
@@ -331,15 +354,14 @@ export function GiveawayRecurringAdmin() {
                     <option value="YEARLY">{t.frequency.yearly}</option>
                   </select>
                 </div>
-                <div>
-                  <Label>{t.formDuration}</Label>
-                  <Input
-                    type="number"
-                    min={1}
+                <div className="md:col-span-2">
+                  <GiveawayDurationPresets
+                    id="series-duration"
                     value={form.durationMinutes}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, durationMinutes: parseInt(e.target.value, 10) || 1 }))
-                    }
+                    onChange={(minutes) => setForm((p) => ({ ...p, durationMinutes: minutes }))}
+                    labels={formT.durationPresets}
+                    durationLabel={t.formDuration}
+                    durationHelp={formT.durationHelp}
                   />
                 </div>
                 <div>
@@ -522,6 +544,15 @@ export function GiveawayRecurringAdmin() {
                       >
                         <ArrowPathIcon className="w-4 h-4 mr-1" />
                         {t.restart}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        disabled={actionLoading === `${row.id}-delete`}
+                        onClick={() => handleDelete(row.id)}
+                      >
+                        <TrashIcon className="w-4 h-4 mr-1" />
+                        {t.delete}
                       </Button>
                     </div>
                   </div>
