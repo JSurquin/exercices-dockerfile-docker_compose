@@ -8,6 +8,7 @@ import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
 import { GiveawayParticipateDialog } from '@/components/giveaway/giveaway-participate-dialog';
 import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayPrizeVisual } from '@/components/giveaway/giveaway-prize-visual';
+import { GiveawayStatBoxes } from '@/components/giveaway/giveaway-stat-boxes';
 import { GiveawayTierBadge } from '@/components/giveaway/giveaway-tier-badge';
 import { useLocale } from '@/components/providers/locale-provider';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
@@ -64,6 +65,7 @@ export function GiveawayShowcaseCard({
   const totalParticipants = giveaway.totalParticipants ?? 0;
   const totalEntries = giveaway.totalEntries ?? giveaway.soldTickets;
   const myChance = giveaway.myChancePercent ?? (totalEntries > 0 ? (100 * myEntries) / totalEntries : 0);
+  const description = giveaway.description?.trim() ?? '';
 
   const handleParticipate = async (target: GiveawayWithEntries, entries: number) => {
     setSubmitting(true);
@@ -93,19 +95,19 @@ export function GiveawayShowcaseCard({
 
   const nameBlock = parsed.hasStructuredName ? (
     <>
-      {featured ? <p className="font-display text-sm text-foreground/70">{parsed.weapon}</p> : null}
+      {featured ? <p className="text-[11px] text-foreground/70">{parsed.weapon}</p> : null}
       <p
-        className={cn('font-display font-semibold', featured ? 'text-xl sm:text-2xl' : 'text-base')}
+        className={cn('font-display font-semibold leading-tight', featured ? 'text-lg' : 'text-sm')}
         style={{ color: accent }}
       >
         {parsed.finish}
       </p>
       {parsed.exterior ? (
-        <p className={cn('mt-0.5 text-foreground/70', featured ? 'text-sm' : 'text-xs')}>{parsed.exterior}</p>
+        <p className={cn('mt-0.5 text-foreground/70', featured ? 'text-xs' : 'text-[11px]')}>{parsed.exterior}</p>
       ) : null}
     </>
   ) : (
-    <p className={cn('font-display font-semibold', featured ? 'text-xl sm:text-2xl' : 'text-base')}>
+    <p className={cn('font-display font-semibold leading-tight', featured ? 'text-lg' : 'text-sm')}>
       {parsed.fallbackName}
     </p>
   );
@@ -114,32 +116,36 @@ export function GiveawayShowcaseCard({
     valueCents != null ? (
       <p
         className={cn(
-          'mt-2 font-display font-semibold tabular-nums text-foreground',
-          featured ? 'text-3xl sm:text-4xl' : 'text-2xl'
+          'mt-1 font-display font-semibold tabular-nums text-foreground',
+          featured ? 'text-2xl' : 'text-xl'
         )}
       >
         <ConvertedAmount cents={valueCents} split />
       </p>
     ) : null;
 
+  const header = (
+    <div className="flex items-start justify-between gap-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <GiveawayTierBadge tier={tier}>{getGiveawayTierLabel(tier, labels)}</GiveawayTierBadge>
+        <GiveawayPartnerBadge giveaway={giveaway} messages={messages} />
+      </div>
+      {remainingLabel}
+    </div>
+  );
+
   return (
     <>
       {featured ? (
         <article
           data-giveaway={giveaway.id}
-          className="giveaway-card-surface giveaway-showcase-card giveaway-showcase-card--featured flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-card/85 p-4 backdrop-blur-md"
+          className="giveaway-card-surface giveaway-showcase-card giveaway-showcase-card--featured flex w-full flex-col rounded-2xl border border-white/10 bg-card/85 p-3 backdrop-blur-md"
           style={{ '--giveaway-accent': accent } as CSSProperties}
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-              <GiveawayTierBadge tier={tier}>{getGiveawayTierLabel(tier, labels)}</GiveawayTierBadge>
-              <GiveawayPartnerBadge giveaway={giveaway} messages={messages} />
-            </div>
-            {remainingLabel}
-          </div>
+          {header}
 
-          <GiveawayPrizeVisual giveaway={giveaway} size="hero" showDetails={false} grayscale={isEnded} />
-          <div className="mt-1 text-center">
+          <GiveawayPrizeVisual giveaway={giveaway} size="card" showDetails={false} grayscale={isEnded} />
+          <div className="text-center">
             {nameBlock}
             {valueBlock}
           </div>
@@ -148,7 +154,7 @@ export function GiveawayShowcaseCard({
             endDate={endDate}
             now={now ?? liveNow}
             compact
-            className="mt-3 justify-center"
+            className="mt-2 justify-center"
             labels={{
               days: layout.countdownDays,
               hours: layout.countdownHours,
@@ -157,22 +163,31 @@ export function GiveawayShowcaseCard({
             }}
           />
 
-          <p className="mt-3 truncate text-center text-xs text-foreground/70">
-            <span className="tabular-nums">{totalParticipants}</span> {fg.participants}
-            <span aria-hidden> · </span>
-            <span className="tabular-nums">{totalEntries}</span> {fg.totalEntries}
-            <span aria-hidden> · </span>
-            {fg.yourEntries} <span className="tabular-nums">{myEntries}</span>
-            <span aria-hidden> · </span>
-            {fg.yourChance} {formatChancePercent(myChance, locale)}
-          </p>
+          {description ? (
+            <p className="mt-2 line-clamp-2 text-center text-xs leading-snug text-foreground/75">{description}</p>
+          ) : null}
 
-          <div className="mt-2 flex items-center justify-center gap-2 text-sm text-foreground/70">
+          <div className="mt-2">
+            <GiveawayStatBoxes
+              participants={totalParticipants}
+              totalEntries={totalEntries}
+              myEntries={myEntries}
+              chance={formatChancePercent(myChance, locale)}
+              labels={{
+                participants: fg.participants,
+                totalEntries: fg.totalEntries,
+                yourEntries: fg.yourEntries,
+                yourChance: fg.yourChance,
+              }}
+            />
+          </div>
+
+          <div className="mt-2 flex items-center justify-center gap-2 text-xs text-foreground/70">
             <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
             <span>{fg.costPerEntry}</span>
           </div>
 
-          <div className="mt-auto flex justify-end pt-3">
+          <div className="mt-2 flex justify-end">
             {isEnded ? (
               <span className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-foreground/70">
                 {card.status.ended}
@@ -193,20 +208,14 @@ export function GiveawayShowcaseCard({
         <button
           type="button"
           data-giveaway={giveaway.id}
-          className="giveaway-card-surface giveaway-showcase-card flex h-full w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-card/85 p-4 text-left backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="giveaway-card-surface giveaway-showcase-card flex w-full flex-col rounded-2xl border border-white/10 bg-card/85 p-3 text-left backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           style={{ '--giveaway-accent': accent } as CSSProperties}
           onClick={onActivate}
           aria-label={layout.selectGiveaway}
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-              <GiveawayTierBadge tier={tier}>{getGiveawayTierLabel(tier, labels)}</GiveawayTierBadge>
-              <GiveawayPartnerBadge giveaway={giveaway} messages={messages} />
-            </div>
-            {remainingLabel}
-          </div>
+          {header}
           <GiveawayPrizeVisual giveaway={giveaway} size="card" showDetails={false} grayscale={isEnded} />
-          <div className="mt-2 text-center">
+          <div className="text-center">
             {nameBlock}
             {valueBlock}
           </div>

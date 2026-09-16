@@ -7,9 +7,11 @@ import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
 import { GiveawayParticipateDialog } from '@/components/giveaway/giveaway-participate-dialog';
 import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayPrizeVisual } from '@/components/giveaway/giveaway-prize-visual';
+import { GiveawayStatBoxes } from '@/components/giveaway/giveaway-stat-boxes';
 import { GiveawayTierBadge } from '@/components/giveaway/giveaway-tier-badge';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import {
+  formatChancePercent,
   getGiveawayCardAction,
   getGiveawayTier,
   getGiveawayTierAccent,
@@ -28,6 +30,7 @@ import type { Messages } from '~/utils/types';
 export function GiveawayCard({
   giveaway,
   messages,
+  locale,
   now,
   selected = false,
   userFragments = 0,
@@ -50,6 +53,7 @@ export function GiveawayCard({
   const timeRemaining = getTimeRemaining(endDate, now ?? liveNow);
   const layout = messages.giveaways.layout;
   const card = messages.giveaways.card;
+  const fg = messages.giveaways.fragments;
   const isEnded = giveaway.status === 'ENDED' || timeRemaining.expired;
   const tier = getGiveawayTier(giveaway);
   const accent = getGiveawayTierAccent(tier);
@@ -59,6 +63,10 @@ export function GiveawayCard({
   const action = getGiveawayCardAction(giveaway, userFragments);
   const parsed = parsePrizeDisplay(giveaway.prize, giveaway.steamMarketHashName);
   const valueCents = getPrizeValueCents(giveaway);
+  const myEntries = giveaway.myEntries ?? 0;
+  const totalParticipants = giveaway.totalParticipants ?? 0;
+  const totalEntries = giveaway.totalEntries ?? giveaway.soldTickets;
+  const myChance = giveaway.myChancePercent ?? (totalEntries > 0 ? (100 * myEntries) / totalEntries : 0);
 
   const handleParticipate = async (target: GiveawayWithEntries, entries: number) => {
     if (!onParticipate) return;
@@ -75,7 +83,7 @@ export function GiveawayCard({
       <article
         data-giveaway={giveaway.id}
         className={cn(
-          'giveaway-card-surface giveaway-card-surface--interactive flex h-full min-h-[360px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-card/80 p-4 backdrop-blur-md',
+          'giveaway-card-surface giveaway-card-surface--interactive flex h-full flex-col rounded-2xl border border-white/10 bg-card/80 p-3 backdrop-blur-md',
           selectable && 'cursor-pointer',
           selected && 'ring-2 ring-theme-accent/70'
         )}
@@ -131,14 +139,33 @@ export function GiveawayCard({
             <p className="font-display font-semibold">{parsed.fallbackName}</p>
           )}
           {valueCents != null ? (
-            <p className="mt-2 font-display text-2xl font-semibold tabular-nums text-foreground">
+            <p className="mt-1 font-display text-xl font-semibold tabular-nums text-foreground">
               <ConvertedAmount cents={valueCents} split />
             </p>
           ) : null}
         </div>
 
+        {description ? (
+          <p className="mt-2 line-clamp-2 text-center text-xs leading-snug text-foreground/75">{description}</p>
+        ) : null}
+
+        <div className="mt-2">
+          <GiveawayStatBoxes
+            participants={totalParticipants}
+            totalEntries={totalEntries}
+            myEntries={myEntries}
+            chance={formatChancePercent(myChance, locale)}
+            labels={{
+              participants: fg.participants,
+              totalEntries: fg.totalEntries,
+              yourEntries: fg.yourEntries,
+              yourChance: fg.yourChance,
+            }}
+          />
+        </div>
+
         <div
-          className="mt-auto flex justify-end pt-3"
+          className="mt-auto flex justify-end pt-2"
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
         >

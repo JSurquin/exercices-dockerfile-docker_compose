@@ -7,14 +7,14 @@ export function GiveawayCardSkeleton() {
   return (
     <Card
       aria-hidden
-      className="flex h-[380px] flex-col overflow-hidden border-white/10 bg-card/80 py-0"
+      className="flex h-[340px] flex-col overflow-hidden border-white/10 bg-card/80 py-0"
     >
       <CardContent className="flex h-full flex-col gap-2.5 p-4">
         <div className="flex items-center justify-between gap-2">
           <Skeleton className="h-5 w-20 rounded-full" />
           <Skeleton className="h-5 w-16 rounded-full" />
         </div>
-        <Skeleton className="h-[120px] w-full rounded-xl" />
+        <Skeleton className="h-[96px] w-full rounded-xl" />
         <div className="flex items-center justify-between gap-2">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-5 w-14 rounded-full" />

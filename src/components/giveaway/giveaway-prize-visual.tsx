@@ -27,31 +27,34 @@ export function GiveawayPrizeVisual({
   const isHero = size === 'hero';
 
   return (
-    <div className={cn('relative overflow-hidden rounded-xl', isHero ? 'p-4 sm:p-5' : 'p-2')}>
+    <div className={cn('relative overflow-visible', isHero ? 'px-3 py-4 sm:px-4 sm:py-5' : 'px-3 py-3')}>
       <div
-        className="pointer-events-none absolute inset-0"
+        className={cn(
+          'pointer-events-none absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl',
+          isHero ? 'h-[11.5rem] w-[14rem] sm:h-[13rem] sm:w-[16rem]' : 'h-[8.5rem] w-[11rem]'
+        )}
         style={{
-          background: `radial-gradient(circle at 50% 58%, ${halo}55 0%, transparent 68%)`,
+          background: `radial-gradient(circle, ${halo}88 0%, ${halo}38 38%, transparent 72%)`,
         }}
         aria-hidden
       />
       <div
         className={cn(
           'relative flex flex-col items-center justify-center',
-          isHero ? 'min-h-[120px] sm:min-h-[140px]' : 'h-[120px]'
+          isHero ? 'min-h-[120px] sm:min-h-[140px]' : 'h-[96px]'
         )}
       >
         <SafeImage
           src={giveaway.prizeImageUrl}
           alt={giveaway.prize}
-          width={isHero ? 240 : 180}
-          height={isHero ? 170 : 120}
+          width={isHero ? 240 : 160}
+          height={isHero ? 170 : 96}
           className={cn(
             'object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]',
-            isHero ? 'h-[120px] w-auto sm:h-[140px]' : 'h-[120px] w-auto',
+            isHero ? 'h-[120px] w-auto sm:h-[140px]' : 'h-[96px] w-auto',
             grayscale && 'grayscale'
           )}
-          fallbackClassName={isHero ? 'h-[120px] w-[180px] rounded' : 'h-[120px] w-[160px] rounded'}
+          fallbackClassName={isHero ? 'h-[120px] w-[180px] rounded' : 'h-[96px] w-[140px] rounded'}
           fallbackIcon={
             <TrophyIcon className={isHero ? 'h-16 w-16 text-theme-accent' : 'h-10 w-10 text-theme-accent'} />
           }

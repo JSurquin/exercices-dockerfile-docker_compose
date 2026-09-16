@@ -245,9 +245,9 @@ describe('selectRecurringActiveGiveaways', () => {
   it('exposes unique circular offsets within ±2 for five cards', () => {
     const offsets = [0, 1, 2, 3, 4].map((index) => carouselSignedOffset(index, 2, 5));
     expect(offsets.sort((a, b) => a - b)).toEqual([-2, -1, 0, 1, 2]);
-    expect(carouselCoverflowTransform(0)).toMatchObject({ scale: 1, translateY: -24, opacity: 1, visible: true });
-    expect(carouselCoverflowTransform(1)).toMatchObject({ scale: 0.82, translateY: 16, opacity: 0.7 });
-    expect(carouselCoverflowTransform(-2)).toMatchObject({ scale: 0.68, translateY: 32, opacity: 0.4 });
+    expect(carouselCoverflowTransform(0)).toMatchObject({ scale: 1, translateY: 0, opacity: 1, visible: true });
+    expect(carouselCoverflowTransform(1)).toMatchObject({ scale: 0.86, translateY: 10, opacity: 0.75 });
+    expect(carouselCoverflowTransform(-2)).toMatchObject({ scale: 0.72, translateY: 18, opacity: 0.45 });
     expect(carouselCoverflowXPercent(1)).toBe(74);
     expect(carouselCoverflowXPercent(-2)).toBe(-132);
     expect(getCarouselBreakpoint(390)).toBe('mobile');

@@ -437,11 +437,11 @@ export function carouselCoverflowTransform(
   if (abs > maxVisible) return { scale: 0.5, translateY: 40, opacity: 0, visible: false };
   if (breakpoint === 'mobile') {
     if (abs === 0) return { scale: 1, translateY: 0, opacity: 1, visible: true };
-    return { scale: 0.94, translateY: 12, opacity: 0.82, visible: true };
+    return { scale: 0.94, translateY: 8, opacity: 0.82, visible: true };
   }
-  if (abs === 0) return { scale: 1, translateY: -24, opacity: 1, visible: true };
-  if (abs === 1) return { scale: 0.82, translateY: 16, opacity: 0.7, visible: true };
-  return { scale: 0.68, translateY: 32, opacity: 0.4, visible: true };
+  if (abs === 0) return { scale: 1, translateY: 0, opacity: 1, visible: true };
+  if (abs === 1) return { scale: 0.86, translateY: 10, opacity: 0.75, visible: true };
+  return { scale: 0.72, translateY: 18, opacity: 0.45, visible: true };
 }
 
 export function findPartnerLogo<T extends { name: string; logoUrl: string }>(

@@ -3723,22 +3723,24 @@ body.next-dev-overlay-present #sentry-feedback {
 
 .giveaway-recurring-carousel__stage {
   position: relative;
-  height: 36rem;
+  height: 32.5rem;
   overflow: hidden;
 }
 
 .giveaway-recurring-carousel__slide {
   position: absolute;
-  top: 1.5rem;
+  top: 0.75rem;
   left: 50%;
   width: calc(100% - 32px);
-  height: calc(100% - 2.5rem);
+  height: calc(100% - 1.5rem);
   margin-left: calc((100% - 32px) / -2);
   display: flex;
+  align-items: center;
 }
 
 .giveaway-recurring-carousel__slide > * {
   width: 100%;
+  height: auto;
 }
 
 .giveaway-recurring-carousel__slide--near {
@@ -3798,7 +3800,7 @@ body.next-dev-overlay-present #sentry-feedback {
 
 @media (max-width: 767px) {
   .giveaway-recurring-carousel__stage {
-    height: 38rem;
+    height: 36rem;
   }
 
   .giveaway-recurring-carousel__slide--far {
@@ -3808,12 +3810,12 @@ body.next-dev-overlay-present #sentry-feedback {
 
 @media (min-width: 768px) {
   .giveaway-recurring-carousel__stage {
-    height: 46rem;
+    height: 34.5rem;
   }
 
   .giveaway-recurring-carousel__slide {
-    width: min(27.5rem, 86%);
-    margin-left: calc(min(27.5rem, 86%) / -2);
+    width: min(23.5rem, 72%);
+    margin-left: calc(min(23.5rem, 72%) / -2);
   }
 
   .giveaway-recurring-carousel__nav--prev {
