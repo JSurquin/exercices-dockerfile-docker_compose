@@ -4003,6 +4003,8 @@ export interface Messages {
       accessReserved: string;
       infoAria: string;
       participateModalTitle: string;
+      entryBurstOne: string;
+      entryBurstOther: string;
     };
     empty: {
       noActive: string;

@@ -6,26 +6,37 @@ import { useLocale } from '@/components/providers/locale-provider';
 import { SafeImage } from '@/components/ui/safe-image';
 import { TrophyIcon } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
+import { createGiveawayPrestigeParticles } from '@/lib/giveaway-motion';
 import {
   getPrizeHaloColor,
   getPrizeValueCents,
   parsePrizeDisplay,
+  type GiveawayTier,
 } from '@/lib/giveaway-presentation';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
+
+const PRESTIGE_PARTICLES = createGiveawayPrestigeParticles();
 
 export function GiveawayPrizeVisual({
   giveaway,
   size = 'card',
   showDetails = true,
   grayscale = false,
+  floating = false,
+  prestige = false,
+  tier,
 }: {
   giveaway: GiveawayWithEntries;
   size?: 'card' | 'hero';
   showDetails?: boolean;
   grayscale?: boolean;
+  floating?: boolean;
+  prestige?: boolean;
+  tier?: GiveawayTier;
 }) {
   const halo = getPrizeHaloColor(giveaway.prize, giveaway.steamMarketHashName);
   const isHero = size === 'hero';
+  const showPrestige = prestige || tier === 'yearly';
 
   return (
     <div className={cn('relative overflow-visible', isHero ? 'px-3 py-4 sm:px-4 sm:py-5' : 'px-3 py-3')}>
@@ -45,22 +56,40 @@ export function GiveawayPrizeVisual({
           isHero ? 'min-h-[120px] sm:min-h-[140px]' : 'h-[96px]'
         )}
       >
-        <SafeImage
-          src={giveaway.prizeImageUrl}
-          alt={giveaway.prize}
-          width={isHero ? 240 : 160}
-          height={isHero ? 170 : 96}
-          className={cn(
-            'object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]',
-            isHero ? 'h-[120px] w-auto sm:h-[140px]' : 'h-[96px] w-auto',
-            grayscale && 'grayscale'
-          )}
-          fallbackClassName={isHero ? 'h-[120px] w-[180px] rounded' : 'h-[96px] w-[140px] rounded'}
-          fallbackIcon={
-            <TrophyIcon className={isHero ? 'h-16 w-16 text-theme-accent' : 'h-10 w-10 text-theme-accent'} />
-          }
-          unoptimized
-        />
+        {showPrestige ? (
+          <div className="giveaway-prestige pointer-events-none absolute inset-0" aria-hidden>
+            {PRESTIGE_PARTICLES.map((particle, index) => (
+              <span
+                key={index}
+                className="giveaway-prestige__particle"
+                style={{
+                  left: `${particle.x}%`,
+                  top: `${particle.y}%`,
+                  animationDelay: `${particle.delay}s`,
+                  animationDuration: `${particle.duration}s`,
+                }}
+              />
+            ))}
+          </div>
+        ) : null}
+        <div className={cn('giveaway-prize-skin-wrap', floating && 'giveaway-prize-skin-wrap--float')}>
+          <SafeImage
+            src={giveaway.prizeImageUrl}
+            alt={giveaway.prize}
+            width={isHero ? 240 : 160}
+            height={isHero ? 170 : 96}
+            className={cn(
+              'giveaway-prize-skin object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]',
+              isHero ? 'h-[120px] w-auto sm:h-[140px]' : 'h-[96px] w-auto',
+              grayscale && 'grayscale'
+            )}
+            fallbackClassName={isHero ? 'h-[120px] w-[180px] rounded' : 'h-[96px] w-[140px] rounded'}
+            fallbackIcon={
+              <TrophyIcon className={isHero ? 'h-16 w-16 text-theme-accent' : 'h-10 w-10 text-theme-accent'} />
+            }
+            unoptimized
+          />
+        </div>
       </div>
       {showDetails && (
         <div className="relative mt-3">

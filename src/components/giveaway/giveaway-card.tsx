@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { GiveawayCompactTime, useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
 import { GiveawayEurAmount } from '@/components/giveaway/giveaway-eur-amount';
+import { GiveawayMotionSurface, giveawayTierSurfaceStyle } from '@/components/giveaway/giveaway-motion-surface';
 import { GiveawayParticipateDialog } from '@/components/giveaway/giveaway-participate-dialog';
 import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayPrizeVisual } from '@/components/giveaway/giveaway-prize-visual';
@@ -11,11 +12,11 @@ import { GiveawayStatBoxes } from '@/components/giveaway/giveaway-stat-boxes';
 import { GiveawayTierBadge } from '@/components/giveaway/giveaway-tier-badge';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import {
-  formatChancePercent,
   getGiveawayCardAction,
   getGiveawayTier,
   getGiveawayTierAccent,
   getGiveawayTierLabel,
+  getGiveawayTierTokens,
   getPrizeValueCents,
   getTimeRemaining,
   giveawayTierLabels,
@@ -25,7 +26,6 @@ import {
 import { cn } from '@/lib/utils';
 import { ClockIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { CSSProperties } from 'react';
 import type { Messages } from '~/utils/types';
 
 export function GiveawayCard({
@@ -49,6 +49,7 @@ export function GiveawayCard({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [burst, setBurst] = useState({ id: 0, count: 1 });
   const liveNow = useLiveNow(1000, now === undefined);
   const endDate = typeof giveaway.endDate === 'string' ? new Date(giveaway.endDate) : giveaway.endDate;
   const timeRemaining = getTimeRemaining(endDate, now ?? liveNow);
@@ -58,6 +59,7 @@ export function GiveawayCard({
   const isEnded = giveaway.status === 'ENDED' || timeRemaining.expired;
   const tier = getGiveawayTier(giveaway);
   const accent = getGiveawayTierAccent(tier);
+  const tokens = getGiveawayTierTokens(tier);
   const description = localizedGiveawayBlurb(giveaway, layout);
   const selectable = Boolean(onSelect) && !isEnded;
   const labels = giveawayTierLabels(layout);
@@ -74,6 +76,7 @@ export function GiveawayCard({
     setSubmitting(true);
     try {
       await onParticipate(target, entries);
+      setBurst((current) => ({ id: current.id + 1, count: entries }));
     } finally {
       setSubmitting(false);
     }
@@ -81,14 +84,14 @@ export function GiveawayCard({
 
   return (
     <>
-      <article
+      <GiveawayMotionSurface
         data-giveaway={giveaway.id}
         className={cn(
           'giveaway-card-surface giveaway-card-surface--interactive flex h-full flex-col overflow-visible rounded-2xl border border-white/10 bg-card/80 p-5 backdrop-blur-md',
           selectable && 'cursor-pointer',
           selected && 'ring-2 ring-theme-accent/70'
         )}
-        style={{ '--giveaway-accent': accent } as CSSProperties}
+        style={giveawayTierSurfaceStyle(accent, tokens)}
         onClick={selectable ? onSelect : undefined}
       >
         <div className="flex items-start justify-between gap-2 overflow-visible">
@@ -126,7 +129,13 @@ export function GiveawayCard({
           </p>
         </div>
 
-        <GiveawayPrizeVisual giveaway={giveaway} showDetails={false} grayscale={isEnded} />
+        <GiveawayPrizeVisual
+          giveaway={giveaway}
+          showDetails={false}
+          grayscale={isEnded}
+          prestige={tier === 'yearly'}
+          tier={tier}
+        />
 
         <div className="mt-2 text-center">
           {parsed.hasStructuredName ? (
@@ -155,7 +164,8 @@ export function GiveawayCard({
             participants={totalParticipants}
             totalEntries={totalEntries}
             myEntries={myEntries}
-            chance={formatChancePercent(myChance, locale)}
+            chance={myChance}
+            locale={locale}
             labels={{
               participants: fg.participants,
               totalEntries: fg.totalEntries,
@@ -181,11 +191,14 @@ export function GiveawayCard({
               messages={messages}
               ticketPrice={giveaway.ticketPrice}
               userFragments={userFragments}
+              tier={tier}
+              burstId={burst.id}
+              burstCount={burst.count}
               onParticipate={() => setModalOpen(true)}
             />
           )}
         </div>
-      </article>
+      </GiveawayMotionSurface>
 
       {onParticipate && (
         <GiveawayParticipateDialog

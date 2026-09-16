@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { FragmentAmount } from '@/components/ui/level-badge';
+import { GiveawayFragmentCount } from '@/components/giveaway/giveaway-count-up';
 import { GiveawayUserAvatar } from '@/components/giveaway/giveaway-user-avatar';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
@@ -38,7 +38,7 @@ export function GiveawayWalletBar({
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <FragmentAmount
+            <GiveawayFragmentCount
               amount={userFragments}
               size="sm"
               className="font-display text-xl font-semibold leading-none"

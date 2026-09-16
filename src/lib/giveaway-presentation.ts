@@ -83,6 +83,25 @@ export function hexContrastRatio(foreground: string, background: string): number
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+/** Texte bouton sur fond --tier : presque noir, contraste AA sur les accents clairs. */
+export const GIVEAWAY_TIER_CTA_FG = '#111827';
+const GIVEAWAY_TIER_CTA_FG_LIGHT = '#ffffff';
+export const GIVEAWAY_URGENT_MS = 60 * 60 * 1000;
+
+export function getGiveawayTierCtaColors(tier: GiveawayTier): { bg: string; fg: string } {
+  const bg = GIVEAWAY_TIER_ACCENTS[tier];
+  const darkRatio = hexContrastRatio(GIVEAWAY_TIER_CTA_FG, bg);
+  const lightRatio = hexContrastRatio(GIVEAWAY_TIER_CTA_FG_LIGHT, bg);
+  if (darkRatio >= 4.5 && darkRatio >= lightRatio) {
+    return { bg, fg: GIVEAWAY_TIER_CTA_FG };
+  }
+  if (lightRatio >= 4.5) {
+    return { bg, fg: GIVEAWAY_TIER_CTA_FG_LIGHT };
+  }
+  const tokens = GIVEAWAY_TIER_TOKENS[tier];
+  return { bg: tokens.bg, fg: tokens.fg };
+}
+
 export interface GiveawayLeaderboardRow {
   username: string | null;
   avatar: string | null;
@@ -294,6 +313,10 @@ export function getTimeRemaining(endDate: Date | string, now = Date.now()): Time
   const minutes = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((totalMs % (1000 * 60)) / 1000);
   return { days, hours, minutes, seconds, expired: false, totalMs };
+}
+
+export function isUrgentGiveawayCountdown(remaining: Pick<TimeRemaining, 'expired' | 'totalMs'>): boolean {
+  return !remaining.expired && remaining.totalMs > 0 && remaining.totalMs < GIVEAWAY_URGENT_MS;
 }
 
 export interface CompactDurationLabels {

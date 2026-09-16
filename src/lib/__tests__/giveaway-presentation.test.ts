@@ -19,7 +19,9 @@ import {
   getPrizeHaloColor,
   getPrizeValueCents,
   getTimeRemaining,
+  getGiveawayTierCtaColors,
   hexContrastRatio,
+  isUrgentGiveawayCountdown,
   nextUtcMidnightMs,
   parsePrizeDisplay,
   resolveAvatarSrc,
@@ -344,6 +346,13 @@ describe('getTimeRemaining', () => {
     expect(getTimeRemaining('2026-09-15T00:00:00.000Z', Date.parse('2026-09-16T00:00:00.000Z')).expired).toBe(
       true
     );
+  });
+
+  it('flags the last hour as urgent', () => {
+    const now = Date.parse('2026-09-16T12:00:00.000Z');
+    expect(isUrgentGiveawayCountdown(getTimeRemaining('2026-09-16T12:59:00.000Z', now))).toBe(true);
+    expect(isUrgentGiveawayCountdown(getTimeRemaining('2026-09-16T13:01:00.000Z', now))).toBe(false);
+    expect(isUrgentGiveawayCountdown(getTimeRemaining('2026-09-16T11:00:00.000Z', now))).toBe(false);
   });
 });
 
@@ -769,8 +778,15 @@ describe('giveaway palier tokens contrast', () => {
       expect(hexContrastRatio(dark.fg, dark.bg)).toBeGreaterThanOrEqual(4.5);
       expect(hexContrastRatio(light.fg, light.bg)).toBeGreaterThanOrEqual(4.5);
     }
-    expect(hexContrastRatio(GIVEAWAY_PARTNER_TOKENS.fg, GIVEAWAY_PARTNER_TOKENS.bg)).toBeGreaterThanOrEqual(
+      expect(hexContrastRatio(GIVEAWAY_PARTNER_TOKENS.fg, GIVEAWAY_PARTNER_TOKENS.bg)).toBeGreaterThanOrEqual(
       4.5
     );
+  });
+
+  it('keeps participate button text AA on --tier fills', () => {
+    for (const tier of tiers) {
+      const { bg, fg } = getGiveawayTierCtaColors(tier);
+      expect(hexContrastRatio(fg, bg)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });

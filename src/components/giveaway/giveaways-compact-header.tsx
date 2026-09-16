@@ -1,7 +1,7 @@
 'use client';
 
-import { Progress } from '@/components/ui/progress';
-import { FragmentAmount } from '@/components/ui/level-badge';
+import { GiveawayAnimatedProgress } from '@/components/giveaway/giveaway-animated-progress';
+import { GiveawayFragmentCount } from '@/components/giveaway/giveaway-count-up';
 import { GiveawayHowItWorksDialog } from '@/components/giveaway/giveaway-how-it-works-dialog';
 import { GiveawayUserAvatar } from '@/components/giveaway/giveaway-user-avatar';
 import { fragmentsEntryProgressPercent } from '@/lib/giveaway-presentation';
@@ -72,7 +72,7 @@ export function GiveawayLevelCard({
       </div>
       <div className="mt-3 min-w-0">
         <div className="flex items-baseline gap-2">
-          <FragmentAmount
+          <GiveawayFragmentCount
             amount={userFragments}
             size="sm"
             className="font-display text-2xl font-semibold leading-none"
@@ -81,7 +81,7 @@ export function GiveawayLevelCard({
         </div>
         {untilNext ? <p className="mt-1 text-xs text-foreground/70">{untilNext}</p> : null}
         {nextTicketPrice != null && nextTicketPrice > 0 ? (
-          <Progress value={progress} className="mt-2 h-1 bg-muted/60 [&>div]:bg-theme-accent" />
+          <GiveawayAnimatedProgress value={progress} className="mt-2 h-1 bg-muted/60 [&>div]:bg-theme-accent" />
         ) : null}
       </div>
     </section>

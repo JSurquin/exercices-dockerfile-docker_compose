@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import {
   formatCompactCountdown,
   getTimeRemaining,
+  isUrgentGiveawayCountdown,
   type CompactDurationLabels,
   type TimeRemaining,
 } from '@/lib/giveaway-presentation';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 export function useLiveNow(intervalMs = 1000, enabled = true): number {
   const [now, setNow] = useState(() => Date.now());
@@ -21,6 +23,27 @@ export function useLiveNow(intervalMs = 1000, enabled = true): number {
 
 function pad(value: number): string {
   return String(value).padStart(2, '0');
+}
+
+function FlipValue({ value, className }: { value: string; className?: string }) {
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <span className={cn('giveaway-flip', className)}>
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={value}
+          className="giveaway-flip__value"
+          initial={reduceMotion ? false : { y: 12, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={reduceMotion ? undefined : { y: -12, opacity: 0 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
+        >
+          {value}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
 }
 
 export function GiveawayCountdown({
@@ -38,18 +61,25 @@ export function GiveawayCountdown({
 }) {
   const liveNow = useLiveNow(1000, now === undefined);
   const remaining = getTimeRemaining(endDate, now ?? liveNow);
-  const units: { value: number; label: string }[] = [
+  const urgent = isUrgentGiveawayCountdown(remaining);
+  const units: { value: number; label: string; seconds?: boolean }[] = [
     { value: remaining.days, label: labels.days },
     { value: remaining.hours, label: labels.hours },
     { value: remaining.minutes, label: labels.minutes },
-    { value: remaining.seconds, label: labels.seconds },
+    { value: remaining.seconds, label: labels.seconds, seconds: true },
   ];
   const accessibleLabel = units.map((unit) => `${pad(unit.value)} ${unit.label}`).join(' ');
 
   return (
     <div
-      className={cn('flex items-end gap-2 sm:gap-3', compact && 'gap-1.5 sm:gap-2', className)}
+      className={cn(
+        'flex items-end gap-2 sm:gap-3',
+        compact && 'gap-1.5 sm:gap-2',
+        urgent && 'giveaway-countdown--urgent',
+        className
+      )}
       data-countdown
+      data-urgent={urgent ? 'true' : 'false'}
       role="timer"
       aria-label={accessibleLabel}
     >
@@ -71,15 +101,16 @@ export function GiveawayCountdown({
               compact && 'min-w-[2.25rem] sm:min-w-[2.75rem]'
             )}
           >
-            <span
+            <FlipValue
+              value={pad(unit.value)}
               className={cn(
                 'font-display text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl',
                 compact && 'text-2xl sm:text-3xl',
-                remaining.expired && 'text-foreground/70'
+                remaining.expired && 'text-foreground/70',
+                unit.seconds && !remaining.expired && !urgent && 'giveaway-countdown__seconds',
+                urgent && !remaining.expired && 'giveaway-countdown__urgent-value'
               )}
-            >
-              {pad(unit.value)}
-            </span>
+            />
             <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-foreground/70">
               {unit.label}
             </span>

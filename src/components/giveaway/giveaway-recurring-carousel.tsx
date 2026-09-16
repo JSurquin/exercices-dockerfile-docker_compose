@@ -12,6 +12,7 @@ import {
   parsePrizeDisplay,
   type CarouselBreakpoint,
 } from '@/lib/giveaway-presentation';
+import { GIVEAWAY_CAROUSEL_SPRING } from '@/lib/giveaway-motion';
 import { cn } from '@/lib/utils';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
@@ -183,10 +184,27 @@ export function GiveawayRecurringCarousel({
                         scale: coverflow.scale,
                         opacity: coverflow.opacity,
                       }}
-                      transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeInOut' }}
+                      transition={
+                        reduceMotion
+                          ? { duration: 0 }
+                          : GIVEAWAY_CAROUSEL_SPRING
+                      }
                       style={{ width: coverflow.width }}
                       aria-current={featured ? 'true' : undefined}
                     >
+                      <motion.div
+                        key={featured ? `pop-${giveaway.id}` : giveaway.id}
+                        className="h-full w-full"
+                        initial={featured && !reduceMotion ? { scale: 0.95 } : false}
+                        animate={
+                          featured && !reduceMotion ? { scale: [0.95, 1.02, 1] } : { scale: 1 }
+                        }
+                        transition={
+                          featured && !reduceMotion
+                            ? { duration: 0.48, times: [0, 0.55, 1], ease: 'easeOut' }
+                            : { duration: 0 }
+                        }
+                      >
                       <GiveawayShowcaseCard
                         giveaway={giveaway}
                         messages={messages}
@@ -202,6 +220,7 @@ export function GiveawayRecurringCarousel({
                           goTo(index);
                         }}
                       />
+                      </motion.div>
                     </motion.div>
                   );
                 })}

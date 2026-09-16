@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { FragmentAmount } from '@/components/ui/level-badge';
 import { GiveawayCompactTime, GiveawayCountdown, useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
+import { FragmentAmount } from '@/components/ui/level-badge';
 import { GiveawayEurAmount } from '@/components/giveaway/giveaway-eur-amount';
+import { GiveawayMotionSurface, giveawayTierSurfaceStyle } from '@/components/giveaway/giveaway-motion-surface';
 import { GiveawayParticipateDialog } from '@/components/giveaway/giveaway-participate-dialog';
 import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayPrizeVisual } from '@/components/giveaway/giveaway-prize-visual';
@@ -13,11 +14,11 @@ import { GiveawayTierBadge } from '@/components/giveaway/giveaway-tier-badge';
 import { useLocale } from '@/components/providers/locale-provider';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import {
-  formatChancePercent,
   getGiveawayCardAction,
   getGiveawayTier,
   getGiveawayTierAccent,
   getGiveawayTierLabel,
+  getGiveawayTierTokens,
   getPrizeValueCents,
   getTimeRemaining,
   giveawayTierLabels,
@@ -26,7 +27,6 @@ import {
 } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
 import { ClockIcon } from '@heroicons/react/24/outline';
-import type { CSSProperties } from 'react';
 import type { Messages } from '~/utils/types';
 
 export function GiveawayShowcaseCard({
@@ -49,6 +49,7 @@ export function GiveawayShowcaseCard({
   const { locale } = useLocale();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [burst, setBurst] = useState({ id: 0, count: 1 });
   const liveNow = useLiveNow(1000, now === undefined);
   const layout = messages.giveaways.layout;
   const card = messages.giveaways.card;
@@ -57,6 +58,7 @@ export function GiveawayShowcaseCard({
   const timeRemaining = getTimeRemaining(endDate, now ?? liveNow);
   const tier = getGiveawayTier(giveaway);
   const accent = getGiveawayTierAccent(tier);
+  const tokens = getGiveawayTierTokens(tier);
   const labels = giveawayTierLabels(layout);
   const action = getGiveawayCardAction(giveaway, userFragments);
   const parsed = parsePrizeDisplay(giveaway.prize, giveaway.steamMarketHashName);
@@ -72,6 +74,7 @@ export function GiveawayShowcaseCard({
     setSubmitting(true);
     try {
       await onParticipate(target, entries);
+      setBurst((current) => ({ id: current.id + 1, count: entries }));
     } finally {
       setSubmitting(false);
     }
@@ -139,7 +142,15 @@ export function GiveawayShowcaseCard({
     <>
       {header}
 
-      <GiveawayPrizeVisual giveaway={giveaway} size="card" showDetails={false} grayscale={isEnded} />
+      <GiveawayPrizeVisual
+        giveaway={giveaway}
+        size="card"
+        showDetails={false}
+        grayscale={isEnded}
+        floating={featured}
+        prestige={tier === 'yearly'}
+        tier={tier}
+      />
       <div className="text-center">
         {nameBlock}
         {valueBlock}
@@ -169,7 +180,8 @@ export function GiveawayShowcaseCard({
           participants={totalParticipants}
           totalEntries={totalEntries}
           myEntries={myEntries}
-          chance={formatChancePercent(myChance, locale)}
+          chance={myChance}
+          locale={locale}
           compact={!featured}
           featured={featured}
           labels={{
@@ -199,6 +211,9 @@ export function GiveawayShowcaseCard({
             ticketPrice={giveaway.ticketPrice}
             userFragments={userFragments}
             interactive={featured}
+            tier={featured ? tier : undefined}
+            burstId={featured ? burst.id : 0}
+            burstCount={burst.count}
             onParticipate={featured ? () => setModalOpen(true) : undefined}
           />
         )}
@@ -209,24 +224,34 @@ export function GiveawayShowcaseCard({
   return (
     <>
       {featured ? (
-        <article
-          data-giveaway={giveaway.id}
+        <GiveawayMotionSurface
+          featured
           className="giveaway-card-surface giveaway-showcase-card giveaway-showcase-card--featured flex h-full w-full flex-col overflow-visible rounded-2xl border border-white/10 bg-card/85 p-5 backdrop-blur-md"
-          style={{ '--giveaway-accent': accent } as CSSProperties}
+          style={giveawayTierSurfaceStyle(accent, tokens)}
+          data-giveaway={giveaway.id}
+          role="article"
         >
           {body}
-        </article>
+        </GiveawayMotionSurface>
       ) : (
-        <button
-          type="button"
+        <GiveawayMotionSurface
+          tilt
+          role="button"
+          tabIndex={0}
           data-giveaway={giveaway.id}
-          className="giveaway-card-surface giveaway-showcase-card flex h-full w-full flex-col overflow-visible rounded-2xl border border-white/10 bg-card/85 p-5 text-left backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          style={{ '--giveaway-accent': accent } as CSSProperties}
+          className="giveaway-card-surface giveaway-showcase-card flex h-full w-full cursor-pointer flex-col overflow-visible rounded-2xl border border-white/10 bg-card/85 p-5 text-left backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          style={giveawayTierSurfaceStyle(accent, tokens)}
           onClick={onActivate}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onActivate?.();
+            }
+          }}
           aria-label={layout.selectGiveaway}
         >
           {body}
-        </button>
+        </GiveawayMotionSurface>
       )}
 
       {featured ? (

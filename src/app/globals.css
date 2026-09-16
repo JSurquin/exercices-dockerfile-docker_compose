@@ -3499,6 +3499,26 @@ body.next-dev-overlay-present #sentry-feedback {
   .home-count-up::after {
     content: round(var(--count-to), var(--count-decimals, 0));
   }
+
+  .giveaway-prize-skin-wrap--float,
+  .giveaway-prestige__particle,
+  .giveaway-star,
+  .giveaway-progress[data-motion-active='true']::after,
+  .giveaway-countdown--urgent .giveaway-countdown__urgent-value,
+  .giveaway-card-sheen::after,
+  .giveaway-cta--tier,
+  .giveaway-motion-surface[data-tilt='true']:hover {
+    animation: none !important;
+  }
+
+  .giveaway-motion-surface[data-tilt='true'] {
+    transform: none !important;
+  }
+
+  .giveaway-prize-skin-wrap,
+  .giveaway-prize-skin {
+    transform: none !important;
+  }
 }
 
 /* MoonSkin tour (driver.js) — chrome */
@@ -3720,9 +3740,10 @@ body.next-dev-overlay-present #sentry-feedback {
 
 .giveaway-card-surface {
   --giveaway-accent: #7eb8ff;
+  --tier: var(--giveaway-accent);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--giveaway-accent) 20%, transparent),
-    0 0 28px color-mix(in srgb, var(--giveaway-accent) 8%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--tier) 20%, transparent),
+    0 0 28px color-mix(in srgb, var(--tier) 8%, transparent);
   transition: transform 300ms ease, box-shadow 300ms ease;
 }
 
@@ -3730,16 +3751,16 @@ body.next-dev-overlay-present #sentry-feedback {
   .giveaway-card-surface--interactive:hover {
     transform: translateY(-4px);
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--giveaway-accent) 50%, transparent),
-      0 18px 42px color-mix(in srgb, var(--giveaway-accent) 28%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 50%, transparent),
+      0 18px 42px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 28%, transparent);
   }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: reduce) {
   .giveaway-card-surface--interactive:hover {
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--giveaway-accent) 40%, transparent),
-      0 0 28px color-mix(in srgb, var(--giveaway-accent) 16%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 40%, transparent),
+      0 0 28px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 16%, transparent);
   }
 }
 
@@ -3809,8 +3830,8 @@ body.next-dev-overlay-present #sentry-feedback {
 
 .giveaway-showcase-card--featured {
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--giveaway-accent) 55%, transparent),
-    0 12px 48px color-mix(in srgb, var(--giveaway-accent) 28%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 55%, transparent),
+    0 12px 48px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 28%, transparent);
 }
 
 .giveaway-recurring-carousel__nav {
@@ -3872,5 +3893,282 @@ body.next-dev-overlay-present #sentry-feedback {
   .giveaway-recurring-carousel__dot,
   .giveaway-recurring-carousel__dot--active {
     transition: none;
+  }
+}
+
+.giveaway-motion-surface {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.giveaway-motion-surface[data-tilt='true'] {
+  transition: transform 120ms ease-out, box-shadow 200ms ease;
+  transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+}
+
+.giveaway-motion-surface[data-tilt='true']:hover {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 70%, transparent),
+    0 20px 56px color-mix(in srgb, var(--tier, var(--giveaway-accent)) 42%, transparent);
+}
+
+.giveaway-motion-surface[data-tilt='true']:hover .giveaway-prize-skin-wrap {
+  animation: none;
+  transform: translateY(-8px) scale(1.05);
+}
+
+.giveaway-card-sheen {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  z-index: 2;
+}
+
+.giveaway-card-sheen::after {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    115deg,
+    transparent 42%,
+    rgb(255 255 255 / 0.18) 50%,
+    transparent 58%
+  );
+  transform: translate3d(-120%, -120%, 0);
+  opacity: 0;
+}
+
+.giveaway-motion-surface[data-tilt='true']:hover .giveaway-card-sheen::after {
+  animation: giveaway-sheen 720ms ease-out;
+}
+
+@keyframes giveaway-sheen {
+  0% {
+    opacity: 0;
+    transform: translate3d(-120%, -120%, 0);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(120%, 120%, 0);
+  }
+}
+
+.giveaway-prize-skin-wrap {
+  position: relative;
+  transform-origin: center;
+  transition: transform 300ms ease;
+}
+
+.giveaway-motion-surface[data-motion-active='true'] .giveaway-prize-skin-wrap--float {
+  animation: giveaway-skin-float 4s ease-in-out infinite;
+}
+
+@keyframes giveaway-skin-float {
+  0%,
+  100% {
+    transform: translateY(-6px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(6px) rotate(2deg);
+  }
+}
+
+.giveaway-countdown__seconds {
+  color: var(--tier, var(--giveaway-accent));
+}
+
+.giveaway-flip {
+  display: inline-grid;
+  justify-items: center;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.giveaway-flip__value {
+  grid-area: 1 / 1;
+}
+
+.giveaway-countdown--urgent .giveaway-countdown__urgent-value {
+  color: #f87171;
+}
+
+.light .giveaway-countdown--urgent .giveaway-countdown__urgent-value {
+  color: #b91c1c;
+}
+
+.giveaway-motion-surface[data-motion-active='true'] .giveaway-countdown--urgent .giveaway-countdown__urgent-value {
+  animation: giveaway-urgent-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes giveaway-urgent-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.82;
+    transform: scale(1.04);
+  }
+}
+
+.giveaway-progress {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.giveaway-progress [data-slot='progress-indicator'] {
+  transition: transform 800ms ease-out;
+}
+
+.giveaway-progress[data-motion-active='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.28), transparent);
+  transform: translateX(-100%);
+  animation: giveaway-progress-shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes giveaway-progress-shimmer {
+  0%,
+  35% {
+    transform: translateX(-100%);
+  }
+  65%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.giveaway-cta--tier {
+  background: var(--giveaway-cta-bg, var(--tier)) !important;
+  color: var(--giveaway-cta-fg, #111827) !important;
+  border-color: var(--giveaway-cta-bg, var(--tier)) !important;
+}
+
+.giveaway-starfield {
+  z-index: 0;
+}
+
+.giveaway-star {
+  position: absolute;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.85);
+  opacity: 0.45;
+  transform: translate3d(0, calc(var(--star-parallax, 0px) * var(--star-depth, 0.1)), 0);
+}
+
+.giveaway-starfield[data-motion-active='true'] .giveaway-star {
+  animation-name: giveaway-star-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes giveaway-star-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translate3d(0, calc(var(--star-parallax, 0px) * var(--star-depth, 0.1)), 0) scale(0.85);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translate3d(0, calc(var(--star-parallax, 0px) * var(--star-depth, 0.1)), 0) scale(1.15);
+  }
+}
+
+.giveaway-prestige__particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  margin-left: -2px;
+  margin-top: -2px;
+  border-radius: 999px;
+  background: #fbbf24;
+  box-shadow: 0 0 8px #fbbf24;
+  opacity: 0.55;
+}
+
+.giveaway-motion-surface[data-motion-active='true'] .giveaway-prestige__particle {
+  animation-name: giveaway-prestige-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes giveaway-prestige-drift {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translate3d(-4px, 6px, 0) scale(0.7);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translate3d(5px, -7px, 0) scale(1);
+  }
+}
+
+.giveaway-entry-burst {
+  z-index: 3;
+}
+
+.giveaway-entry-burst__label {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--tier, var(--giveaway-accent));
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.45);
+  white-space: nowrap;
+}
+
+.giveaway-entry-burst__star {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  margin-top: -3px;
+  border-radius: 1px;
+  background: var(--tier, var(--giveaway-accent));
+  box-shadow: 0 0 8px var(--tier, var(--giveaway-accent));
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.giveaway-motion-surface[data-motion-active='false'] .giveaway-prize-skin-wrap--float,
+.giveaway-motion-surface[data-motion-active='false'] .giveaway-prestige__particle,
+.giveaway-starfield[data-motion-active='false'] .giveaway-star,
+.giveaway-progress[data-motion-active='false']::after,
+.giveaway-motion-surface[data-motion-active='false'] .giveaway-countdown--urgent .giveaway-countdown__urgent-value {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giveaway-prize-skin-wrap--float,
+  .giveaway-prestige__particle,
+  .giveaway-star,
+  .giveaway-progress[data-motion-active='true']::after,
+  .giveaway-countdown--urgent .giveaway-countdown__urgent-value,
+  .giveaway-card-sheen::after {
+    animation: none !important;
+  }
+
+  .giveaway-motion-surface[data-tilt='true'] {
+    transform: none !important;
+  }
+
+  .giveaway-motion-surface[data-tilt='true']:hover .giveaway-prize-skin-wrap {
+    transform: none !important;
   }
 }

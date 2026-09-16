@@ -795,6 +795,8 @@ export const messages: Record<Locale, Messages> = {
         accessReserved: "Accès réservé",
         infoAria: "Plus d'informations",
         participateModalTitle: "Participer au giveaway",
+        entryBurstOne: "+{count} entrée",
+        entryBurstOther: "+{count} entrées",
       },
       notifications: {
         newWinner: "Nouveau gagnant !",
@@ -9109,6 +9111,8 @@ export const messages: Record<Locale, Messages> = {
         accessReserved: "Members only",
         infoAria: "More information",
         participateModalTitle: "Enter this giveaway",
+        entryBurstOne: "+{count} entry",
+        entryBurstOther: "+{count} entries",
       },
       notifications: {
         newWinner: "New winner!",
@@ -17418,6 +17422,8 @@ export const messages: Record<Locale, Messages> = {
         accessReserved: "仅限成员",
         infoAria: "更多信息",
         participateModalTitle: "参与抽奖",
+        entryBurstOne: "+{count} 次",
+        entryBurstOther: "+{count} 次",
       },
       notifications: {
         newWinner: "新获胜者！",

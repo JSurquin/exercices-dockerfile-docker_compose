@@ -24,6 +24,8 @@ import {
 import { GiveawayFaq } from '@/components/giveaway/giveaway-faq';
 import { GiveawayWalletBar } from '@/components/giveaway/giveaway-wallet-bar';
 import { GiveawayEmptyState } from '@/components/giveaway/giveaway-empty-state';
+import { GiveawayPageReveal } from '@/components/giveaway/giveaway-motion-surface';
+import { GiveawayStarfield } from '@/components/giveaway/giveaway-starfield';
 import {
   GiveawayCarouselSkeleton,
   GiveawayGridSkeleton,
@@ -294,12 +296,13 @@ export default function GiveawaysPage() {
   return (
     <>
       <GiveawayNotifications />
-      <div className="container mx-auto px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8 lg:px-8">
-        <div className="giveaway-page">
-          <header className="giveaway-page-header">
+      <div className="container relative mx-auto px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8 lg:px-8">
+        <GiveawayStarfield />
+        <div className="giveaway-page relative z-[1]">
+          <GiveawayPageReveal as="header" index={0} className="giveaway-page-header">
             <GiveawaysCompactHeader messages={messages} />
-          </header>
-          <aside className="giveaway-page-sidebar">
+          </GiveawayPageReveal>
+          <GiveawayPageReveal as="aside" index={1} fadeOnly className="giveaway-page-sidebar">
             <GiveawayLevelCard
               messages={messages}
               user={user}
@@ -321,11 +324,12 @@ export default function GiveawaysPage() {
               messages={messages}
               username={user.username}
             />
-          </aside>
+          </GiveawayPageReveal>
           <div className="giveaway-page-main">
           {loading ? (
             <GiveawayCarouselSkeleton label={messages.giveawaysPage.loadingGiveaways} />
           ) : (
+            <GiveawayPageReveal as="section" index={2}>
             <GiveawayRecurringCarousel
               giveaways={recurringGiveaways}
               messages={messages}
@@ -335,6 +339,7 @@ export default function GiveawaysPage() {
               activeIndex={carouselIndex}
               onActiveIndexChange={setCarouselIndex}
             />
+            </GiveawayPageReveal>
           )}
 
               {loading ? (
@@ -346,7 +351,7 @@ export default function GiveawaysPage() {
                   />
                 ) : null
               ) : (
-                <>
+                <GiveawayPageReveal as="section" index={3}>
                   {listedPrivate.length > 0 && (
                     <section className="mb-10">
                       <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold">
@@ -358,9 +363,9 @@ export default function GiveawaysPage() {
                           <motion.div
                             key={giveaway.id}
                             className="h-full"
-                            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+                            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: index * 0.05 }}
+                            transition={{ duration: 0.4, delay: index * 0.08 }}
                           >
                             <GiveawayCard
                               giveaway={giveaway}
@@ -386,9 +391,9 @@ export default function GiveawaysPage() {
                           <motion.div
                             key={giveaway.id}
                             className="h-full"
-                            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+                            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: index * 0.05 }}
+                            transition={{ duration: 0.4, delay: index * 0.08 }}
                           >
                             <GiveawayCard
                               giveaway={giveaway}
@@ -412,10 +417,14 @@ export default function GiveawaysPage() {
                       description={messages.giveaways.empty.noActiveDescription}
                     />
                   )}
-                </>
+                </GiveawayPageReveal>
               )}
-              <GiveawayPastWinners giveaways={giveaways} messages={messages} locale={locale} />
-              <GiveawayFaq messages={messages} />
+              <GiveawayPageReveal as="section" index={4}>
+                <GiveawayPastWinners giveaways={giveaways} messages={messages} locale={locale} />
+              </GiveawayPageReveal>
+              <GiveawayPageReveal as="section" index={5}>
+                <GiveawayFaq messages={messages} />
+              </GiveawayPageReveal>
           </div>
         </div>
       </div>
