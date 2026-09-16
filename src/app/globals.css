@@ -591,6 +591,23 @@ body.next-dev-overlay-present #sentry-feedback {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Giveaway palier tokens — dark tinted bg + light text (AA ≥ 4.5:1) */
+  --giveaway-tier-daily-bg: #082f44;
+  --giveaway-tier-daily-fg: #7dd3fc;
+  --giveaway-tier-daily-border: #38bdf8;
+  --giveaway-tier-weekly-bg: #0b2744;
+  --giveaway-tier-weekly-fg: #bfdbfe;
+  --giveaway-tier-weekly-border: #7eb8ff;
+  --giveaway-tier-monthly-bg: #1e1248;
+  --giveaway-tier-monthly-fg: #ddd6fe;
+  --giveaway-tier-monthly-border: #a78bfa;
+  --giveaway-tier-yearly-bg: #422006;
+  --giveaway-tier-yearly-fg: #fef3c7;
+  --giveaway-tier-yearly-border: #fbbf24;
+  --giveaway-tier-special-bg: #4c0519;
+  --giveaway-tier-special-fg: #fecdd3;
+  --giveaway-tier-special-border: #fb7185;
 }
 
 /* ─── Moonskin : chrome soft + accents froids ─── */
@@ -734,6 +751,23 @@ body.next-dev-overlay-present #sentry-feedback {
   --lunar-body: #4b4b60;
   --font-sans: var(--font-poppins), sans-serif;
   color-scheme: light;
+
+  /* Giveaway palier tokens — light bg + dark text (AA ≥ 4.5:1) */
+  --giveaway-tier-daily-bg: #e0f2fe;
+  --giveaway-tier-daily-fg: #0c4a6e;
+  --giveaway-tier-daily-border: #0284c7;
+  --giveaway-tier-weekly-bg: #dbeafe;
+  --giveaway-tier-weekly-fg: #1e3a8a;
+  --giveaway-tier-weekly-border: #3b82f6;
+  --giveaway-tier-monthly-bg: #ede9fe;
+  --giveaway-tier-monthly-fg: #4c1d95;
+  --giveaway-tier-monthly-border: #8b5cf6;
+  --giveaway-tier-yearly-bg: #fef3c7;
+  --giveaway-tier-yearly-fg: #78350f;
+  --giveaway-tier-yearly-border: #d97706;
+  --giveaway-tier-special-bg: #ffe4e6;
+  --giveaway-tier-special-fg: #9f1239;
+  --giveaway-tier-special-border: #e11d48;
 }
 
 /* Rétrocompat next-themes "dark" */
@@ -3537,6 +3571,140 @@ body.next-dev-overlay-present #sentry-feedback {
 
 .moonskin-tour-popover .driver-popover-close-btn:hover {
   color: #fff !important;
+}
+
+.giveaway-tier-badge {
+  --giveaway-tier-bg: var(--giveaway-tier-daily-bg);
+  --giveaway-tier-fg: var(--giveaway-tier-daily-fg);
+  --giveaway-tier-border: var(--giveaway-tier-daily-border);
+  background: var(--giveaway-tier-bg);
+  color: var(--giveaway-tier-fg);
+  border-color: var(--giveaway-tier-border);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--giveaway-tier-border) 32%, transparent);
+}
+
+.giveaway-tier-badge[data-tier='daily'] {
+  --giveaway-tier-bg: var(--giveaway-tier-daily-bg);
+  --giveaway-tier-fg: var(--giveaway-tier-daily-fg);
+  --giveaway-tier-border: var(--giveaway-tier-daily-border);
+}
+
+.giveaway-tier-badge[data-tier='weekly'] {
+  --giveaway-tier-bg: var(--giveaway-tier-weekly-bg);
+  --giveaway-tier-fg: var(--giveaway-tier-weekly-fg);
+  --giveaway-tier-border: var(--giveaway-tier-weekly-border);
+}
+
+.giveaway-tier-badge[data-tier='monthly'] {
+  --giveaway-tier-bg: var(--giveaway-tier-monthly-bg);
+  --giveaway-tier-fg: var(--giveaway-tier-monthly-fg);
+  --giveaway-tier-border: var(--giveaway-tier-monthly-border);
+}
+
+.giveaway-tier-badge[data-tier='yearly'] {
+  --giveaway-tier-bg: var(--giveaway-tier-yearly-bg);
+  --giveaway-tier-fg: var(--giveaway-tier-yearly-fg);
+  --giveaway-tier-border: var(--giveaway-tier-yearly-border);
+}
+
+.giveaway-tier-badge[data-tier='special'] {
+  --giveaway-tier-bg: var(--giveaway-tier-special-bg);
+  --giveaway-tier-fg: var(--giveaway-tier-special-fg);
+  --giveaway-tier-border: var(--giveaway-tier-special-border);
+}
+
+.giveaway-board {
+  display: grid;
+  grid-template-areas:
+    'earn'
+    'main'
+    'mine'
+    'wins'
+    'history';
+  gap: 2.5rem 2rem;
+}
+
+.giveaway-board-aside {
+  display: contents;
+}
+
+.giveaway-earn-panel {
+  grid-area: earn;
+}
+
+.giveaway-board-main {
+  grid-area: main;
+  min-width: 0;
+}
+
+.giveaway-board-history {
+  grid-area: history;
+  min-width: 0;
+}
+
+.giveaway-mine-panel {
+  grid-area: mine;
+}
+
+.giveaway-wins-panel {
+  grid-area: wins;
+}
+
+.giveaway-earn-list {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.giveaway-earn-list > li {
+  min-width: 16.5rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1200px) {
+  .giveaway-board {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-areas:
+      'main aside'
+      'history aside';
+    align-items: start;
+  }
+
+  .giveaway-board-aside {
+    display: block;
+    grid-area: aside;
+    position: sticky;
+    top: calc(4rem + 1.5rem);
+    z-index: 0;
+  }
+
+  .giveaway-earn-panel,
+  .giveaway-mine-panel,
+  .giveaway-wins-panel {
+    grid-area: auto;
+  }
+
+  .giveaway-earn-list {
+    display: block;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .giveaway-earn-list > li {
+    min-width: 0;
+  }
+
+  .giveaway-earn-list > li + li {
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  body:has([data-giveaway-wallet]) .lunar-footer {
+    padding-bottom: 5.5rem;
+  }
 }
 
 .giveaway-card-surface {

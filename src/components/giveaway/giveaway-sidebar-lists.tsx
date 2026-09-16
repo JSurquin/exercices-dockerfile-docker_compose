@@ -39,7 +39,7 @@ export function GiveawayMyParticipations({
   );
 
   return (
-    <section className="mt-4 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md">
+    <section className="giveaway-mine-panel mt-4 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md">
       <h2 className="mb-3 font-display text-lg font-semibold">{messages.giveaways.myEntries.title}</h2>
       {rows.length === 0 ? (
         <p className="text-sm text-foreground/70">{messages.giveaways.myEntries.empty}</p>
@@ -110,7 +110,7 @@ export function GiveawayMyWinnings({
   );
 
   return (
-    <section className="mt-4 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md">
+    <section className="giveaway-wins-panel mt-4 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md">
       <h2 className="mb-3 font-display text-lg font-semibold">{messages.giveaways.myWinnings.title}</h2>
       {rows.length === 0 ? (
         <p className="text-sm text-foreground/70">{messages.giveaways.myWinnings.empty}</p>

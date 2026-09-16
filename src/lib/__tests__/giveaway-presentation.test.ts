@@ -15,6 +15,7 @@ import {
   getPrizeHaloColor,
   getPrizeValueCents,
   getTimeRemaining,
+  hexContrastRatio,
   nextUtcMidnightMs,
   parsePrizeDisplay,
   selectFeaturedGiveaway,
@@ -22,7 +23,10 @@ import {
   sortGiveawaysByTierThenEnd,
   viewerIsWinner,
   visibleLeaderboardRows,
+  GIVEAWAY_TIER_TOKENS_DARK,
+  GIVEAWAY_TIER_TOKENS_LIGHT,
   type GiveawayPresentationInput,
+  type GiveawayTier,
 } from '@/lib/giveaway-presentation';
 
 function giveaway(
@@ -249,7 +253,7 @@ describe('formatChancePercent / visibleLeaderboardRows / getGiveawayKicker', () 
     expect(formatChancePercent(66.67, 'fr')).toBe('66,67 %');
   });
 
-  it('keeps the top 5 and appends the viewer when they are outside', () => {
+  it('keeps at most 5 rows and still includes the viewer', () => {
     const rows = Array.from({ length: 6 }, (_, index) => ({
       username: `p${index + 1}`,
       avatar: null,
@@ -257,8 +261,19 @@ describe('formatChancePercent / visibleLeaderboardRows / getGiveawayKicker', () 
       isYou: index === 5,
     }));
     const visible = visibleLeaderboardRows(rows, 5);
-    expect(visible.map((row) => row.username)).toEqual(['p1', 'p2', 'p3', 'p4', 'p5', 'p6']);
+    expect(visible).toHaveLength(5);
+    expect(visible.map((row) => row.username)).toEqual(['p1', 'p2', 'p3', 'p4', 'p6']);
     expect(visible.at(-1)?.isYou).toBe(true);
+  });
+
+  it('shows as many rows as the participant counter, up to 5', () => {
+    const rows = Array.from({ length: 8 }, (_, index) => ({
+      username: `p${index + 1}`,
+      avatar: null,
+      entries: 8 - index,
+    }));
+    expect(visibleLeaderboardRows(rows, 5, 3)).toHaveLength(3);
+    expect(visibleLeaderboardRows(rows, 5, 10)).toHaveLength(5);
   });
 
   it('does not duplicate the viewer when they are already in the top 5', () => {
@@ -442,5 +457,18 @@ describe('collectPastWinnerGroups / formatCommunityName / card action', () => {
     expect(nextUtcMidnightMs(Date.parse('2026-09-16T15:00:00.000Z'))).toBe(
       Date.parse('2026-09-17T00:00:00.000Z')
     );
+  });
+});
+
+describe('giveaway palier tokens contrast', () => {
+  const tiers: GiveawayTier[] = ['daily', 'weekly', 'monthly', 'yearly', 'special'];
+
+  it('meets WCAG AA (4.5:1) in dark and light palettes', () => {
+    for (const tier of tiers) {
+      const dark = GIVEAWAY_TIER_TOKENS_DARK[tier];
+      const light = GIVEAWAY_TIER_TOKENS_LIGHT[tier];
+      expect(hexContrastRatio(dark.fg, dark.bg)).toBeGreaterThanOrEqual(4.5);
+      expect(hexContrastRatio(light.fg, light.bg)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });

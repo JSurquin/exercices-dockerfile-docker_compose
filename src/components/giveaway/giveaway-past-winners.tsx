@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { GiveawayTierBadge } from '@/components/giveaway/giveaway-tier-badge';
 import {
   Select,
   SelectContent,
@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils';
 import type { Messages } from '~/utils/types';
 
 const PAGE_SIZE = 10;
-const PAST_FILTERS: GiveawayTierFilter[] = ['all', 'daily', 'weekly', 'monthly', 'yearly'];
+const PAST_FILTERS: GiveawayTierFilter[] = ['all', 'daily', 'weekly', 'monthly', 'yearly', 'special'];
 
 function filterLabel(filter: GiveawayTierFilter, messages: Messages): string {
   const layout = messages.giveaways.layout;
@@ -70,7 +70,7 @@ export function GiveawayPastWinners({
   const shown = filtered.slice(0, visible);
 
   return (
-    <section id="past-winners" className="mt-12 scroll-mt-24">
+    <section id="past-winners" className="scroll-mt-24">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-lg font-semibold">{pw.title}</h2>
         <Select
@@ -188,9 +188,9 @@ export function GiveawayPastWinners({
                       />
                       <span className="truncate text-sm">{prizeLabel(group)}</span>
                     </div>
-                    <Badge className="mission-glass-badge w-fit font-normal text-foreground">
+                    <GiveawayTierBadge tier={group.tier} className="w-fit">
                       {getGiveawayTierLabel(group.tier, labels)}
-                    </Badge>
+                    </GiveawayTierBadge>
                     <span className="text-sm tabular-nums sm:text-right">
                       {valueCents != null ? <ConvertedAmount cents={valueCents} className="h-4" /> : '—'}
                     </span>

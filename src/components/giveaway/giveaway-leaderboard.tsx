@@ -52,15 +52,19 @@ export function GiveawayLeaderboard({
   rows,
   messages,
   compact = false,
+  participantCount,
 }: {
   rows: GiveawayLeaderboardRow[];
   messages: Messages;
   compact?: boolean;
+  participantCount?: number;
 }) {
   const layout = messages.giveaways.layout;
   const [open, setOpen] = useState(false);
-  const preview = visibleLeaderboardRows(rows, 5);
-  const sortedAll = visibleLeaderboardRows(rows, rows.length);
+  const visibleLimit = Math.min(5, participantCount ?? rows.length);
+  const preview = visibleLeaderboardRows(rows, 5, visibleLimit);
+  const sortedAll = visibleLeaderboardRows(rows, rows.length, rows.length);
+  const showSeeAll = rows.length > preview.length;
 
   if (rows.length === 0) {
     return (
@@ -75,7 +79,7 @@ export function GiveawayLeaderboard({
     <div>
       <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-foreground">{layout.leaderboardTitle}</p>
-        {rows.length > 0 && (
+        {showSeeAll && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <button

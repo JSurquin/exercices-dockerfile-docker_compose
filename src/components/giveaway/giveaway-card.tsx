@@ -12,6 +12,7 @@ import {
   GiveawayPrizeDetails,
   GiveawayPrizeVisual,
 } from '@/components/giveaway/giveaway-prize-visual';
+import { GiveawayTierBadge } from '@/components/giveaway/giveaway-tier-badge';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import {
   formatChancePercent,
@@ -108,12 +109,7 @@ export function GiveawayCard({
         <CardContent className="flex h-full flex-col gap-2.5 p-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-1.5">
-              <Badge
-                className="mission-glass-badge shrink-0 font-normal text-foreground"
-                style={{ borderColor: `${accent}88` }}
-              >
-                {getGiveawayTierLabel(tier, labels)}
-              </Badge>
+              <GiveawayTierBadge tier={tier}>{getGiveawayTierLabel(tier, labels)}</GiveawayTierBadge>
               {giveaway.isPrivate && (
                 <Badge className="flex max-w-[9.5rem] items-center gap-1 truncate border border-purple-500/40 bg-purple-500/20 text-xs font-normal text-foreground">
                   <LockClosedIcon className="h-3 w-3 shrink-0" aria-hidden />

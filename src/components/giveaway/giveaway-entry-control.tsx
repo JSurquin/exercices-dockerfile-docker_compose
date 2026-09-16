@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
-import { getGiveawayEntryLimits } from '@/lib/giveaway-presentation';
+import { getGiveawayCardAction, getGiveawayEntryLimits } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
-import { ArrowPathIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, LockClosedIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
 
 function scrollToEarnFragments() {
@@ -29,6 +29,7 @@ export function GiveawayEntryControl({
   const [entriesToBuy, setEntriesToBuy] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const card = messages.giveaways.card;
+  const action = getGiveawayCardAction(giveaway, userFragments);
   const limits = getGiveawayEntryLimits(giveaway, userFragments);
   const maxSelectable = limits.maxSelectable;
   const maxReached = limits.maxReached;
@@ -43,6 +44,15 @@ export function GiveawayEntryControl({
       return Math.min(Math.max(1, current), upper);
     });
   }, [maxReached, maxSelectable]);
+
+  if (action.type === 'reserved') {
+    return (
+      <Button type="button" variant="secondary" className="w-full opacity-100" disabled>
+        <LockClosedIcon className="h-4 w-4" aria-hidden />
+        {card.accessReserved}
+      </Button>
+    );
+  }
 
   const setQuantity = (value: number) => {
     const upper = Math.max(1, maxSelectable || 1);

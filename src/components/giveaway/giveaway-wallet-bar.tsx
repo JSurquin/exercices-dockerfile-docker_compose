@@ -17,6 +17,7 @@ export function GiveawayWalletBar({
 
   return (
     <div
+      data-giveaway-wallet
       className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-background/95 px-4 pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.28)] backdrop-blur-md md:hidden"
       style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       role="region"

@@ -7,6 +7,7 @@ import { GiveawayCountdown, useLiveNow } from '@/components/giveaway/giveaway-co
 import { GiveawayEntryControl } from '@/components/giveaway/giveaway-entry-control';
 import { GiveawayLeaderboard } from '@/components/giveaway/giveaway-leaderboard';
 import { GiveawayPrizeVisual } from '@/components/giveaway/giveaway-prize-visual';
+import { GiveawayTierBadge } from '@/components/giveaway/giveaway-tier-badge';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import {
   formatChancePercent,
@@ -66,20 +67,15 @@ export function GiveawayHero({
   return (
     <Card
       data-giveaway={giveaway.id}
-      className="giveaway-card-surface mb-6 overflow-hidden border-white/10 bg-card/80 py-0 backdrop-blur-md lg:mb-8 lg:max-h-[560px]"
+      className="giveaway-card-surface mb-6 overflow-hidden border-white/10 bg-card/80 py-0 backdrop-blur-md lg:mb-8"
       style={{ '--giveaway-accent': accent } as CSSProperties}
     >
-      <CardContent className="p-4 sm:p-5 lg:max-h-[560px] lg:overflow-y-auto">
+      <CardContent className="p-4 sm:p-5">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <Badge className="mission-glass-badge font-normal text-foreground">{layout.featured}</Badge>
-          <Badge
-            className="mission-glass-badge font-normal text-foreground"
-            style={{ borderColor: `${accent}88` }}
-          >
-            {getGiveawayTierLabel(tier, labels)}
-          </Badge>
+          <GiveawayTierBadge tier={tier}>{getGiveawayTierLabel(tier, labels)}</GiveawayTierBadge>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 md:items-start lg:gap-5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:items-start lg:gap-5">
           <GiveawayPrizeVisual giveaway={giveaway} size="hero" />
 
           <div className="flex min-h-0 flex-col gap-3">
@@ -138,7 +134,12 @@ export function GiveawayHero({
               />
             )}
 
-            <GiveawayLeaderboard rows={leaderboard} messages={messages} compact />
+            <GiveawayLeaderboard
+              rows={leaderboard}
+              messages={messages}
+              compact
+              participantCount={Math.max(totalParticipants, leaderboard.length)}
+            />
           </div>
         </div>
       </CardContent>

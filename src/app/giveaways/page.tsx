@@ -46,7 +46,7 @@ import {
 } from '@/lib/giveaway-presentation';
 
 const giveawayGridClass =
-  'grid [grid-template-columns:repeat(auto-fill,minmax(260px,1fr))] items-stretch gap-5';
+  'grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 min-[1200px]:[grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))]';
 
 export default function GiveawaysPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
@@ -291,8 +291,29 @@ export default function GiveawaysPage() {
             )}
           </div>
 
-          <div className="min-[1200px]:grid min-[1200px]:grid-cols-[minmax(0,1fr)_360px] min-[1200px]:items-start min-[1200px]:gap-8">
-            <div className="min-w-0">
+          <div className="giveaway-board">
+            <aside className="giveaway-board-aside">
+              <GiveawayEarnFragments
+                messages={messages}
+                onClaimed={(earned) => {
+                  setUserFragments((prev) => prev + earned);
+                  void refreshUser();
+                }}
+              />
+              <GiveawayMyParticipations
+                giveaways={activeGiveaways}
+                messages={messages}
+                locale={locale}
+                now={now}
+                onSelect={selectGiveaway}
+              />
+              <GiveawayMyWinnings
+                giveaways={giveaways}
+                messages={messages}
+                username={user.username}
+              />
+            </aside>
+            <div className="giveaway-board-main">
               <div
                 data-tour="giveaways-tabs"
                 className="mb-6 flex flex-wrap items-center justify-between gap-3"
@@ -386,31 +407,11 @@ export default function GiveawaysPage() {
                   )}
                 </>
               )}
-
+            </div>
+            <div className="giveaway-board-history">
               <GiveawayPastWinners giveaways={giveaways} messages={messages} locale={locale} />
               <GiveawayFaq messages={messages} />
             </div>
-            <aside className="mt-10 min-[1200px]:sticky min-[1200px]:top-[calc(4rem+1.5rem)] min-[1200px]:mt-0">
-              <GiveawayEarnFragments
-                messages={messages}
-                onClaimed={(earned) => {
-                  setUserFragments((prev) => prev + earned);
-                  void refreshUser();
-                }}
-              />
-              <GiveawayMyParticipations
-                giveaways={activeGiveaways}
-                messages={messages}
-                locale={locale}
-                now={now}
-                onSelect={selectGiveaway}
-              />
-              <GiveawayMyWinnings
-                giveaways={giveaways}
-                messages={messages}
-                username={user.username}
-              />
-            </aside>
           </div>
         </div>
       </div>

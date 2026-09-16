@@ -10,13 +10,71 @@ export type GiveawaySort = 'endingSoon' | 'highestValue' | 'lowestCost';
 export type GiveawayTier = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'special';
 export type GiveawayTierFilter = 'all' | GiveawayTier;
 
-export const GIVEAWAY_TIER_ACCENTS: Record<GiveawayTier, string> = {
-  daily: '#38bdf8',
-  weekly: '#7eb8ff',
-  monthly: '#a78bfa',
-  yearly: '#fbbf24',
-  special: '#fb7185',
+export interface GiveawayTierTokens {
+  bg: string;
+  fg: string;
+  border: string;
+}
+
+/** Thème sombre : fond teinté + texte clair (contraste AA ≥ 4.5:1). */
+export const GIVEAWAY_TIER_TOKENS_DARK: Record<GiveawayTier, GiveawayTierTokens> = {
+  daily: { bg: '#082f44', fg: '#7dd3fc', border: '#38bdf8' },
+  weekly: { bg: '#0b2744', fg: '#bfdbfe', border: '#7eb8ff' },
+  monthly: { bg: '#1e1248', fg: '#ddd6fe', border: '#a78bfa' },
+  yearly: { bg: '#422006', fg: '#fef3c7', border: '#fbbf24' },
+  special: { bg: '#4c0519', fg: '#fecdd3', border: '#fb7185' },
 };
+
+/** Thème clair : fond clair + texte foncé (contraste AA ≥ 4.5:1). */
+export const GIVEAWAY_TIER_TOKENS_LIGHT: Record<GiveawayTier, GiveawayTierTokens> = {
+  daily: { bg: '#e0f2fe', fg: '#0c4a6e', border: '#0284c7' },
+  weekly: { bg: '#dbeafe', fg: '#1e3a8a', border: '#3b82f6' },
+  monthly: { bg: '#ede9fe', fg: '#4c1d95', border: '#8b5cf6' },
+  yearly: { bg: '#fef3c7', fg: '#78350f', border: '#d97706' },
+  special: { bg: '#ffe4e6', fg: '#9f1239', border: '#e11d48' },
+};
+
+export const GIVEAWAY_TIER_TOKENS = GIVEAWAY_TIER_TOKENS_DARK;
+
+export const GIVEAWAY_TIER_ACCENTS: Record<GiveawayTier, string> = {
+  daily: GIVEAWAY_TIER_TOKENS.daily.border,
+  weekly: GIVEAWAY_TIER_TOKENS.weekly.border,
+  monthly: GIVEAWAY_TIER_TOKENS.monthly.border,
+  yearly: GIVEAWAY_TIER_TOKENS.yearly.border,
+  special: GIVEAWAY_TIER_TOKENS.special.border,
+};
+
+function srgbChannelToLinear(channel: number): number {
+  const value = channel / 255;
+  return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+}
+
+export function hexRelativeLuminance(hex: string): number {
+  const raw = hex.replace('#', '');
+  const normalized =
+    raw.length === 3
+      ? raw
+          .split('')
+          .map((char) => `${char}${char}`)
+          .join('')
+      : raw;
+  const r = Number.parseInt(normalized.slice(0, 2), 16);
+  const g = Number.parseInt(normalized.slice(2, 4), 16);
+  const b = Number.parseInt(normalized.slice(4, 6), 16);
+  return (
+    0.2126 * srgbChannelToLinear(r) +
+    0.7152 * srgbChannelToLinear(g) +
+    0.0722 * srgbChannelToLinear(b)
+  );
+}
+
+export function hexContrastRatio(foreground: string, background: string): number {
+  const first = hexRelativeLuminance(foreground);
+  const second = hexRelativeLuminance(background);
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
 
 export interface GiveawayLeaderboardRow {
   username: string | null;
@@ -144,22 +202,31 @@ export function formatChancePercent(value: number, locale: string): string {
 
 export function visibleLeaderboardRows(
   rows: GiveawayLeaderboardRow[],
-  topN = 5
+  topN = 5,
+  participantCount?: number
 ): GiveawayLeaderboardRow[] {
+  const cap = Math.max(
+    0,
+    Math.min(topN, participantCount ?? topN, rows.length)
+  );
   const sorted = [...rows].sort((a, b) => {
     if (b.entries !== a.entries) return b.entries - a.entries;
     return (a.username ?? '').localeCompare(b.username ?? '');
   });
-  const top = sorted.slice(0, topN);
+  const top = sorted.slice(0, cap);
   const you = sorted.find((row) => row.isYou);
-  if (you && !top.some((row) => row.isYou)) {
-    return [...top, you];
+  if (you && !top.some((row) => row.isYou) && cap > 0) {
+    return [...top.slice(0, cap - 1), you];
   }
   return top;
 }
 
 export function getGiveawayTierAccent(tier: GiveawayTier): string {
-  return GIVEAWAY_TIER_ACCENTS[tier];
+  return GIVEAWAY_TIER_TOKENS[tier].border;
+}
+
+export function getGiveawayTierTokens(tier: GiveawayTier): GiveawayTierTokens {
+  return GIVEAWAY_TIER_TOKENS[tier];
 }
 
 export interface PrizeDisplay {

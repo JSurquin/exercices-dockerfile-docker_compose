@@ -74,10 +74,10 @@ export function GiveawayEarnFragments({
   return (
     <section
       id="earn-fragments"
-      className="scroll-mt-24 scroll-mb-24 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md"
+      className="giveaway-earn-panel scroll-mt-24 scroll-mb-24 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md"
     >
       <h2 className="mb-3 font-display text-lg font-semibold">{earn.title}</h2>
-      <ul className="space-y-2">
+      <ul className="giveaway-earn-list">
         <li className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/5 px-3 py-2.5">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-theme-accent/15 text-theme-accent">
             <ShoppingBagIcon className="h-5 w-5" aria-hidden />
