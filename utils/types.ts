@@ -3997,6 +3997,7 @@ export interface Messages {
       missingFragmentsCta: string;
       maxButton: string;
       fragmentsUntilNext: string;
+      missingFragmentsBalance: string;
       decreaseEntries: string;
       increaseEntries: string;
       accessReserved: string;
@@ -4095,6 +4096,12 @@ export interface Messages {
       carouselGoTo: string;
       carouselPrevious: string;
       carouselNext: string;
+      descDaily: string;
+      descWeekly: string;
+      descMonthly: string;
+      descYearly: string;
+      descSpecial: string;
+      descPartner: string;
     };
     earn: {
       title: string;

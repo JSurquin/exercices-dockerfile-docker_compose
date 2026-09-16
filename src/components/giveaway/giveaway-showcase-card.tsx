@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { ConvertedAmount } from '@/components/ui/converted-amount';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import { GiveawayCompactTime, GiveawayCountdown, useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
+import { GiveawayEurAmount } from '@/components/giveaway/giveaway-eur-amount';
 import { GiveawayParticipateDialog } from '@/components/giveaway/giveaway-participate-dialog';
 import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayPrizeVisual } from '@/components/giveaway/giveaway-prize-visual';
@@ -21,6 +21,7 @@ import {
   getPrizeValueCents,
   getTimeRemaining,
   giveawayTierLabels,
+  localizedGiveawayBlurb,
   parsePrizeDisplay,
 } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
@@ -65,7 +66,7 @@ export function GiveawayShowcaseCard({
   const totalParticipants = giveaway.totalParticipants ?? 0;
   const totalEntries = giveaway.totalEntries ?? giveaway.soldTickets;
   const myChance = giveaway.myChancePercent ?? (totalEntries > 0 ? (100 * myEntries) / totalEntries : 0);
-  const description = giveaway.description?.trim() ?? '';
+  const description = localizedGiveawayBlurb(giveaway, layout);
 
   const handleParticipate = async (target: GiveawayWithEntries, entries: number) => {
     setSubmitting(true);
@@ -95,7 +96,7 @@ export function GiveawayShowcaseCard({
 
   const nameBlock = parsed.hasStructuredName ? (
     <>
-      {featured ? <p className="text-[11px] text-foreground/70">{parsed.weapon}</p> : null}
+      {featured ? <p className="text-xs text-foreground/80">{parsed.weapon}</p> : null}
       <p
         className={cn('font-display font-semibold leading-tight', featured ? 'text-lg' : 'text-sm')}
         style={{ color: accent }}
@@ -103,7 +104,7 @@ export function GiveawayShowcaseCard({
         {parsed.finish}
       </p>
       {parsed.exterior ? (
-        <p className={cn('mt-0.5 text-foreground/70', featured ? 'text-xs' : 'text-[11px]')}>{parsed.exterior}</p>
+        <p className={cn('mt-0.5 text-foreground/80', featured ? 'text-xs' : 'text-xs')}>{parsed.exterior}</p>
       ) : null}
     </>
   ) : (
@@ -117,16 +118,16 @@ export function GiveawayShowcaseCard({
       <p
         className={cn(
           'mt-1 font-display font-semibold tabular-nums text-foreground',
-          featured ? 'text-2xl' : 'text-xl'
+          featured ? 'text-[28px] leading-none' : 'text-base'
         )}
       >
-        <ConvertedAmount cents={valueCents} split />
+        <GiveawayEurAmount cents={valueCents} locale={locale} />
       </p>
     ) : null;
 
   const header = (
-    <div className="flex items-start justify-between gap-2">
-      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+    <div className="flex items-start justify-between gap-2 overflow-visible">
+      <div className="flex min-w-0 flex-wrap items-center gap-1.5 overflow-visible">
         <GiveawayTierBadge tier={tier}>{getGiveawayTierLabel(tier, labels)}</GiveawayTierBadge>
         <GiveawayPartnerBadge giveaway={giveaway} messages={messages} />
       </div>
@@ -134,91 +135,97 @@ export function GiveawayShowcaseCard({
     </div>
   );
 
+  const body = (
+    <>
+      {header}
+
+      <GiveawayPrizeVisual giveaway={giveaway} size="card" showDetails={false} grayscale={isEnded} />
+      <div className="text-center">
+        {nameBlock}
+        {valueBlock}
+      </div>
+
+      {featured ? (
+        <GiveawayCountdown
+          endDate={endDate}
+          now={now ?? liveNow}
+          compact
+          className="mt-2 justify-center"
+          labels={{
+            days: layout.countdownDays,
+            hours: layout.countdownHours,
+            minutes: layout.countdownMinutes,
+            seconds: layout.countdownSeconds,
+          }}
+        />
+      ) : null}
+
+      {description ? (
+        <p className="mt-2 line-clamp-2 text-center text-xs leading-snug text-foreground/75">{description}</p>
+      ) : null}
+
+      <div className="mt-2">
+        <GiveawayStatBoxes
+          participants={totalParticipants}
+          totalEntries={totalEntries}
+          myEntries={myEntries}
+          chance={formatChancePercent(myChance, locale)}
+          compact={!featured}
+          featured={featured}
+          labels={{
+            participants: fg.participants,
+            totalEntries: fg.totalEntries,
+            yourEntries: fg.yourEntries,
+            yourChance: fg.yourChance,
+          }}
+        />
+      </div>
+
+      <div className="mt-2 flex items-center justify-center gap-2 text-xs text-foreground/80">
+        <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
+        <span>{fg.costPerEntry}</span>
+      </div>
+
+      <div className="mt-auto flex justify-center pt-5">
+        {isEnded ? (
+          <span className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-foreground/70">
+            {card.status.ended}
+          </span>
+        ) : (
+          <GiveawayCtaButton
+            action={action}
+            submitting={submitting}
+            messages={messages}
+            ticketPrice={giveaway.ticketPrice}
+            userFragments={userFragments}
+            interactive={featured}
+            onParticipate={featured ? () => setModalOpen(true) : undefined}
+          />
+        )}
+      </div>
+    </>
+  );
+
   return (
     <>
       {featured ? (
         <article
           data-giveaway={giveaway.id}
-          className="giveaway-card-surface giveaway-showcase-card giveaway-showcase-card--featured flex w-full flex-col rounded-2xl border border-white/10 bg-card/85 p-3 backdrop-blur-md"
+          className="giveaway-card-surface giveaway-showcase-card giveaway-showcase-card--featured flex h-full w-full flex-col overflow-visible rounded-2xl border border-white/10 bg-card/85 p-5 backdrop-blur-md"
           style={{ '--giveaway-accent': accent } as CSSProperties}
         >
-          {header}
-
-          <GiveawayPrizeVisual giveaway={giveaway} size="card" showDetails={false} grayscale={isEnded} />
-          <div className="text-center">
-            {nameBlock}
-            {valueBlock}
-          </div>
-
-          <GiveawayCountdown
-            endDate={endDate}
-            now={now ?? liveNow}
-            compact
-            className="mt-2 justify-center"
-            labels={{
-              days: layout.countdownDays,
-              hours: layout.countdownHours,
-              minutes: layout.countdownMinutes,
-              seconds: layout.countdownSeconds,
-            }}
-          />
-
-          {description ? (
-            <p className="mt-2 line-clamp-2 text-center text-xs leading-snug text-foreground/75">{description}</p>
-          ) : null}
-
-          <div className="mt-2">
-            <GiveawayStatBoxes
-              participants={totalParticipants}
-              totalEntries={totalEntries}
-              myEntries={myEntries}
-              chance={formatChancePercent(myChance, locale)}
-              labels={{
-                participants: fg.participants,
-                totalEntries: fg.totalEntries,
-                yourEntries: fg.yourEntries,
-                yourChance: fg.yourChance,
-              }}
-            />
-          </div>
-
-          <div className="mt-2 flex items-center justify-center gap-2 text-xs text-foreground/70">
-            <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
-            <span>{fg.costPerEntry}</span>
-          </div>
-
-          <div className="mt-2 flex justify-end">
-            {isEnded ? (
-              <span className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-foreground/70">
-                {card.status.ended}
-              </span>
-            ) : (
-              <GiveawayCtaButton
-                action={action}
-                submitting={submitting}
-                messages={messages}
-                ticketPrice={giveaway.ticketPrice}
-                compact
-                onParticipate={() => setModalOpen(true)}
-              />
-            )}
-          </div>
+          {body}
         </article>
       ) : (
         <button
           type="button"
           data-giveaway={giveaway.id}
-          className="giveaway-card-surface giveaway-showcase-card flex w-full flex-col rounded-2xl border border-white/10 bg-card/85 p-3 text-left backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="giveaway-card-surface giveaway-showcase-card flex h-full w-full flex-col overflow-visible rounded-2xl border border-white/10 bg-card/85 p-5 text-left backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           style={{ '--giveaway-accent': accent } as CSSProperties}
           onClick={onActivate}
           aria-label={layout.selectGiveaway}
         >
-          {header}
-          <GiveawayPrizeVisual giveaway={giveaway} size="card" showDetails={false} grayscale={isEnded} />
-          <div className="text-center">
-            {nameBlock}
-            {valueBlock}
-          </div>
+          {body}
         </button>
       )}
 

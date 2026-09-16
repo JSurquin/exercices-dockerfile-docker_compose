@@ -1,7 +1,8 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { ConvertedAmount } from '@/components/ui/converted-amount';
+import { GiveawayEurAmount } from '@/components/giveaway/giveaway-eur-amount';
+import { useLocale } from '@/components/providers/locale-provider';
 import { SafeImage } from '@/components/ui/safe-image';
 import { TrophyIcon } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
@@ -79,6 +80,7 @@ export function GiveawayPrizeDetails({
   size?: 'card' | 'hero';
   layout?: 'stacked' | 'inline';
 }) {
+  const { locale } = useLocale();
   const parsed = parsePrizeDisplay(giveaway.prize, giveaway.steamMarketHashName);
   const halo = getPrizeHaloColor(giveaway.prize, giveaway.steamMarketHashName);
   const valueCents = getPrizeValueCents(giveaway);
@@ -134,7 +136,11 @@ export function GiveawayPrizeDetails({
               : 'mt-2 px-2.5 py-1 text-sm'
         )}
       >
-        <ConvertedAmount cents={valueCents} className={layout === 'inline' ? 'h-3.5' : isHero ? 'h-5' : 'h-4'} />
+        <GiveawayEurAmount
+          cents={valueCents}
+          locale={locale}
+          className={layout === 'inline' ? 'text-[11px]' : isHero ? 'text-base' : 'text-sm'}
+        />
       </Badge>
     ) : null;
 

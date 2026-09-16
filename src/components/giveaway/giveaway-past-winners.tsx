@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ConvertedAmount } from '@/components/ui/converted-amount';
+import { GiveawayEurAmount } from '@/components/giveaway/giveaway-eur-amount';
 import { GiveawayUserAvatar } from '@/components/giveaway/giveaway-user-avatar';
 import { SafeImage } from '@/components/ui/safe-image';
 import {
@@ -96,8 +96,8 @@ export function GiveawayPastWinners({
       {shown.length === 0 ? (
         <p className="text-sm text-muted-foreground">{pw.empty}</p>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-card/70">
-          <div className="hidden grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_auto_auto_auto] gap-3 px-4 py-2 text-[11px] uppercase tracking-wide text-foreground/55 sm:grid">
+        <div className="w-full overflow-hidden rounded-2xl border border-white/10 bg-card/70">
+          <div className="hidden w-full grid-cols-[minmax(0,1.2fr)_minmax(0,1.6fr)_minmax(5.5rem,auto)_minmax(6.5rem,auto)_minmax(6.5rem,auto)] gap-3 px-4 py-2 text-[11px] uppercase tracking-wide text-foreground/55 sm:grid">
             <span>{pw.player}</span>
             <span>{pw.prizeCol}</span>
             <span>{pw.tier}</span>
@@ -114,7 +114,7 @@ export function GiveawayPastWinners({
                 <li key={group.key}>
                   <div
                     className={cn(
-                      'grid grid-cols-1 items-center gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1.6fr)_auto_auto_auto]',
+                      'grid min-h-14 w-full grid-cols-1 items-center gap-3 px-4 py-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.6fr)_minmax(5.5rem,auto)_minmax(6.5rem,auto)_minmax(6.5rem,auto)]',
                       isGroup && 'cursor-pointer'
                     )}
                     onClick={
@@ -200,10 +200,10 @@ export function GiveawayPastWinners({
                     <GiveawayTierBadge tier={group.tier} className="w-fit">
                       {getGiveawayTierLabel(group.tier, labels)}
                     </GiveawayTierBadge>
-                    <span className="text-sm tabular-nums sm:text-right">
-                      {valueCents != null ? <ConvertedAmount cents={valueCents} className="h-4" /> : '—'}
+                    <span className="text-right text-sm tabular-nums">
+                      {valueCents != null ? <GiveawayEurAmount cents={valueCents} locale={locale} /> : '—'}
                     </span>
-                    <span className="text-sm text-foreground/70 sm:text-right">
+                    <span className="text-right text-sm text-foreground/70">
                       {formatGiveawayDate(group.endDate, locale)}
                     </span>
                   </div>

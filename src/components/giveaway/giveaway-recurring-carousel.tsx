@@ -7,7 +7,6 @@ import { GiveawayShowcaseCard } from '@/components/giveaway/giveaway-showcase-ca
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import {
   carouselCoverflowTransform,
-  carouselCoverflowXPercent,
   carouselSignedOffset,
   getCarouselBreakpoint,
   parsePrizeDisplay,
@@ -23,7 +22,7 @@ function useCarouselBreakpoint(): CarouselBreakpoint {
   const [breakpoint, setBreakpoint] = useState<CarouselBreakpoint>('desktop');
 
   useEffect(() => {
-    const desktopQuery = window.matchMedia('(min-width: 1200px)');
+    const desktopQuery = window.matchMedia('(min-width: 1024px)');
     const tabletQuery = window.matchMedia('(min-width: 768px)');
     const update = () => {
       setBreakpoint(getCarouselBreakpoint(window.innerWidth));
@@ -96,7 +95,7 @@ export function GiveawayRecurringCarousel({
     <section
       id="recurring-giveaways"
       data-tour="giveaways-tabs"
-      className="mb-8 scroll-mt-24 overflow-x-clip"
+      className="mb-8 scroll-mt-24"
       aria-label={layout.recurringSectionTitle}
       aria-roledescription={layout.carouselRole}
       role="region"
@@ -126,8 +125,8 @@ export function GiveawayRecurringCarousel({
           <p className="sr-only" aria-live="polite">
             {liveLabel}
           </p>
-          {count > 1 ? (
-            <>
+          <div className="giveaway-recurring-carousel__row">
+            {count > 1 ? (
               <Button
                 type="button"
                 variant="secondary"
@@ -138,6 +137,77 @@ export function GiveawayRecurringCarousel({
               >
                 <ChevronLeftIcon className="h-5 w-5" aria-hidden />
               </Button>
+            ) : null}
+
+            <div
+              className="giveaway-recurring-carousel__stage"
+              onPointerDown={(event) => {
+                if (count <= 1 || event.pointerType === 'mouse') return;
+                pointerStart.current = { x: event.clientX, y: event.clientY };
+                skipClick.current = false;
+              }}
+              onPointerUp={(event) => {
+                if (!pointerStart.current || count <= 1) return;
+                const dx = event.clientX - pointerStart.current.x;
+                const dy = event.clientY - pointerStart.current.y;
+                pointerStart.current = null;
+                if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
+                skipClick.current = true;
+                goTo(dx < 0 ? safeIndex + 1 : safeIndex - 1);
+              }}
+              onPointerCancel={() => {
+                pointerStart.current = null;
+              }}
+            >
+              {giveaways
+                .map((giveaway, index) => {
+                  const offset = carouselSignedOffset(index, safeIndex, count);
+                  const coverflow = carouselCoverflowTransform(offset, breakpoint);
+                  return { giveaway, index, offset, coverflow };
+                })
+                .filter((slide) => slide.coverflow.visible)
+                .sort((a, b) => a.offset - b.offset)
+                .map(({ giveaway, index, offset, coverflow }) => {
+                  const featured = offset === 0;
+                  return (
+                    <motion.div
+                      key={giveaway.id}
+                      layout={!reduceMotion}
+                      className={cn(
+                        'giveaway-recurring-carousel__slide',
+                        featured && 'giveaway-recurring-carousel__slide--active',
+                        Math.abs(offset) === 1 && 'giveaway-recurring-carousel__slide--near'
+                      )}
+                      initial={false}
+                      animate={{
+                        scale: coverflow.scale,
+                        opacity: coverflow.opacity,
+                      }}
+                      transition={reduceMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeInOut' }}
+                      style={{ width: coverflow.width }}
+                      aria-current={featured ? 'true' : undefined}
+                    >
+                      <GiveawayShowcaseCard
+                        giveaway={giveaway}
+                        messages={messages}
+                        userFragments={userFragments}
+                        onParticipate={onParticipate}
+                        now={now}
+                        featured={featured}
+                        onActivate={() => {
+                          if (skipClick.current) {
+                            skipClick.current = false;
+                            return;
+                          }
+                          goTo(index);
+                        }}
+                      />
+                    </motion.div>
+                  );
+                })}
+            </div>
+
+            {count > 1 ? (
               <Button
                 type="button"
                 variant="secondary"
@@ -148,73 +218,7 @@ export function GiveawayRecurringCarousel({
               >
                 <ChevronRightIcon className="h-5 w-5" aria-hidden />
               </Button>
-            </>
-          ) : null}
-
-          <div
-            className="giveaway-recurring-carousel__stage"
-            onPointerDown={(event) => {
-              if (count <= 1 || event.pointerType === 'mouse') return;
-              pointerStart.current = { x: event.clientX, y: event.clientY };
-              skipClick.current = false;
-            }}
-            onPointerUp={(event) => {
-              if (!pointerStart.current || count <= 1) return;
-              const dx = event.clientX - pointerStart.current.x;
-              const dy = event.clientY - pointerStart.current.y;
-              pointerStart.current = null;
-              if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
-              skipClick.current = true;
-              goTo(dx < 0 ? safeIndex + 1 : safeIndex - 1);
-            }}
-            onPointerCancel={() => {
-              pointerStart.current = null;
-            }}
-          >
-            {giveaways.map((giveaway, index) => {
-              const offset = carouselSignedOffset(index, safeIndex, count);
-              const coverflow = carouselCoverflowTransform(offset, breakpoint);
-              const featured = offset === 0;
-              return (
-                <motion.div
-                  key={giveaway.id}
-                  className={cn(
-                    'giveaway-recurring-carousel__slide',
-                    featured && 'giveaway-recurring-carousel__slide--active',
-                    Math.abs(offset) === 1 && 'giveaway-recurring-carousel__slide--near',
-                    Math.abs(offset) === 2 && 'giveaway-recurring-carousel__slide--far',
-                    !coverflow.visible && 'pointer-events-none'
-                  )}
-                  initial={false}
-                  animate={{
-                    x: `${carouselCoverflowXPercent(offset, breakpoint)}%`,
-                    y: coverflow.translateY,
-                    scale: coverflow.scale,
-                    opacity: coverflow.opacity,
-                    zIndex: coverflow.visible ? 8 - Math.abs(offset) : 0,
-                  }}
-                  transition={reduceMotion ? { duration: 0 } : { duration: 0.35, ease: 'easeOut' }}
-                  aria-current={featured ? 'true' : undefined}
-                  aria-hidden={coverflow.visible ? undefined : true}
-                >
-                  <GiveawayShowcaseCard
-                    giveaway={giveaway}
-                    messages={messages}
-                    userFragments={userFragments}
-                    onParticipate={onParticipate}
-                    now={now}
-                    featured={featured}
-                    onActivate={() => {
-                      if (skipClick.current) {
-                        skipClick.current = false;
-                        return;
-                      }
-                      goTo(index);
-                    }}
-                  />
-                </motion.div>
-              );
-            })}
+            ) : null}
           </div>
 
           {count > 1 ? (

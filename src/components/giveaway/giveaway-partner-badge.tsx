@@ -36,7 +36,7 @@ export function GiveawayPartnerBadge({
     <Badge
       variant="outline"
       className={cn(
-        'giveaway-partner-badge flex max-w-[11rem] items-center gap-1 truncate text-xs font-normal',
+        'giveaway-partner-badge flex max-w-full items-center gap-1 text-xs font-normal',
         className
       )}
       style={{

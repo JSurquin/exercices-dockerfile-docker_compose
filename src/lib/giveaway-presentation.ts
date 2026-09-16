@@ -358,6 +358,30 @@ export function cheapestActiveTicketPrice(
   return Math.min(...active.map((giveaway) => giveaway.ticketPrice));
 }
 
+export interface NextUnaffordableEntry {
+  missing: number;
+  ticketPrice: number;
+  tier: GiveawayTier;
+}
+
+export function nextUnaffordableEntry<
+  T extends GiveawayPresentationInput & { canParticipate?: boolean },
+>(giveaways: T[], available: number): NextUnaffordableEntry | null {
+  const candidates = giveaways.filter((giveaway) => {
+    if (giveaway.status !== 'ACTIVE' || giveaway.ticketPrice <= 0) return false;
+    if (giveaway.isPrivate && giveaway.canParticipate === false) return false;
+    return available < giveaway.ticketPrice;
+  });
+  if (candidates.length === 0) return null;
+  const target = [...candidates].sort((a, b) => a.ticketPrice - b.ticketPrice)[0];
+  if (!target) return null;
+  return {
+    missing: Math.ceil(target.ticketPrice - available),
+    ticketPrice: target.ticketPrice,
+    tier: getGiveawayTier(target),
+  };
+}
+
 export function fragmentsUntilCheapestEntry(
   giveaways: { status?: string; ticketPrice: number }[],
   available: number
@@ -374,6 +398,37 @@ export function fragmentsEntryProgressPercent(
 ): number {
   if (cheapest == null || cheapest <= 0) return 0;
   return Math.min(100, Math.max(0, Math.round((available / cheapest) * 100)));
+}
+
+export function formatGiveawayEur(cents: number, locale: string): string {
+  const amount = Math.max(0, (Number.isFinite(cents) ? cents : 0) / 100);
+  return new Intl.NumberFormat(localeToDateLocale(locale), {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(amount);
+}
+
+export function localizedGiveawayBlurb(
+  giveaway: Pick<GiveawayPresentationInput, 'isPrivate' | 'requiredAffiliateCode' | 'durationType' | 'startDate' | 'createdAt' | 'endDate'>,
+  copy: {
+    descDaily: string;
+    descWeekly: string;
+    descMonthly: string;
+    descYearly: string;
+    descSpecial: string;
+    descPartner: string;
+  }
+): string {
+  if (giveaway.isPrivate) {
+    const code = (giveaway.requiredAffiliateCode ?? '').trim() || '—';
+    return copy.descPartner.replace('{code}', code);
+  }
+  const tier = getGiveawayTier(giveaway);
+  if (tier === 'daily') return copy.descDaily;
+  if (tier === 'weekly') return copy.descWeekly;
+  if (tier === 'monthly') return copy.descMonthly;
+  if (tier === 'yearly') return copy.descYearly;
+  return copy.descSpecial;
 }
 
 export interface PastWinnerRow {
@@ -408,19 +463,22 @@ export interface PastWinnerGroup {
   winners: PastWinnerPerson[];
 }
 
-export const CAROUSEL_MAX_OFFSET = 2;
+export const CAROUSEL_MAX_OFFSET = 1;
+export const CAROUSEL_CENTER_WIDTH = 340;
+export const CAROUSEL_SIDE_WIDTH = 260;
+export const CAROUSEL_GAP = 20;
 export const LOCAL_DAILY_GIVEAWAY_FIXTURE_ID = 'local-daily-fixture';
 
 export type CarouselBreakpoint = 'mobile' | 'tablet' | 'desktop';
 
 export function getCarouselBreakpoint(width: number): CarouselBreakpoint {
   if (width < 768) return 'mobile';
-  if (width < 1200) return 'tablet';
+  if (width < 1024) return 'tablet';
   return 'desktop';
 }
 
 export function carouselMaxVisibleOffset(breakpoint: CarouselBreakpoint): number {
-  return breakpoint === 'desktop' ? CAROUSEL_MAX_OFFSET : 1;
+  return breakpoint === 'desktop' ? CAROUSEL_MAX_OFFSET : 0;
 }
 
 export function carouselCoverflowTransform(
@@ -431,17 +489,17 @@ export function carouselCoverflowTransform(
   translateY: number;
   opacity: number;
   visible: boolean;
+  width: number;
 } {
   const abs = Math.abs(offset);
   const maxVisible = carouselMaxVisibleOffset(breakpoint);
-  if (abs > maxVisible) return { scale: 0.5, translateY: 40, opacity: 0, visible: false };
-  if (breakpoint === 'mobile') {
-    if (abs === 0) return { scale: 1, translateY: 0, opacity: 1, visible: true };
-    return { scale: 0.94, translateY: 8, opacity: 0.82, visible: true };
+  if (abs > maxVisible) {
+    return { scale: 0.95, translateY: 0, opacity: 0, visible: false, width: CAROUSEL_SIDE_WIDTH };
   }
-  if (abs === 0) return { scale: 1, translateY: 0, opacity: 1, visible: true };
-  if (abs === 1) return { scale: 0.86, translateY: 10, opacity: 0.75, visible: true };
-  return { scale: 0.72, translateY: 18, opacity: 0.45, visible: true };
+  if (abs === 0) {
+    return { scale: 1, translateY: 0, opacity: 1, visible: true, width: CAROUSEL_CENTER_WIDTH };
+  }
+  return { scale: 0.95, translateY: 0, opacity: 0.75, visible: true, width: CAROUSEL_SIDE_WIDTH };
 }
 
 export function findPartnerLogo<T extends { name: string; logoUrl: string }>(
@@ -743,11 +801,8 @@ export function carouselCoverflowXPercent(
   breakpoint: CarouselBreakpoint = 'desktop'
 ): number {
   const abs = Math.min(Math.abs(offset), CAROUSEL_MAX_OFFSET + 1);
-  if (breakpoint === 'mobile') {
-    const shift = abs === 0 ? 0 : abs === 1 ? 98 : 118;
-    return Math.sign(offset) * shift;
-  }
-  const shift = abs === 0 ? 0 : abs === 1 ? 74 : abs === 2 ? 132 : 160;
+  if (breakpoint !== 'desktop' || abs === 0) return 0;
+  const shift = CAROUSEL_CENTER_WIDTH / 2 + CAROUSEL_GAP + CAROUSEL_SIDE_WIDTH / 2;
   return Math.sign(offset) * shift;
 }
 

@@ -6,8 +6,11 @@ import {
   formatCommunityName,
   formatCompactCountdown,
   formatGiveawayDate,
+  formatGiveawayEur,
   formatWinnerCount,
   fragmentsUntilCheapestEntry,
+  nextUnaffordableEntry,
+  localizedGiveawayBlurb,
   getDisplayInitials,
   getGiveawayCardAction,
   getGiveawayEntryLimits,
@@ -226,8 +229,9 @@ describe('selectRecurringActiveGiveaways', () => {
     const yearlyCenter = [0, 1, 2, 3].map((index) => carouselSignedOffset(index, 3, 4));
     expect(yearlyCenter).toEqual([1, -2, -1, 0]);
     expect(carouselCoverflowTransform(2, 'tablet').visible).toBe(false);
-    expect(carouselCoverflowTransform(1, 'tablet').visible).toBe(true);
-    expect(carouselCoverflowTransform(2, 'desktop').visible).toBe(true);
+    expect(carouselCoverflowTransform(1, 'tablet').visible).toBe(false);
+    expect(carouselCoverflowTransform(2, 'desktop').visible).toBe(false);
+    expect(carouselCoverflowTransform(1, 'desktop').visible).toBe(true);
     expect(insertLocalDailyGiveawayIfMissing(withDaily).map((item) => item.id)[0]).toBe(
       LOCAL_DAILY_GIVEAWAY_FIXTURE_ID
     );
@@ -245,19 +249,20 @@ describe('selectRecurringActiveGiveaways', () => {
   it('exposes unique circular offsets within ±2 for five cards', () => {
     const offsets = [0, 1, 2, 3, 4].map((index) => carouselSignedOffset(index, 2, 5));
     expect(offsets.sort((a, b) => a - b)).toEqual([-2, -1, 0, 1, 2]);
-    expect(carouselCoverflowTransform(0)).toMatchObject({ scale: 1, translateY: 0, opacity: 1, visible: true });
-    expect(carouselCoverflowTransform(1)).toMatchObject({ scale: 0.86, translateY: 10, opacity: 0.75 });
-    expect(carouselCoverflowTransform(-2)).toMatchObject({ scale: 0.72, translateY: 18, opacity: 0.45 });
-    expect(carouselCoverflowXPercent(1)).toBe(74);
-    expect(carouselCoverflowXPercent(-2)).toBe(-132);
+    expect(carouselCoverflowTransform(0)).toMatchObject({ scale: 1, translateY: 0, opacity: 1, visible: true, width: 340 });
+    expect(carouselCoverflowTransform(1)).toMatchObject({ scale: 0.95, translateY: 0, opacity: 0.75, width: 260 });
+    expect(carouselCoverflowTransform(-2)).toMatchObject({ visible: false });
+    expect(carouselCoverflowXPercent(1)).toBe(320);
+    expect(carouselCoverflowXPercent(-1)).toBe(-320);
     expect(getCarouselBreakpoint(390)).toBe('mobile');
-    expect(getCarouselBreakpoint(1024)).toBe('tablet');
+    expect(getCarouselBreakpoint(800)).toBe('tablet');
+    expect(getCarouselBreakpoint(1024)).toBe('desktop');
     expect(getCarouselBreakpoint(1440)).toBe('desktop');
-    expect(carouselMaxVisibleOffset('mobile')).toBe(1);
-    expect(carouselMaxVisibleOffset('tablet')).toBe(1);
-    expect(carouselMaxVisibleOffset('desktop')).toBe(2);
-    expect(carouselCoverflowXPercent(1, 'mobile')).toBe(98);
-    expect(carouselCoverflowTransform(2, 'mobile').visible).toBe(false);
+    expect(carouselMaxVisibleOffset('mobile')).toBe(0);
+    expect(carouselMaxVisibleOffset('tablet')).toBe(0);
+    expect(carouselMaxVisibleOffset('desktop')).toBe(1);
+    expect(carouselCoverflowXPercent(1, 'mobile')).toBe(0);
+    expect(carouselCoverflowTransform(1, 'mobile').visible).toBe(false);
   });
 });
 
@@ -457,6 +462,72 @@ describe('formatWinnerCount / getDisplayInitials / fragmentsUntilCheapestEntry',
       )
     ).toBe(6);
     expect(fragmentsUntilCheapestEntry([{ status: 'ACTIVE', ticketPrice: 10 }], 10)).toBeNull();
+  });
+
+  it('picks the cheapest active palier the viewer cannot afford', () => {
+    const next = nextUnaffordableEntry(
+      [
+        giveaway({
+          id: 'daily',
+          ticketPrice: 250,
+          durationType: 'DAILY',
+          startDate: '2026-09-16T00:00:00.000Z',
+          endDate: '2026-09-16T20:00:00.000Z',
+        }),
+        giveaway({
+          id: 'year',
+          ticketPrice: 500,
+          durationType: 'YEARLY',
+          startDate: '2025-09-16T00:00:00.000Z',
+          endDate: '2026-09-16T00:00:00.000Z',
+        }),
+      ],
+      114
+    );
+    expect(next).toEqual({ missing: 136, ticketPrice: 250, tier: 'daily' });
+    expect(
+      nextUnaffordableEntry(
+        [
+          giveaway({
+            id: 'daily-ok',
+            ticketPrice: 100,
+            durationType: 'DAILY',
+            startDate: '2026-09-16T00:00:00.000Z',
+            endDate: '2026-09-16T20:00:00.000Z',
+          }),
+          giveaway({
+            id: 'year',
+            ticketPrice: 500,
+            durationType: 'YEARLY',
+            startDate: '2025-09-16T00:00:00.000Z',
+            endDate: '2026-09-16T00:00:00.000Z',
+          }),
+        ],
+        114
+      )
+    ).toEqual({ missing: 386, ticketPrice: 500, tier: 'yearly' });
+  });
+
+  it('formats giveaway amounts with Intl EUR and localizes blurbs', () => {
+    expect(formatGiveawayEur(80000, 'fr')).toMatch(/800/);
+    expect(formatGiveawayEur(80000, 'en')).toMatch(/800/);
+    expect(
+      localizedGiveawayBlurb(
+        giveaway({
+          id: 'p',
+          isPrivate: true,
+          requiredAffiliateCode: 'kitsu',
+        }),
+        {
+          descDaily: 'd',
+          descWeekly: 'w',
+          descMonthly: 'm',
+          descYearly: 'y',
+          descSpecial: 's',
+          descPartner: 'users of the code {code}',
+        }
+      )
+    ).toBe('users of the code kitsu');
   });
 });
 

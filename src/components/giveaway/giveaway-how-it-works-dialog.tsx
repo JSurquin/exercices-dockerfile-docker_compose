@@ -38,7 +38,7 @@ export function GiveawayHowItWorksDialog({
         data-tour="giveaways-how"
         className={
           triggerClassName ??
-          'text-sm text-theme-accent underline-offset-4 hover:underline'
+          'inline text-sm text-theme-accent underline-offset-4 hover:underline'
         }
       >
         {messages.giveaways.layout.howItWorksLink}

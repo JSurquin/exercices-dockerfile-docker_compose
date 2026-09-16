@@ -104,6 +104,7 @@ export function GiveawayEntryControl({
         submitting={submitting}
         messages={messages}
         ticketPrice={action.type === 'participate' ? totalCost : giveaway.ticketPrice}
+        userFragments={userFragments}
         onParticipate={() => void handleParticipate()}
       />
 

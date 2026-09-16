@@ -11,6 +11,7 @@ import { GiveawayEntryControl } from '@/components/giveaway/giveaway-entry-contr
 import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayPrizeDetails } from '@/components/giveaway/giveaway-prize-visual';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
+import { localizedGiveawayBlurb } from '@/lib/giveaway-presentation';
 import type { Messages } from '~/utils/types';
 
 export function GiveawayParticipateDialog({
@@ -29,7 +30,7 @@ export function GiveawayParticipateDialog({
   onParticipate: (giveaway: GiveawayWithEntries, entries: number) => void | Promise<void>;
 }) {
   const card = messages.giveaways.card;
-  const description = giveaway.description?.trim() ?? '';
+  const description = localizedGiveawayBlurb(giveaway, messages.giveaways.layout);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

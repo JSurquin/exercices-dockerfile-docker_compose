@@ -12,7 +12,7 @@ import { useTourMode } from '@/components/providers/tour-provider';
 import { GiveawaysTourDemo } from '@/components/tour-demos/giveaways-tour-demo';
 import { useGiveaways, type GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { GiveawayNotifications } from '@/components/giveaway/giveaway-notifications';
-import { GiveawaysCompactHeader } from '@/components/giveaway/giveaways-compact-header';
+import { GiveawaysCompactHeader, GiveawayLevelCard } from '@/components/giveaway/giveaways-compact-header';
 import { GiveawayRecurringCarousel } from '@/components/giveaway/giveaway-recurring-carousel';
 import { GiveawayCard } from '@/components/giveaway/giveaway-card';
 import { GiveawayEarnFragments } from '@/components/giveaway/giveaway-earn-fragments';
@@ -40,15 +40,16 @@ import {
 import { toast } from 'sonner';
 import Link from 'next/link';
 import {
-  cheapestActiveTicketPrice,
-  fragmentsUntilCheapestEntry,
+  giveawayTierLabels,
   insertLocalDailyGiveawayIfMissing,
+  nextUnaffordableEntry,
   selectHighestValueIndex,
   selectRecurringActiveGiveaways,
   sortGiveawaysByTierThenEnd,
 } from '@/lib/giveaway-presentation';
 
-const giveawayGridClass = 'grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 min-[1200px]:grid-cols-3';
+const partnerGridClass =
+  'grid items-stretch gap-5 [grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))]';
 
 export default function GiveawaysPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
@@ -158,14 +159,13 @@ export default function GiveawaysPage() {
       setCarouselIndex(Math.max(0, recurringGiveaways.length - 1));
     }
   }, [carouselIndex, recurringGiveaways, recurringKey]);
-  const fragmentsUntilNext = useMemo(
-    () => fragmentsUntilCheapestEntry(activeGiveaways, userFragments),
+  const nextEntry = useMemo(
+    () => nextUnaffordableEntry(activeGiveaways, userFragments),
     [activeGiveaways, userFragments]
   );
-  const cheapestTicket = useMemo(
-    () => cheapestActiveTicketPrice(activeGiveaways),
-    [activeGiveaways]
-  );
+  const nextTierLabel = nextEntry
+    ? giveawayTierLabels(messages.giveaways.layout)[nextEntry.tier]
+    : null;
 
   const selectGiveaway = (giveaway: GiveawayWithEntries) => {
     const recurringIndex = recurringGiveaways.findIndex((item) => item.id === giveaway.id);
@@ -294,16 +294,35 @@ export default function GiveawaysPage() {
   return (
     <>
       <GiveawayNotifications />
-      <div className="container mx-auto overflow-x-clip px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8 lg:px-8">
-        <div className="mx-auto max-w-[1440px] overflow-x-clip">
-          <GiveawaysCompactHeader
-            messages={messages}
-            user={user}
-            userFragments={userFragments}
-            fragmentsUntilNext={fragmentsUntilNext}
-            cheapestTicketPrice={cheapestTicket}
-          />
-
+      <div className="container mx-auto px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8 lg:px-8">
+        <div className="giveaway-page">
+          <header className="giveaway-page-header">
+            <GiveawaysCompactHeader messages={messages} />
+          </header>
+          <aside className="giveaway-page-sidebar">
+            <GiveawayLevelCard
+              messages={messages}
+              user={user}
+              userFragments={userFragments}
+              fragmentsUntilNext={nextEntry?.missing ?? null}
+              nextTicketPrice={nextEntry?.ticketPrice ?? null}
+              nextTierLabel={nextTierLabel}
+            />
+            <GiveawayEarnFragments messages={messages} />
+            <GiveawayMyParticipations
+              giveaways={activeGiveaways}
+              messages={messages}
+              locale={locale}
+              now={now}
+              onSelect={selectGiveaway}
+            />
+            <GiveawayMyWinnings
+              giveaways={giveaways}
+              messages={messages}
+              username={user.username}
+            />
+          </aside>
+          <div className="giveaway-page-main">
           {loading ? (
             <GiveawayCarouselSkeleton label={messages.giveawaysPage.loadingGiveaways} />
           ) : (
@@ -318,12 +337,10 @@ export default function GiveawaysPage() {
             />
           )}
 
-          <div className="giveaway-board">
-            <div className="giveaway-board-main">
               {loading ? (
                 listedPrivate.length > 0 || otherPublic.length > 0 ? (
                   <GiveawayGridSkeleton
-                    className={giveawayGridClass}
+                    className={partnerGridClass}
                     count={3}
                     label={messages.giveawaysPage.loadingGiveaways}
                   />
@@ -336,7 +353,7 @@ export default function GiveawaysPage() {
                         <Handshake className="h-5 w-5 text-purple-300" aria-hidden />
                         {messages.giveaways.layout.privateSectionTitle}
                       </h2>
-                      <div className={giveawayGridClass}>
+                      <div className={partnerGridClass}>
                         {listedPrivate.map((giveaway, index) => (
                           <motion.div
                             key={giveaway.id}
@@ -364,7 +381,7 @@ export default function GiveawaysPage() {
                       <h2 className="mb-4 font-display text-lg font-semibold">
                         {messages.giveaways.layout.specialSectionTitle}
                       </h2>
-                      <div className={giveawayGridClass}>
+                      <div className={partnerGridClass}>
                         {otherPublic.map((giveaway, index) => (
                           <motion.div
                             key={giveaway.id}
@@ -399,22 +416,6 @@ export default function GiveawaysPage() {
               )}
               <GiveawayPastWinners giveaways={giveaways} messages={messages} locale={locale} />
               <GiveawayFaq messages={messages} />
-            </div>
-            <aside className="giveaway-board-aside">
-              <GiveawayEarnFragments messages={messages} />
-              <GiveawayMyParticipations
-                giveaways={activeGiveaways}
-                messages={messages}
-                locale={locale}
-                now={now}
-                onSelect={selectGiveaway}
-              />
-              <GiveawayMyWinnings
-                giveaways={giveaways}
-                messages={messages}
-                username={user.username}
-              />
-            </aside>
           </div>
         </div>
       </div>

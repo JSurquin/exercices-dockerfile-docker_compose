@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ConvertedAmount } from '@/components/ui/converted-amount';
 import { GiveawayCompactTime, useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { GiveawayCtaButton } from '@/components/giveaway/giveaway-cta-button';
+import { GiveawayEurAmount } from '@/components/giveaway/giveaway-eur-amount';
 import { GiveawayParticipateDialog } from '@/components/giveaway/giveaway-participate-dialog';
 import { GiveawayPartnerBadge } from '@/components/giveaway/giveaway-partner-badge';
 import { GiveawayPrizeVisual } from '@/components/giveaway/giveaway-prize-visual';
@@ -19,6 +19,7 @@ import {
   getPrizeValueCents,
   getTimeRemaining,
   giveawayTierLabels,
+  localizedGiveawayBlurb,
   parsePrizeDisplay,
 } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
@@ -57,7 +58,7 @@ export function GiveawayCard({
   const isEnded = giveaway.status === 'ENDED' || timeRemaining.expired;
   const tier = getGiveawayTier(giveaway);
   const accent = getGiveawayTierAccent(tier);
-  const description = giveaway.description?.trim() ?? '';
+  const description = localizedGiveawayBlurb(giveaway, layout);
   const selectable = Boolean(onSelect) && !isEnded;
   const labels = giveawayTierLabels(layout);
   const action = getGiveawayCardAction(giveaway, userFragments);
@@ -83,15 +84,15 @@ export function GiveawayCard({
       <article
         data-giveaway={giveaway.id}
         className={cn(
-          'giveaway-card-surface giveaway-card-surface--interactive flex h-full flex-col rounded-2xl border border-white/10 bg-card/80 p-3 backdrop-blur-md',
+          'giveaway-card-surface giveaway-card-surface--interactive flex h-full flex-col overflow-visible rounded-2xl border border-white/10 bg-card/80 p-5 backdrop-blur-md',
           selectable && 'cursor-pointer',
           selected && 'ring-2 ring-theme-accent/70'
         )}
         style={{ '--giveaway-accent': accent } as CSSProperties}
         onClick={selectable ? onSelect : undefined}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <div className="flex items-start justify-between gap-2 overflow-visible">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5 overflow-visible">
             <GiveawayTierBadge tier={tier}>{getGiveawayTierLabel(tier, labels)}</GiveawayTierBadge>
             <GiveawayPartnerBadge giveaway={giveaway} messages={messages} />
             {description ? (
@@ -133,14 +134,14 @@ export function GiveawayCard({
               <p className="font-display font-semibold" style={{ color: accent }}>
                 {parsed.finish}
               </p>
-              {parsed.exterior ? <p className="mt-0.5 text-xs text-foreground/70">{parsed.exterior}</p> : null}
+              {parsed.exterior ? <p className="mt-0.5 text-xs text-foreground/80">{parsed.exterior}</p> : null}
             </>
           ) : (
             <p className="font-display font-semibold">{parsed.fallbackName}</p>
           )}
           {valueCents != null ? (
-            <p className="mt-1 font-display text-xl font-semibold tabular-nums text-foreground">
-              <ConvertedAmount cents={valueCents} split />
+            <p className="mt-1 font-display text-base font-semibold tabular-nums text-foreground">
+              <GiveawayEurAmount cents={valueCents} locale={locale} />
             </p>
           ) : null}
         </div>
@@ -165,7 +166,7 @@ export function GiveawayCard({
         </div>
 
         <div
-          className="mt-auto flex justify-end pt-2"
+          className="mt-auto flex justify-end pt-5"
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
         >
@@ -179,7 +180,7 @@ export function GiveawayCard({
               submitting={submitting}
               messages={messages}
               ticketPrice={giveaway.ticketPrice}
-              compact
+              userFragments={userFragments}
               onParticipate={() => setModalOpen(true)}
             />
           )}

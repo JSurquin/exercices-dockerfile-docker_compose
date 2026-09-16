@@ -29,7 +29,7 @@ export function GiveawayEarnFragments({ messages }: { messages: Messages }) {
   return (
     <section
       id="earn-fragments"
-      className="giveaway-earn-panel scroll-mt-24 scroll-mb-24 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md"
+      className="giveaway-sidebar-widget giveaway-page-widget giveaway-earn-panel scroll-mt-24 scroll-mb-24"
     >
       <h2 className="mb-3 font-display text-lg font-semibold">{earn.title}</h2>
       <ul className="giveaway-earn-list">
