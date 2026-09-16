@@ -24,6 +24,7 @@ import {
   TrophyIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
+import type { CSSProperties } from 'react';
 import type { Messages } from '~/utils/types';
 
 function tierLabel(tier: ReturnType<typeof getGiveawayTier>, messages: Messages): string {
@@ -47,7 +48,7 @@ export function GiveawayCard({
   userFragments: number;
   now?: number;
 }) {
-  const liveNow = useLiveNow();
+  const liveNow = useLiveNow(1000, now === undefined);
   const endDate = typeof giveaway.endDate === 'string' ? new Date(giveaway.endDate) : giveaway.endDate;
   const timeRemaining = getTimeRemaining(endDate, now ?? liveNow);
   const layout = messages.giveaways.layout;
@@ -70,12 +71,12 @@ export function GiveawayCard({
     <Card
       data-giveaway={giveaway.id}
       className={cn(
-        'flex h-full flex-col overflow-hidden border-white/10 bg-card/80 py-0 backdrop-blur-md transition-all duration-300',
-        isParticipationLocked ? 'opacity-60 grayscale-[0.35] hover:shadow-none' : 'hover:shadow-lg'
+        'giveaway-card-surface flex h-full flex-col overflow-hidden border-white/10 bg-card/80 py-0 backdrop-blur-md',
+        isParticipationLocked
+          ? 'opacity-60 grayscale-[0.35]'
+          : 'giveaway-card-surface--interactive'
       )}
-      style={{
-        boxShadow: `0 0 0 1px ${accent}33, 0 0 28px ${accent}14`,
-      }}
+      style={{ '--giveaway-accent': accent } as CSSProperties}
     >
       <CardContent className="flex h-full flex-col gap-3 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-2">
@@ -97,7 +98,7 @@ export function GiveawayCard({
             <Badge variant="secondary">{card.status.ended}</Badge>
           ) : (
             <Badge className="mission-glass-badge gap-1.5 font-normal" data-countdown>
-              <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-green-500/70" />
+              <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-green-500/70 motion-reduce:animate-none" />
               <GiveawayCompactTime
                 remaining={timeRemaining}
                 expiredLabel={card.status.ended}
@@ -125,7 +126,7 @@ export function GiveawayCard({
         />
         <GiveawayPrizeDetails giveaway={giveaway} />
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-foreground/70">
           <span className="inline-flex items-center gap-1">
             <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
           </span>
@@ -140,7 +141,7 @@ export function GiveawayCard({
         </div>
 
         {myEntries > 0 && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground/70">
             {card.yourEntriesLine
               .replace('{entries}', String(myEntries))
               .replace('{chance}', myChance.toFixed(1))}
@@ -150,7 +151,7 @@ export function GiveawayCard({
         {description && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <p className="line-clamp-2 cursor-help text-xs text-muted-foreground">{description}</p>
+              <p className="line-clamp-2 cursor-help text-xs text-foreground/70">{description}</p>
             </TooltipTrigger>
             <TooltipContent className="max-w-xs text-left">{description}</TooltipContent>
           </Tooltip>
@@ -180,14 +181,14 @@ export function GiveawayCard({
                   fallbackName={messages.giveaways.notifications.anonymousPlayer}
                 />
                 <div className="min-w-0">
-                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{card.winner}</p>
+                  <p className="text-[11px] uppercase tracking-wide text-foreground/70">{card.winner}</p>
                   <p className="truncate text-sm font-medium">
                     {primaryWinner?.steamUsername ?? messages.giveaways.notifications.anonymousPlayer}
                   </p>
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">{card.status.ended}</p>
+              <p className="text-xs text-foreground/70">{card.status.ended}</p>
             )
           ) : (
             giveaway.status === 'ACTIVE' &&

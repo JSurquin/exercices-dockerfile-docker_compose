@@ -3538,3 +3538,30 @@ body.next-dev-overlay-present #sentry-feedback {
 .moonskin-tour-popover .driver-popover-close-btn:hover {
   color: #fff !important;
 }
+
+.giveaway-card-surface {
+  --giveaway-accent: #7eb8ff;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--giveaway-accent) 20%, transparent),
+    0 0 28px color-mix(in srgb, var(--giveaway-accent) 8%, transparent);
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .giveaway-card-surface--interactive:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--giveaway-accent) 50%, transparent),
+      0 18px 42px color-mix(in srgb, var(--giveaway-accent) 28%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giveaway-card-surface {
+    transition: none;
+  }
+
+  .giveaway-card-surface--interactive:hover {
+    transform: none;
+  }
+}

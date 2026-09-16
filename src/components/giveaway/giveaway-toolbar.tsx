@@ -49,17 +49,19 @@ export function GiveawayToolbar({
       className="sticky top-16 z-30 -mx-4 mb-6 border-b border-white/10 bg-background/80 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-8 lg:mb-8 lg:px-8"
     >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <TabsList className="grid h-auto w-full grid-cols-3 gap-1 lg:w-auto">
-          <TabsTrigger value="active">
-            {messages.giveaways.tabs.active} ({counts.active})
-          </TabsTrigger>
-          <TabsTrigger value="my-entries">
-            {messages.giveaways.tabs.myEntries} ({counts.mine})
-          </TabsTrigger>
-          <TabsTrigger value="ended">
-            {messages.giveaways.tabs.ended} ({counts.ended})
-          </TabsTrigger>
-        </TabsList>
+        <div className="-mx-1 overflow-x-auto scrollbar-none md:mx-0">
+          <TabsList className="flex h-auto w-max min-w-full gap-1 md:grid md:w-full md:grid-cols-3 lg:w-auto">
+            <TabsTrigger value="active" className="shrink-0 px-3">
+              {messages.giveaways.tabs.active} ({counts.active})
+            </TabsTrigger>
+            <TabsTrigger value="my-entries" className="shrink-0 px-3">
+              {messages.giveaways.tabs.myEntries} ({counts.mine})
+            </TabsTrigger>
+            <TabsTrigger value="ended" className="shrink-0 px-3">
+              {messages.giveaways.tabs.ended} ({counts.ended})
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
           {selectedTab === 'active' && (
@@ -73,11 +75,13 @@ export function GiveawayToolbar({
                     key={filter}
                     type="button"
                     onClick={() => onTierFilterChange(filter)}
+                    aria-pressed={active}
                     className={cn(
                       'rounded-full border px-3 py-1 text-xs font-medium backdrop-blur-sm transition-colors',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                       active
                         ? 'border-theme-accent/40 bg-theme-accent/15 text-foreground'
-                        : 'border-white/10 bg-white/5 text-muted-foreground hover:text-foreground'
+                        : 'border-white/10 bg-white/5 text-foreground/70 hover:text-foreground'
                     )}
                     style={
                       active && accent

@@ -3996,10 +3996,14 @@ export interface Messages {
       missingFragmentsCta: string;
       maxButton: string;
       fragmentsUntilNext: string;
+      decreaseEntries: string;
+      increaseEntries: string;
     };
     empty: {
       noActive: string;
       noActiveDescription: string;
+      noEnded: string;
+      noEndedDescription: string;
       loginRequired: string;
       loginRequiredDescription: string;
       loginButton: string;
@@ -4062,9 +4066,11 @@ export interface Messages {
       leaderboardEmpty: string;
       leaderboardYou: string;
       featured: string;
+      walletBarLabel: string;
     };
     earn: {
       title: string;
+      shortCta: string;
       sellLabel: string;
       sellReward: string;
       sellCta: string;

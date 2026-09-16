@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -21,6 +21,12 @@ import { GiveawayToolbar } from '@/components/giveaway/giveaway-toolbar';
 import { GiveawayEarnFragments } from '@/components/giveaway/giveaway-earn-fragments';
 import { GiveawayPastWinners } from '@/components/giveaway/giveaway-past-winners';
 import { GiveawayFaq } from '@/components/giveaway/giveaway-faq';
+import { GiveawayWalletBar } from '@/components/giveaway/giveaway-wallet-bar';
+import { GiveawayEmptyState } from '@/components/giveaway/giveaway-empty-state';
+import {
+  GiveawayGridSkeleton,
+  GiveawayHeroSkeleton,
+} from '@/components/giveaway/giveaway-card-skeleton';
 import { useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import {
@@ -41,12 +47,13 @@ import {
 } from '@/lib/giveaway-presentation';
 
 const giveawayGridClass =
-  'grid items-stretch gap-6 [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]';
+  'grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3';
 
 export default function GiveawaysPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
   const { messages, locale } = useLocale();
   const { isTourMode } = useTourMode();
+  const reduceMotion = useReducedMotion();
   const [selectedTab, setSelectedTab] = useState('active');
   const [tierFilter, setTierFilter] = useState<GiveawayTierFilter>('all');
   const [sort, setSort] = useState<GiveawaySort>('endingSoon');
@@ -273,7 +280,7 @@ export default function GiveawaysPage() {
   return (
     <>
       <GiveawayNotifications />
-      <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="container mx-auto px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8 lg:px-8">
         <div className="mx-auto max-w-[90rem]">
           <GiveawaysCompactHeader
             messages={messages}
@@ -282,6 +289,11 @@ export default function GiveawaysPage() {
             fragmentsUntilNext={fragmentsUntilNext}
           />
 
+          {loading && !featured ? (
+            <div role="status" aria-label={messages.giveawaysPage.loadingGiveaways}>
+              <GiveawayHeroSkeleton />
+            </div>
+          ) : null}
           {featured && (
             <GiveawayHero
               giveaway={featured}
@@ -289,6 +301,7 @@ export default function GiveawaysPage() {
               userFragments={userFragments}
               onParticipate={handleParticipate}
               currentUser={{ username: user.username, avatar: user.avatar }}
+              now={now}
             />
           )}
 
@@ -311,7 +324,11 @@ export default function GiveawaysPage() {
 
             <TabsContent value="active">
               {loading ? (
-                <PageLoading variant="compact" message={messages.giveawaysPage.loadingGiveaways} />
+                <GiveawayGridSkeleton
+                  className={giveawayGridClass}
+                  count={6}
+                  label={messages.giveawaysPage.loadingGiveaways}
+                />
               ) : (
                 <>
                   {filteredPublic.length > 0 && (
@@ -320,7 +337,7 @@ export default function GiveawaysPage() {
                         <motion.div
                           key={giveaway.id}
                           className="h-full"
-                          initial={{ opacity: 0, y: 24 }}
+                          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.4, delay: index * 0.05 }}
                         >
@@ -339,19 +356,14 @@ export default function GiveawaysPage() {
                   {filteredPublic.length === 0 &&
                     filteredPrivate.length === 0 &&
                     !featured && (
-                      <Card>
-                        <CardContent className="p-8 text-center">
-                          <GiftIcon className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-                          <h3 className="mb-2 text-xl font-semibold">{messages.giveaways.empty.noActive}</h3>
-                          <p className="text-muted-foreground">
-                            {messages.giveaways.empty.noActiveDescription}
-                          </p>
-                        </CardContent>
-                      </Card>
+                      <GiveawayEmptyState
+                        title={messages.giveaways.empty.noActive}
+                        description={messages.giveaways.empty.noActiveDescription}
+                      />
                     )}
 
                   {filteredPublic.length === 0 && tierFilter !== 'all' && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground/70">
                       {messages.giveaways.layout.emptyFiltered}
                     </p>
                   )}
@@ -367,7 +379,7 @@ export default function GiveawaysPage() {
                           <motion.div
                             key={giveaway.id}
                             className="h-full"
-                            initial={{ opacity: 0, y: 24 }}
+                            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: index * 0.05 }}
                           >
@@ -389,14 +401,18 @@ export default function GiveawaysPage() {
 
             <TabsContent value="my-entries">
               {loading || loadingEntries ? (
-                <PageLoading variant="compact" message={messages.giveawaysPage.loadingParticipations} />
+                <GiveawayGridSkeleton
+                  className={giveawayGridClass}
+                  count={4}
+                  label={messages.giveawaysPage.loadingParticipations}
+                />
               ) : myGiveaways.length > 0 ? (
                 <div className={giveawayGridClass}>
                   {myGiveaways.map((giveaway, index) => (
                     <motion.div
                       key={giveaway.id}
                       className="h-full"
-                      initial={{ opacity: 0, y: 24 }}
+                      initial={reduceMotion ? false : { opacity: 0, y: 24 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: index * 0.05 }}
                     >
@@ -424,10 +440,10 @@ export default function GiveawaysPage() {
                         <Link
                           key={entry.id}
                           href={`/giveaways/${entry.giveaway.id}`}
-                          className="block rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                          className="block rounded-lg border p-4 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <h4 className="font-semibold">{entry.giveaway.title}</h4>
-                          <p className="mt-1 text-sm text-muted-foreground">
+                          <p className="mt-1 text-sm text-foreground/70">
                             {entry.ticketsUsed}{' '}
                             {entry.ticketsUsed > 1
                               ? messages.giveawaysPage.ticketsUsed
@@ -439,31 +455,32 @@ export default function GiveawaysPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <GiftIcon className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-                    <h3 className="mb-2 text-xl font-semibold">{messages.giveawaysPage.noEntries}</h3>
-                    <p className="mb-6 text-muted-foreground">
-                      {messages.giveawaysPage.noEntriesDescription}
-                    </p>
+                <GiveawayEmptyState
+                  title={messages.giveawaysPage.noEntries}
+                  description={messages.giveawaysPage.noEntriesDescription}
+                  action={
                     <Button onClick={() => setSelectedTab('active')}>
                       {messages.giveawaysPage.viewActive}
                     </Button>
-                  </CardContent>
-                </Card>
+                  }
+                />
               )}
             </TabsContent>
 
             <TabsContent value="ended">
               {loading ? (
-                <PageLoading variant="compact" message={messages.giveawaysPage.loadingEndedGiveaways} />
+                <GiveawayGridSkeleton
+                  className={giveawayGridClass}
+                  count={4}
+                  label={messages.giveawaysPage.loadingEndedGiveaways}
+                />
               ) : endedGiveaways.length > 0 ? (
                 <div className={giveawayGridClass}>
                   {endedGiveaways.map((giveaway, index) => (
                     <motion.div
                       key={giveaway.id}
                       className="h-full"
-                      initial={{ opacity: 0, y: 24 }}
+                      initial={reduceMotion ? false : { opacity: 0, y: 24 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: index * 0.05 }}
                     >
@@ -478,12 +495,10 @@ export default function GiveawaysPage() {
                   ))}
                 </div>
               ) : (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <GiftIcon className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-                    <h3 className="mb-2 text-xl font-semibold">{messages.giveaways.card.status.ended}</h3>
-                  </CardContent>
-                </Card>
+                <GiveawayEmptyState
+                  title={messages.giveaways.empty.noEnded}
+                  description={messages.giveaways.empty.noEndedDescription}
+                />
               )}
             </TabsContent>
           </Tabs>
@@ -503,6 +518,7 @@ export default function GiveawaysPage() {
           <GiveawayFaq messages={messages} />
         </div>
       </div>
+      <GiveawayWalletBar messages={messages} userFragments={userFragments} />
     </>
   );
 }

@@ -11,6 +11,7 @@ import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { getGiveawayTier, getGiveawayTierAccent, getTimeRemaining } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
 import { TicketIcon, UserGroupIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import type { CSSProperties } from 'react';
 import type { Messages } from '~/utils/types';
 
 function tierLabel(tier: ReturnType<typeof getGiveawayTier>, messages: Messages): string {
@@ -27,23 +28,26 @@ export function GiveawayHero({
   userFragments,
   onParticipate,
   currentUser,
+  now,
 }: {
   giveaway: GiveawayWithEntries;
   messages: Messages;
   userFragments: number;
   onParticipate: (giveaway: GiveawayWithEntries, entries: number) => void | Promise<void>;
   currentUser: { username: string; avatar: string } | null;
+  now?: number;
 }) {
   const layout = messages.giveaways.layout;
   const fg = messages.giveaways.fragments;
-  const now = useLiveNow();
+  const liveNow = useLiveNow(1000, now === undefined);
+  const clock = now ?? liveNow;
   const myEntries = giveaway.myEntries ?? 0;
   const totalParticipants = giveaway.totalParticipants ?? 0;
   const totalEntries = giveaway.totalEntries ?? giveaway.soldTickets;
   const myChance = giveaway.myChancePercent ?? (totalEntries > 0 ? (100 * myEntries) / totalEntries : 0);
   const isParticipationLocked =
     giveaway.isPrivate && !!giveaway.requiredAffiliateCode && giveaway.canParticipate === false;
-  const timeRemaining = getTimeRemaining(giveaway.endDate, now);
+  const timeRemaining = getTimeRemaining(giveaway.endDate, clock);
   const isActive = giveaway.status === 'ACTIVE' && !timeRemaining.expired;
   const tier = getGiveawayTier(giveaway);
   const accent = getGiveawayTierAccent(tier);
@@ -56,11 +60,11 @@ export function GiveawayHero({
   return (
     <Card
       data-giveaway={giveaway.id}
-      className="mb-6 overflow-hidden border-white/10 bg-card/80 py-0 backdrop-blur-md lg:mb-8"
-      style={{ boxShadow: `0 0 0 1px ${accent}40, 0 0 40px ${accent}18` }}
+      className="giveaway-card-surface mb-6 overflow-hidden border-white/10 bg-card/80 py-0 backdrop-blur-md lg:mb-8"
+      style={{ '--giveaway-accent': accent } as CSSProperties}
     >
-      <CardContent className="p-4 sm:p-6">
-        <div className="mb-4 flex flex-wrap items-center gap-2">
+      <CardContent className="p-4 sm:p-5">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           <Badge className="mission-glass-badge font-normal">{layout.featured}</Badge>
           <Badge
             className="mission-glass-badge font-normal"
@@ -69,14 +73,14 @@ export function GiveawayHero({
             {tierLabel(tier, messages)}
           </Badge>
         </div>
-        <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+        <div className="grid gap-5 md:grid-cols-2 md:items-stretch">
           <GiveawayPrizeVisual giveaway={giveaway} size="hero" />
 
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4">
             <h2 className="font-display text-xl font-semibold sm:text-2xl">{giveaway.title}</h2>
             <GiveawayCountdown
               endDate={giveaway.endDate}
-              now={now}
+              now={clock}
               labels={{
                 days: layout.countdownDays,
                 hours: layout.countdownHours,
@@ -92,7 +96,7 @@ export function GiveawayHero({
               <Stat label={fg.yourChance} value={`${myChance.toFixed(2)}%`} />
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-foreground/70">
               <FragmentAmount amount={giveaway.ticketPrice} size="xs" />
               <span>{fg.costPerEntry}</span>
             </div>
@@ -117,18 +121,17 @@ export function GiveawayHero({
                 messages={messages}
                 userFragments={userFragments}
                 onParticipate={onParticipate}
+                compact
               />
             )}
 
-            <div>
-              <p className="mb-2 text-sm font-medium">{layout.leaderboardTitle}</p>
-              {leaderboard.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{layout.leaderboardEmpty}</p>
-              ) : (
+            {leaderboard.length > 0 && (
+              <div>
+                <p className="mb-2 text-sm font-medium">{layout.leaderboardTitle}</p>
                 <ul className="space-y-2">
                   {leaderboard.map((row, index) => (
                     <li key={row.username} className="flex items-center gap-2 text-sm">
-                      <span className="w-5 text-muted-foreground">{index + 1}</span>
+                      <span className="w-5 text-foreground/70">{index + 1}</span>
                       <Avatar className="h-7 w-7">
                         <AvatarImage src={row.avatar} alt={row.username} />
                         <AvatarFallback>
@@ -139,12 +142,12 @@ export function GiveawayHero({
                         {row.username}
                         {row.isYou ? ` (${layout.leaderboardYou})` : ''}
                       </span>
-                      <span className="tabular-nums text-muted-foreground">{row.entries}</span>
+                      <span className="tabular-nums text-foreground/70">{row.entries}</span>
                     </li>
                   ))}
                 </ul>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
@@ -163,8 +166,8 @@ function Stat({
 }) {
   return (
     <div className={cn('rounded-lg border border-white/10 bg-white/5 px-3 py-2')}>
-      <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground">
-        {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
+      <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-foreground/70">
+        {Icon ? <Icon className="h-3.5 w-3.5" aria-hidden /> : null}
         {label}
       </p>
       <p className="font-display text-lg font-semibold tabular-nums">{value}</p>

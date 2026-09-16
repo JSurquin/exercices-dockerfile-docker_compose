@@ -58,7 +58,7 @@ export function GiveawayEarnFragments({
   return (
     <section
       id="earn-fragments"
-      className="rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md min-[1440px]:sticky min-[1440px]:top-28"
+      className="scroll-mt-24 scroll-mb-24 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md min-[1440px]:sticky min-[1440px]:top-28"
     >
       <h2 className="mb-4 font-display text-lg font-semibold">{earn.title}</h2>
       <ul className="space-y-3">
@@ -68,7 +68,7 @@ export function GiveawayEarnFragments({
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">{earn.sellLabel}</p>
-            <p className="text-xs text-muted-foreground">{earn.sellReward}</p>
+            <p className="text-xs text-foreground/70">{earn.sellReward}</p>
           </div>
           <Button asChild size="sm" variant="chrome">
             <Link href="/">{earn.sellCta}</Link>
@@ -81,7 +81,7 @@ export function GiveawayEarnFragments({
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium">{earn.dailyLabel}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground/70">
                 {earn.dailyReward.replace('{count}', String(daily.rewardFragments))}
               </p>
             </div>

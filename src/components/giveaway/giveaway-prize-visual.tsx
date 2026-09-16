@@ -38,20 +38,20 @@ export function GiveawayPrizeVisual({
       <div
         className={cn(
           'relative flex flex-col items-center justify-center',
-          isHero ? 'min-h-[220px]' : 'h-[132px]'
+          isHero ? 'min-h-[160px] sm:min-h-[180px]' : 'h-[132px]'
         )}
       >
         <SafeImage
           src={giveaway.prizeImageUrl}
           alt={giveaway.prize}
-          width={isHero ? 280 : 160}
-          height={isHero ? 200 : 110}
+          width={isHero ? 240 : 160}
+          height={isHero ? 170 : 110}
           className={cn(
             'object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]',
-            isHero ? 'h-[180px] w-auto sm:h-[200px]' : 'h-[96px] w-auto',
+            isHero ? 'h-[150px] w-auto sm:h-[170px]' : 'h-[96px] w-auto',
             grayscale && 'grayscale'
           )}
-          fallbackClassName={isHero ? 'h-[180px] w-[240px] rounded' : 'h-[96px] w-[140px] rounded'}
+          fallbackClassName={isHero ? 'h-[150px] w-[200px] rounded' : 'h-[96px] w-[140px] rounded'}
           fallbackIcon={
             <TrophyIcon className={isHero ? 'h-16 w-16 text-theme-accent' : 'h-10 w-10 text-theme-accent'} />
           }
@@ -83,7 +83,7 @@ export function GiveawayPrizeDetails({
     <div className="flex flex-col items-center text-center">
       {parsed.hasStructuredName ? (
         <>
-          <p className={cn('font-display text-muted-foreground', isHero ? 'text-sm' : 'text-xs')}>
+          <p className={cn('font-display text-foreground/70', isHero ? 'text-sm' : 'text-xs')}>
             {parsed.weapon}
           </p>
           <p
@@ -93,7 +93,7 @@ export function GiveawayPrizeDetails({
             {parsed.finish}
           </p>
           {parsed.exterior && (
-            <p className={cn('mt-0.5 text-muted-foreground', isHero ? 'text-sm' : 'text-xs')}>
+            <p className={cn('mt-0.5 text-foreground/70', isHero ? 'text-sm' : 'text-xs')}>
               {parsed.exterior}
             </p>
           )}

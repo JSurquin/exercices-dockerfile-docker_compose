@@ -9,12 +9,13 @@ import {
   type TimeRemaining,
 } from '@/lib/giveaway-presentation';
 
-export function useLiveNow(intervalMs = 1000): number {
+export function useLiveNow(intervalMs = 1000, enabled = true): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
+    if (!enabled) return;
     const id = window.setInterval(() => setNow(Date.now()), intervalMs);
     return () => window.clearInterval(id);
-  }, [intervalMs]);
+  }, [intervalMs, enabled]);
   return now;
 }
 
@@ -33,7 +34,7 @@ export function GiveawayCountdown({
   className?: string;
   now?: number;
 }) {
-  const liveNow = useLiveNow();
+  const liveNow = useLiveNow(1000, now === undefined);
   const remaining = getTimeRemaining(endDate, now ?? liveNow);
   const units: { value: number; label: string }[] = [
     { value: remaining.days, label: labels.days },
@@ -41,30 +42,32 @@ export function GiveawayCountdown({
     { value: remaining.minutes, label: labels.minutes },
     { value: remaining.seconds, label: labels.seconds },
   ];
+  const accessibleLabel = units.map((unit) => `${pad(unit.value)} ${unit.label}`).join(' ');
 
   return (
     <div
       className={cn('flex items-end gap-2 sm:gap-3', className)}
       data-countdown
-      aria-live="polite"
+      role="timer"
+      aria-label={accessibleLabel}
     >
       {units.map((unit, index) => (
-        <div key={unit.label} className="flex items-end gap-2 sm:gap-3">
+        <div key={unit.label} className="flex items-end gap-2 sm:gap-3" aria-hidden>
           {index > 0 && (
-            <span className="font-display pb-5 text-2xl text-muted-foreground/70 sm:text-3xl">
+            <span className="font-display pb-4 text-2xl text-foreground/55 sm:text-3xl">
               :
             </span>
           )}
-          <div className="flex min-w-[3.25rem] flex-col items-center sm:min-w-[3.75rem]">
+          <div className="flex min-w-[2.75rem] flex-col items-center sm:min-w-[3.25rem]">
             <span
               className={cn(
-                'font-display text-3xl font-semibold tabular-nums tracking-tight sm:text-5xl',
-                remaining.expired && 'text-muted-foreground'
+                'font-display text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl',
+                remaining.expired && 'text-foreground/70'
               )}
             >
               {pad(unit.value)}
             </span>
-            <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-foreground/70">
               {unit.label}
             </span>
           </div>
