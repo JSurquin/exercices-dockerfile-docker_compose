@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
-import { enrichGiveawayForViewer, redactGiveawayForPublic } from '@/lib/giveaway-public';
+import { enrichGiveawayForViewer, GIVEAWAY_PUBLIC_ENTRY_INCLUDE, redactGiveawayForPublic } from '@/lib/giveaway-public';
 import { withPublicWinnerProfile } from '@/lib/giveaway-winners-public';
 import { canAccessPrivateGiveaway } from '@/lib/giveaway-private-access';
 import { resolveGiveawayViewerContext } from '@/lib/giveaway-viewer-context';
@@ -22,22 +22,7 @@ export async function GET(
       where: { id },
       include: {
         _count: { select: { entries: true } },
-        ...(viewerId
-          ? {
-              entries: {
-                where: { userId: viewerId },
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      steamUsername: true,
-                      steamAvatar: true,
-                    },
-                  },
-                },
-              },
-            }
-          : {}),
+        entries: GIVEAWAY_PUBLIC_ENTRY_INCLUDE,
         winners: { orderBy: { rank: 'asc' } },
       },
     });

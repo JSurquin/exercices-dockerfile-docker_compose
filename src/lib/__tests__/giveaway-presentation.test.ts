@@ -1,11 +1,13 @@
 import {
   collectPastWinners,
   filterGiveawaysByTier,
+  formatChancePercent,
   formatCompactCountdown,
   formatGiveawayDate,
   formatWinnerCount,
   fragmentsUntilCheapestEntry,
   getDisplayInitials,
+  getGiveawayKicker,
   getGiveawayTier,
   getPrizeHaloColor,
   getPrizeValueCents,
@@ -13,6 +15,7 @@ import {
   parsePrizeDisplay,
   selectFeaturedGiveaway,
   sortGiveaways,
+  visibleLeaderboardRows,
   type GiveawayPresentationInput,
 } from '@/lib/giveaway-presentation';
 
@@ -46,7 +49,17 @@ describe('getGiveawayTier', () => {
     expect(getGiveawayTier(giveaway({ id: '1', durationType: 'DAILY' }))).toBe('daily');
     expect(getGiveawayTier(giveaway({ id: '2', durationType: 'WEEKLY' }))).toBe('weekly');
     expect(getGiveawayTier(giveaway({ id: '3', durationType: 'MONTHLY' }))).toBe('monthly');
-    expect(getGiveawayTier(giveaway({ id: '4', durationType: 'YEARLY' }))).toBe('special');
+    expect(getGiveawayTier(giveaway({ id: '4', durationType: 'YEARLY' }))).toBe('yearly');
+    expect(
+      getGiveawayTier(
+        giveaway({
+          id: 'wrong-label',
+          durationType: 'WEEKLY',
+          startDate: '2025-09-16T00:00:00.000Z',
+          endDate: '2026-09-16T00:00:00.000Z',
+        })
+      )
+    ).toBe('yearly');
   });
 
   it('deduces the tier from duration when no palier field exists', () => {
@@ -77,6 +90,15 @@ describe('getGiveawayTier', () => {
         })
       )
     ).toBe('monthly');
+    expect(
+      getGiveawayTier(
+        giveaway({
+          id: 'y',
+          startDate: '2025-09-16T00:00:00.000Z',
+          endDate: '2026-09-16T00:00:00.000Z',
+        })
+      )
+    ).toBe('yearly');
     expect(
       getGiveawayTier(
         giveaway({
@@ -212,6 +234,48 @@ describe('formatGiveawayDate', () => {
   it('formats according to language', () => {
     expect(formatGiveawayDate('2026-09-23T12:00:00.000Z', 'en')).toContain('2026');
     expect(formatGiveawayDate('2026-09-23T12:00:00.000Z', 'fr')).toContain('2026');
+  });
+});
+
+describe('formatChancePercent / visibleLeaderboardRows / getGiveawayKicker', () => {
+  it('formats odds with locale separators', () => {
+    expect(formatChancePercent(66.67, 'en')).toBe('66.67%');
+    expect(formatChancePercent(66.67, 'fr')).toBe('66,67 %');
+  });
+
+  it('keeps the top 5 and appends the viewer when they are outside', () => {
+    const rows = Array.from({ length: 6 }, (_, index) => ({
+      username: `p${index + 1}`,
+      avatar: null,
+      entries: 10 - index,
+      isYou: index === 5,
+    }));
+    const visible = visibleLeaderboardRows(rows, 5);
+    expect(visible.map((row) => row.username)).toEqual(['p1', 'p2', 'p3', 'p4', 'p5', 'p6']);
+    expect(visible.at(-1)?.isYou).toBe(true);
+  });
+
+  it('does not duplicate the viewer when they are already in the top 5', () => {
+    const visible = visibleLeaderboardRows(
+      [
+        { username: 'A', avatar: null, entries: 8, isYou: true },
+        { username: 'B', avatar: null, entries: 3 },
+      ],
+      5
+    );
+    expect(visible).toHaveLength(2);
+  });
+
+  it('uses the yearly kicker label', () => {
+    expect(
+      getGiveawayKicker('yearly', {
+        kickerDaily: 'Giveaway journalier',
+        kickerWeekly: 'Giveaway hebdomadaire',
+        kickerMonthly: 'Giveaway mensuel',
+        kickerYearly: 'Giveaway annuel',
+        kickerSpecial: 'Giveaway spécial',
+      })
+    ).toBe('Giveaway annuel');
   });
 });
 

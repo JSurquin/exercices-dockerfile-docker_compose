@@ -150,6 +150,12 @@ export interface Giveaway {
   totalEntries?: number;
   myEntries?: number;
   myChancePercent?: number;
+  leaderboard?: {
+    username: string | null;
+    avatar: string | null;
+    entries: number;
+    isYou?: boolean;
+  }[];
   winners?: {
     rank: number;
     userId?: string;

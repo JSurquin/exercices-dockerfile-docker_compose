@@ -58,7 +58,7 @@ export function GiveawayEarnFragments({
   return (
     <section
       id="earn-fragments"
-      className="scroll-mt-24 scroll-mb-24 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md min-[1440px]:sticky min-[1440px]:top-28"
+      className="scroll-mt-24 scroll-mb-24 rounded-2xl border border-white/10 bg-card/70 p-4 backdrop-blur-md"
     >
       <h2 className="mb-4 font-display text-lg font-semibold">{earn.title}</h2>
       <ul className="space-y-3">

@@ -1,8 +1,21 @@
 type GiveawayWithOptionalCount<T> = T & { _count?: { entries: number } };
 
+export type PublicGiveawayLeaderboardRow = {
+  username: string | null;
+  avatar: string | null;
+  entries: number;
+  isYou: boolean;
+};
+
+type GiveawayEntryForViewer = {
+  userId: string;
+  ticketsUsed: number;
+  user?: { steamUsername?: string | null; steamAvatar?: string | null } | null;
+};
+
 /**
  * Métadonnées publiques : pas de seed sur la liste ; détail = seed uniquement si le tirage a eu lieu (statut ≠ ACTIVE).
- * Supprime systématiquement le champ `entries` brut (les données utiles sont déjà dans myEntries / totalParticipants).
+ * Supprime systématiquement le champ `entries` brut (les données utiles sont déjà dans myEntries / totalParticipants / leaderboard).
  */
 export function redactGiveawayForPublic<T extends Record<string, unknown>>(
   g: T,
@@ -24,9 +37,36 @@ export function redactGiveawayForPublic<T extends Record<string, unknown>>(
   return withoutEntries as T;
 }
 
+export const GIVEAWAY_PUBLIC_ENTRY_INCLUDE = {
+  include: {
+    user: {
+      select: {
+        steamUsername: true,
+        steamAvatar: true,
+      },
+    },
+  },
+  orderBy: { ticketsUsed: 'desc' as const },
+};
+
+function buildPublicLeaderboard(
+  entries: GiveawayEntryForViewer[] | undefined,
+  viewerUserId?: string | null
+): PublicGiveawayLeaderboardRow[] {
+  if (!entries || entries.length === 0) return [];
+  return [...entries]
+    .sort((a, b) => b.ticketsUsed - a.ticketsUsed)
+    .map((entry) => ({
+      username: entry.user?.steamUsername ?? null,
+      avatar: entry.user?.steamAvatar ?? null,
+      entries: entry.ticketsUsed,
+      isYou: Boolean(viewerUserId && entry.userId === viewerUserId),
+    }));
+}
+
 export function enrichGiveawayForViewer<
   T extends {
-    entries?: { userId: string; ticketsUsed: number }[];
+    entries?: GiveawayEntryForViewer[];
     soldTickets: number;
     winnerId?: string | null;
     winners?: { rank: number; userId?: string; user?: { steamUsername?: string | null; steamAvatar?: string | null } | null }[];
@@ -36,6 +76,7 @@ export function enrichGiveawayForViewer<
   totalEntries: number;
   myEntries: number;
   myChancePercent: number;
+  leaderboard: PublicGiveawayLeaderboardRow[];
 } {
   const totalParticipants = g._count?.entries ?? g.entries?.length ?? 0;
   const totalEntries = g.soldTickets;
@@ -53,10 +94,12 @@ export function enrichGiveawayForViewer<
     totalEntries,
     myEntries,
     myChancePercent: Math.round(myChancePercent * 100) / 100,
+    leaderboard: buildPublicLeaderboard(g.entries, viewerUserId),
   } as T & {
     totalParticipants: number;
     totalEntries: number;
     myEntries: number;
     myChancePercent: number;
+    leaderboard: PublicGiveawayLeaderboardRow[];
   };
 }

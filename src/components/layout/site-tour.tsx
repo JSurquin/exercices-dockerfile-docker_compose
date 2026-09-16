@@ -250,11 +250,11 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="giveaways-tabs"]',
       popover: {
-        title: t('Concours actifs / terminés', 'Active / ended giveaways', '进行中/已结束的抽奖'),
+        title: t('Giveaways en cours / historique', 'Active giveaways / history', '进行中的抽奖 / 历史'),
         description: t(
-          'L\'onglet <strong>Actifs</strong> liste les concours en cours. Cliquez sur une carte pour voir le détail, le nombre de participants et entrer vos fragments. L\'onglet <strong>Terminés</strong> affiche les anciens résultats et l\'onglet <strong>Mes participations</strong> résume vos entrées passées.',
-          'The <strong>Active</strong> tab lists ongoing giveaways. Click a card for details, participant count and to enter your fragments. The <strong>Ended</strong> tab shows past results and the <strong>My Entries</strong> tab summarizes your past participations.',
-          '<strong>进行中</strong>标签列出当前抽奖。点击卡片查看详情、参与人数并输入您的碎片。<strong>已结束</strong>标签显示过去的结果，<strong>我的参与</strong>标签汇总您的历史参与。'
+          'La liste montre les concours en cours. Cliquez sur une carte pour l’afficher en haut et y entrer. Le bouton <strong>Historique</strong> ouvre les tirages terminés.',
+          'The list shows ongoing giveaways. Click a card to feature it at the top and enter. The <strong>History</strong> button reveals ended draws.',
+          '列表显示进行中的抽奖。点击卡片可将其显示在顶部并参与。<strong>历史</strong>按钮可查看已结束的抽奖。'
         ),
         side: 'top',
       },

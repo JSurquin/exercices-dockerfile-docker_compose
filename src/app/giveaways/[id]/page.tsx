@@ -33,6 +33,8 @@ import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
 import Image from 'next/image';
 import {
+  formatChanceNumber,
+  formatChancePercent,
   formatCompactCountdown,
   formatGiveawayDate,
   getDisplayInitials,
@@ -326,7 +328,7 @@ export default function GiveawayDetailsPage() {
                     </div>
                     <div className="text-center p-3 bg-theme-accent/5 dark:bg-theme-accent/10/20 rounded-lg border border-theme-accent/20 dark:border-theme-accent/30">
                       <p className="text-xs text-muted-foreground mb-1">{messages.giveawaysPage.detail.myChance}</p>
-                      <p className="text-xl font-bold text-theme-accent">{myChance.toFixed(2)}%</p>
+                      <p className="text-xl font-bold text-theme-accent">{formatChancePercent(myChance, locale)}</p>
                     </div>
                     <div className="text-center p-3 bg-muted rounded-lg">
                       <p className="text-xs text-muted-foreground mb-1">{messages.giveawaysPage.detail.myFragments}</p>
@@ -427,7 +429,7 @@ export default function GiveawayDetailsPage() {
                               <div className="flex gap-4 font-medium">
                                 <span>{messages.giveawaysPage.detail.entriesCount.replace('{count}', String(previewMyEntries))}</span>
                                 <span className="text-green-600">
-                                  {messages.giveawaysPage.detail.chancePercent.replace('{percent}', previewChance.toFixed(2))}
+                                  {messages.giveawaysPage.detail.chancePercent.replace('{percent}', formatChanceNumber(previewChance, locale))}
                                 </span>
                               </div>
                             </div>
@@ -596,7 +598,7 @@ export default function GiveawayDetailsPage() {
                           {user.username}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {messages.giveawaysPage.detail.entriesAndChance.replace('{entries}', String(myEntries)).replace('{chance}', myChance.toFixed(1))}
+                          {messages.giveawaysPage.detail.entriesAndChance.replace('{entries}', String(myEntries)).replace('{chance}', formatChanceNumber(myChance, locale))}
                         </p>
                       </div>
                     </div>

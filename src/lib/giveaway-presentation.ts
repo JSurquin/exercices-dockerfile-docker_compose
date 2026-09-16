@@ -7,15 +7,23 @@ import {
 } from '@/lib/cs2-constants';
 
 export type GiveawaySort = 'endingSoon' | 'highestValue' | 'lowestCost';
-export type GiveawayTier = 'daily' | 'weekly' | 'monthly' | 'special';
+export type GiveawayTier = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'special';
 export type GiveawayTierFilter = 'all' | GiveawayTier;
 
 export const GIVEAWAY_TIER_ACCENTS: Record<GiveawayTier, string> = {
   daily: '#38bdf8',
   weekly: '#7eb8ff',
   monthly: '#a78bfa',
-  special: '#fbbf24',
+  yearly: '#fbbf24',
+  special: '#fb7185',
 };
+
+export interface GiveawayLeaderboardRow {
+  username: string | null;
+  avatar: string | null;
+  entries: number;
+  isYou?: boolean;
+}
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CHROME_HALO = '#7eb8ff';
@@ -49,24 +57,105 @@ export function getPrizeValueCents(
   return Math.floor(value);
 }
 
-export function getGiveawayTier(
-  giveaway: Pick<GiveawayPresentationInput, 'durationType' | 'startDate' | 'createdAt' | 'endDate'>
-): GiveawayTier {
-  const durationType = (giveaway.durationType ?? '').toUpperCase();
-  if (durationType === 'DAILY') return 'daily';
-  if (durationType === 'WEEKLY') return 'weekly';
-  if (durationType === 'MONTHLY') return 'monthly';
-  if (durationType === 'YEARLY') return 'special';
-
-  const end = toGiveawayDate(giveaway.endDate);
-  const start = toGiveawayDate(giveaway.startDate) ?? toGiveawayDate(giveaway.createdAt);
-  if (!end || !start) return 'special';
-
-  const durationMs = end.getTime() - start.getTime();
+function tierFromDurationMs(durationMs: number): GiveawayTier {
   if (durationMs <= DAY_MS) return 'daily';
   if (durationMs <= 8 * DAY_MS) return 'weekly';
   if (durationMs <= 32 * DAY_MS) return 'monthly';
-  return 'special';
+  if (durationMs < 180 * DAY_MS) return 'special';
+  return 'yearly';
+}
+
+function tierFromDurationType(durationType: string): GiveawayTier | null {
+  if (durationType === 'DAILY') return 'daily';
+  if (durationType === 'WEEKLY') return 'weekly';
+  if (durationType === 'MONTHLY') return 'monthly';
+  if (durationType === 'YEARLY') return 'yearly';
+  return null;
+}
+
+export function getGiveawayTier(
+  giveaway: Pick<GiveawayPresentationInput, 'durationType' | 'startDate' | 'createdAt' | 'endDate'>
+): GiveawayTier {
+  const end = toGiveawayDate(giveaway.endDate);
+  const start = toGiveawayDate(giveaway.startDate) ?? toGiveawayDate(giveaway.createdAt);
+  if (end && start) {
+    return tierFromDurationMs(end.getTime() - start.getTime());
+  }
+
+  return tierFromDurationType((giveaway.durationType ?? '').toUpperCase()) ?? 'special';
+}
+
+export function getGiveawayTierLabel(
+  tier: GiveawayTier,
+  labels: Record<GiveawayTier, string>
+): string {
+  return labels[tier];
+}
+
+export function giveawayTierLabels(layout: {
+  tierDaily: string;
+  tierWeekly: string;
+  tierMonthly: string;
+  tierYearly: string;
+  tierSpecial: string;
+}): Record<GiveawayTier, string> {
+  return {
+    daily: layout.tierDaily,
+    weekly: layout.tierWeekly,
+    monthly: layout.tierMonthly,
+    yearly: layout.tierYearly,
+    special: layout.tierSpecial,
+  };
+}
+
+export function getGiveawayKicker(
+  tier: GiveawayTier,
+  layout: {
+    kickerDaily: string;
+    kickerWeekly: string;
+    kickerMonthly: string;
+    kickerYearly: string;
+    kickerSpecial: string;
+  }
+): string {
+  if (tier === 'daily') return layout.kickerDaily;
+  if (tier === 'weekly') return layout.kickerWeekly;
+  if (tier === 'monthly') return layout.kickerMonthly;
+  if (tier === 'yearly') return layout.kickerYearly;
+  return layout.kickerSpecial;
+}
+
+export function formatChanceNumber(value: number, locale: string): string {
+  const amount = Number.isFinite(value) ? value : 0;
+  const formatted = amount.toFixed(2);
+  if (locale === 'fr') {
+    return formatted.replace('.', ',');
+  }
+  return formatted;
+}
+
+export function formatChancePercent(value: number, locale: string): string {
+  const formatted = formatChanceNumber(value, locale);
+  if (locale === 'fr') {
+    return `${formatted} %`;
+  }
+  return `${formatted}%`;
+}
+
+export function visibleLeaderboardRows(
+  rows: GiveawayLeaderboardRow[],
+  topN = 5
+): GiveawayLeaderboardRow[] {
+  const sorted = [...rows].sort((a, b) => {
+    if (b.entries !== a.entries) return b.entries - a.entries;
+    return (a.username ?? '').localeCompare(b.username ?? '');
+  });
+  const top = sorted.slice(0, topN);
+  const you = sorted.find((row) => row.isYou);
+  if (you && !top.some((row) => row.isYou)) {
+    return [...top, you];
+  }
+  return top;
 }
 
 export function getGiveawayTierAccent(tier: GiveawayTier): string {
@@ -186,15 +275,30 @@ export function formatWinnerCount(count: number, one: string, other: string): st
   return (count === 1 ? one : other).replace('{count}', String(count));
 }
 
+export function cheapestActiveTicketPrice(
+  giveaways: { status?: string; ticketPrice: number }[]
+): number | null {
+  const active = giveaways.filter((giveaway) => giveaway.status === 'ACTIVE' && giveaway.ticketPrice > 0);
+  if (active.length === 0) return null;
+  return Math.min(...active.map((giveaway) => giveaway.ticketPrice));
+}
+
 export function fragmentsUntilCheapestEntry(
   giveaways: { status?: string; ticketPrice: number }[],
   available: number
 ): number | null {
-  const active = giveaways.filter((giveaway) => giveaway.status === 'ACTIVE' && giveaway.ticketPrice > 0);
-  if (active.length === 0) return null;
-  const cheapest = Math.min(...active.map((giveaway) => giveaway.ticketPrice));
+  const cheapest = cheapestActiveTicketPrice(giveaways);
+  if (cheapest == null) return null;
   const missing = cheapest - available;
   return missing > 0 ? Math.ceil(missing) : null;
+}
+
+export function fragmentsEntryProgressPercent(
+  available: number,
+  cheapest: number | null
+): number {
+  if (cheapest == null || cheapest <= 0) return 0;
+  return Math.min(100, Math.max(0, Math.round((available / cheapest) * 100)));
 }
 
 export interface PastWinnerRow {

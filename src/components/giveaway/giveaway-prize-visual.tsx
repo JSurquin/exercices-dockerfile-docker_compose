@@ -27,7 +27,7 @@ export function GiveawayPrizeVisual({
   const isHero = size === 'hero';
 
   return (
-    <div className={cn('relative overflow-hidden rounded-xl', isHero ? 'p-6 sm:p-8' : 'p-4')}>
+    <div className={cn('relative overflow-hidden rounded-xl', isHero ? 'p-4 sm:p-5' : 'p-4')}>
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -38,7 +38,7 @@ export function GiveawayPrizeVisual({
       <div
         className={cn(
           'relative flex flex-col items-center justify-center',
-          isHero ? 'min-h-[160px] sm:min-h-[180px]' : 'h-[132px]'
+          isHero ? 'min-h-[120px] sm:min-h-[140px]' : 'h-[132px]'
         )}
       >
         <SafeImage
@@ -48,10 +48,10 @@ export function GiveawayPrizeVisual({
           height={isHero ? 170 : 110}
           className={cn(
             'object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)]',
-            isHero ? 'h-[150px] w-auto sm:h-[170px]' : 'h-[96px] w-auto',
+            isHero ? 'h-[120px] w-auto sm:h-[140px]' : 'h-[96px] w-auto',
             grayscale && 'grayscale'
           )}
-          fallbackClassName={isHero ? 'h-[150px] w-[200px] rounded' : 'h-[96px] w-[140px] rounded'}
+          fallbackClassName={isHero ? 'h-[120px] w-[180px] rounded' : 'h-[96px] w-[140px] rounded'}
           fallbackIcon={
             <TrophyIcon className={isHero ? 'h-16 w-16 text-theme-accent' : 'h-10 w-10 text-theme-accent'} />
           }
@@ -87,7 +87,7 @@ export function GiveawayPrizeDetails({
             {parsed.weapon}
           </p>
           <p
-            className={cn('font-display font-semibold', isHero ? 'text-2xl sm:text-3xl' : 'text-base')}
+            className={cn('font-display font-semibold', isHero ? 'text-xl sm:text-2xl' : 'text-base')}
             style={{ color: halo }}
           >
             {parsed.finish}
@@ -99,7 +99,7 @@ export function GiveawayPrizeDetails({
           )}
         </>
       ) : (
-        <p className={cn('font-display font-semibold', isHero ? 'text-2xl sm:text-3xl' : 'text-base')}>
+        <p className={cn('font-display font-semibold', isHero ? 'text-xl sm:text-2xl' : 'text-base')}>
           {parsed.fallbackName}
         </p>
       )}
@@ -107,10 +107,10 @@ export function GiveawayPrizeDetails({
         <Badge
           className={cn(
             'mission-glass-badge mt-2 font-display font-semibold',
-            isHero ? 'px-4 py-1.5 text-lg' : 'px-2.5 py-1 text-sm'
+            isHero ? 'px-3 py-1 text-base' : 'px-2.5 py-1 text-sm'
           )}
         >
-          <ConvertedAmount cents={valueCents} className={isHero ? 'h-6' : 'h-4'} />
+              <ConvertedAmount cents={valueCents} className={isHero ? 'h-5' : 'h-4'} />
         </Badge>
       )}
     </div>

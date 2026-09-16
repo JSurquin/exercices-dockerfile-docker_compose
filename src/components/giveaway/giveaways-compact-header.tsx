@@ -2,10 +2,9 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { FragmentAmount, LevelBadge } from '@/components/ui/level-badge';
+import { FragmentAmount } from '@/components/ui/level-badge';
 import { GiveawayHowItWorksDialog } from '@/components/giveaway/giveaway-how-it-works-dialog';
-import { getDisplayInitials } from '@/lib/giveaway-presentation';
-import { getLevelInfo } from '@/lib/level-system';
+import { fragmentsEntryProgressPercent, getDisplayInitials } from '@/lib/giveaway-presentation';
 import { GiftIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
 
@@ -14,21 +13,22 @@ export function GiveawaysCompactHeader({
   user,
   userFragments,
   fragmentsUntilNext,
+  cheapestTicketPrice,
 }: {
   messages: Messages;
   user: {
     username: string;
     avatar: string;
-    xp: number;
     level: number;
   };
   userFragments: number;
   fragmentsUntilNext?: number | null;
+  cheapestTicketPrice?: number | null;
 }) {
   const layout = messages.giveaways.layout;
-  const levelInfo = getLevelInfo(user.xp);
-  const xpPercent = Math.round(levelInfo.levelProgress * 100);
   const initials = getDisplayInitials(user.username) || 'MS';
+  const progress = fragmentsEntryProgressPercent(userFragments, cheapestTicketPrice ?? null);
+  const levelLabel = layout.levelBadge.replace('{level}', String(user.level));
 
   return (
     <div className="mb-4 flex flex-col gap-4 lg:mb-6 lg:flex-row lg:items-center lg:justify-between">
@@ -55,14 +55,12 @@ export function GiveawaysCompactHeader({
         className="hidden min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md md:flex dark:border-white/10"
       >
         <Avatar className="h-11 w-11 shrink-0 ring-1 ring-white/15">
-          <AvatarImage src={user.avatar} alt={user.username} />
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarImage src={user.avatar || undefined} alt={user.username} />
+          <AvatarFallback className="text-xs font-semibold">{initials}</AvatarFallback>
         </Avatar>
-        <LevelBadge
-          tierIndex={levelInfo.tierIndex}
-          size="sm"
-          alt={`${messages.giveaways.userTickets.level} ${user.level}`}
-        />
+        <span className="shrink-0 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-xs font-semibold text-foreground">
+          {levelLabel}
+        </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <FragmentAmount
@@ -80,10 +78,12 @@ export function GiveawaysCompactHeader({
               )}
             </p>
           )}
-          <Progress
-            value={xpPercent}
-            className="mt-2 h-1 bg-muted/60 [&>div]:bg-theme-accent"
-          />
+          {cheapestTicketPrice != null && cheapestTicketPrice > 0 && (
+            <Progress
+              value={progress}
+              className="mt-2 h-1 bg-muted/60 [&>div]:bg-theme-accent"
+            />
+          )}
         </div>
       </div>
     </div>

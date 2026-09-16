@@ -37,7 +37,7 @@ export function GiveawayHeroSkeleton() {
   return (
     <Card
       aria-hidden
-      className="mb-6 overflow-hidden border-white/10 bg-card/80 py-0 lg:mb-8"
+      className="mb-6 overflow-hidden border-white/10 bg-card/80 py-0 lg:mb-8 lg:max-h-[560px]"
     >
       <CardContent className="p-4 sm:p-5">
         <div className="mb-4 flex gap-2">

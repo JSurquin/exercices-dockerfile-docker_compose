@@ -7,22 +7,14 @@ import { SafeImage } from '@/components/ui/safe-image';
 import {
   collectPastWinners,
   formatGiveawayDate,
-  getGiveawayTierAccent,
-  type GiveawayTier,
+  getGiveawayTierLabel,
+  giveawayTierLabels,
 } from '@/lib/giveaway-presentation';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
 import { TrophyIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
 
 const PAGE_SIZE = 6;
-
-function tierLabel(tier: GiveawayTier, messages: Messages): string {
-  const layout = messages.giveaways.layout;
-  if (tier === 'daily') return layout.tierDaily;
-  if (tier === 'weekly') return layout.tierWeekly;
-  if (tier === 'monthly') return layout.tierMonthly;
-  return layout.tierSpecial;
-}
 
 export function GiveawayPastWinners({
   giveaways,
@@ -70,8 +62,8 @@ export function GiveawayPastWinners({
                 />
                 <div className="min-w-0">
                   <p className="truncate text-xs font-medium">{row.prize}</p>
-                  <p className="text-[11px]" style={{ color: getGiveawayTierAccent(row.tier) }}>
-                    {tierLabel(row.tier, messages)}
+                  <p className="text-[11px] text-foreground/80">
+                    {getGiveawayTierLabel(row.tier, giveawayTierLabels(messages.giveaways.layout))}
                   </p>
                 </div>
               </div>
