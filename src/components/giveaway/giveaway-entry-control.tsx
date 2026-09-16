@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import type { GiveawayWithEntries } from '@/hooks/use-giveaways';
+import { getGiveawayEntryLimits } from '@/lib/giveaway-presentation';
 import { cn } from '@/lib/utils';
 import { ArrowPathIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import type { Messages } from '~/utils/types';
@@ -28,15 +29,9 @@ export function GiveawayEntryControl({
   const [entriesToBuy, setEntriesToBuy] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const card = messages.giveaways.card;
-  const myEntries = giveaway.myEntries ?? 0;
-  const poolLeft = Math.max(0, giveaway.maxTickets - giveaway.soldTickets);
-  const remainingPerUser =
-    giveaway.maxEntriesPerUser != null ? Math.max(0, giveaway.maxEntriesPerUser - myEntries) : poolLeft;
-  const maxAffordable =
-    giveaway.ticketPrice > 0 ? Math.floor(userFragments / giveaway.ticketPrice) : 0;
-  const maxByRules = Math.max(0, Math.min(poolLeft, remainingPerUser));
-  const maxSelectable = Math.max(0, Math.min(maxByRules, maxAffordable));
-  const maxReached = maxByRules < 1;
+  const limits = getGiveawayEntryLimits(giveaway, userFragments);
+  const maxSelectable = limits.maxSelectable;
+  const maxReached = limits.maxReached;
   const totalCost = entriesToBuy * giveaway.ticketPrice;
   const missing = Math.max(0, totalCost - userFragments);
   const unaffordable = !maxReached && missing > 0;

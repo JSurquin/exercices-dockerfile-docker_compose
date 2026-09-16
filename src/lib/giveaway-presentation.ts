@@ -311,7 +311,39 @@ export interface PastWinnerRow {
   tier: GiveawayTier;
   endDate: Date | string;
   giveawayId: string;
+  rewardValueCents?: number | null;
 }
+
+export interface PastWinnerPerson {
+  username: string | null;
+  avatar: string | null;
+}
+
+export interface PastWinnerGroup {
+  key: string;
+  giveawayId: string;
+  prize: string;
+  prizeImageUrl: string | null;
+  steamMarketHashName?: string | null;
+  tier: GiveawayTier;
+  endDate: Date | string;
+  rewardValueCents?: number | null;
+  winners: PastWinnerPerson[];
+}
+
+export type GiveawayCardAction =
+  | { type: 'reserved' }
+  | { type: 'maxReached' }
+  | { type: 'unaffordable'; missing: number }
+  | { type: 'participate' };
+
+const TIER_SORT_ORDER: Record<GiveawayTier, number> = {
+  daily: 0,
+  weekly: 1,
+  monthly: 2,
+  special: 3,
+  yearly: 4,
+};
 
 export function collectPastWinners<
   T extends GiveawayPresentationInput & {
@@ -333,6 +365,7 @@ export function collectPastWinners<
         tier: getGiveawayTier(giveaway),
         endDate: giveaway.endDate,
         giveawayId: giveaway.id,
+        rewardValueCents: giveaway.rewardValueCents,
       });
     }
   }
@@ -342,6 +375,140 @@ export function collectPastWinners<
     return bTime - aTime;
   });
   return rows;
+}
+
+export function collectPastWinnerGroups<
+  T extends GiveawayPresentationInput & {
+    winners?: { rank: number; user?: { steamUsername?: string | null; steamAvatar?: string | null } | null }[];
+  },
+>(giveaways: T[]): PastWinnerGroup[] {
+  const groups: PastWinnerGroup[] = [];
+  for (const giveaway of giveaways) {
+    if (giveaway.status !== 'ENDED') continue;
+    const winners = [...(giveaway.winners ?? [])]
+      .sort((a, b) => a.rank - b.rank)
+      .map((winner) => ({
+        username: winner.user?.steamUsername ?? null,
+        avatar: winner.user?.steamAvatar ?? null,
+      }));
+    if (winners.length === 0) continue;
+    groups.push({
+      key: giveaway.id,
+      giveawayId: giveaway.id,
+      prize: giveaway.prize,
+      prizeImageUrl: giveaway.prizeImageUrl ?? null,
+      steamMarketHashName: giveaway.steamMarketHashName,
+      tier: getGiveawayTier(giveaway),
+      endDate: giveaway.endDate,
+      rewardValueCents: giveaway.rewardValueCents,
+      winners,
+    });
+  }
+  groups.sort((a, b) => {
+    const aTime = toGiveawayDate(a.endDate)?.getTime() ?? 0;
+    const bTime = toGiveawayDate(b.endDate)?.getTime() ?? 0;
+    return bTime - aTime;
+  });
+  return groups;
+}
+
+export function formatCommunityName(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return trimmed;
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
+
+export function nextUtcMidnightMs(now = Date.now()): number {
+  const date = new Date(now);
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1, 0, 0, 0, 0);
+}
+
+export function viewerIsWinner(
+  giveaway: {
+    winners?: { user?: { steamUsername?: string | null } | null }[];
+  },
+  username: string | null | undefined
+): boolean {
+  const needle = (username ?? '').trim();
+  if (!needle) return false;
+  return (giveaway.winners ?? []).some((winner) => (winner.user?.steamUsername ?? '').trim() === needle);
+}
+
+export function getGiveawayEntryLimits(
+  giveaway: {
+    ticketPrice: number;
+    maxTickets: number;
+    soldTickets: number;
+    maxEntriesPerUser?: number | null;
+    myEntries?: number;
+  },
+  userFragments: number
+): {
+  myEntries: number;
+  poolLeft: number;
+  maxByRules: number;
+  maxAffordable: number;
+  maxSelectable: number;
+  userLimitReached: boolean;
+  poolSoldOut: boolean;
+  maxReached: boolean;
+} {
+  const myEntries = giveaway.myEntries ?? 0;
+  const poolLeft = Math.max(0, giveaway.maxTickets - giveaway.soldTickets);
+  const hasUserLimit = giveaway.maxEntriesPerUser != null;
+  const remainingPerUser = hasUserLimit
+    ? Math.max(0, (giveaway.maxEntriesPerUser ?? 0) - myEntries)
+    : poolLeft;
+  const maxByRules = Math.max(0, Math.min(poolLeft, remainingPerUser));
+  const maxAffordable =
+    giveaway.ticketPrice > 0 ? Math.floor(userFragments / giveaway.ticketPrice) : maxByRules;
+  const maxSelectable = Math.max(0, Math.min(maxByRules, maxAffordable));
+  const userLimitReached = hasUserLimit && myEntries >= (giveaway.maxEntriesPerUser ?? 0);
+  const poolSoldOut = poolLeft < 1;
+  return {
+    myEntries,
+    poolLeft,
+    maxByRules,
+    maxAffordable,
+    maxSelectable,
+    userLimitReached,
+    poolSoldOut,
+    maxReached: userLimitReached || poolSoldOut,
+  };
+}
+
+export function getGiveawayCardAction(
+  giveaway: {
+    isPrivate?: boolean;
+    canParticipate?: boolean;
+    ticketPrice: number;
+    maxTickets: number;
+    soldTickets: number;
+    maxEntriesPerUser?: number | null;
+    myEntries?: number;
+  },
+  userFragments: number
+): GiveawayCardAction {
+  if (giveaway.isPrivate && giveaway.canParticipate === false) {
+    return { type: 'reserved' };
+  }
+  const limits = getGiveawayEntryLimits(giveaway, userFragments);
+  if (limits.userLimitReached || limits.poolSoldOut) {
+    return { type: 'maxReached' };
+  }
+  const missing = Math.max(0, giveaway.ticketPrice - userFragments);
+  if (missing > 0) {
+    return { type: 'unaffordable', missing };
+  }
+  return { type: 'participate' };
+}
+
+export function sortGiveawaysByTierThenEnd<T extends GiveawayPresentationInput>(giveaways: T[]): T[] {
+  return [...giveaways].sort((a, b) => {
+    const tierDiff = TIER_SORT_ORDER[getGiveawayTier(a)] - TIER_SORT_ORDER[getGiveawayTier(b)];
+    if (tierDiff !== 0) return tierDiff;
+    return compareEndingSoon(a, b);
+  });
 }
 
 function compareEndingSoon(a: GiveawayPresentationInput, b: GiveawayPresentationInput): number {

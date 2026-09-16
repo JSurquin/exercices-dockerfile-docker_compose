@@ -3998,6 +3998,9 @@ export interface Messages {
       fragmentsUntilNext: string;
       decreaseEntries: string;
       increaseEntries: string;
+      accessReserved: string;
+      infoAria: string;
+      participateModalTitle: string;
     };
     empty: {
       noActive: string;
@@ -4010,11 +4013,16 @@ export interface Messages {
     };
     myEntries: {
       title: string;
+      empty: string;
       entries: {
         inProgress: string;
         won: string;
         lost: string;
       };
+    };
+    myWinnings: {
+      title: string;
+      empty: string;
     };
     participation: {
       success: string;
@@ -4091,11 +4099,19 @@ export interface Messages {
       dailyReward: string;
       dailyCta: string;
       dailyClaimed: string;
+      nextClaimIn: string;
     };
     pastWinners: {
       title: string;
       seeMore: string;
       empty: string;
+      player: string;
+      prizeCol: string;
+      tier: string;
+      value: string;
+      date: string;
+      filterAria: string;
+      expandWinners: string;
     };
     faq: {
       title: string;

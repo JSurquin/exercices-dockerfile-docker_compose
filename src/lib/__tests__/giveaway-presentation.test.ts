@@ -1,20 +1,26 @@
 import {
+  collectPastWinnerGroups,
   collectPastWinners,
   filterGiveawaysByTier,
   formatChancePercent,
+  formatCommunityName,
   formatCompactCountdown,
   formatGiveawayDate,
   formatWinnerCount,
   fragmentsUntilCheapestEntry,
   getDisplayInitials,
+  getGiveawayCardAction,
   getGiveawayKicker,
   getGiveawayTier,
   getPrizeHaloColor,
   getPrizeValueCents,
   getTimeRemaining,
+  nextUtcMidnightMs,
   parsePrizeDisplay,
   selectFeaturedGiveaway,
   sortGiveaways,
+  sortGiveawaysByTierThenEnd,
+  viewerIsWinner,
   visibleLeaderboardRows,
   type GiveawayPresentationInput,
 } from '@/lib/giveaway-presentation';
@@ -329,5 +335,112 @@ describe('collectPastWinners', () => {
     ]);
     expect(rows.map((row) => row.username)).toEqual(['New', 'Old']);
     expect(rows[0]?.prize).toBe('AWP | Asiimov');
+  });
+});
+
+describe('collectPastWinnerGroups / formatCommunityName / card action', () => {
+  it('groups several winners of the same giveaway on one row', () => {
+    const groups = collectPastWinnerGroups([
+      {
+        ...giveaway({
+          id: 'multi',
+          status: 'ENDED',
+          endDate: '2026-09-10T00:00:00.000Z',
+          prize: 'AWP | Asiimov',
+        }),
+        winners: [
+          { rank: 2, user: { steamUsername: 'B', steamAvatar: null } },
+          { rank: 1, user: { steamUsername: 'A', steamAvatar: 'a.png' } },
+          { rank: 3, user: { steamUsername: 'C', steamAvatar: null } },
+        ],
+      },
+    ]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.winners.map((winner) => winner.username)).toEqual(['A', 'B', 'C']);
+  });
+
+  it('capitalizes the community name', () => {
+    expect(formatCommunityName('kitsu')).toBe('Kitsu');
+    expect(formatCommunityName('  kitsu')).toBe('Kitsu');
+  });
+
+  it('sorts by palier then end date: daily, weekly, monthly, special, yearly', () => {
+    const sorted = sortGiveawaysByTierThenEnd([
+      giveaway({
+        id: 'year',
+        durationType: 'YEARLY',
+        startDate: '2025-09-16T00:00:00.000Z',
+        endDate: '2026-09-16T00:00:00.000Z',
+      }),
+      giveaway({
+        id: 'daily-late',
+        durationType: 'DAILY',
+        startDate: '2026-09-16T00:00:00.000Z',
+        endDate: '2026-09-17T12:00:00.000Z',
+      }),
+      giveaway({
+        id: 'daily-soon',
+        durationType: 'DAILY',
+        startDate: '2026-09-16T00:00:00.000Z',
+        endDate: '2026-09-16T20:00:00.000Z',
+      }),
+      giveaway({
+        id: 'special',
+        startDate: '2026-09-01T00:00:00.000Z',
+        endDate: '2026-11-15T00:00:00.000Z',
+      }),
+    ]);
+    expect(sorted.map((item) => item.id)).toEqual(['daily-soon', 'daily-late', 'special', 'year']);
+  });
+
+  it('uses reserved / max / unaffordable / participate card actions', () => {
+    expect(
+      getGiveawayCardAction(
+        {
+          isPrivate: true,
+          canParticipate: false,
+          ticketPrice: 10,
+          maxTickets: 100,
+          soldTickets: 1,
+        },
+        999
+      )
+    ).toEqual({ type: 'reserved' });
+    expect(
+      getGiveawayCardAction(
+        {
+          ticketPrice: 10,
+          maxTickets: 100,
+          soldTickets: 1,
+          maxEntriesPerUser: 5,
+          myEntries: 5,
+        },
+        999
+      )
+    ).toEqual({ type: 'maxReached' });
+    expect(
+      getGiveawayCardAction(
+        { ticketPrice: 10, maxTickets: 100, soldTickets: 1, myEntries: 40 },
+        999
+      )
+    ).toEqual({ type: 'participate' });
+    expect(
+      getGiveawayCardAction({ ticketPrice: 50, maxTickets: 100, soldTickets: 1 }, 10)
+    ).toEqual({ type: 'unaffordable', missing: 40 });
+  });
+
+  it('matches the viewer among public winner names', () => {
+    expect(
+      viewerIsWinner({ winners: [{ user: { steamUsername: 'Kitsu' } }] }, 'Kitsu')
+    ).toBe(true);
+    expect(viewerIsWinner({ winners: [{ user: { steamUsername: 'Kitsu' } }] }, 'Other')).toBe(
+      false
+    );
+  });
+
+  it('returns the next UTC midnight', () => {
+    expect(nextUtcMidnightMs(Date.parse('2026-09-16T15:00:00.000Z'))).toBe(
+      Date.parse('2026-09-17T00:00:00.000Z')
+    );
   });
 });

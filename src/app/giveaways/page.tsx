@@ -17,6 +17,10 @@ import { GiveawayHero } from '@/components/giveaway/giveaway-hero';
 import { GiveawayCard } from '@/components/giveaway/giveaway-card';
 import { GiveawayEarnFragments } from '@/components/giveaway/giveaway-earn-fragments';
 import { GiveawayPastWinners } from '@/components/giveaway/giveaway-past-winners';
+import {
+  GiveawayMyParticipations,
+  GiveawayMyWinnings,
+} from '@/components/giveaway/giveaway-sidebar-lists';
 import { GiveawayFaq } from '@/components/giveaway/giveaway-faq';
 import { GiveawayWalletBar } from '@/components/giveaway/giveaway-wallet-bar';
 import { GiveawayEmptyState } from '@/components/giveaway/giveaway-empty-state';
@@ -38,18 +42,17 @@ import {
   cheapestActiveTicketPrice,
   fragmentsUntilCheapestEntry,
   selectFeaturedGiveaway,
-  sortGiveaways,
+  sortGiveawaysByTierThenEnd,
 } from '@/lib/giveaway-presentation';
 
 const giveawayGridClass =
-  'grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3';
+  'grid [grid-template-columns:repeat(auto-fill,minmax(260px,1fr))] items-stretch gap-5';
 
 export default function GiveawaysPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
   const { messages, locale } = useLocale();
   const { isTourMode } = useTourMode();
   const reduceMotion = useReducedMotion();
-  const [showHistory, setShowHistory] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
   const [userFragments, setUserFragments] = useState(0);
@@ -119,24 +122,17 @@ export default function GiveawaysPage() {
     () => activeGiveaways.filter((g) => g.isPrivate),
     [activeGiveaways]
   );
-  const endedGiveaways = useMemo(
-    () => sortGiveaways(
-      giveaways.filter((g) => g.status === 'ENDED'),
-      'endingSoon'
-    ),
-    [giveaways]
-  );
   const defaultFeatured = useMemo(() => selectFeaturedGiveaway(publicActive), [publicActive]);
   const featured = useMemo(() => {
     const selected = activeGiveaways.find((g) => g.id === selectedId);
     return selected ?? defaultFeatured;
   }, [activeGiveaways, selectedId, defaultFeatured]);
   const listedPublic = useMemo(
-    () => publicActive.filter((g) => g.id !== featured?.id),
+    () => sortGiveawaysByTierThenEnd(publicActive.filter((g) => g.id !== featured?.id)),
     [publicActive, featured?.id]
   );
   const listedPrivate = useMemo(
-    () => privateActive.filter((g) => g.id !== featured?.id),
+    () => sortGiveawaysByTierThenEnd(privateActive.filter((g) => g.id !== featured?.id)),
     [privateActive, featured?.id]
   );
   const fragmentsUntilNext = useMemo(
@@ -308,8 +304,11 @@ export default function GiveawaysPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  aria-pressed={showHistory}
-                  onClick={() => setShowHistory((current) => !current)}
+                  onClick={() =>
+                    document
+                      .getElementById('past-winners')
+                      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }
                 >
                   {messages.giveaways.layout.history}
                 </Button>
@@ -338,8 +337,10 @@ export default function GiveawaysPage() {
                             messages={messages}
                             locale={locale}
                             now={now}
+                            userFragments={userFragments}
                             selected={featured?.id === giveaway.id}
                             onSelect={() => selectGiveaway(giveaway)}
+                            onParticipate={handleParticipate}
                           />
                         </motion.div>
                       ))}
@@ -373,49 +374,21 @@ export default function GiveawaysPage() {
                               messages={messages}
                               locale={locale}
                               now={now}
+                              userFragments={userFragments}
                               selected={featured?.id === giveaway.id}
                               onSelect={() => selectGiveaway(giveaway)}
+                              onParticipate={handleParticipate}
                             />
                           </motion.div>
                         ))}
                       </div>
                     </section>
                   )}
-
-                  {showHistory && (
-                    <section className="mt-10">
-                      <h2 className="mb-4 font-display text-lg font-semibold">
-                        {messages.giveaways.layout.endedSectionTitle}
-                      </h2>
-                      {endedGiveaways.length > 0 ? (
-                        <div className={giveawayGridClass}>
-                          {endedGiveaways.map((giveaway, index) => (
-                            <motion.div
-                              key={giveaway.id}
-                              className="h-full"
-                              initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.4, delay: index * 0.05 }}
-                            >
-                              <GiveawayCard
-                                giveaway={giveaway}
-                                messages={messages}
-                                locale={locale}
-                                now={now}
-                              />
-                            </motion.div>
-                          ))}
-                        </div>
-                      ) : (
-                        <GiveawayEmptyState
-                          title={messages.giveaways.empty.noEnded}
-                          description={messages.giveaways.empty.noEndedDescription}
-                        />
-                      )}
-                    </section>
-                  )}
                 </>
               )}
+
+              <GiveawayPastWinners giveaways={giveaways} messages={messages} locale={locale} />
+              <GiveawayFaq messages={messages} />
             </div>
             <aside className="mt-10 min-[1200px]:sticky min-[1200px]:top-[calc(4rem+1.5rem)] min-[1200px]:mt-0">
               <GiveawayEarnFragments
@@ -425,11 +398,20 @@ export default function GiveawaysPage() {
                   void refreshUser();
                 }}
               />
+              <GiveawayMyParticipations
+                giveaways={activeGiveaways}
+                messages={messages}
+                locale={locale}
+                now={now}
+                onSelect={selectGiveaway}
+              />
+              <GiveawayMyWinnings
+                giveaways={giveaways}
+                messages={messages}
+                username={user.username}
+              />
             </aside>
           </div>
-
-          <GiveawayPastWinners giveaways={giveaways} messages={messages} locale={locale} />
-          <GiveawayFaq messages={messages} />
         </div>
       </div>
       <GiveawayWalletBar messages={messages} userFragments={userFragments} />

@@ -3556,6 +3556,14 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 }
 
+@media (hover: hover) and (prefers-reduced-motion: reduce) {
+  .giveaway-card-surface--interactive:hover {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--giveaway-accent) 40%, transparent),
+      0 0 28px color-mix(in srgb, var(--giveaway-accent) 16%, transparent);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .giveaway-card-surface {
     transition: none;
