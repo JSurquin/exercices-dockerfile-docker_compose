@@ -57,12 +57,6 @@ export function GiveawayEarnFragments({
         boostGlow && 'giveaway-earn-panel--boost'
       )}
     >
-      {availableCount != null && availableCount > 0 ? (
-        <span className="giveaway-earn-badge" aria-label={earn.missionsAvailable.replace('{count}', String(availableCount))}>
-          <span className="giveaway-earn-badge__ping" aria-hidden />
-          <span className="relative z-[1]">{availableCount}</span>
-        </span>
-      ) : null}
       <h2 className="mb-3 font-display text-lg font-semibold">{earn.title}</h2>
       <ul className="giveaway-earn-list">
         <li className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/5 px-3 py-2.5">

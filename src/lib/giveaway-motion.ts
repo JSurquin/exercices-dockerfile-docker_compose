@@ -9,7 +9,7 @@ export const GIVEAWAY_FADE_Y = 16;
 export const GIVEAWAY_STAR_COUNT = 30;
 export const GIVEAWAY_PROGRESS_MS = 800;
 export const GIVEAWAY_COUNT_UP_MS = 700;
-export const GIVEAWAY_TILT_MAX_DEG = 6;
+export const GIVEAWAY_TILT_MAX_DEG = 4;
 export const GIVEAWAY_ENTRY_BURST_MS = 720;
 
 export function giveawayStatRevealDelayMs(burstId: number, reduceMotion = false): number {
