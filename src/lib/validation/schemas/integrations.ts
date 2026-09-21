@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import { GiveawayStatus } from '@prisma/client';
+import { MAX_SKINPLACE_TRADE_ITEMS } from '@/lib/trade-limits';
 
 /** Skinplace POST /api/skinplace/purchase */
 export const skinplacePurchaseBodySchema = z
   .object({
-    items: z.array(z.string()).min(1).max(50),
+    items: z.array(z.string()).min(1).max(MAX_SKINPLACE_TRADE_ITEMS),
     payment_method: z.enum(['balance', 'stripe', 'crypto']),
     trade_token: z.string().optional(),
   })
@@ -42,7 +43,7 @@ export const skinplaceCreateTradeBodySchema = z
   .object({
     steam_id: z.string().min(1),
     trade_url: z.string().min(1),
-    items: z.array(tradeItemMinimal).min(1).max(50),
+    items: z.array(tradeItemMinimal).min(1).max(MAX_SKINPLACE_TRADE_ITEMS),
     affiliate_promo_code: z.string().nullable().optional(),
   })
   .strip();
@@ -151,7 +152,7 @@ export const steamCreateTradeBodySchema = z
   .object({
     steam_id: z.string().min(1),
     trade_url: z.string().min(1),
-    items: z.array(z.object({ asset_id: z.string().min(1) })).min(1).max(50),
+    items: z.array(z.object({ asset_id: z.string().min(1) })).min(1).max(MAX_SKINPLACE_TRADE_ITEMS),
     affiliate_promo_code: z.string().nullable().optional(),
   })
   .strip();

@@ -42,6 +42,7 @@ import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
 import { extractCs2SkinDisplayName, extractCs2WeaponType } from '@/lib/cs2-constants';
 import { SellInventoryItemCard } from '@/components/sell/sell-inventory-item-card';
 import { MOONSKIN_DISCORD_URL } from '@/lib/moonskin-social';
+import { MAX_SKINPLACE_TRADE_ITEMS } from '@/lib/trade-limits';
 
 function isPurchasable(item: NormalizedInventoryItem): boolean {
   return item.tradable && !item.skip_reason;
@@ -306,9 +307,11 @@ export function SkinplaceInventoryViewer({
     ) {
       return;
     }
-    const validIds = initialSelectedIds.filter((id) =>
-      inventory.some((item) => item.id === id && item.tradable && !item.skip_reason)
-    );
+    const validIds = initialSelectedIds
+      .filter((id) =>
+        inventory.some((item) => item.id === id && item.tradable && !item.skip_reason)
+      )
+      .slice(0, MAX_SKINPLACE_TRADE_ITEMS);
     if (validIds.length === 0) return;
 
     hasRestoredInitialSelection.current = true;
@@ -358,13 +361,27 @@ export function SkinplaceInventoryViewer({
     if (!selectable || !item.tradable || item.skip_reason) return;
 
     setSelectedItems(prev => {
-      const next = prev.includes(item.id)
-        ? prev.filter(id => id !== item.id)
-        : [...prev, item.id];
-      // Propager en temps réel pour la preview XP
+      if (prev.includes(item.id)) {
+        const next = prev.filter(id => id !== item.id);
+        if (onSelectionChange) {
+          onSelectionChange(inventory.filter(i => next.includes(i.id)));
+        }
+        return next;
+      }
+
+      if (prev.length >= MAX_SKINPLACE_TRADE_ITEMS) {
+        toast.error(
+          messages.components.skinplace.selectionLimitReached.replace(
+            '{max}',
+            String(MAX_SKINPLACE_TRADE_ITEMS),
+          ),
+        );
+        return prev;
+      }
+
+      const next = [...prev, item.id];
       if (onSelectionChange) {
-        const nextData = inventory.filter(i => next.includes(i.id));
-        onSelectionChange(nextData);
+        onSelectionChange(inventory.filter(i => next.includes(i.id)));
       }
       return next;
     });
@@ -382,9 +399,11 @@ export function SkinplaceInventoryViewer({
   };
 
   const purchasableFiltered = filteredItems.filter(isPurchasable);
+  const selectablePurchasable = purchasableFiltered.slice(0, MAX_SKINPLACE_TRADE_ITEMS);
   const allPurchasableSelected =
-    purchasableFiltered.length > 0 &&
-    purchasableFiltered.every((item) => selectedItems.includes(item.id));
+    selectablePurchasable.length > 0 &&
+    (selectedItems.length >= MAX_SKINPLACE_TRADE_ITEMS ||
+      purchasableFiltered.every((item) => selectedItems.includes(item.id)));
 
   const handleToggleSelectAllPurchasable = () => {
     if (allPurchasableSelected) {
@@ -392,8 +411,16 @@ export function SkinplaceInventoryViewer({
       if (onSelectionChange) onSelectionChange([]);
       return;
     }
-    setSelectedItems(purchasableFiltered.map((i) => i.id));
-    if (onSelectionChange) onSelectionChange(purchasableFiltered);
+    setSelectedItems(selectablePurchasable.map((i) => i.id));
+    if (onSelectionChange) onSelectionChange(selectablePurchasable);
+    if (purchasableFiltered.length > MAX_SKINPLACE_TRADE_ITEMS) {
+      toast.info(
+        messages.components.skinplace.selectionLimitReached.replace(
+          '{max}',
+          String(MAX_SKINPLACE_TRADE_ITEMS),
+        ),
+      );
+    }
   };
 
   const openSupportForItem = (_item: NormalizedInventoryItem) => {

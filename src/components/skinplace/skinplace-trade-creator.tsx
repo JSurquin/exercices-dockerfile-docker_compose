@@ -36,6 +36,7 @@ import {
   computeSellPromoBonusCents,
 } from '@/lib/affiliate-sell-promo';
 import { parseApiJson } from '@/lib/parse-api-json';
+import { MAX_SKINPLACE_TRADE_ITEMS } from '@/lib/trade-limits';
 
 export interface SkinplaceBotInfo {
   name: string;
@@ -273,6 +274,16 @@ export function SkinplaceTradeCreator({
 
   const handleCreateTrade = async () => {
     if (!isValidUrl || selectedItems.length === 0) return;
+
+    if (selectedItems.length > MAX_SKINPLACE_TRADE_ITEMS) {
+      toast.error(
+        messages.components.skinplace.selectionLimitReached.replace(
+          '{max}',
+          String(MAX_SKINPLACE_TRADE_ITEMS),
+        ),
+      );
+      return;
+    }
 
     setLoading(true);
     setError(null);

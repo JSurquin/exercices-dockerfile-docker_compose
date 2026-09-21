@@ -5872,6 +5872,7 @@ export interface Messages {
       unavailable: string;
       purchasableOnly: string;
       selectAll: string;
+      selectionLimitReached: string;
       priceRange: string;
       priceMin: string;
       priceMax: string;
