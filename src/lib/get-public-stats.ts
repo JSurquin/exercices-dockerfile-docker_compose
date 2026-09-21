@@ -1,4 +1,8 @@
 import { cache } from 'react';
+import {
+  applyGhostTradesToPublicCount,
+  applyGhostTradesToPublicVolume,
+} from '@/lib/ghost-trades';
 import { fetchPlatformStatsFromDb } from '@/lib/platform-stats';
 import type { PublicStats } from '@/hooks/use-public-stats';
 
@@ -12,11 +16,11 @@ export const EMPTY_PUBLIC_STATS: PublicStats = {
 
 export async function getPublicStats(): Promise<PublicStats> {
   const raw = await fetchPlatformStatsFromDb();
-  const volumeCents = raw.totalVolumeCents;
+  const volumeCents = applyGhostTradesToPublicVolume(raw.totalVolumeCents);
 
   return {
     totalUsers: raw.totalUsers,
-    completedTrades: raw.totalTrades,
+    completedTrades: applyGhostTradesToPublicCount(raw.totalTrades),
     volumeMillions: Math.round((volumeCents / 100 / 1_000_000) * 10) / 10,
     totalVolumeCents: volumeCents,
     totalSkinsSold: raw.totalSkinsSold,
