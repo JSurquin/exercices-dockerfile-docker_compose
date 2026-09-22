@@ -247,8 +247,8 @@ export function Header() {
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
-      <div className="container mx-auto flex h-16 min-w-0 w-full items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex min-w-0 shrink-0 items-center space-x-2 sm:space-x-3 mr-1 sm:mr-4 lg:mr-6">
+      <div className="container mx-auto grid h-16 min-w-0 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 sm:px-6 lg:px-8 min-[1100px]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+        <Link href="/" className="flex min-w-0 shrink-0 items-center space-x-2 justify-self-start sm:space-x-3">
           <div className="relative group">
             <div className="h-10 w-10 shrink-0 rounded-lg">
               <Image src="/images/logo.webp" alt="MoonSkin" width={40} height={40} />
@@ -261,7 +261,7 @@ export function Header() {
           </div>
         </Link>
 
-        <nav className="hidden min-w-0 min-[1100px]:flex flex-1 items-center justify-center">
+        <nav className="hidden min-w-0 min-[1100px]:flex items-center justify-center">
           <div className="flex min-w-0 items-center gap-3 min-[1400px]:gap-8">
             {primaryNavigation.map((item) => (
               <DesktopNavLink key={item.id} item={item} pathname={pathname} />
@@ -298,7 +298,7 @@ export function Header() {
           </div>
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-2">
+        <div className="col-start-3 flex shrink-0 items-center justify-end justify-self-end gap-1 sm:gap-2">
           <NavPreferencesMenu />
 
           {user ? (
