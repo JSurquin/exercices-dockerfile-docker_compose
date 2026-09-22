@@ -4,6 +4,16 @@ import { prisma } from '../../prisma/prisma';
 
 export type MissionCategory = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL' | 'BONUS';
 
+export const WELCOME_BONUS_MISSION_KEY = 'WELCOME_BONUS';
+export const WELCOME_BONUS_FRAGMENTS = 1000;
+
+const ALWAYS_CLAIMABLE_KEYS = new Set([
+  'DAILY_CLAIM',
+  'DAILY_VISIT',
+  'BONUS_DAILY_SURPRISE',
+  WELCOME_BONUS_MISSION_KEY,
+]);
+
 export interface MissionDef {
   key: string;
   category: MissionCategory;
@@ -31,6 +41,13 @@ function getDailyBonusReward(userId: string, dateStr: string, range: { min: numb
 }
 
 export const MISSION_DEFINITIONS: MissionDef[] = [
+  {
+    key: WELCOME_BONUS_MISSION_KEY,
+    category: 'BONUS',
+    rewardFragments: WELCOME_BONUS_FRAGMENTS,
+    fragmentType: 'GENERATED_MISSION_BONUS',
+    period: 'once',
+  },
   { key: 'DAILY_CLAIM', category: 'DAILY', rewardFragments: 10, fragmentType: 'GENERATED_MISSION_DAILY', period: 'day' },
   { key: 'DAILY_SELL_SKIN', category: 'DAILY', rewardFragments: 15, fragmentType: 'GENERATED_MISSION_DAILY', period: 'day' },
   { key: 'DAILY_VISIT', category: 'DAILY', rewardFragments: 5, fragmentType: 'GENERATED_MISSION_DAILY', period: 'day' },
@@ -124,9 +141,7 @@ async function userGiveawayParticipationCountInRange(userId: string, start: Date
 export async function isMissionEligible(userId: string, def: MissionDef, at = new Date()): Promise<boolean> {
   const { start, end } = startEndForPeriod(def, at);
 
-  if (def.key === 'DAILY_CLAIM') return true;
-  if (def.key === 'DAILY_VISIT') return true;
-  if (def.key === 'BONUS_DAILY_SURPRISE') return true;
+  if (ALWAYS_CLAIMABLE_KEYS.has(def.key)) return true;
 
   if (def.key === 'DAILY_SELL_SKIN') {
     const c = await prisma.trade.count({
@@ -271,7 +286,7 @@ export async function listMissionsForUser(userId: string) {
     // Éligibilité calculée depuis les données batch (pas de requêtes supplémentaires)
     let eligible = false;
     if (!completed) {
-      if (def.key === 'DAILY_CLAIM' || def.key === 'DAILY_VISIT' || def.key === 'BONUS_DAILY_SURPRISE') {
+      if (ALWAYS_CLAIMABLE_KEYS.has(def.key)) {
         eligible = true;
       } else if (def.key === 'DAILY_SELL_SKIN') {
         eligible = daySells >= 1;

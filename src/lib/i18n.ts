@@ -957,7 +957,7 @@ export const messages: Record<Locale, Messages> = {
       loginTitle: "Connecte-toi pour voir les missions",
       loginSubtitle: "Gagne des fragments en accomplissant des missions quotidiennes.",
       backToGiveaways: "Retour aux giveaways",
-      pageSubtitle: "Source secondaire de fragments, les ventes restent la priorité.",
+      pageSubtitle: "Complète des missions, empoche des fragments, tente les giveaways.",
       statsFragments: "Fragments disponibles",
       statsToClaim: "À réclamer",
       statsCompleted: "Complétées",
@@ -965,6 +965,9 @@ export const messages: Record<Locale, Messages> = {
       noMissionsInCategory: "Aucune mission.",
       claimed: "Réclamée",
       claim: "Réclamer",
+      filterAll: "Toutes",
+      welcomeBadge: "Bonus de bienvenue",
+      welcomeOnce: "Offre unique",
       socialVisit: "Visiter",
       socialConfirm: "Confirmer & Réclamer",
       socialWaiting: "Vérifie...",
@@ -1042,6 +1045,10 @@ export const messages: Record<Locale, Messages> = {
         BONUS_DAILY_SURPRISE: {
           label: "Mission du jour",
           description: "Récompense surprise du jour, montant aléatoire entre 20 et 50 fragments.",
+        },
+        WELCOME_BONUS: {
+          label: "Bonus de bienvenue",
+          description: "Cadeau de bienvenue : 1 000 fragments à réclamer une seule fois, pour lancer tes giveaways.",
         },
       },
       categories: {
@@ -9280,7 +9287,7 @@ export const messages: Record<Locale, Messages> = {
       loginTitle: "Sign in to view missions",
       loginSubtitle: "Earn fragments by completing daily and weekly missions.",
       backToGiveaways: "Back to giveaways",
-      pageSubtitle: "A secondary way to earn fragments, selling skins remains the main path.",
+      pageSubtitle: "Complete missions, collect fragments, then enter the giveaways.",
       statsFragments: "Fragments available",
       statsToClaim: "Ready to claim",
       statsCompleted: "Completed",
@@ -9288,6 +9295,9 @@ export const messages: Record<Locale, Messages> = {
       noMissionsInCategory: "No missions in this category.",
       claimed: "Claimed",
       claim: "Claim",
+      filterAll: "All",
+      welcomeBadge: "Welcome bonus",
+      welcomeOnce: "One-time offer",
       socialVisit: "Visit",
       socialConfirm: "Confirm & Claim",
       socialWaiting: "Verifying...",
@@ -9365,6 +9375,10 @@ export const messages: Record<Locale, Messages> = {
         BONUS_DAILY_SURPRISE: {
           label: "Mission of the day",
           description: "Surprise reward, random amount between 20 and 50 fragments.",
+        },
+        WELCOME_BONUS: {
+          label: "Welcome bonus",
+          description: "A one-time gift of 1,000 fragments to kick-start your giveaways.",
         },
       },
       categories: {
@@ -17598,7 +17612,7 @@ export const messages: Record<Locale, Messages> = {
       loginTitle: "登录后查看任务",
       loginSubtitle: "完成每日与每周任务，赚取碎片。",
       backToGiveaways: "返回抽奖",
-      pageSubtitle: "碎片的额外来源, 出售饰品仍是主要途径。",
+      pageSubtitle: "完成任务、领取碎片，再去参加抽奖。",
       statsFragments: "可用碎片",
       statsToClaim: "待领取",
       statsCompleted: "已完成",
@@ -17606,6 +17620,9 @@ export const messages: Record<Locale, Messages> = {
       noMissionsInCategory: "此类别无任务。",
       claimed: "已领取",
       claim: "领取",
+      filterAll: "全部",
+      welcomeBadge: "欢迎奖励",
+      welcomeOnce: "仅限一次",
       socialVisit: "访问",
       socialConfirm: "确认并领取",
       socialWaiting: "验证中...",
@@ -17683,6 +17700,10 @@ export const messages: Record<Locale, Messages> = {
         BONUS_DAILY_SURPRISE: {
           label: "每日惊喜任务",
           description: "当日随机奖励, 20 至 50 碎片之间。",
+        },
+        WELCOME_BONUS: {
+          label: "欢迎奖励",
+          description: "新用户礼包：一次性领取 1 000 碎片，用来参加抽奖。",
         },
       },
       categories: {

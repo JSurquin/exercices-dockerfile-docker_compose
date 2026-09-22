@@ -1,9 +1,9 @@
 'use client';
 
 import type { ComponentType } from 'react';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -26,6 +26,7 @@ import {
   CalendarDaysIcon,
   StarIcon,
   ArrowTopRightOnSquareIcon,
+  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import { queryKeys } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
@@ -34,11 +35,16 @@ import { getSocialMissionIcon } from '@/components/ui/social-brand-icons';
 import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
 import type { Messages } from '~/utils/types';
 
+const WELCOME_BONUS_MISSION_KEY = 'WELCOME_BONUS';
+
 const SOCIAL_VISIT_DELAY_MS = 10_000;
+
+type MissionCategory = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL' | 'BONUS';
+type CategoryFilter = 'ALL' | MissionCategory;
 
 type MissionRow = {
   key: string;
-  category: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL' | 'BONUS';
+  category: MissionCategory;
   rewardFragments: number;
   periodKey: string;
   completed: boolean;
@@ -51,6 +57,7 @@ type MissionRow = {
 const MISSION_ICON_ACCENT = 'text-theme-accent';
 
 const MISSION_ROW_STYLE: Record<string, { icon: ComponentType<{ className?: string }> }> = {
+  WELCOME_BONUS: { icon: GiftIcon },
   DAILY_CLAIM: { icon: SparklesIcon },
   DAILY_SELL_SKIN: { icon: ChartBarIcon },
   DAILY_VISIT: { icon: ClockIcon },
@@ -63,7 +70,7 @@ const MISSION_ROW_STYLE: Record<string, { icon: ComponentType<{ className?: stri
 };
 
 const CATEGORY_STYLE: Record<
-  'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL' | 'BONUS',
+  MissionCategory,
   { icon: ComponentType<{ className?: string }> }
 > = {
   DAILY: { icon: ClockIcon },
@@ -76,7 +83,8 @@ const CATEGORY_STYLE: Record<
 const MISSION_VISIT_BTN =
   'gap-1.5 border-theme-accent/30 bg-background/40 text-theme-accent hover:bg-theme-accent/10 hover:text-theme-accent hover:border-theme-accent/40';
 
-const CATEGORY_ORDER = ['BONUS', 'DAILY', 'WEEKLY', 'MONTHLY', 'SOCIAL'] as const;
+const CATEGORY_ORDER: MissionCategory[] = ['BONUS', 'DAILY', 'WEEKLY', 'MONTHLY', 'SOCIAL'];
+const FILTER_ORDER: CategoryFilter[] = ['ALL', 'DAILY', 'WEEKLY', 'MONTHLY', 'SOCIAL', 'BONUS'];
 
 function SocialMissionActions({
   mission,
@@ -163,24 +171,28 @@ function MissionCard({
   const SocialIcon = getSocialMissionIcon(mission.key);
   const IconComp = SocialIcon ?? rowStyle?.icon ?? SparklesIcon;
   const itemMeta = t.items[mission.key as keyof typeof t.items];
-
   const isSocial = mission.category === 'SOCIAL' && mission.key !== 'SOCIAL_NEWSLETTER';
+  const progressPct =
+    !mission.completed && mission.progressTarget != null && mission.progressCurrent != null
+      ? Math.min(100, (mission.progressCurrent / mission.progressTarget) * 100)
+      : null;
 
   return (
     <div
+      data-type={mission.category.toLowerCase()}
       className={cn(
-        'md:flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 rounded-xl p-4 transition-all',
+        'mission-quest',
         mission.completed
-          ? 'border border-border/50 bg-muted/25 opacity-75 backdrop-blur-sm'
+          ? 'border border-border/50 bg-muted/20 opacity-80 backdrop-blur-sm'
           : mission.eligible
-            ? 'lunar-card !rounded-xl'
-            : 'border border-border/40 bg-card/30 hover:bg-muted/20 backdrop-blur-sm'
+            ? 'lunar-card !rounded-2xl'
+            : 'border border-border/40 bg-card/30 backdrop-blur-sm'
       )}
     >
-      <div className="flex items-start gap-3 flex-1 min-w-0">
+      <div className="flex items-start justify-between gap-3">
         <div
           className={cn(
-            'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border border-border/40 backdrop-blur-sm',
+            'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/40 backdrop-blur-sm',
             mission.completed
               ? 'bg-muted/50'
               : mission.eligible
@@ -189,46 +201,48 @@ function MissionCard({
           )}
         >
           {mission.completed ? (
-            <CheckCircleIcon className="w-5 h-5 text-theme-success" />
+            <CheckCircleIcon className="h-5 w-5 text-theme-success" />
           ) : !mission.eligible ? (
-            <LockClosedIcon className="w-5 h-5 text-muted-foreground" />
+            <LockClosedIcon className="h-5 w-5 text-muted-foreground" />
           ) : (
-            <IconComp className={cn('w-5 h-5', MISSION_ICON_ACCENT)} />
+            <IconComp className={cn('h-5 w-5', MISSION_ICON_ACCENT)} />
           )}
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold text-sm">
-            {itemMeta?.label ?? mission.key.replace(/_/g, ' ')}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-            {itemMeta?.description ?? ''}
-          </p>
-          {!mission.completed && mission.progressTarget != null && mission.progressCurrent != null && (
-            <div className="mt-2 space-y-1">
-              <Progress
-                value={Math.min(100, (mission.progressCurrent / mission.progressTarget) * 100)}
-                className="mission-progress h-1.5"
-              />
-              <p className="text-xs text-muted-foreground">
-                {mission.thresholdCents != null
-                  ? `${(mission.progressCurrent / 100).toFixed(0)} € / ${(mission.progressTarget / 100).toFixed(0)} €`
-                  : `${mission.progressCurrent} / ${mission.progressTarget}`}
-              </p>
-            </div>
-          )}
-        </div>
+        <FragmentAmount
+          amount={mission.rewardFragments}
+          prefix="+"
+          size="xs"
+          className="text-sm font-bold text-theme-accent"
+        />
       </div>
 
-      <div className="flex items-center gap-3 shrink-0">
-        <div className="flex items-center gap-1 text-sm font-bold text-theme-accent">
-          <FragmentAmount amount={mission.rewardFragments} prefix="+" size="xs" />
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold leading-snug">
+          {itemMeta?.label ?? mission.key.replace(/_/g, ' ')}
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          {itemMeta?.description ?? ''}
+        </p>
+      </div>
+
+      {progressPct != null && (
+        <div className="space-y-1">
+          <Progress value={progressPct} className="mission-progress h-1.5" />
+          <p className="text-xs text-muted-foreground">
+            {mission.thresholdCents != null
+              ? `${(mission.progressCurrent! / 100).toFixed(0)} € / ${(mission.progressTarget! / 100).toFixed(0)} €`
+              : `${mission.progressCurrent} / ${mission.progressTarget}`}
+          </p>
         </div>
+      )}
+
+      <div className="mt-auto flex items-center justify-end pt-1">
         {mission.completed ? (
           <Badge
             variant="outline"
             className="bg-muted/30 text-muted-foreground border-border/60 backdrop-blur-sm"
           >
-            <CheckCircleIcon className="w-3.5 h-3.5 mr-1 text-theme-success" />
+            <CheckCircleIcon className="mr-1 h-3.5 w-3.5 text-theme-success" />
             {t.claimed}
           </Badge>
         ) : mission.eligible && isSocial ? (
@@ -243,11 +257,91 @@ function MissionCard({
             {t.claim}
           </Button>
         ) : (
-          <Badge variant="outline" className="text-muted-foreground border-border/50 bg-muted/20">
-            <LockClosedIcon className="w-3.5 h-3.5 mr-1" />
+          <Badge variant="outline" className="border-border/50 bg-muted/20 text-muted-foreground">
+            <LockClosedIcon className="mr-1 h-3.5 w-3.5" />
             {t.notAvailable}
           </Badge>
         )}
+      </div>
+    </div>
+  );
+}
+
+function WelcomeBonusCard({
+  mission,
+  onClaim,
+  isPending,
+  t,
+}: {
+  mission: MissionRow;
+  onClaim: (key: string) => void;
+  isPending: boolean;
+  t: Messages['missions'];
+}) {
+  const item = t.items.WELCOME_BONUS;
+
+  return (
+    <div
+      className={cn(
+        'mission-welcome lunar-card p-5 sm:p-7',
+        mission.completed && 'opacity-80'
+      )}
+    >
+      <div className="relative z-[1] flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-theme-accent/30 bg-theme-accent/15">
+            {mission.completed ? (
+              <CheckCircleIcon className="h-7 w-7 text-theme-success" />
+            ) : (
+              <GiftIcon className="h-7 w-7 text-theme-accent" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <Badge className="mission-glass-badge text-[11px] uppercase tracking-wider">
+                {t.welcomeBadge}
+              </Badge>
+              <Badge variant="outline" className="border-border/50 bg-background/30 text-[11px] text-muted-foreground">
+                {t.welcomeOnce}
+              </Badge>
+            </div>
+            <h2 className="font-display text-xl font-semibold tracking-tight sm:text-2xl">
+              {item.label}
+            </h2>
+            <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              {item.description}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 flex-col items-stretch gap-3 sm:items-end">
+          <FragmentAmount
+            amount={mission.rewardFragments}
+            prefix="+"
+            size="md"
+            className="justify-center text-3xl font-bold text-theme-accent sm:justify-end"
+          />
+          {mission.completed ? (
+            <Badge
+              variant="outline"
+              className="self-stretch justify-center bg-muted/30 px-4 py-2 text-muted-foreground border-border/60 sm:self-end"
+            >
+              <CheckCircleIcon className="mr-1.5 h-4 w-4 text-theme-success" />
+              {t.claimed}
+            </Badge>
+          ) : (
+            <Button
+              size="lg"
+              variant="cta"
+              disabled={isPending || !mission.eligible}
+              onClick={() => onClaim(mission.key)}
+              className="min-w-[11rem]"
+            >
+              <GiftIcon className="h-4 w-4" />
+              {t.claim}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -261,6 +355,7 @@ export default function MissionsPage() {
   const queryClient = useQueryClient();
   const [animatingFragments, setAnimatingFragments] = useState(false);
   const [claimedFragments, setClaimedFragments] = useState(0);
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('ALL');
 
   const { data, isLoading } = useQuery({
     queryKey: ['missions', locale],
@@ -304,6 +399,29 @@ export default function MissionsPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : t.genericError),
   });
 
+  const missions = data?.missions ?? [];
+  const welcomeMission = useMemo(
+    () => (data?.missions ?? []).find((m) => m.key === WELCOME_BONUS_MISSION_KEY),
+    [data?.missions]
+  );
+  const listedMissions = useMemo(
+    () => (data?.missions ?? []).filter((m) => m.key !== WELCOME_BONUS_MISSION_KEY),
+    [data?.missions]
+  );
+  const visibleCategories = useMemo(
+    () =>
+      CATEGORY_ORDER.filter((cat) =>
+        categoryFilter === 'ALL' ? true : cat === categoryFilter
+      ),
+    [categoryFilter]
+  );
+
+  const totalClaimable = missions
+    .filter((m) => m.eligible && !m.completed)
+    .reduce((s, m) => s + m.rewardFragments, 0);
+  const totalCompleted = missions.filter((m) => m.completed).length;
+  const totalMissions = missions.length;
+
   if (authLoading) {
     return (
       <PageLoading variant="compact" message={t.loading} className="min-h-[50vh]" />
@@ -312,22 +430,24 @@ export default function MissionsPage() {
 
   if (!user) {
     if (isTourMode) return <MissionsTourDemo />;
-    return <LoginRequiredBlock />;
+    return (
+      <LoginRequiredBlock
+        icon={<SparklesIcon className="h-16 w-16" />}
+        title={t.loginTitle}
+        description={t.loginSubtitle}
+      />
+    );
   }
 
-  const missions = data?.missions ?? [];
-  const byCat = (c: string) => missions.filter((m) => m.category === c);
-
-  const totalClaimable = missions.filter((m) => m.eligible && !m.completed)
-    .reduce((s, m) => s + m.rewardFragments, 0);
-  const totalCompleted = missions.filter((m) => m.completed).length;
-  const totalMissions = missions.length;
-
   return (
-    <div className="container max-w-3xl mx-auto px-4 py-10 space-y-8">
+    <div className="container relative mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <div className="pointer-events-none absolute inset-x-0 -top-10 h-64 overflow-hidden">
+        <div className="absolute left-1/2 top-0 h-56 w-[36rem] -translate-x-1/2 rounded-full bg-theme-accent/12 blur-3xl" />
+      </div>
+
       <AnimatePresence>
         {animatingFragments && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -350,7 +470,7 @@ export default function MissionsPage() {
                 size="md"
                 className="drop-shadow-[0_0_16px_rgba(200,205,220,0.15)]"
               />
-              <p className="text-2xl font-bold tabular-nums bg-gradient-to-br from-white via-[#e8e8f0] to-[#c0c0c0] bg-clip-text text-transparent">
+              <p className="bg-gradient-to-br from-white via-[#e8e8f0] to-[#c0c0c0] bg-clip-text text-2xl font-bold tabular-nums text-transparent">
                 +{claimedFragments} {t.celebrationFragments}
               </p>
               <p className="text-[11px] font-medium uppercase tracking-wider text-[#7a7a8c]">
@@ -361,98 +481,136 @@ export default function MissionsPage() {
         )}
       </AnimatePresence>
 
-      <div className="flex items-start justify-between gap-4">
+      <header className="relative z-[1] mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <SparklesIcon className="w-8 h-8 text-theme-accent" />
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-theme-accent">
+            CS2 · {messages.nav.missions}
+          </p>
+          <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
             {messages.nav.missions}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
             {t.pageSubtitle}
           </p>
         </div>
         <Link href="/giveaways">
-          <Button variant="outline">{messages.giveaways.title}</Button>
+          <Button variant="outline" className="gap-2">
+            {messages.giveaways.title}
+            <ArrowRightIcon className="h-4 w-4" />
+          </Button>
         </Link>
-      </div>
+      </header>
 
-      <div data-tour="missions-stats" className="grid md:grid-cols-3 gap-3">
-        <Card className="lunar-card border-border/60 bg-card/40">
-          <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">{t.statsFragments}</p>
-            <motion.div
-              key={user.fragments ?? 0}
-              initial={{ scale: 1 }}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center justify-center"
-            >
-              <FragmentAmount
-                amount={user.fragments ?? 0}
-                size="sm"
-                className="text-2xl font-bold text-theme-accent"
-              />
-            </motion.div>
-          </CardContent>
-        </Card>
-        <Card className="lunar-card border-border/60 bg-card/40">
-          <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">{t.statsToClaim}</p>
-            <FragmentAmount
-              amount={totalClaimable}
-              prefix="+"
-              size="sm"
-              className="text-2xl font-bold text-theme-accent justify-center"
-            />
-          </CardContent>
-        </Card>
-        <Card className="lunar-card border-border/60 bg-card/40">
-          <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">{t.statsCompleted}</p>
-            <p className="text-2xl font-bold text-theme-accent tabular-nums">
-              {totalCompleted}/{totalMissions}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {totalMissions > 0 && (
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t.globalProgress}</span>
-            <span className="font-medium">{Math.round((totalCompleted / totalMissions) * 100)}%</span>
-          </div>
-          <Progress
-            value={(totalCompleted / totalMissions) * 100}
-            className="mission-progress h-2"
+      <div className="relative z-[1] space-y-8">
+        {isLoading ? (
+          <div className="h-36 animate-pulse rounded-2xl bg-muted/40" />
+        ) : welcomeMission ? (
+          <WelcomeBonusCard
+            mission={welcomeMission}
+            onClaim={(key) => claim.mutate(key)}
+            isPending={claim.isPending}
+            t={t}
           />
-        </div>
-      )}
+        ) : null}
 
-      {isLoading ? (
-        <div className="space-y-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-20 bg-muted rounded-xl animate-pulse" />
-          ))}
+        <div data-tour="missions-stats" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Card className="lunar-card border-border/60 bg-card/40">
+            <CardContent className="p-4 text-center">
+              <p className="mb-1 text-xs text-muted-foreground">{t.statsFragments}</p>
+              <motion.div
+                key={user.fragments ?? 0}
+                initial={{ scale: 1 }}
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center justify-center"
+              >
+                <FragmentAmount
+                  amount={user.fragments ?? 0}
+                  size="sm"
+                  className="text-2xl font-bold text-theme-accent"
+                />
+              </motion.div>
+            </CardContent>
+          </Card>
+          <Card className="lunar-card border-border/60 bg-card/40">
+            <CardContent className="p-4 text-center">
+              <p className="mb-1 text-xs text-muted-foreground">{t.statsToClaim}</p>
+              <FragmentAmount
+                amount={totalClaimable}
+                prefix="+"
+                size="sm"
+                className="justify-center text-2xl font-bold text-theme-accent"
+              />
+            </CardContent>
+          </Card>
+          <Card className="lunar-card border-border/60 bg-card/40">
+            <CardContent className="p-4 text-center">
+              <p className="mb-1 text-xs text-muted-foreground">{t.statsCompleted}</p>
+              <p className="text-2xl font-bold tabular-nums text-theme-accent">
+                {totalCompleted}/{totalMissions || '—'}
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      ) : (
-        <div data-tour="missions-categories" className="space-y-8">
-          {CATEGORY_ORDER.map((cat) => {
-            const catMissions = byCat(cat);
-            const catStyle = CATEGORY_STYLE[cat];
-            const CatIcon = catStyle.icon;
-            const catCopy = t.categories[cat];
-            const catCompleted = catMissions.filter((m) => m.completed).length;
-            const catClaimable = catMissions.filter((m) => m.eligible && !m.completed)
-              .reduce((s, m) => s + m.rewardFragments, 0);
 
-            return (
-              <Card key={cat} className="lunar-card border-border/60 bg-card/30">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center justify-between text-base text-foreground">
-                    <div className="flex items-center gap-2">
-                      <CatIcon className={cn('w-5 h-5', MISSION_ICON_ACCENT)} />
-                      {catCopy.label}
+        {totalMissions > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">{t.globalProgress}</span>
+              <span className="font-medium">{Math.round((totalCompleted / totalMissions) * 100)}%</span>
+            </div>
+            <Progress
+              value={(totalCompleted / totalMissions) * 100}
+              className="mission-progress h-2"
+            />
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-40 animate-pulse rounded-2xl bg-muted/40" />
+            ))}
+          </div>
+        ) : (
+          <div data-tour="missions-categories" className="space-y-6">
+            <div className="-mx-1 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {FILTER_ORDER.map((filter) => {
+                const label =
+                  filter === 'ALL' ? t.filterAll : t.categories[filter].label;
+                return (
+                  <button
+                    key={filter}
+                    type="button"
+                    className="mission-filter-chip shrink-0"
+                    aria-pressed={categoryFilter === filter}
+                    onClick={() => setCategoryFilter(filter)}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {visibleCategories.map((cat) => {
+              const catMissions = listedMissions.filter((m) => m.category === cat);
+              if (catMissions.length === 0) return null;
+              const CatIcon = CATEGORY_STYLE[cat].icon;
+              const catCopy = t.categories[cat];
+              const catCompleted = catMissions.filter((m) => m.completed).length;
+              const catClaimable = catMissions
+                .filter((m) => m.eligible && !m.completed)
+                .reduce((s, m) => s + m.rewardFragments, 0);
+
+              return (
+                <section key={cat} className="space-y-3">
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
+                        <CatIcon className={cn('h-5 w-5', MISSION_ICON_ACCENT)} />
+                        {catCopy.label}
+                      </h2>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{catCopy.description}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {catClaimable > 0 && (
@@ -466,24 +624,13 @@ export default function MissionsPage() {
                           <span className="ml-1">{t.categoryAvailableSuffix}</span>
                         </Badge>
                       )}
-                      <span className="text-xs text-muted-foreground font-normal">
+                      <span className="text-xs font-normal text-muted-foreground">
                         {catCompleted}/{catMissions.length}
                       </span>
                     </div>
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground">{catCopy.description}</p>
-                  {catMissions.length > 0 && (
-                    <Progress
-                      value={(catCompleted / catMissions.length) * 100}
-                      className="mission-progress h-1.5 mt-2"
-                    />
-                  )}
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {catMissions.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-2">{t.noMissionsInCategory}</p>
-                  ) : (
-                    catMissions.map((m) => (
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {catMissions.map((m) => (
                       <MissionCard
                         key={`${m.key}-${m.periodKey}`}
                         mission={m}
@@ -491,20 +638,20 @@ export default function MissionsPage() {
                         isPending={claim.isPending}
                         t={t}
                       />
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        )}
 
-      {claim.isError && (
-        <p className="text-sm text-destructive">
-          {(claim.error as Error)?.message}
-        </p>
-      )}
+        {claim.isError && (
+          <p className="text-sm text-destructive">
+            {(claim.error as Error)?.message}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

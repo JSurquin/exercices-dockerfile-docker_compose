@@ -1200,6 +1200,80 @@ body.next-dev-overlay-present #sentry-feedback {
     object-fit: contain;
   }
 
+  /* Missions — bonus de bienvenue */
+  .mission-welcome {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .mission-welcome::before {
+    content: "";
+    position: absolute;
+    inset: -30% auto auto -8%;
+    width: 18rem;
+    height: 18rem;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--theme-accent) 38%, transparent),
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .mission-welcome::after {
+    content: "";
+    position: absolute;
+    right: -12%;
+    bottom: -40%;
+    width: 16rem;
+    height: 16rem;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--cta-from) 22%, transparent),
+      transparent 72%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .mission-filter-chip {
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    background: color-mix(in srgb, var(--card) 55%, transparent);
+    padding: 0.4rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--muted-foreground);
+    backdrop-filter: blur(8px);
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .mission-filter-chip:hover {
+    color: var(--foreground);
+    border-color: color-mix(in srgb, var(--theme-accent) 35%, transparent);
+  }
+
+  .mission-filter-chip[aria-pressed="true"] {
+    color: var(--theme-highlight);
+    border-color: color-mix(in srgb, var(--theme-accent) 45%, transparent);
+    background: color-mix(in srgb, var(--theme-accent) 14%, transparent);
+  }
+
+  .mission-quest {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-radius: 1rem;
+    padding: 1rem;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
   /* Badge glass discret (fragments disponibles, etc.) */
   .mission-glass-badge {
     background: color-mix(in srgb, var(--theme-accent) 12%, transparent);

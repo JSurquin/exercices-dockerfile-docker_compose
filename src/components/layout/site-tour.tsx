@@ -266,9 +266,9 @@ function buildTourSteps(locale: string): TourStep[] {
       popover: {
         title: t('Page des missions', 'Missions Page', '任务页面'),
         description: t(
-          'Les missions sont votre source principale de <strong>fragments gratuits</strong>. Complétez-en un maximum chaque jour pour maximiser vos chances aux concours. Certaines missions se renouvellent quotidiennement, d\'autres chaque semaine ou chaque mois.',
-          'Missions are your main source of <strong>free fragments</strong>. Complete as many as possible each day to maximize your giveaway chances. Some missions renew daily, others weekly or monthly.',
-          '任务是您获取<strong>免费碎片</strong>的主要来源。每天尽可能多地完成任务以最大化抽奖机会。部分任务每日刷新，其他每周或每月刷新。'
+          'Les missions sont votre source de <strong>fragments gratuits</strong>. Un bonus de bienvenue de 1 000 fragments t’attend, puis des missions quotidiennes, hebdo, mensuelles et sociales. Complète-en un maximum pour maximiser tes chances aux concours.',
+          'Missions are your source of <strong>free fragments</strong>. A 1,000-fragment welcome bonus is waiting, then daily, weekly, monthly and social missions. Complete as many as you can to maximize your giveaway chances.',
+          '任务是您获取<strong>免费碎片</strong>的来源。新用户可领取 1 000 碎片欢迎奖励，此外还有每日、每周、每月和社交任务。尽量多完成任务以最大化抽奖机会。'
         ),
         align: 'center',
       },

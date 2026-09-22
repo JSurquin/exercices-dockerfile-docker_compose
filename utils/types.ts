@@ -4168,6 +4168,9 @@ export interface Messages {
     noMissionsInCategory: string;
     claimed: string;
     claim: string;
+    filterAll: string;
+    welcomeBadge: string;
+    welcomeOnce: string;
     socialVisit: string;
     socialConfirm: string;
     socialWaiting: string;
@@ -4195,6 +4198,7 @@ export interface Messages {
       SOCIAL_TELEGRAM: { label: string; description: string };
       SOCIAL_STEAM_GROUP: { label: string; description: string };
       BONUS_DAILY_SURPRISE: { label: string; description: string };
+      WELCOME_BONUS: { label: string; description: string };
     };
     categories: {
       DAILY: { label: string; description: string };
