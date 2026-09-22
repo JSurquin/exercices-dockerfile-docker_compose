@@ -67,12 +67,12 @@ export function GiveawayHeroSkeleton() {
 export function GiveawayCarouselSkeleton({ label }: { label?: string }) {
   return (
     <div className="mb-8" role="status" aria-busy="true" aria-label={label}>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex h-8 items-center justify-between">
         <Skeleton className="h-6 w-48" />
         <Skeleton className="h-8 w-24" />
       </div>
-      <div className="giveaway-recurring-carousel__stage">
-        <div className="mx-auto w-full max-w-md">
+      <div className="giveaway-recurring-carousel__stage min-h-[340px]">
+        <div className="mx-auto w-full max-w-[340px]">
           <GiveawayCardSkeleton />
         </div>
       </div>

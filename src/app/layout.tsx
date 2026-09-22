@@ -1,12 +1,9 @@
 import { Inter, Poppins, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
-import { cookies, headers } from 'next/headers';
 import { RootLayoutShell } from '@/components/layout/root-layout-shell';
 import { EMPTY_PUBLIC_STATS, getServerPublicStats } from '@/lib/get-public-stats';
-import type { Locale } from '@/lib/i18n';
+import { getRequestLocale } from '@/lib/get-request-locale';
 import {
-  LOCALE_COOKIE,
-  isValidLocale,
   localeSiteMetadata,
   localeToHtmlLang,
 } from '@/lib/locale-detection';
@@ -18,6 +15,7 @@ const inter = Inter({
   variable: '--font-sans',
   subsets: ['latin'],
   display: 'swap',
+  adjustFontFallback: true,
 });
 
 const poppins = Poppins({
@@ -25,6 +23,7 @@ const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
   display: 'swap',
+  adjustFontFallback: true,
 });
 
 const spaceGrotesk = Space_Grotesk({
@@ -32,32 +31,17 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   display: 'swap',
+  adjustFontFallback: true,
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
   subsets: ['latin'],
   display: 'swap',
+  adjustFontFallback: true,
 });
 
 const siteUrl = 'https://moonskin.gg';
-
-async function getRequestLocale(): Promise<Locale> {
-  const headerStore = await headers();
-  const headerLocale = headerStore.get('x-moonskin-locale');
-  if (isValidLocale(headerLocale)) {
-    return headerLocale;
-  }
-
-  const cookieStore = await cookies();
-  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
-
-  if (isValidLocale(cookieLocale)) {
-    return cookieLocale;
-  }
-
-  return 'en';
-}
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();

@@ -45,6 +45,9 @@ import { FragmentAmount } from "@/components/ui/level-badge";
 import { cn } from "@/lib/utils";
 import { SteamBrandIcon } from "@/components/ui/social-brand-icons";
 
+const HEADER_AUTH_SLOT_CLASS =
+  "flex h-9 min-w-[22rem] items-center justify-end gap-2";
+
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
   const { locale, setLocale, messages } = useLocale();
@@ -246,20 +249,20 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* User Menu */}
+          {/* User Menu — reserved slot avoids CLS when session/balance load */}
           {user ? (
-            <>
+            <div className={HEADER_AUTH_SLOT_CLASS} data-slot="header-auth">
               {/* Compteur de fragments */}
               <Link
                 id="nav-fragments"
                 href="/missions"
-                className="hidden sm:flex h-9 items-center gap-1.5 overflow-visible rounded-full border border-white/10 bg-white/[0.04] px-2.5 text-sm font-semibold text-[#ffffff] hover:bg-white/[0.06] transition-colors"
+                className="hidden sm:flex h-9 min-w-[4.5rem] items-center gap-1.5 overflow-visible rounded-full border border-white/10 bg-white/[0.04] px-2.5 text-sm font-semibold text-[#ffffff] hover:bg-white/[0.06] transition-colors"
               >
                 <FragmentAmount
                   amount={(user as unknown as { fragments?: number })?.fragments ?? 0}
                   size="sm"
                   badgeContainerClassName="fragment-btn shrink-0"
-                  className="text-sm font-semibold text-[#ffffff] overflow-visible"
+                  className="text-sm font-semibold tabular-nums text-[#ffffff] overflow-visible"
                 />
               </Link>
 
@@ -288,7 +291,7 @@ export function Header() {
                   variant="ghost"
                   className="relative h-8 w-8 rounded-full"
                 >
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={user.avatar} alt={user.username} />
                     <AvatarFallback>
                       {user.username.slice(0, 2).toUpperCase()}
@@ -344,26 +347,19 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            </>
+            </div>
           ) : (
-            <div className="flex items-center space-x-2">
+            <div className={`${HEADER_AUTH_SLOT_CLASS} space-x-0`} data-slot="header-auth">
               <Button
                 onClick={handleSteamLogin}
                 disabled={isLoading}
                 variant="cta"
                 className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
-                {isLoading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>{messages.common.connecting}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <SteamBrandIcon className="h-4 w-4" />
-                    <span>{messages.common.steamLogin}</span>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  <SteamBrandIcon className="h-4 w-4 shrink-0" />
+                  <span>{messages.common.steamLogin}</span>
+                </div>
               </Button>
               <Button
                 onClick={handleDiscordLogin}

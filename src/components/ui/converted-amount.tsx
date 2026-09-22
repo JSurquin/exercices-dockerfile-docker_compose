@@ -75,13 +75,13 @@ export function ConvertedAmount({
   }, [cents, fromCurrency, selectedCurrency]);
 
   if (loading || displayCents === null) {
-    return <Skeleton className={`inline-block h-8 w-24 ${className}`} />;
+    return <Skeleton className={`inline-block h-8 min-w-[6rem] w-24 align-middle ${className}`} />;
   }
 
   if (countUp) {
     const { prefix, suffix } = getAffixes(selectedCurrency);
     return (
-      <span className={className}>
+      <span className={cn('inline-block min-w-[6rem] tabular-nums', className)}>
         <CountUp
           end={displayCents / 100}
           duration={countUpDuration}
@@ -97,7 +97,7 @@ export function ConvertedAmount({
   if (split) {
     const parts = splitCurrencyDisplay(displayCents, locale, selectedCurrency);
     return (
-      <span className={cn('inline-flex items-baseline whitespace-nowrap', className)}>
+      <span className={cn('inline-flex min-w-[6rem] items-baseline whitespace-nowrap tabular-nums', className)}>
         {parts.symbolFirst ? (
           <span className="mr-0.5 text-[0.55em] font-medium text-foreground/70">{parts.symbol}</span>
         ) : null}
@@ -111,7 +111,7 @@ export function ConvertedAmount({
   }
 
   return (
-    <span className={className}>
+    <span className={cn('inline-block min-w-[6rem] tabular-nums', className)}>
       {currencyConverter.formatPrice(displayCents, selectedCurrency)}
     </span>
   );

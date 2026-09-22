@@ -5,7 +5,6 @@ import { Locale, getMessages } from '@/lib/i18n';
 import {
   LOCALE_STORAGE_KEY,
   buildLocaleCookieValue,
-  isValidLocale,
   localeToHtmlLang,
 } from '@/lib/locale-detection';
 import { Messages } from '~/utils/types';
@@ -39,15 +38,7 @@ export function LocaleProvider({
   const messages = getMessages(locale);
 
   useEffect(() => {
-    const storedLocale = localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (isValidLocale(storedLocale)) {
-      if (storedLocale !== initialLocale) {
-        setLocaleState(storedLocale);
-      }
-      persistLocalePreference(storedLocale);
-      return;
-    }
-
+    setLocaleState(initialLocale);
     persistLocalePreference(initialLocale);
   }, [initialLocale]);
 

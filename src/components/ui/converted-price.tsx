@@ -72,19 +72,23 @@ export function ConvertedPrice({
   }, [usdCents, fromCurrency, selectedCurrency, messages.common.conversionError]);
 
   if (loading || isLoading) {
-    return <Skeleton className={`h-5 w-16 ${className}`} />;
+    return (
+      <Skeleton
+        className={`inline-block h-5 min-w-[5.5rem] w-[5.5rem] align-middle ${className}`}
+      />
+    );
   }
 
   if (error) {
     return (
-      <span className={`text-red-500 ${className}`} title={`${messages.common.error}: ${error}`}>
+      <span className={`inline-block min-w-[5.5rem] tabular-nums text-red-500 ${className}`} title={`${messages.common.error}: ${error}`}>
         {currencyConverter.formatPrice(usdCents, fromCurrency)}
       </span>
     );
   }
 
   return (
-    <span className={className}>
+    <span className={`inline-block min-w-[5.5rem] tabular-nums ${className}`}>
       {convertedPrice}
       {showOriginal && fromCurrency !== selectedCurrency && (
         <span className="text-xs text-muted-foreground ml-1">
