@@ -3,8 +3,9 @@
 import type { ComponentType } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatMessage } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -242,19 +243,14 @@ export function HeroSection({
           <div className={`space-y-6 sm:space-y-8 ${homeEnter.left}`}>
             {/* Badge */}
             <div className={`${homeEnter.up} ${homeDelay[200]}`}>
-              <span
-                className={cn(
-                  buttonVariants({ variant: "chrome" }),
-                  "h-auto w-fit cursor-default px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:brightness-100"
-                )}
-              >
+              <span className="surface inline-flex h-auto w-fit items-center gap-2 rounded-[10px] border border-white/15 bg-white/[0.06] px-3 py-1.5 text-xs font-medium sm:px-4 sm:py-2 sm:text-sm">
                 <CheckCircleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-theme-accent" />
                 {messages.hero.badge}
               </span>
             </div>
 
             {/* Main Title */}
-            <div className={`hero-box space-y-3 sm:space-y-4 lunar-card px-5 py-4 ${homeEnter.upLg} ${homeDelay[300]}`}>
+            <div className={`hero-box surface space-y-3 sm:space-y-4 lunar-card px-5 py-4 ${homeEnter.upLg} ${homeDelay[300]}`}>
               <h1 className="hero-title text-gaming-title text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight uppercase">
                 {messages.hero.title
                   .split(/(CS2|MOONSKIN)/i)
@@ -283,7 +279,7 @@ export function HeroSection({
             </div>
 
             {/* Features */}
-            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4 lunar-card px-4 py-3 ${homeEnter.up} ${homeDelay[500]}`}>
+            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4 lunar-card surface px-4 py-3 ${homeEnter.up} ${homeDelay[500]}`}>
               {features.map((feature, index) => (
                 <div
                   key={index}
@@ -318,7 +314,7 @@ export function HeroSection({
             </div>
 
             {/* Payment Methods */}
-            <div className={`payment-box lunar-card hero-payment-methods-card px-4 py-3 ${homeEnter.up} ${homeDelay[650]}`}>
+            <div className={`payment-box lunar-card surface hero-payment-methods-card px-4 py-3 ${homeEnter.up} ${homeDelay[650]}`}>
               <p className="hero-payment-title mb-2">
                 {messages.hero.paymentMethods.title}
               </p>
@@ -379,11 +375,20 @@ export function HeroSection({
 
                 {/* Skin Items */}
                 <div className="space-y-2 sm:space-y-3">
-                  <div className={`flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07] transition-all duration-300 ${homeHover.scale}`}>
+                  <Link
+                    href="/sell"
+                    aria-label={formatMessage(messages.hero.tradeInterface.sellSkinAriaLabel, {
+                      skin: messages.hero.tradeInterface.ak47Name,
+                    })}
+                    className={cn(
+                      "surface-interactive flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07]",
+                      homeHover.scale
+                    )}
+                  >
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
                       <Image
                         src={HERO_DEMO_SKIN_IMAGES.ak47RedlineFt}
-                        alt="AK-47 | Redline (Minimal Wear)"
+                        alt={messages.hero.tradeInterface.ak47Alt}
                         width={512}
                         height={512}
                         className="h-full w-full object-cover"
@@ -397,14 +402,14 @@ export function HeroSection({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-1 sm:space-x-2">
                         <p className="font-medium text-sm sm:text-base truncate">
-                          AK-47 | Redline
+                          {messages.hero.tradeInterface.ak47Name}
                         </p>
                         <div className="px-1.5 sm:px-2 py-0.5 bg-theme-accent/15 text-theme-accent text-xs rounded font-mono flex-shrink-0">
                           StatTrak™
                         </div>
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground flex items-center space-x-1">
-                        <span>Minimal Wear</span>
+                        <span>{messages.hero.tradeInterface.ak47Wear}</span>
                         <span className="text-yellow-500">★★★★</span>
                       </p>
                     </div>
@@ -414,13 +419,22 @@ export function HeroSection({
                       </p>
                       <p className="text-xs text-theme-accent">+15% ↗</p>
                     </div>
-                  </div>
+                  </Link>
 
-                  <div className={`flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07] transition-all duration-300 ${homeHover.scale}`}>
+                  <Link
+                    href="/sell"
+                    aria-label={formatMessage(messages.hero.tradeInterface.sellSkinAriaLabel, {
+                      skin: messages.hero.tradeInterface.awpName,
+                    })}
+                    className={cn(
+                      "surface-interactive flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 hover:border-theme-accent/30 hover:bg-white/[0.07]",
+                      homeHover.scale
+                    )}
+                  >
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#14141a] shadow-lg ring-1 ring-white/10 sm:h-12 sm:w-12">
                       <Image
                         src={HERO_DEMO_SKIN_IMAGES.awpDragonLoreFn}
-                        alt="AWP | Dragon Lore (Factory New)"
+                        alt={messages.hero.tradeInterface.awpAlt}
                         width={512}
                         height={512}
                         className="h-full w-full object-cover"
@@ -434,14 +448,14 @@ export function HeroSection({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-1 sm:space-x-2">
                         <p className="font-medium text-sm sm:text-base truncate">
-                          AWP | Dragon Lore
+                          {messages.hero.tradeInterface.awpName}
                         </p>
                         <div className="px-1.5 py-0.5 bg-theme-accent/15 text-theme-accent text-xs rounded flex-shrink-0">
                           ★
                         </div>
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground flex items-center space-x-1">
-                        <span>Factory New</span>
+                        <span>{messages.hero.tradeInterface.awpWear}</span>
                         <span className="text-yellow-500">★★★★★</span>
                       </p>
                     </div>
@@ -451,7 +465,7 @@ export function HeroSection({
                       </p>
                       <p className="text-xs text-theme-accent">+8% ↗</p>
                     </div>
-                  </div>
+                  </Link>
                 </div>
 
                 {/* Summary */}

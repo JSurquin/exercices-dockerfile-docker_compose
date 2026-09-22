@@ -49,7 +49,7 @@ export function HowItWorksCs2Step({
   return (
     <article
       className={cn(
-        "hiw-cs2-step group relative h-full w-full min-w-0 overflow-hidden rounded-lg border-2 bg-[#14141a] shadow-[0_8px_32px_rgba(0,0,0,0.55)]",
+        "hiw-cs2-step surface relative h-full w-full min-w-0 overflow-hidden rounded-lg border-2 bg-[#14141a] shadow-[0_8px_32px_rgba(0,0,0,0.55)]",
         locked && "hiw-cs2-step--locked",
         className,
       )}
@@ -87,7 +87,7 @@ export function HowItWorksCs2Step({
         />
         <Icon
           className={cn(
-            "relative z-[1] h-11 w-11 text-white/75 transition-transform duration-300 group-hover:scale-105",
+            "relative z-[1] h-11 w-11 text-white/75",
             locked && "text-white/45",
           )}
           aria-hidden

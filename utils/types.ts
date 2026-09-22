@@ -125,6 +125,13 @@ export interface Messages {
       cashoutFees: string;
       sepafees: string;
       totalNet: string;
+      ak47Name: string;
+      ak47Wear: string;
+      ak47Alt: string;
+      awpName: string;
+      awpWear: string;
+      awpAlt: string;
+      sellSkinAriaLabel: string;
     };
     testimonials: {
       name: string[];

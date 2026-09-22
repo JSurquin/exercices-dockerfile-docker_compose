@@ -134,7 +134,7 @@ export function FeaturesSection() {
 
   const FeatureCard = ({ feature, index }: { feature: (typeof allFeatures)[0]; index: number }) => (
     <div className={`${homeReveal.up} ${homeStagger(index)}`}>
-      <Card className="lunar-card h-full weapon-card-hover">
+      <Card className="lunar-card surface h-full">
         <CardContent className="p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-3">
@@ -201,7 +201,7 @@ export function FeaturesSection() {
         <div className={`flex justify-center mt-10 ${homeReveal.upSm}`}>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="inline-flex items-center gap-2 lunar-card px-6 py-3 rounded-full text-sm font-medium transition-all hover:scale-105 active:scale-95"
+            className="surface-interactive home-hover-scale inline-flex items-center gap-2 lunar-card px-6 py-3 rounded-full text-sm font-medium"
           >
             {expanded ? (
               <>

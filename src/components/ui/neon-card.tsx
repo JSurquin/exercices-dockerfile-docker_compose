@@ -6,7 +6,7 @@ type NeonCardProps = React.ComponentProps<"div">;
 
 export function NeonCard({ className, children, ...props }: NeonCardProps) {
   return (
-    <div className={cn("home-neon-card group", className)} {...props}>
+    <div className={cn("home-neon-card surface group", className)} {...props}>
       <div className="home-neon-card__inner h-full">{children}</div>
     </div>
   );

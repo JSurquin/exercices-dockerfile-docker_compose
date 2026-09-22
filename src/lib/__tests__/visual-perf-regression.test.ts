@@ -48,4 +48,17 @@ describe('visual perf regression guards', () => {
     expect(lunar).toMatch(/rgba\(18,\s*18,\s*24,\s*0\.88\)/);
     expect(lunar).not.toMatch(/rgba\(255,\s*255,\s*255,\s*0\.08\)/);
   });
+
+  it('keeps hover halo opt-in via surface-interactive only', () => {
+    expect(css).toMatch(/\.lunar-card\.surface-interactive:hover::after/);
+    expect(css).not.toMatch(/\.lunar-card:hover::after/);
+    expect(blockAfter('.surface-interactive')).toMatch(/cursor:\s*pointer/);
+    expect(blockAfter('.surface-interactive:focus-visible')).toMatch(/outline:\s*2px\s+solid/);
+    expect(css).not.toMatch(/\.hero-box:hover\s*,/);
+    expect(css).not.toMatch(/\.payment-box:hover\s*,/);
+    expect(css).not.toMatch(/\.hero-payment-chip:hover\s*\{/);
+    expect(css).not.toMatch(/\.hiw-cs2-step:hover\s/);
+    expect(css).toMatch(/\.surface-interactive\.home-hover-scale:hover\s*\{/);
+    expect(css).not.toMatch(/(?<!surface-interactive)\.home-hover-scale:hover\s*\{/);
+  });
 });

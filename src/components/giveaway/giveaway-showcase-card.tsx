@@ -272,7 +272,7 @@ export function GiveawayShowcaseCard({
         <GiveawayMotionSurface
           featured
           className={cn(
-            'giveaway-card-surface giveaway-showcase-card giveaway-showcase-card--featured flex h-full w-full flex-col overflow-visible rounded-2xl p-5 backdrop-blur-md',
+            'giveaway-card-surface surface giveaway-showcase-card giveaway-showcase-card--featured flex h-full w-full flex-col overflow-visible rounded-2xl p-5 backdrop-blur-md',
             selected && 'ring-2 ring-theme-accent/70'
           )}
           style={giveawayTierSurfaceStyle(accent, tokens)}
@@ -290,8 +290,10 @@ export function GiveawayShowcaseCard({
           data-giveaway={giveaway.id}
           data-tier={giveawayVisualTierAttr(visualTier)}
           className={cn(
-            'giveaway-card-surface giveaway-showcase-card flex h-full w-full flex-col overflow-visible rounded-2xl p-4 text-left backdrop-blur-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            clickable && 'cursor-pointer',
+            'giveaway-card-surface giveaway-showcase-card flex h-full w-full flex-col overflow-visible rounded-2xl p-4 text-left backdrop-blur-md',
+            clickable
+              ? 'surface-interactive giveaway-card-surface--interactive'
+              : 'surface',
             selected && 'ring-2 ring-theme-accent/70'
           )}
           style={giveawayTierSurfaceStyle(accent, tokens)}

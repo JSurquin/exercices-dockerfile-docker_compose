@@ -23,7 +23,7 @@ export function MissionWelcomeBanner({
 
   return (
     <div
-      className="mission-welcome lunar-card px-4 py-4 sm:px-6 sm:py-5"
+      className="mission-welcome lunar-card surface px-4 py-4 sm:px-6 sm:py-5"
       style={{ '--mission-accent': MISSION_KIND_ACCENT.daily } as CSSProperties}
     >
       <div className="relative z-[1] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

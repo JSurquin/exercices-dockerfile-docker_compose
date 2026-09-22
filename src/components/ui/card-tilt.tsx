@@ -12,7 +12,7 @@ interface CardTiltProps {
  */
 export function CardTilt({ children, className, shimmer = false }: CardTiltProps) {
   return (
-    <div className={cn("lunar-card card-tilt", shimmer && "chrome-shimmer", className)}>
+    <div className={cn("lunar-card card-tilt surface", shimmer && "chrome-shimmer", className)}>
       {children}
     </div>
   );

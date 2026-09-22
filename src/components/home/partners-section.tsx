@@ -112,12 +112,12 @@ function VideoCard({ video }: { video: PartnerVideo }) {
   const thumbUrl = getYoutubeThumbnailUrl(video.youtubeVideoId);
 
   return (
-    <article className="group flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-all duration-300 hover:border-theme-accent/30 hover:shadow-md sm:w-auto">
+    <article className="surface flex w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg sm:w-auto">
       <a
         href={watchUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="relative block aspect-video overflow-hidden bg-muted"
+        className="surface-interactive group relative block aspect-video overflow-hidden bg-muted"
         aria-label={`${video.creatorName}, YouTube`}
       >
         <Image
@@ -150,7 +150,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
               href={video.youtubeChannelUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block truncate text-sm font-semibold text-foreground hover:text-foreground/80"
+              className="surface-interactive block truncate text-sm font-semibold text-foreground hover:text-foreground/80"
             >
               {video.creatorName}
             </a>
@@ -167,7 +167,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
             href={watchUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground transition-colors hover:text-foreground"
+            className="surface-interactive text-muted-foreground hover:text-foreground"
             aria-label="YouTube"
           >
             <Youtube className="h-4 w-4" />
@@ -177,7 +177,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
               href={video.twitterUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground transition-colors hover:text-foreground"
+              className="surface-interactive text-muted-foreground hover:text-foreground"
               aria-label="X"
             >
               <XIcon className="h-3.5 w-3.5" />
@@ -213,14 +213,14 @@ function LogoItem({ logo }: { logo: PartnerLogo }) {
         href={logo.profileUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex flex-col items-center gap-2"
+        className="surface-interactive group flex flex-col items-center gap-2"
       >
         {inner}
       </a>
     );
   }
 
-  return <div className="group flex flex-col items-center gap-2">{inner}</div>;
+  return <div className="surface flex flex-col items-center gap-2">{inner}</div>;
 }
 
 export function PartnersSection({

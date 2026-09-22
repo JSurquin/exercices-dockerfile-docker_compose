@@ -40,7 +40,7 @@ function CsgoRepLink({ size = 'default' }: { size?: 'default' | 'large' }) {
       href="https://csgo-rep.com/profile/76561199040420116"
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex relative group home-neon-pill ${homeHover.lift}`}
+      className={`surface-interactive inline-flex relative group home-neon-pill ${homeHover.lift}`}
     >
       <span className="home-neon-pill__glow" aria-hidden />
       <span className={`home-neon-pill__inner relative inline-flex items-center space-x-2 lunar-card ${innerPadding} rounded-full bg-background/90 text-sm font-semibold`}>
@@ -110,12 +110,12 @@ export function TestimonialsSection({ publicStats: publicStatsProp }: { publicSt
               key={testimonial.id}
               className={`${homeReveal.up} ${homeStagger(index)}`}
             >
-              <Card className="h-full hover:shadow-lg transition-all duration-300">
+              <Card className="surface h-full">
                 <CardContent className="p-4 sm:p-6">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <a href={`https://csgo-rep.com/profile/${testimonial.steamId}`} target="_blank" rel="noopener noreferrer">
+                      <a href={`https://csgo-rep.com/profile/${testimonial.steamId}`} target="_blank" rel="noopener noreferrer" className="surface-interactive rounded-full">
                         <Avatar className="w-10 h-10 ring-2 ring-transparent hover:ring-theme-accent transition-all">
                           <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
                           <AvatarFallback>
@@ -125,7 +125,7 @@ export function TestimonialsSection({ publicStats: publicStatsProp }: { publicSt
                       </a>
                       <div>
                         <div className="flex items-center space-x-2">
-                          <a href={`https://csgo-rep.com/profile/${testimonial.steamId}`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                          <a href={`https://csgo-rep.com/profile/${testimonial.steamId}`} target="_blank" rel="noopener noreferrer" className="surface-interactive hover:text-foreground">
                             <h4 className="font-semibold text-sm">{testimonial.name}</h4>
                           </a>
                           {testimonial.verified && (

@@ -173,7 +173,7 @@ export function MissionsTourDemo() {
         </header>
 
         <div className="mission-stack">
-          <div className="mission-welcome lunar-card px-4 py-4 sm:px-6 sm:py-5">
+          <div className="mission-welcome lunar-card surface px-4 py-4 sm:px-6 sm:py-5">
             <div className="relative z-[1] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-theme-accent/30 bg-theme-accent/15">

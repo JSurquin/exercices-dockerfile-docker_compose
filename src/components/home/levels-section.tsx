@@ -123,7 +123,7 @@ export function LevelsSection() {
               return (
                 <div
                   key={level.index}
-                  className={`level-card group relative flex flex-col items-center gap-2 transition-transform duration-200 ease-out hover:scale-[1.12] hover:z-10 cursor-default ${homeReveal.scale} ${homeStagger(i + 2)}`}
+                  className={`level-card surface group relative flex flex-col items-center gap-2 cursor-default ${homeReveal.scale} ${homeStagger(i + 2)}`}
                 >
                   <LevelBadge
                     tierIndex={badgeTier}
