@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/providers/auth-provider';
@@ -11,14 +11,14 @@ import Link from 'next/link';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { PageLoading } from '@/components/ui/page-loading';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
 import { SparklesIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { queryKeys } from '@/lib/query-keys';
-import { FragmentAmount, FragmentBadge } from '@/components/ui/level-badge';
+import { FragmentAmount } from '@/components/ui/level-badge';
 import { GiveawayStarfield } from '@/components/giveaway/giveaway-starfield';
 import { GiveawayPageReveal } from '@/components/giveaway/giveaway-motion-surface';
 import { useLiveNow } from '@/components/giveaway/giveaway-countdown';
 import { MissionCard } from '@/components/missions/mission-card';
+import { MissionClaimFly, type MissionClaimFlyPoint } from '@/components/missions/mission-claim-fly';
 import { MissionWelcomeBanner } from '@/components/missions/mission-welcome';
 import { MissionTodayTile } from '@/components/missions/mission-today';
 import {
@@ -29,8 +29,10 @@ import {
   formatMissionDuration,
   formatMissionResetLine,
   isTodayMissionKey,
+  mapMissionClaimError,
   nextMissionResetAt,
   pickDefaultMissionTab,
+  sortMissionsByStatus,
   type CompactDurationLabels,
   type MissionPeriodTab,
   type MissionRow,
@@ -38,15 +40,28 @@ import {
 
 const WELCOME_BONUS_MISSION_KEY = 'WELCOME_BONUS';
 
+function pointFromRect(rect: DOMRect, at: 'center' | 'top'): MissionClaimFlyPoint {
+  return {
+    x: rect.left + rect.width / 2,
+    y: at === 'top' ? rect.top : rect.top + rect.height / 2,
+  };
+}
+
 export default function MissionsPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
   const { messages, locale } = useLocale();
   const { isTourMode } = useTourMode();
   const t = messages.missions;
   const queryClient = useQueryClient();
-  const [animatingFragments, setAnimatingFragments] = useState(false);
-  const [claimedFragments, setClaimedFragments] = useState(0);
   const [tabOverride, setTabOverride] = useState<MissionPeriodTab | null>(null);
+  const [fly, setFly] = useState<{
+    id: number;
+    amount: number;
+    from: MissionClaimFlyPoint;
+    to: MissionClaimFlyPoint;
+  } | null>(null);
+  const balanceRef = useRef<HTMLDivElement>(null);
+  const claimOriginRef = useRef<HTMLElement | null>(null);
   const now = useLiveNow(15_000);
 
   const durationLabels: CompactDurationLabels = {
@@ -80,9 +95,16 @@ export default function MissionsPage() {
     },
     onSuccess: async (j: { fragments?: number }) => {
       const earned = j.fragments ?? 0;
-      setClaimedFragments(earned);
-      setAnimatingFragments(true);
-      setTimeout(() => setAnimatingFragments(false), 1600);
+      const fromRect = claimOriginRef.current?.getBoundingClientRect();
+      const toRect = balanceRef.current?.getBoundingClientRect();
+      if (fromRect && toRect && earned > 0) {
+        setFly({
+          id: Date.now(),
+          amount: earned,
+          from: pointFromRect(fromRect, 'top'),
+          to: pointFromRect(toRect, 'center'),
+        });
+      }
 
       queryClient.invalidateQueries({ queryKey: ['missions'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
@@ -95,8 +117,18 @@ export default function MissionsPage() {
         duration: 3000,
       });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : t.genericError),
+    onError: (e) =>
+      toast.error(
+        mapMissionClaimError(e instanceof Error ? e.message : t.genericError, t)
+      ),
   });
+
+  const handleClaim = useCallback((missionKey: string, origin?: HTMLElement | null) => {
+    claimOriginRef.current = origin ?? null;
+    claim.mutate(missionKey);
+  }, [claim]);
+
+  const clearFly = useCallback(() => setFly(null), []);
 
   const missions = useMemo(() => data?.missions ?? [], [data?.missions]);
   const welcomeMission = useMemo(
@@ -124,7 +156,12 @@ export default function MissionsPage() {
       else if (mission.category === 'MONTHLY') byTab.MONTHLY.push(mission);
       else if (mission.category === 'SOCIAL') byTab.SOCIAL.push(mission);
     }
-    return byTab;
+    return {
+      DAILY: sortMissionsByStatus(byTab.DAILY),
+      WEEKLY: sortMissionsByStatus(byTab.WEEKLY),
+      MONTHLY: sortMissionsByStatus(byTab.MONTHLY),
+      SOCIAL: sortMissionsByStatus(byTab.SOCIAL),
+    };
   }, [missions]);
   const claimableByTab = useMemo(
     () => ({
@@ -149,6 +186,13 @@ export default function MissionsPage() {
   const todayReturnsLabel = dailyResetAt
     ? t.returnsIn.replace('{duration}', formatMissionDuration(dailyResetAt, durationLabels, now))
     : t.claimed;
+  const tabReturnsLabel = tabResetAt
+    ? t.returnsIn.replace('{duration}', formatMissionDuration(tabResetAt, durationLabels, now))
+    : null;
+  const claimingKey = claim.isPending ? (claim.variables ?? null) : null;
+  const claimError = claim.isError
+    ? mapMissionClaimError((claim.error as Error)?.message ?? t.genericError, t)
+    : null;
 
   if (authLoading) {
     return (
@@ -168,48 +212,22 @@ export default function MissionsPage() {
   }
 
   return (
-    <div className="container relative mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="container relative mx-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       <GiveawayStarfield />
 
-      <AnimatePresence>
-        {animatingFragments && (
-          <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{
-                opacity: 0,
-                scale: 0.95,
-                transition: { duration: 0.2, ease: 'easeOut' },
-              }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="flex flex-col items-center gap-3 px-8 py-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
-              style={{
-                background: 'rgba(13, 13, 18, 0.95)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(200, 205, 220, 0.12)',
-                borderRadius: '16px',
-              }}
-            >
-              <FragmentBadge
-                size="md"
-                className="drop-shadow-[0_0_16px_rgba(200,205,220,0.15)]"
-              />
-              <p className="bg-gradient-to-br from-white via-[#e8e8f0] to-[#c0c0c0] bg-clip-text text-2xl font-bold tabular-nums text-transparent">
-                +{claimedFragments} {t.celebrationFragments}
-              </p>
-              <p className="text-[11px] font-medium uppercase tracking-wider text-[#7a7a8c]">
-                {t.celebrationComplete}
-              </p>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {fly ? (
+        <MissionClaimFly
+          key={fly.id}
+          amount={fly.amount}
+          from={fly.from}
+          to={fly.to}
+          onDone={clearFly}
+        />
+      ) : null}
 
-      <div className="relative z-[1] mx-auto w-full max-w-[1280px]">
-        <GiveawayPageReveal as="header" index={0} className="mb-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative z-[1] mx-auto w-full max-w-[1440px]">
+        <GiveawayPageReveal as="header" index={0} className="mb-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <div className="flex items-center gap-2.5">
                 <SparklesIcon className="h-6 w-6 shrink-0 text-theme-accent" />
@@ -217,18 +235,18 @@ export default function MissionsPage() {
                   {messages.nav.missions}
                 </h1>
               </div>
-              <p className="mt-1 max-w-2xl text-sm leading-snug text-foreground/70">
+              <p className="mt-1 max-w-2xl text-[13px] leading-snug text-foreground/80 sm:text-sm">
                 {t.pageSubtitle}
               </p>
             </div>
             <div data-tour="missions-stats" className="flex shrink-0 flex-wrap items-center gap-3">
-              <div className="mission-balance-pill">
+              <div ref={balanceRef} id="mission-balance-pill" className="mission-balance-pill">
                 <FragmentAmount
                   amount={user.fragments ?? 0}
                   size="xs"
                   className="font-display text-base font-semibold text-theme-accent"
                 />
-                <span className="text-xs text-foreground/70">{t.statsFragments}</span>
+                <span className="text-[13px] text-foreground/80">{t.statsFragments}</span>
               </div>
               <Link
                 href="/giveaways"
@@ -241,37 +259,37 @@ export default function MissionsPage() {
           </div>
         </GiveawayPageReveal>
 
-        <div className="space-y-8">
+        <div className="space-y-5">
           {isLoading ? (
-            <div className="h-24 animate-pulse rounded-2xl bg-muted/40" />
+            <div className="h-20 animate-pulse rounded-2xl bg-muted/40" />
           ) : welcomeMission && !welcomeMission.completed ? (
             <GiveawayPageReveal as="section" index={1}>
               <MissionWelcomeBanner
                 mission={welcomeMission}
-                onClaim={(key) => claim.mutate(key)}
-                isPending={claim.isPending}
+                onClaim={handleClaim}
+                claimingKey={claimingKey}
                 t={t}
               />
             </GiveawayPageReveal>
           ) : null}
 
           {isLoading ? (
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="mission-today-row">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-20 animate-pulse rounded-2xl bg-muted/40" />
               ))}
             </div>
           ) : todayMissions.length > 0 ? (
             <GiveawayPageReveal as="section" index={2}>
-              <h2 className="mb-3 font-display text-lg font-semibold">{t.todayTitle}</h2>
+              <h2 className="mb-2 font-display text-lg font-semibold">{t.todayTitle}</h2>
               <p className="sr-only">{t.todaySubtitle}</p>
               <div className="mission-today-row">
                 {todayMissions.map((mission) => (
                   <MissionTodayTile
                     key={`${mission.key}-${mission.periodKey}`}
                     mission={mission}
-                    onClaim={(key) => claim.mutate(key)}
-                    isPending={claim.isPending}
+                    onClaim={handleClaim}
+                    claimingKey={claimingKey}
                     returnsLabel={todayReturnsLabel}
                     t={t}
                   />
@@ -281,7 +299,7 @@ export default function MissionsPage() {
           ) : null}
 
           {isLoading ? (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="mission-quest-grid">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="h-40 animate-pulse rounded-2xl bg-muted/40" />
               ))}
@@ -293,12 +311,12 @@ export default function MissionsPage() {
                 onValueChange={(value) => setTabOverride(value as MissionPeriodTab)}
                 data-tour="missions-categories"
               >
-                <TabsList className="mission-tabs h-auto w-full flex-wrap justify-start gap-2 bg-transparent p-0">
+                <TabsList className="mission-tabs h-auto w-full justify-start gap-2 bg-transparent p-0">
                   {MISSION_PERIOD_TABS.map((tab) => (
                     <TabsTrigger
                       key={tab}
                       value={tab}
-                      className="mission-tab flex-1 data-[state=active]:bg-theme-accent/15 data-[state=active]:text-theme-highlight data-[state=active]:shadow-none"
+                      className="mission-tab data-[state=active]:bg-theme-accent/15 data-[state=active]:text-theme-highlight data-[state=active]:shadow-none"
                     >
                       {t.tabs[tab]}
                       {claimableByTab[tab] > 0 ? (
@@ -307,24 +325,28 @@ export default function MissionsPage() {
                     </TabsTrigger>
                   ))}
                 </TabsList>
-                <p className="mt-3 text-sm text-muted-foreground" data-countdown>
+                <p className="mt-2 text-[13px] text-foreground/80" data-countdown>
                   {tabResetLabel}
                 </p>
                 {MISSION_PERIOD_TABS.map((tab) => (
-                  <TabsContent key={tab} value={tab} className="mt-4">
+                  <TabsContent key={tab} value={tab} className="mt-3">
                     {tabMissions[tab].length === 0 ? (
-                      <p className="text-sm text-muted-foreground">{t.noMissionsInCategory}</p>
+                      <p className="text-[13px] text-foreground/80">{t.noMissionsInCategory}</p>
                     ) : (
                       <div className="mission-quest-grid">
                         {tabMissions[tab].map((mission) => (
                           <MissionCard
                             key={`${mission.key}-${mission.periodKey}`}
                             mission={mission}
-                            onClaim={(key) => claim.mutate(key)}
-                            isPending={claim.isPending}
+                            onClaim={handleClaim}
+                            claimingKey={claimingKey}
+                            returnsLabel={tabReturnsLabel}
                             t={t}
                           />
                         ))}
+                        <div className="mission-quest-grid__filler" aria-hidden />
+                        <div className="mission-quest-grid__filler" aria-hidden />
+                        <div className="mission-quest-grid__filler" aria-hidden />
                       </div>
                     )}
                   </TabsContent>
@@ -333,9 +355,11 @@ export default function MissionsPage() {
             </GiveawayPageReveal>
           )}
 
-          {claim.isError && (
-            <p className="text-sm text-destructive">{(claim.error as Error)?.message}</p>
-          )}
+          {claimError ? (
+            <p className="text-[13px] text-destructive" role="alert">
+              {claimError}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

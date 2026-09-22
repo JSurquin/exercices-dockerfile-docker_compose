@@ -4168,6 +4168,16 @@ export interface Messages {
     noMissionsInCategory: string;
     claimed: string;
     claim: string;
+    claimReward: string;
+    actionSell: string;
+    actionParticipate: string;
+    actionVisit: string;
+    moreInfo: string;
+    errorAlreadyClaimed: string;
+    errorRequirements: string;
+    errorUnknown: string;
+    errorAuth: string;
+    errorServer: string;
     filterAll: string;
     welcomeBadge: string;
     welcomeOnce: string;

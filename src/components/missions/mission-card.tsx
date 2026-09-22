@@ -2,15 +2,20 @@
 
 import type { ComponentType, CSSProperties } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
-  CheckCircleIcon,
-  ClockIcon,
-  SparklesIcon,
+  ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
   ChartBarIcon,
+  CheckCircleIcon,
+  ClockIcon,
   GiftIcon,
+  InformationCircleIcon,
+  LockClosedIcon,
+  SparklesIcon,
   StarIcon,
 } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
@@ -18,7 +23,15 @@ import { SOCIAL_MISSION_URLS } from '@/lib/moonskin-social';
 import { getSocialMissionIcon } from '@/components/ui/social-brand-icons';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import {
-  MISSION_CATEGORY_ACCENT,
+  formatClaimRewardLabel,
+  formatMissionProgressLabel,
+  getMissionAccent,
+  getMissionActionHref,
+  getMissionActionKind,
+  getMissionBlockReason,
+  getMissionKind,
+  getMissionUiStatus,
+  isQuantitativeMission,
   type MissionRow,
 } from '@/lib/mission-presentation';
 import type { Messages } from '~/utils/types';
@@ -38,26 +51,56 @@ const MISSION_ROW_STYLE: Record<string, { icon: ComponentType<{ className?: stri
   BONUS_DAILY_SURPRISE: { icon: StarIcon },
 };
 
-const MISSION_VISIT_BTN =
-  'gap-1.5 w-full border-theme-accent/30 bg-background/40 text-theme-accent hover:bg-theme-accent/10 hover:text-theme-accent hover:border-theme-accent/40';
+function actionLabel(kind: ReturnType<typeof getMissionActionKind>, t: Messages['missions']): string {
+  if (kind === 'sell') return t.actionSell;
+  if (kind === 'giveaway') return t.actionParticipate;
+  return t.actionVisit;
+}
 
-function progressLabel(mission: MissionRow): string | null {
-  if (mission.progressTarget == null || mission.progressCurrent == null) return null;
-  if (mission.thresholdCents != null) {
-    return `${(mission.progressCurrent / 100).toFixed(0)} € / ${(mission.progressTarget / 100).toFixed(0)} €`;
+function MissionActionButton({
+  mission,
+  t,
+}: {
+  mission: MissionRow;
+  t: Messages['missions'];
+}) {
+  const kind = getMissionActionKind(mission.key);
+  const href = getMissionActionHref(mission.key, SOCIAL_MISSION_URLS[mission.key]);
+  const label = actionLabel(kind, t);
+  if (!href) {
+    return (
+      <Button size="sm" variant="outline" className="mission-quest__btn w-full" disabled>
+        {t.inProgress}
+      </Button>
+    );
   }
-  return `${mission.progressCurrent} / ${mission.progressTarget}`;
+  const external = href.startsWith('http');
+  if (external) {
+    return (
+      <Button size="sm" variant="outline" className="mission-quest__btn w-full" asChild>
+        <a href={href} target="_blank" rel="noopener noreferrer">
+          <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+          {label}
+        </a>
+      </Button>
+    );
+  }
+  return (
+    <Button size="sm" variant="outline" className="mission-quest__btn w-full" asChild>
+      <Link href={href}>{label}</Link>
+    </Button>
+  );
 }
 
 function SocialMissionActions({
   mission,
   onClaim,
-  isPending,
+  isClaiming,
   t,
 }: {
   mission: MissionRow;
-  onClaim: (key: string) => void;
-  isPending: boolean;
+  onClaim: (key: string, origin?: HTMLElement | null) => void;
+  isClaiming: boolean;
   t: Messages['missions'];
 }) {
   const socialUrl = SOCIAL_MISSION_URLS[mission.key];
@@ -90,33 +133,45 @@ function SocialMissionActions({
 
   if (!socialUrl) {
     return (
-      <Button size="sm" variant="cta" className="w-full" disabled={isPending} onClick={() => onClaim(mission.key)}>
-        {t.claim}
+      <Button
+        size="sm"
+        className="mission-quest__claim w-full"
+        disabled={isClaiming}
+        onClick={(event) => onClaim(mission.key, event.currentTarget)}
+      >
+        {isClaiming ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : null}
+        {formatClaimRewardLabel(t.claimReward, mission.rewardFragments)}
       </Button>
     );
   }
 
   if (!visited) {
     return (
-      <Button size="sm" variant="outline" onClick={handleVisit} className={MISSION_VISIT_BTN}>
+      <Button size="sm" variant="outline" onClick={handleVisit} className="mission-quest__btn w-full">
         <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-        {t.socialVisit}
+        {t.actionVisit}
       </Button>
     );
   }
 
   if (countdown > 0) {
     return (
-      <Button size="sm" disabled className="w-full gap-1.5">
-        <ClockIcon className="h-4 w-4 animate-spin" />
+      <Button size="sm" disabled className="mission-quest__btn w-full gap-1.5">
+        <ArrowPathIcon className="h-4 w-4 animate-spin" />
         {t.socialWaiting} ({countdown}s)
       </Button>
     );
   }
 
   return (
-    <Button size="sm" variant="cta" className="w-full" disabled={isPending} onClick={() => onClaim(mission.key)}>
-      {t.socialConfirm}
+    <Button
+      size="sm"
+      className="mission-quest__claim w-full"
+      disabled={isClaiming}
+      onClick={(event) => onClaim(mission.key, event.currentTarget)}
+    >
+      {isClaiming ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : null}
+      {formatClaimRewardLabel(t.claimReward, mission.rewardFragments)}
     </Button>
   );
 }
@@ -124,12 +179,14 @@ function SocialMissionActions({
 export function MissionCard({
   mission,
   onClaim,
-  isPending,
+  claimingKey,
+  returnsLabel,
   t,
 }: {
   mission: MissionRow;
-  onClaim: (key: string) => void;
-  isPending: boolean;
+  onClaim: (key: string, origin?: HTMLElement | null) => void;
+  claimingKey: string | null;
+  returnsLabel: string | null;
   t: Messages['missions'];
 }) {
   const rowStyle = MISSION_ROW_STYLE[mission.key];
@@ -137,75 +194,109 @@ export function MissionCard({
   const IconComp = SocialIcon ?? rowStyle?.icon ?? SparklesIcon;
   const itemMeta = t.items[mission.key as keyof typeof t.items];
   const isSocial = mission.category === 'SOCIAL' && mission.key !== 'SOCIAL_NEWSLETTER';
+  const showProgress = isQuantitativeMission(mission);
+  const progressText = formatMissionProgressLabel(mission);
   const progressPct =
-    !mission.completed && mission.progressTarget != null && mission.progressCurrent != null
-      ? Math.min(100, (mission.progressCurrent / mission.progressTarget) * 100)
+    showProgress && mission.progressTarget
+      ? Math.min(100, ((mission.progressCurrent ?? 0) / mission.progressTarget) * 100)
       : null;
-  const progressText = progressLabel(mission);
-  const accent = MISSION_CATEGORY_ACCENT[mission.category];
+  const kind = getMissionKind(mission.key);
+  const accent = getMissionAccent(mission.key, mission.category);
+  const status = getMissionUiStatus(mission);
+  const blockReason = getMissionBlockReason(mission);
+  const isClaiming = claimingKey === mission.key;
+  const description = itemMeta?.description;
 
   return (
     <div
-      data-type={mission.category.toLowerCase()}
+      data-type={kind}
+      data-kind={kind}
       data-completed={mission.completed ? 'true' : 'false'}
       className={cn('mission-quest', mission.completed && 'mission-quest--done')}
       style={{ '--mission-accent': accent } as CSSProperties}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="mission-quest__icon">
-          {mission.completed ? (
-            <CheckCircleIcon className="h-5 w-5 text-theme-success" />
-          ) : (
-            <IconComp className="h-5 w-5" />
-          )}
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="mission-quest__icon">
+            {mission.completed ? (
+              <CheckCircleIcon className="h-5 w-5 text-theme-success" />
+            ) : (
+              <IconComp className="h-5 w-5" />
+            )}
+          </div>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <p className="mission-quest__title truncate">
+              {itemMeta?.label ?? mission.key.replace(/_/g, ' ')}
+            </p>
+            {description ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="mission-quest__info"
+                    aria-label={t.moreInfo}
+                  >
+                    <InformationCircleIcon className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs text-[13px] leading-snug">
+                  {description}
+                </TooltipContent>
+              </Tooltip>
+            ) : null}
+          </div>
         </div>
         <FragmentAmount
           amount={mission.rewardFragments}
           prefix="+"
           size="xs"
-          className="text-base font-bold text-theme-accent"
+          className="mission-quest__reward shrink-0"
         />
       </div>
 
-      <div className="min-w-0 flex-1">
-        <p className="font-display text-base font-semibold leading-snug">
-          {itemMeta?.label ?? mission.key.replace(/_/g, ' ')}
-        </p>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          {itemMeta?.description ?? ''}
-        </p>
+      <div className="mission-quest__progress">
+        {showProgress && progressPct != null ? (
+          <>
+            <Progress value={progressPct} className="mission-progress h-2" />
+            <p className="mission-quest__meta tabular-nums">{progressText}</p>
+          </>
+        ) : null}
       </div>
 
-      {progressPct != null && (
-        <div className="space-y-1">
-          <Progress value={progressPct} className="mission-progress h-1.5" />
-          <p className="text-xs tabular-nums text-muted-foreground">{progressText}</p>
-        </div>
-      )}
-
-      <div className="mt-auto pt-1">
-        {mission.completed ? (
-          <Button size="sm" variant="outline" disabled className="w-full">
+      <div className="mt-auto">
+        {status === 'claimed' ? (
+          <Button size="sm" variant="outline" disabled className="mission-quest__btn w-full">
             <CheckCircleIcon className="h-4 w-4 text-theme-success" />
             {t.claimed}
           </Button>
-        ) : mission.eligible && isSocial ? (
-          <SocialMissionActions mission={mission} onClaim={onClaim} isPending={isPending} t={t} />
-        ) : mission.eligible ? (
+        ) : status === 'blocked' && blockReason ? (
+          <Button size="sm" variant="outline" disabled className="mission-quest__btn w-full">
+            <LockClosedIcon className="h-4 w-4" />
+            {blockReason}
+          </Button>
+        ) : status === 'claimable' && isSocial ? (
+          <SocialMissionActions
+            mission={mission}
+            onClaim={onClaim}
+            isClaiming={isClaiming}
+            t={t}
+          />
+        ) : status === 'claimable' ? (
           <Button
             size="sm"
-            variant="cta"
-            className="w-full"
-            disabled={isPending}
-            onClick={() => onClaim(mission.key)}
+            className="mission-quest__claim w-full"
+            disabled={isClaiming}
+            onClick={(event) => onClaim(mission.key, event.currentTarget)}
           >
-            {t.claim}
+            {isClaiming ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : null}
+            {formatClaimRewardLabel(t.claimReward, mission.rewardFragments)}
           </Button>
         ) : (
-          <Button size="sm" variant="outline" disabled className="w-full">
-            {progressText ?? t.inProgress}
-          </Button>
+          <MissionActionButton mission={mission} t={t} />
         )}
+        <p className="mission-quest__foot">
+          {status === 'claimed' && returnsLabel ? returnsLabel : '\u00a0'}
+        </p>
       </div>
     </div>
   );

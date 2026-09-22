@@ -11,6 +11,7 @@ import {
   StarIcon,
   ArrowRightIcon,
   CheckCircleIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { TourDemoBanner } from './tour-demo-banner';
 import { FragmentAmount } from '@/components/ui/level-badge';
@@ -35,35 +36,78 @@ const DEMO_TABS: Array<{
     completed: boolean;
     eligible: boolean;
     progress?: string;
+    kind: 'sell' | 'giveaway' | 'social' | 'daily';
+    action?: 'sell' | 'giveaway' | 'visit';
   }>;
 }> = [
   {
     id: 'DAILY',
     claimable: 0,
-    missions: [{ key: 'DAILY_SELL_SKIN', reward: 15, completed: false, eligible: false, progress: '0 / 1' }],
+    missions: [
+      {
+        key: 'DAILY_SELL_SKIN',
+        reward: 15,
+        completed: false,
+        eligible: false,
+        progress: '0 / 1',
+        kind: 'sell',
+        action: 'sell',
+      },
+    ],
   },
   {
     id: 'WEEKLY',
     claimable: 0,
     missions: [
-      { key: 'WEEKLY_SELL_500', reward: 50, completed: false, eligible: false, progress: '340 € / 500 €' },
-      { key: 'WEEKLY_SELL_1000', reward: 100, completed: false, eligible: false, progress: '340 € / 1 000 €' },
+      {
+        key: 'WEEKLY_SELL_500',
+        reward: 50,
+        completed: false,
+        eligible: false,
+        progress: '340 € / 500 €',
+        kind: 'sell',
+        action: 'sell',
+      },
+      {
+        key: 'WEEKLY_SELL_1000',
+        reward: 100,
+        completed: false,
+        eligible: false,
+        progress: '340 € / 1 000 €',
+        kind: 'sell',
+        action: 'sell',
+      },
     ],
   },
   {
     id: 'MONTHLY',
     claimable: 0,
     missions: [
-      { key: 'MONTHLY_SELL_5000', reward: 200, completed: false, eligible: false, progress: '1 200 € / 5 000 €' },
+      {
+        key: 'MONTHLY_SELL_5000',
+        reward: 200,
+        completed: false,
+        eligible: false,
+        progress: '1 200 € / 5 000 €',
+        kind: 'sell',
+        action: 'sell',
+      },
     ],
   },
   {
     id: 'SOCIAL',
     claimable: 1,
     missions: [
-      { key: 'SOCIAL_DISCORD', reward: 25, completed: true, eligible: false },
-      { key: 'SOCIAL_INSTAGRAM', reward: 15, completed: false, eligible: true },
-      { key: 'SOCIAL_TELEGRAM', reward: 20, completed: false, eligible: false },
+      { key: 'SOCIAL_DISCORD', reward: 25, completed: true, eligible: false, kind: 'social' },
+      { key: 'SOCIAL_INSTAGRAM', reward: 15, completed: false, eligible: true, kind: 'social' },
+      {
+        key: 'SOCIAL_TELEGRAM',
+        reward: 20,
+        completed: false,
+        eligible: false,
+        kind: 'social',
+        action: 'visit',
+      },
     ],
   },
 ];
@@ -75,12 +119,12 @@ export function MissionsTourDemo() {
     DEMO_TABS.reduce((best, tab) => (tab.claimable > best.claimable ? tab : best), DEMO_TABS[0]!).id;
 
   return (
-    <div className="container relative mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="container relative mx-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       <GiveawayStarfield />
-      <div className="relative z-[1] mx-auto w-full max-w-[1280px]">
+      <div className="relative z-[1] mx-auto w-full max-w-[1440px]">
         <TourDemoBanner />
 
-        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <header className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-2.5">
               <SparklesIcon className="h-6 w-6 shrink-0 text-theme-accent" />
@@ -88,12 +132,12 @@ export function MissionsTourDemo() {
                 {messages.nav.missions}
               </h1>
             </div>
-            <p className="mt-1 max-w-2xl text-sm leading-snug text-foreground/70">{t.pageSubtitle}</p>
+            <p className="mt-1 max-w-2xl text-[13px] leading-snug text-foreground/80">{t.pageSubtitle}</p>
           </div>
           <div data-tour="missions-stats" className="flex shrink-0 flex-wrap items-center gap-3">
             <div className="mission-balance-pill">
               <FragmentAmount amount={340} size="xs" className="font-display text-base font-semibold text-theme-accent" />
-              <span className="text-xs text-foreground/70">{t.statsFragments}</span>
+              <span className="text-[13px] text-foreground/80">{t.statsFragments}</span>
             </div>
             <Link
               href="/giveaways"
@@ -105,7 +149,7 @@ export function MissionsTourDemo() {
           </div>
         </header>
 
-        <div className="mission-welcome lunar-card mb-8 px-4 py-4 sm:px-6 sm:py-5">
+        <div className="mission-welcome lunar-card mb-5 px-4 py-4 sm:px-6 sm:py-5">
           <div className="relative z-[1] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-theme-accent/30 bg-theme-accent/15">
@@ -118,23 +162,22 @@ export function MissionsTourDemo() {
                 <h2 className="font-display text-lg font-semibold tracking-tight sm:text-xl">
                   {t.items.WELCOME_BONUS.label}
                 </h2>
-                <p className="mt-0.5 text-sm text-muted-foreground">{t.items.WELCOME_BONUS.description}</p>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-4 sm:flex-col sm:items-end">
-              <FragmentAmount amount={1000} prefix="+" size="sm" className="text-2xl font-bold text-theme-accent" />
-              <Button size="lg" variant="cta" disabled className="min-w-[9.5rem]">
-                {t.claim}
+              <FragmentAmount amount={1000} prefix="+" size="sm" className="mission-quest__reward text-2xl" />
+              <Button size="lg" className="mission-quest__claim min-w-[9.5rem]" disabled>
+                {t.claimReward.replace('{n}', '1000')}
               </Button>
             </div>
           </div>
         </div>
 
-        <section className="mb-8">
-          <h2 className="mb-3 font-display text-lg font-semibold">{t.todayTitle}</h2>
+        <section className="mb-5">
+          <h2 className="mb-2 font-display text-lg font-semibold">{t.todayTitle}</h2>
           <div className="mission-today-row">
             {DEMO_TODAY.map((m) => (
-              <div key={m.key} data-type="daily" className="mission-today-tile">
+              <div key={m.key} data-type="daily" data-kind="daily" className="mission-today-tile">
                 <div className="mission-quest__icon shrink-0">
                   {m.key === 'BONUS_DAILY_SURPRISE' ? (
                     <StarIcon className="h-5 w-5" />
@@ -145,16 +188,16 @@ export function MissionsTourDemo() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-sm font-semibold">{t.items[m.key].label}</p>
-                  <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mt-0.5 text-sm font-bold text-theme-accent" />
+                  <p className="mission-quest__title truncate">{t.items[m.key].label}</p>
+                  <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward mt-0.5" />
                 </div>
                 {m.completed ? (
-                  <p className="max-w-[9.5rem] text-right text-xs font-medium text-muted-foreground">
+                  <p className="mission-quest__meta max-w-[9.5rem] text-right font-medium">
                     {t.returnsIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`)}
                   </p>
                 ) : (
-                  <Button size="sm" variant="cta" disabled>
-                    {t.claim}
+                  <Button size="sm" className="mission-quest__claim shrink-0" disabled>
+                    {t.claimReward.replace('{n}', String(m.reward))}
                   </Button>
                 )}
               </div>
@@ -163,62 +206,83 @@ export function MissionsTourDemo() {
         </section>
 
         <Tabs defaultValue={defaultTab} data-tour="missions-categories">
-          <TabsList className="mission-tabs h-auto w-full flex-wrap justify-start gap-2 bg-transparent p-0">
+          <TabsList className="mission-tabs h-auto w-full justify-start gap-2 bg-transparent p-0">
             {DEMO_TABS.map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="mission-tab flex-1 data-[state=active]:bg-theme-accent/15 data-[state=active]:text-theme-highlight data-[state=active]:shadow-none"
+                className="mission-tab data-[state=active]:bg-theme-accent/15 data-[state=active]:text-theme-highlight data-[state=active]:shadow-none"
               >
                 {t.tabs[tab.id]}
                 {tab.claimable > 0 ? <span className="mission-tab-badge">{tab.claimable}</span> : null}
               </TabsTrigger>
             ))}
           </TabsList>
-          <p className="mt-3 text-sm text-muted-foreground" data-countdown>
+          <p className="mt-2 text-[13px] text-foreground/80" data-countdown>
             {t.resetIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`)}
           </p>
           {DEMO_TABS.map((tab) => (
-            <TabsContent key={tab.id} value={tab.id} className="mt-4">
+            <TabsContent key={tab.id} value={tab.id} className="mt-3">
               <div className="mission-quest-grid">
                 {tab.missions.map((m, i) => (
                   <div
                     key={i}
-                    data-type={tab.id.toLowerCase()}
+                    data-type={m.kind}
+                    data-kind={m.kind}
                     data-completed={m.completed ? 'true' : 'false'}
                     className={`mission-quest ${m.completed ? 'mission-quest--done' : ''}`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="mission-quest__icon">
-                        {m.completed ? (
-                          <CheckCircleIcon className="h-5 w-5 text-theme-success" />
-                        ) : tab.id === 'WEEKLY' || tab.id === 'MONTHLY' || tab.id === 'DAILY' ? (
-                          <ChartBarIcon className="h-5 w-5" />
-                        ) : (
-                          <SparklesIcon className="h-5 w-5" />
-                        )}
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <div className="mission-quest__icon">
+                          {m.completed ? (
+                            <CheckCircleIcon className="h-5 w-5 text-theme-success" />
+                          ) : tab.id === 'WEEKLY' || tab.id === 'MONTHLY' || tab.id === 'DAILY' ? (
+                            <ChartBarIcon className="h-5 w-5" />
+                          ) : (
+                            <SparklesIcon className="h-5 w-5" />
+                          )}
+                        </div>
+                        <p className="mission-quest__title truncate">{t.items[m.key].label}</p>
+                        <InformationCircleIcon className="h-4 w-4 shrink-0 text-foreground/70" />
                       </div>
-                      <FragmentAmount amount={m.reward} prefix="+" size="xs" className="text-base font-bold text-theme-accent" />
+                      <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward" />
                     </div>
-                    <p className="font-display text-base font-semibold">{t.items[m.key].label}</p>
-                    {m.progress ? <p className="text-xs tabular-nums text-muted-foreground">{m.progress}</p> : null}
-                    <div className="mt-auto pt-1">
+                    <div className="mission-quest__progress">
+                      {m.progress ? <p className="mission-quest__meta tabular-nums">{m.progress}</p> : null}
+                    </div>
+                    <div className="mt-auto">
                       {m.eligible && !m.completed ? (
-                        <Button size="sm" variant="cta" className="w-full" disabled>
-                          {t.claim}
+                        <Button size="sm" className="mission-quest__claim w-full" disabled>
+                          {t.claimReward.replace('{n}', String(m.reward))}
                         </Button>
                       ) : m.completed ? (
-                        <Button size="sm" variant="outline" disabled className="w-full">
+                        <Button size="sm" variant="outline" disabled className="mission-quest__btn w-full">
+                          <CheckCircleIcon className="h-4 w-4 text-theme-success" />
                           {t.claimed}
                         </Button>
                       ) : (
-                        <Button size="sm" variant="outline" disabled className="w-full">
-                          {m.progress ?? t.inProgress}
+                        <Button size="sm" variant="outline" className="mission-quest__btn w-full" asChild>
+                          <Link href={m.action === 'giveaway' ? '/giveaways' : m.action === 'visit' ? '/giveaways' : '/sell'}>
+                            {m.action === 'giveaway'
+                              ? t.actionParticipate
+                              : m.action === 'visit'
+                                ? t.actionVisit
+                                : t.actionSell}
+                          </Link>
                         </Button>
                       )}
+                      <p className="mission-quest__foot">
+                        {m.completed
+                          ? t.returnsIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`)
+                          : '\u00a0'}
+                      </p>
                     </div>
                   </div>
                 ))}
+                <div className="mission-quest-grid__filler" aria-hidden />
+                <div className="mission-quest-grid__filler" aria-hidden />
+                <div className="mission-quest-grid__filler" aria-hidden />
               </div>
             </TabsContent>
           ))}

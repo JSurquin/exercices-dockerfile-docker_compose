@@ -34,12 +34,42 @@ export const TAB_RESET_PERIOD: Record<MissionPeriodTab, MissionResetPeriod> = {
   SOCIAL: 'once',
 };
 
+/** Accents par type d’action (contraste ≥ 4.5:1 sur texte blanc). */
+export type MissionKind = 'sell' | 'giveaway' | 'social' | 'daily';
+
+export const MISSION_KIND_ACCENT: Record<MissionKind, string> = {
+  sell: '#0D9488',
+  giveaway: '#7C3AED',
+  social: '#DB2777',
+  daily: '#2563EB',
+};
+
 export const MISSION_CATEGORY_ACCENT: Record<MissionCategory, string> = {
-  DAILY: '#4F8CFF',
-  WEEKLY: '#22D3EE',
-  MONTHLY: '#9B5CFF',
-  SOCIAL: '#FF4FA3',
-  BONUS: '#F5B83D',
+  DAILY: MISSION_KIND_ACCENT.daily,
+  WEEKLY: MISSION_KIND_ACCENT.sell,
+  MONTHLY: MISSION_KIND_ACCENT.sell,
+  SOCIAL: MISSION_KIND_ACCENT.social,
+  BONUS: MISSION_KIND_ACCENT.daily,
+};
+
+export type MissionUiStatus = 'claimable' | 'in_progress' | 'claimed' | 'blocked';
+
+const STATUS_ORDER: Record<MissionUiStatus, number> = {
+  claimable: 0,
+  in_progress: 1,
+  claimed: 2,
+  blocked: 3,
+};
+
+export type MissionActionKind = 'sell' | 'giveaway' | 'social' | 'newsletter' | null;
+
+export type MissionClaimErrorCopy = {
+  errorAlreadyClaimed: string;
+  errorRequirements: string;
+  errorUnknown: string;
+  errorAuth: string;
+  errorServer: string;
+  genericError: string;
 };
 
 export function isTodayMissionKey(key: string): key is TodayMissionKey {
@@ -119,4 +149,90 @@ export function formatMissionResetLine(
 ): string {
   if (!resetAt) return emptyLabel;
   return template.replace('{duration}', formatMissionDuration(resetAt, labels, now));
+}
+
+export function getMissionKind(key: string): MissionKind {
+  if (key.startsWith('SOCIAL_')) return 'social';
+  if (key.includes('GIVEAWAY')) return 'giveaway';
+  if (key.includes('SELL')) return 'sell';
+  return 'daily';
+}
+
+export function getMissionAccent(key: string, category?: MissionCategory): string {
+  return MISSION_KIND_ACCENT[getMissionKind(key)] ?? (category ? MISSION_CATEGORY_ACCENT[category] : MISSION_KIND_ACCENT.daily);
+}
+
+/**
+ * Audit V1 : aucune mission n’est gated (pas de KYC, pas de niveau).
+ * `eligible: false` = objectif pas encore atteint, jamais un verrou.
+ */
+export function getMissionBlockReason(
+  _mission: Pick<MissionRow, 'eligible' | 'completed'> & Partial<Pick<MissionRow, 'key'>>
+): string | null {
+  return null;
+}
+
+export function getMissionUiStatus(
+  mission: Pick<MissionRow, 'eligible' | 'completed'> & Partial<Pick<MissionRow, 'key'>>
+): MissionUiStatus {
+  if (mission.completed) return 'claimed';
+  if (getMissionBlockReason(mission)) return 'blocked';
+  if (mission.eligible) return 'claimable';
+  return 'in_progress';
+}
+
+export function sortMissionsByStatus<T extends Pick<MissionRow, 'eligible' | 'completed'>>(
+  missions: T[]
+): T[] {
+  return [...missions].sort(
+    (a, b) => STATUS_ORDER[getMissionUiStatus(a)] - STATUS_ORDER[getMissionUiStatus(b)]
+  );
+}
+
+export function getMissionActionKind(key: string): MissionActionKind {
+  if (key === 'SOCIAL_NEWSLETTER') return 'newsletter';
+  if (key.startsWith('SOCIAL_')) return 'social';
+  if (key.includes('GIVEAWAY')) return 'giveaway';
+  if (key.includes('SELL')) return 'sell';
+  return null;
+}
+
+export function getMissionActionHref(key: string, socialUrl?: string | null): string | null {
+  const kind = getMissionActionKind(key);
+  if (kind === 'sell') return '/sell';
+  if (kind === 'giveaway') return '/giveaways';
+  if (kind === 'newsletter') return '/#newsletter';
+  if (kind === 'social') return socialUrl ?? null;
+  return null;
+}
+
+export function isQuantitativeMission(
+  mission: Pick<MissionRow, 'progressTarget' | 'completed'>
+): boolean {
+  return !mission.completed && mission.progressTarget != null && mission.progressTarget > 0;
+}
+
+export function formatMissionProgressLabel(
+  mission: Pick<MissionRow, 'progressCurrent' | 'progressTarget' | 'thresholdCents'>
+): string | null {
+  if (mission.progressTarget == null || mission.progressCurrent == null) return null;
+  if (mission.thresholdCents != null) {
+    return `${Math.round(mission.progressCurrent / 100)} € / ${Math.round(mission.progressTarget / 100)} €`;
+  }
+  return `${mission.progressCurrent} / ${mission.progressTarget}`;
+}
+
+export function formatClaimRewardLabel(template: string, amount: number): string {
+  return template.replace('{n}', String(amount));
+}
+
+export function mapMissionClaimError(message: string, t: MissionClaimErrorCopy): string {
+  const normalized = message.trim().toLowerCase();
+  if (normalized === 'already claimed for this period') return t.errorAlreadyClaimed;
+  if (normalized === 'requirements not met') return t.errorRequirements;
+  if (normalized === 'unknown mission') return t.errorUnknown;
+  if (normalized === 'non authentifié' || normalized === 'unauthorized') return t.errorAuth;
+  if (normalized === 'erreur serveur' || normalized === 'internal server error') return t.errorServer;
+  if (!message || normalized === 'erreur' || normalized === 'error') return t.genericError;
+  return message;
 }
