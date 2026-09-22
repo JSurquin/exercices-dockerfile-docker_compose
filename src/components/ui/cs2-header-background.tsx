@@ -1,15 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { normalizeStoredTheme } from "@/lib/themes";
+
+const HERO_ARTWORK_SRC = "/images/cs2/backgrounds/artworksite.webp";
 
 interface CS2HeaderBackgroundProps {
   className?: string;
   children?: React.ReactNode;
   overlay?: boolean;
   overlayOpacity?: number;
+  priority?: boolean;
 }
 
 export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
@@ -17,45 +21,22 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
   children,
   overlay = true,
   overlayOpacity = 0.7,
+  priority = false,
 }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const { resolvedTheme } = useTheme();
   const currentTheme = normalizeStoredTheme(resolvedTheme);
   const showOrange = currentTheme === "cs2" || currentTheme === "light";
 
-  const backgroundUrl = "/images/cs2/backgrounds/artworksite.webp";
-
-  useEffect(() => {
-    const img = new Image();
-    img.onload = () => {
-      setImageLoaded(true);
-      setImageError(false);
-    };
-    img.onerror = () => {
-      setImageError(true);
-      setImageLoaded(false);
-    };
-    img.src = backgroundUrl;
-
-    return () => {
-      img.onload = null;
-      img.onerror = null;
-    };
-  }, [backgroundUrl]);
-
   return (
     <div className={cn("relative overflow-hidden grid", className)}>
-      {/* Fond + overlay : même cellule grille que le contenu pour couvrir toute la section */}
-      <div className="col-start-1 row-start-1 relative min-h-full w-full" aria-hidden>
-        <div
-          role="img"
-          aria-label="CS2 Artwork Background"
-          className={cn(
-            "cs2-hero-background__artwork absolute inset-0 w-full bg-no-repeat transition-opacity duration-700",
-            imageLoaded && !imageError ? "opacity-100" : "opacity-0"
-          )}
-          style={{ backgroundImage: `url("${backgroundUrl}")` }}
+      <div className="col-start-1 row-start-1 absolute inset-0" aria-hidden>
+        <Image
+          src={HERO_ARTWORK_SRC}
+          alt=""
+          fill
+          priority={priority}
+          sizes="100vw"
+          className="cs2-hero-background__artwork object-cover md:object-fill"
         />
 
         {overlay && (
@@ -89,17 +70,13 @@ export const CS2HeroBackground: React.FC<{
       className={cn("min-h-screen", className)}
       overlay={true}
       overlayOpacity={0.75}
+      priority
     >
       {children}
     </CS2HeaderBackground>
   );
 };
 
-export const usePreloadCS2Backgrounds = () => {
-  useEffect(() => {
-    const img = new Image();
-    img.src = "/images/cs2/backgrounds/artworksite.webp";
-  }, []);
-};
+export const usePreloadCS2Backgrounds = () => {};
 
 export default CS2HeaderBackground;

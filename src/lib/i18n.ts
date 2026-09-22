@@ -1,5 +1,5 @@
-export const locales = ["fr", "en", "cn"] as const;
-export type Locale = (typeof locales)[number];
+import { locales, type Locale } from "@/lib/locales";
+export { locales, type Locale };
 import type { Messages } from "~/utils/types";
 import {
   chatBotTemplatesFr,

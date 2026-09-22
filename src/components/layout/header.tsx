@@ -155,7 +155,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        "lunar-nav sticky top-0 z-[100] w-full transition-transform duration-100 ease-out will-change-transform",
+        "lunar-nav sticky top-0 z-[100] w-full transition-transform duration-100 ease-out",
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >

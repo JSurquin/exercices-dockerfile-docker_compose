@@ -1,11 +1,13 @@
 'use client';
 
+import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import type { PublicPartnersResponse } from '@/lib/get-public-partners';
 import { Play, Youtube } from 'lucide-react';
 import { HeartRainEasterEgg } from '@/components/home/heart-rain-easter-egg';
 import { useLocale } from '@/components/providers/locale-provider';
 import { getYoutubeThumbnailUrl, getYoutubeWatchUrl } from '@/lib/youtube';
+import { shouldUseNextImageOptimizer } from '@/lib/image-optimization';
 import { cn } from '@/lib/utils';
 import {
   homeReveal,
@@ -46,14 +48,54 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
+function PartnerRemoteImage({
+  src,
+  alt,
+  width,
+  height,
+  className,
+  sizes,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  className?: string;
+  sizes?: string;
+}) {
+  if (shouldUseNextImageOptimizer(src)) {
+    return (
+      <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        className={className}
+        sizes={sizes ?? `${width}px`}
+      />
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      loading="lazy"
+      decoding="async"
+      className={className}
+    />
+  );
+}
+
 function PartnerAvatar({ src, name }: { src: string | null; name: string }) {
   if (src) {
     return (
-      <img
+      <PartnerRemoteImage
         src={src}
         alt={name}
-        loading="lazy"
-        decoding="async"
+        width={36}
+        height={36}
         className="h-9 w-9 rounded-full object-cover ring-2 ring-border"
       />
     );
@@ -78,18 +120,12 @@ function VideoCard({ video }: { video: PartnerVideo }) {
         className="relative block aspect-video overflow-hidden bg-muted"
         aria-label={`${video.creatorName}, YouTube`}
       >
-        <img
+        <Image
           src={thumbUrl}
           alt=""
-          loading="lazy"
-          decoding="async"
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => {
-            const target = e.currentTarget;
-            if (!target.src.includes('hqdefault')) {
-              target.src = getYoutubeThumbnailUrl(video.youtubeVideoId, 'hq');
-            }
-          }}
+          fill
+          sizes="(min-width: 640px) 33vw, 280px"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
@@ -157,7 +193,13 @@ function LogoItem({ logo }: { logo: PartnerLogo }) {
   const inner = (
     <>
       <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border bg-card transition-all duration-300 group-hover:border-theme-accent/30 group-hover:ring-2 group-hover:ring-theme-accent/15">
-        <img src={logo.logoUrl} alt={logo.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+        <PartnerRemoteImage
+          src={logo.logoUrl}
+          alt={logo.name}
+          width={56}
+          height={56}
+          className="h-full w-full object-cover"
+        />
       </div>
       <span className="max-w-[72px] truncate text-center text-[10px] text-muted-foreground transition-colors group-hover:text-foreground">
         {logo.name}

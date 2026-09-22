@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { usePublicStats, formatPlatformVolume, formatCompactCount, type PublicStats } from "@/hooks/use-public-stats";
-import { SiteTour } from "@/components/layout/site-tour";
+import dynamic from "next/dynamic";
 import { useTourMode } from "@/components/providers/tour-provider";
 import { normalizeStoredTheme } from "@/lib/themes";
 import { MapIcon } from "@heroicons/react/24/outline";
@@ -34,6 +34,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+const SiteTour = dynamic(
+  () => import("@/components/layout/site-tour").then((mod) => mod.SiteTour),
+  { ssr: false }
+);
 
 const FOOTER_SOCIAL_LINKS = [
   { key: "discord", href: MOONSKIN_DISCORD_URL, Icon: DiscordBrandIcon },

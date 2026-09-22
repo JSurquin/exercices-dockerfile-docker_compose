@@ -1,4 +1,4 @@
-import { locales, type Locale } from '@/lib/i18n';
+import { locales, type Locale } from '@/lib/locales';
 
 export const LOCALE_COOKIE = 'NEXT_LOCALE';
 export const LOCALE_STORAGE_KEY = 'user-locale-preference';

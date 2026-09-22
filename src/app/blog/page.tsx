@@ -19,6 +19,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { useQuery } from "@tanstack/react-query";
 import { BLOG_CATEGORY_KEYS, isBlogCategoryKey, type BlogCategoryKey } from "@/lib/blog-articles-config";
 import { useMemo, useState } from "react";
+import { SafeImage } from "@/components/ui/safe-image";
 
 type BlogArticleItem = {
   slug: string;
@@ -60,11 +61,13 @@ function BlogCoverImage({
   }
 
   return (
-    <img
+    <SafeImage
       src={src}
       alt={alt}
+      width={800}
+      height={420}
+      sizes="(min-width: 768px) 400px, 100vw"
       className={className}
-      loading="lazy"
       onError={() => setFailed(true)}
     />
   );

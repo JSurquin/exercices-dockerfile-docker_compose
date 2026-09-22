@@ -113,6 +113,14 @@ export default async function RootLayout({
 
   return (
     <html lang={localeToHtmlLang(initialLocale)} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var m=window.matchMedia('(prefers-reduced-motion: reduce)').matches;var c=navigator.hardwareConcurrency||8;if(m||c<=4)document.documentElement.classList.add('perf-lite');}catch(e){}})();",
+          }}
+        />
+      </head>
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col overflow-x-hidden${
           process.env.NODE_ENV === 'development' ? ' next-dev-overlay-present' : ''

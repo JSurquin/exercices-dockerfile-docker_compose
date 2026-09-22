@@ -1008,59 +1008,66 @@ body.next-dev-overlay-present #sentry-feedback {
 
   /* Lunar glass card */
   .lunar-card {
+    position: relative;
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.05) 0%,
-      rgba(150, 155, 170, 0.03) 100%
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(150, 155, 170, 0.05) 100%
     );
     border: 1px solid rgba(200, 205, 220, 0.12);
     border-radius: 16px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.88),
       0 6px 20px rgba(0, 0, 0, 0.7),
       0 1px 0 rgba(255, 255, 255, 0.1) inset,
       0 0 0 1px rgba(180, 180, 200, 0.08) inset;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease;
     transform: translate3d(0, 0, 0);
-    will-change: transform;
     backface-visibility: hidden;
   }
 
+  .lunar-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: 0 0 50px rgba(190, 195, 215, 0.18);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
   .lunar-card:hover {
-    box-shadow:
-      0 40px 100px rgba(0, 0, 0, 0.95),
-      0 10px 30px rgba(0, 0, 0, 0.78),
-      0 0 50px rgba(190, 195, 215, 0.18),
-      0 1px 0 rgba(255, 255, 255, 0.14) inset;
+    will-change: transform;
+  }
+
+  .lunar-card:hover::after {
+    opacity: 1;
   }
 
   /* Chrome shimmer border */
   .chrome-shimmer {
+    position: relative;
+  }
+
+  .chrome-shimmer::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: 0 0 28px rgba(210, 210, 230, 0.22);
+    opacity: 0.35;
     animation: chrome-shimmer 4s ease-in-out infinite;
   }
 
   @keyframes chrome-shimmer {
-    0% {
-      border-color: rgba(180, 180, 200, 0.3);
-      box-shadow: 0 0 15px rgba(180, 180, 200, 0.1);
-    }
-    25% {
-      border-color: rgba(220, 220, 240, 0.6);
-      box-shadow: 0 0 30px rgba(210, 210, 230, 0.25);
+    0%,
+    100% {
+      opacity: 0.28;
     }
     50% {
-      border-color: rgba(255, 255, 255, 0.5);
-      box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
-    }
-    75% {
-      border-color: rgba(180, 190, 210, 0.4);
-      box-shadow: 0 0 20px rgba(170, 180, 200, 0.15);
-    }
-    100% {
-      border-color: rgba(180, 180, 200, 0.3);
-      box-shadow: 0 0 15px rgba(180, 180, 200, 0.1);
+      opacity: 0.7;
     }
   }
 
@@ -1259,7 +1266,6 @@ body.next-dev-overlay-present #sentry-feedback {
     font-weight: 600;
     letter-spacing: 0.01em;
     color: var(--muted-foreground);
-    backdrop-filter: blur(8px);
     transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
   }
 
@@ -1716,7 +1722,6 @@ body.next-dev-overlay-present #sentry-feedback {
     background: color-mix(in srgb, var(--theme-accent) 12%, transparent);
     border: 1px solid color-mix(in srgb, var(--theme-accent) 22%, transparent);
     color: var(--theme-highlight);
-    backdrop-filter: blur(8px);
   }
 
   /* CTA principal — contraste fort, variable par thème */
@@ -2023,8 +2028,8 @@ body.next-dev-overlay-present #sentry-feedback {
 
   /* Sticky nav — liquid glass */
   .lunar-nav {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     background: rgba(255, 255, 255, 0.04);
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     backface-visibility: hidden;
@@ -2109,15 +2114,12 @@ body.next-dev-overlay-present #sentry-feedback {
     );
     border: 1px solid rgba(200, 205, 220, 0.12);
     border-radius: 16px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.88),
       0 6px 20px rgba(0, 0, 0, 0.7),
       0 1px 0 rgba(255, 255, 255, 0.1) inset,
       0 0 0 1px rgba(180, 180, 200, 0.08) inset;
     transform: translate3d(0, 0, 0);
-    will-change: transform;
     backface-visibility: hidden;
   }
 
@@ -2366,9 +2368,8 @@ body.next-dev-overlay-present #sentry-feedback {
 
   /* CS2 — lunar-card : style sombre original + relief orange */
   .cs2 .lunar-card {
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.32);
     border-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.9),
       0 6px 20px rgba(0, 0, 0, 0.72),
@@ -2386,10 +2387,8 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .cs2 .lunar-footer__card {
-    background: rgba(0, 0, 0, 0.28);
+    background: rgba(0, 0, 0, 0.36);
     border-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.9),
       0 6px 20px rgba(0, 0, 0, 0.72),
@@ -2448,9 +2447,8 @@ body.next-dev-overlay-present #sentry-feedback {
 
   /* Light — lunar-card : fond blanc léger avec bordure + relief */
   .light .lunar-card {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.9);
     border-color: rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(8px);
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.3),
       0 6px 20px rgba(0, 0, 0, 0.2),
@@ -2465,10 +2463,8 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .light .lunar-footer__card {
-    background: rgba(255, 255, 255, 0.88);
+    background: rgba(255, 255, 255, 0.94);
     border-color: rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.3),
       0 6px 20px rgba(0, 0, 0, 0.2),
@@ -3392,23 +3388,19 @@ body.next-dev-overlay-present #sentry-feedback {
 
 .home-enter-left {
   animation: home-enter-from-left 0.8s ease both;
-  will-change: transform, opacity;
 }
 
 .home-enter-right {
   animation: home-enter-from-right 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 0.55s;
-  will-change: transform, opacity;
 }
 
 .home-enter-up {
   animation: home-enter-from-bottom 0.6s ease both;
-  will-change: transform, opacity;
 }
 
 .home-enter-up-lg {
   animation: home-enter-from-bottom-lg 0.8s ease both;
-  will-change: transform, opacity;
 }
 
 .home-delay-200 {
@@ -3437,16 +3429,6 @@ body.next-dev-overlay-present #sentry-feedback {
 
 .home-delay-700 {
   animation-delay: 0.7s;
-}
-
-.home-reveal-up,
-.home-reveal-up-sm,
-.home-reveal-up-md,
-.home-reveal-left,
-.home-reveal-right,
-.home-reveal-scale,
-.home-reveal-fade {
-  will-change: transform, opacity;
 }
 
 @supports (animation-timeline: view()) {
@@ -3655,9 +3637,7 @@ body.next-dev-overlay-present #sentry-feedback {
   z-index: 1;
   border-radius: inherit;
   border: none !important;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  background: rgba(12, 12, 16, 0.72);
   box-shadow:
     0 16px 48px rgba(0, 0, 0, 0.45),
     0 1px 0 rgba(255, 255, 255, 0.06) inset;
@@ -3678,13 +3658,17 @@ body.next-dev-overlay-present #sentry-feedback {
 .card-tilt {
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   transform-style: preserve-3d;
-  will-change: transform;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .card-tilt:hover {
+    will-change: transform;
     transform: perspective(600px) rotateY(3deg) rotateX(-3deg) translate3d(0, -4px, 0);
   }
+}
+
+html:not(.moonskin) .cb-root {
+  display: none;
 }
 
 .cb-root {
@@ -3692,7 +3676,6 @@ body.next-dev-overlay-present #sentry-feedback {
   overflow: hidden;
   pointer-events: none;
   transform: translate3d(0, 0, 0);
-  will-change: transform;
   backface-visibility: hidden;
   background: #060608;
   background-image:
@@ -4052,6 +4035,43 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 }
 
+html.cb-paused .cb-nebula,
+html.cb-paused .cb-star-layer,
+html.cb-paused .cb-comet-fixed,
+html.cb-paused .cb-debris,
+html.cb-paused .giveaway-star {
+  animation-play-state: paused !important;
+}
+
+html.perf-lite .cb-nebula,
+html.perf-lite .cb-star-layer,
+html.perf-lite .cb-comet-fixed,
+html.perf-lite .cb-debris,
+html.perf-lite .giveaway-star,
+html.perf-lite .giveaway-prestige__particle,
+html.perf-lite .giveaway-prize-skin-wrap--float,
+html.perf-lite .chrome-shimmer::before,
+html.perf-lite .lunar-card::after,
+html.perf-lite .home-neon-card::before {
+  animation: none !important;
+}
+
+html.perf-lite .lunar-nav,
+html.perf-lite [data-giveaway-wallet] {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.perf-lite .lunar-card::after,
+html.perf-lite .chrome-shimmer::before {
+  opacity: 0 !important;
+}
+
+[data-giveaway-wallet] {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 /* MoonSkin tour (driver.js) — chrome */
 .moonskin-tour-popover {
   background: #0d0d12 !important;
@@ -4207,8 +4227,7 @@ body.next-dev-overlay-present #sentry-feedback {
   padding: 20px;
   border-radius: 1rem;
   border: 1px solid rgb(255 255 255 / 0.1);
-  background: color-mix(in srgb, var(--card) 70%, transparent);
-  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
 
@@ -4485,8 +4504,8 @@ body.next-dev-overlay-present #sentry-feedback {
   height: 18px;
   transform: translateX(-50%);
   border-radius: 999px;
-  background: rgb(0 0 0 / 0.35);
-  filter: blur(8px);
+  background: transparent;
+  box-shadow: 0 0 18px 10px rgb(0 0 0 / 0.35);
   pointer-events: none;
 }
 
@@ -4582,8 +4601,7 @@ body.next-dev-overlay-present #sentry-feedback {
   flex-shrink: 0;
   transform: translateY(-50%);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--card) 86%, transparent);
-  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
 }
 
 .giveaway-recurring-carousel__nav--prev {

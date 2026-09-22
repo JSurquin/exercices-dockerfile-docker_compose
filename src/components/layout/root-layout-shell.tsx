@@ -19,13 +19,14 @@ import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button';
 import { Toaster } from '@/components/ui/sonner';
 import { PayoutReconciler } from '@/components/payout-reconciler';
 import UpdateNotifier from '@/components/update-notifier';
-import { HomePopupDisplay } from '@/components/home/home-popup-display';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { AuthCallbackNotifier } from '@/components/auth/auth-callback-notifier';
 import { ModeratorChatAlertListener } from '@/components/moderation/moderator-chat-alert-listener';
+import { PerfController } from '@/components/ui/perf-controller';
+import { LazyChatWidget } from '@/components/ui/lazy-chat-widget';
 
-const ChatWidget = dynamic(
-  () => import('@/components/ui/chat-widget').then((mod) => mod.ChatWidget),
+const HomePopupDisplay = dynamic(
+  () => import('@/components/home/home-popup-display').then((mod) => mod.HomePopupDisplay),
   { ssr: false }
 );
 
@@ -60,6 +61,7 @@ export function RootLayoutShell({
             <PublicStatsProvider initialStats={initialPublicStats}>
             <AuthProvider>
               <TourModeProvider>
+                <PerfController />
                 <ImpersonationBanner />
                 <AuthCallbackNotifier />
                 <ModeratorChatAlertListener />
@@ -72,8 +74,8 @@ export function RootLayoutShell({
                 {!isStaffPanelRoute && (
                   <FloatingUiPortal>
                     <ScrollToTopButton />
-                    <ChatWidget />
-                    <HomePopupDisplay />
+                    <LazyChatWidget />
+                    {pathname === '/' && <HomePopupDisplay />}
                   </FloatingUiPortal>
                 )}
 

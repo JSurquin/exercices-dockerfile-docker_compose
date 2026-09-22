@@ -9,9 +9,11 @@ import {
   type TimeRemaining,
 } from '@/lib/giveaway-presentation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-export function useLiveNow(intervalMs = 1000, enabled = true): number {
+const LiveNowContext = createContext<number | undefined>(undefined);
+
+function useLiveNowClock(intervalMs: number, enabled: boolean): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!enabled) return;
@@ -19,6 +21,23 @@ export function useLiveNow(intervalMs = 1000, enabled = true): number {
     return () => window.clearInterval(id);
   }, [intervalMs, enabled]);
   return now;
+}
+
+export function LiveNowProvider({
+  children,
+  intervalMs = 1000,
+}: {
+  children: ReactNode;
+  intervalMs?: number;
+}) {
+  const now = useLiveNowClock(intervalMs, true);
+  return <LiveNowContext.Provider value={now}>{children}</LiveNowContext.Provider>;
+}
+
+export function useLiveNow(intervalMs = 1000, enabled = true): number {
+  const shared = useContext(LiveNowContext);
+  const self = useLiveNowClock(intervalMs, enabled && shared === undefined);
+  return shared ?? self;
 }
 
 function pad(value: number): string {

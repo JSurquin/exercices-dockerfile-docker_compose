@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -166,11 +167,12 @@ export function LevelsSection() {
           {/* Fragment hero, left half */}
           <div className={`${homeReveal.upSm} flex flex-col lg:h-full`}>
             <div className="flex flex-1 items-center justify-center w-full py-4 lg:min-h-0">
-              <img
+              <Image
                 src="/levels/FRAGMENTMS.webp"
                 alt={t.fragmentsAlt}
-                loading="lazy"
-                decoding="async"
+                width={300}
+                height={260}
+                sizes="(min-width: 1024px) 300px, (min-width: 640px) 280px, 240px"
                 className="fragment-hero w-auto max-w-[240px] sm:max-w-[280px] lg:max-w-[300px] h-auto max-h-[180px] sm:max-h-[220px] lg:max-h-[260px] object-contain"
                 draggable={false}
               />

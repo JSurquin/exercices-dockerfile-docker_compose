@@ -30,7 +30,7 @@ import {
   GiveawayCarouselSkeleton,
   GiveawayGridSkeleton,
 } from '@/components/giveaway/giveaway-card-skeleton';
-import { useLiveNow } from '@/components/giveaway/giveaway-countdown';
+import { LiveNowProvider } from '@/components/giveaway/giveaway-countdown';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import { Handshake } from 'lucide-react';
 import {
@@ -62,8 +62,6 @@ export default function GiveawaysPage() {
   const { giveaways, loading, participateInGiveaway, refetch } = useGiveaways();
   const [userFragments, setUserFragments] = useState(0);
   const [giveawaysEnabled, setGiveawaysEnabled] = useState<boolean | null>(null);
-  const now = useLiveNow();
-
   useEffect(() => {
     if (user) {
       setUserFragments(user.fragments ?? 0);
@@ -294,7 +292,7 @@ export default function GiveawaysPage() {
   }
 
   return (
-    <>
+    <LiveNowProvider>
       <GiveawayNotifications />
       <div className="container relative mx-auto px-4 py-6 pb-24 sm:px-6 sm:py-8 md:pb-8 lg:px-8">
         <GiveawayStarfield />
@@ -322,7 +320,6 @@ export default function GiveawaysPage() {
               giveaways={activeGiveaways}
               messages={messages}
               locale={locale}
-              now={now}
               onSelect={selectGiveaway}
             />
             <GiveawayMyWinnings
@@ -341,7 +338,6 @@ export default function GiveawaysPage() {
               messages={messages}
               userFragments={userFragments}
               onParticipate={handleParticipate}
-              now={now}
               activeIndex={carouselIndex}
               onActiveIndexChange={setCarouselIndex}
             />
@@ -377,7 +373,6 @@ export default function GiveawaysPage() {
                               giveaway={giveaway}
                               messages={messages}
                               locale={locale}
-                              now={now}
                               userFragments={userFragments}
                               onParticipate={handleParticipate}
                             />
@@ -405,7 +400,6 @@ export default function GiveawaysPage() {
                               giveaway={giveaway}
                               messages={messages}
                               locale={locale}
-                              now={now}
                               userFragments={userFragments}
                               onParticipate={handleParticipate}
                             />
@@ -435,6 +429,6 @@ export default function GiveawaysPage() {
         </div>
       </div>
       <GiveawayWalletBar messages={messages} userFragments={userFragments} user={user} />
-    </>
+    </LiveNowProvider>
   );
 }

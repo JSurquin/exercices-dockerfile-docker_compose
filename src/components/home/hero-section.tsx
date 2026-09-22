@@ -24,10 +24,7 @@ import {
   CS2Background,
   WeaponGradeIndicator,
 } from "@/components/ui/cs2-icons";
-import {
-  CS2HeroBackground,
-  usePreloadCS2Backgrounds,
-} from "@/components/ui/cs2-header-background";
+import { CS2HeroBackground } from "@/components/ui/cs2-header-background";
 import { CardTilt } from "@/components/ui/card-tilt";
 import { SectionBottomFade } from "@/components/home/section-bottom-fade";
 import {
@@ -174,9 +171,6 @@ export function HeroSection({
   const demoNetworkFeeCents = platformSettingsProp?.networkFeeCentimes ?? 200;
   const demoNetCents = demoGrossCents - demoCashoutFeeCents - demoNetworkFeeCents;
   const fmt = (cents: number) => `${(cents / 100).toFixed(2)}€`;
-
-  // Précharger les vraies images CS2
-  usePreloadCS2Backgrounds();
 
   const stats = [
     {

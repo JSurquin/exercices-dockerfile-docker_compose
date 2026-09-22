@@ -1,24 +1,13 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
-import { normalizeStoredTheme } from "@/lib/themes";
-
 type Props = {
   starCount?: number;
   cometIntervalMs?: number;
 };
 
+/**
+ * Fond étoilé CSS-only. Visible uniquement sur le thème moonskin
+ * (`html.moonskin`). Pas de JS au premier affichage.
+ */
 export function CosmicBackground(_props: Props) {
-  const { resolvedTheme, theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return null;
-  const current = normalizeStoredTheme(resolvedTheme ?? theme);
-  if (current !== "moonskin") return null;
-
   return (
     <div className="cb-root cb-fixed" aria-hidden="true">
       <div className="cb-nebula" />

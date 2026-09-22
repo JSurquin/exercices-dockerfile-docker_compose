@@ -43,7 +43,7 @@ export function GiveawayPrizeVisual({
     <div className={cn('relative overflow-visible', isHero ? 'px-3 py-4 sm:px-4 sm:py-5' : 'px-2 py-2')}>
       <div
         className={cn(
-          'giveaway-prize-halo pointer-events-none absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl',
+          'giveaway-prize-halo pointer-events-none absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2 rounded-full',
           isHero ? 'h-[11.5rem] w-[14rem] sm:h-[13rem] sm:w-[16rem]' : isCompact ? 'h-[7.5rem] w-[9.5rem]' : 'h-[10.5rem] w-[13rem]'
         )}
         aria-hidden

@@ -950,7 +950,7 @@ const ChatWidgetMessageList = memo(function ChatWidgetMessageList({
  * Composant principal
  * ───────────────────────────────────────────── */
 
-export function ChatWidget() {
+export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [popupMounted, setPopupMounted] = useState(false);
   const { messages, locale } = useLocale();
@@ -1161,6 +1161,11 @@ export function ChatWidget() {
   const handleToggleChat = () => {
     openPopup();
   };
+
+  useEffect(() => {
+    if (!initialOpen) return;
+    openPopup();
+  }, [initialOpen, openPopup]);
 
   useEffect(() => {
     return () => {

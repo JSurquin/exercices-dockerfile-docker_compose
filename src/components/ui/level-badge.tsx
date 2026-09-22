@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { getTierBadgeSrc } from "@/lib/level-system";
 
@@ -39,10 +40,14 @@ export function LevelBadge({
 }: LevelBadgeProps) {
   const src = getTierBadgeSrc(tierIndex);
 
+  const dim = pixelSize ?? 48;
+
   return (
-    <img
+    <Image
       src={src}
       alt={alt ?? `Tier ${tierIndex + 1}`}
+      width={dim}
+      height={dim}
       className={cn(
         "object-contain drop-shadow-[0_0_12px_rgba(168,85,247,0.35)]",
         pixelSize == null && SIZE_CLASSES[size],
@@ -53,6 +58,7 @@ export function LevelBadge({
           ? { width: pixelSize, height: pixelSize, ...style }
           : style
       }
+      sizes={`${dim}px`}
       draggable={false}
     />
   );
@@ -72,9 +78,12 @@ export function FragmentBadge({
   containerClassName,
 }: FragmentBadgeProps) {
   const img = (
-    <img
+    <Image
       src="/levels/FRAGMENTMS.webp"
       alt={alt}
+      width={96}
+      height={96}
+      sizes="96px"
       className={cn(
         "block shrink-0 overflow-visible object-contain drop-shadow-[0_0_12px_rgba(236,72,153,0.35)]",
         containerClassName == null && FRAGMENT_SIZE_CLASSES[size],

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
+import { shouldUseNextImageOptimizer } from "@/lib/image-optimization";
 
 interface SafeImageProps {
   src: string | null | undefined;
@@ -15,6 +16,7 @@ interface SafeImageProps {
   fallbackIcon?: React.ReactNode;
   unoptimized?: boolean;
   priority?: boolean;
+  sizes?: string;
   onError?: () => void;
 }
 
@@ -26,11 +28,15 @@ export function SafeImage({
   className,
   fallbackClassName,
   fallbackIcon,
-  unoptimized = false,
+  unoptimized: _unoptimized = false,
   priority = false,
+  sizes,
   onError,
 }: SafeImageProps) {
   const [error, setError] = useState(false);
+  const resolvedWidth = width || 100;
+  const resolvedHeight = height || 100;
+  const canOptimize = Boolean(src && shouldUseNextImageOptimizer(src));
 
   if (!src || error) {
     return (
@@ -51,11 +57,12 @@ export function SafeImage({
     <Image
       src={src}
       alt={alt}
-      width={width || 100}
-      height={height || 100}
+      width={resolvedWidth}
+      height={resolvedHeight}
       className={className}
-      unoptimized={unoptimized}
+      unoptimized={!canOptimize}
       priority={priority}
+      sizes={sizes ?? `${resolvedWidth}px`}
       onError={() => {
         setError(true);
         onError?.();
@@ -81,32 +88,17 @@ export function SafeImg({
   fallbackIcon,
   onError,
 }: SafeImgProps) {
-  const [error, setError] = useState(false);
-
-  if (!src || error) {
-    return (
-      <div
-        className={cn(
-          "flex items-center justify-center bg-muted/50 text-muted-foreground",
-          fallbackClassName,
-          className
-        )}
-      >
-        {fallbackIcon || <PhotoIcon className="w-1/2 h-1/2 opacity-50" />}
-      </div>
-    );
-  }
-
   return (
-    <img
+    <SafeImage
       src={src}
       alt={alt}
+      width={160}
+      height={80}
       className={className}
-      referrerPolicy="no-referrer"
-      onError={() => {
-        setError(true);
-        onError?.();
-      }}
+      fallbackClassName={fallbackClassName}
+      fallbackIcon={fallbackIcon}
+      sizes="160px"
+      onError={onError}
     />
   );
 }
