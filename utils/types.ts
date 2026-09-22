@@ -89,6 +89,11 @@ export interface Messages {
     platform: string;
     affiliateBadge: string;
     myAccount: string;
+    more: string;
+    adminSection: string;
+    localeFr: string;
+    localeEn: string;
+    localeZh: string;
   };
   user: {
     level: string;

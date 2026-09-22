@@ -507,9 +507,9 @@ body.next-dev-overlay-present #sentry-feedback {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-display: var(--font-display), ui-sans-serif, system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-poppins: var(--font-poppins), ui-sans-serif, system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-poppins: var(--font-poppins-face), ui-sans-serif, system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono: var(--font-jetbrains-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -2038,6 +2038,7 @@ body.next-dev-overlay-present #sentry-feedback {
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     backface-visibility: hidden;
     isolation: isolate;
+    overflow: visible;
   }
 
   .moonskin .lunar-nav {

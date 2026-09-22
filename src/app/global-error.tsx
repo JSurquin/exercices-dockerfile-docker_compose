@@ -61,7 +61,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   return (
     <html lang={locale} className={themeClass} suppressHydrationWarning>
-      <body className="font-sans antialiased min-h-screen flex flex-col overflow-x-hidden bg-background text-foreground">
+      <body className="font-sans antialiased min-h-screen flex flex-col bg-background text-foreground">
         <div className="min-h-screen flex items-center justify-center px-4 py-8">
           <div className="max-w-2xl mx-auto text-center">
             <motion.div

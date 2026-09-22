@@ -68,7 +68,7 @@ export function RootLayoutShell({
                 {!isStaffPanelRoute && <CosmicBackground />}
                 {!isStaffPanelRoute && <Header />}
 
-                <main className={isAdminRoute || pathname?.startsWith('/moderation') ? '' : 'relative z-0 flex-1'}>{children}</main>
+                <main className={isAdminRoute || pathname?.startsWith('/moderation') ? '' : 'relative z-0 min-w-0 flex-1 overflow-x-clip'}>{children}</main>
 
                 {!isStaffPanelRoute && <Footer publicStats={initialPublicStats} />}
                 {!isStaffPanelRoute && (

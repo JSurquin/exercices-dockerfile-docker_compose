@@ -12,26 +12,29 @@ export const revalidate = 300;
 import './globals.css';
 
 const inter = Inter({
-  variable: '--font-sans',
+  variable: '--font-inter',
   subsets: ['latin'],
   display: 'swap',
   adjustFontFallback: true,
+  fallback: ['Arial'],
 });
 
 const poppins = Poppins({
-  variable: '--font-poppins',
+  variable: '--font-poppins-face',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
   display: 'swap',
   adjustFontFallback: true,
+  fallback: ['Arial'],
 });
 
 const spaceGrotesk = Space_Grotesk({
-  variable: '--font-display',
+  variable: '--font-space-grotesk',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   display: 'swap',
   adjustFontFallback: true,
+  fallback: ['Arial'],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -96,7 +99,11 @@ export default async function RootLayout({
   const initialLocale = await getRequestLocale();
 
   return (
-    <html lang={localeToHtmlLang(initialLocale)} suppressHydrationWarning>
+    <html
+      lang={localeToHtmlLang(initialLocale)}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -106,7 +113,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col overflow-x-hidden${
+        className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen flex flex-col${
           process.env.NODE_ENV === 'development' ? ' next-dev-overlay-present' : ''
         }`}
       >
