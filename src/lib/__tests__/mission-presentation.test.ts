@@ -3,8 +3,10 @@ import {
   sumClaimableRewards,
   formatClaimRewardLabel,
   formatMissionDuration,
+  formatMissionEur,
   formatMissionProgressLabel,
   formatMissionResetLine,
+  formatMissionTitle,
   getMissionActionHref,
   getMissionActionKind,
   getMissionBlockReason,
@@ -74,10 +76,11 @@ describe('mission presentation', () => {
     expect(MISSION_SECTIONS).toEqual(['TODAY', 'WEEKLY', 'MONTHLY', 'SOCIAL']);
   });
 
-  it('hides social descriptions that repeat the title and keeps useful conditions', () => {
+  it('hides repeating volume copy and keeps non-obvious conditions for the info tooltip', () => {
     expect(hasUsefulMissionDescription({ key: 'SOCIAL_DISCORD', category: 'SOCIAL' })).toBe(false);
+    expect(hasUsefulMissionDescription({ key: 'WEEKLY_SELL_500', category: 'WEEKLY' })).toBe(false);
     expect(hasUsefulMissionDescription({ key: 'DAILY_SELL_SKIN', category: 'DAILY' })).toBe(true);
-    expect(hasUsefulMissionDescription({ key: 'WEEKLY_SELL_500', category: 'WEEKLY' })).toBe(true);
+    expect(hasUsefulMissionDescription({ key: 'WEEKLY_GIVEAWAY_3', category: 'WEEKLY' })).toBe(true);
   });
 
   it('splits claimed missions to the end and formats section badges', () => {
@@ -188,7 +191,24 @@ describe('mission presentation', () => {
         progressTarget: 50_000,
         thresholdCents: 50_000,
       })
-    ).toBe('120 € / 500 €');
+    ).toBe(`${formatMissionEur(12_000, 'fr')} / ${formatMissionEur(50_000, 'fr')}`);
+    expect(
+      formatMissionProgressLabel(
+        {
+          progressCurrent: 0,
+          progressTarget: 1_000_000,
+          thresholdCents: 1_000_000,
+        },
+        'en'
+      )
+    ).toBe(`${formatMissionEur(0, 'en')} / ${formatMissionEur(1_000_000, 'en')}`);
+    expect(formatMissionTitle('Vendre {amount}', { thresholdCents: 1_000_000 }, 'fr')).toBe(
+      `Vendre ${formatMissionEur(1_000_000, 'fr')}`
+    );
+    expect(formatMissionTitle('Sell {amount}', { thresholdCents: 1_000_000 }, 'en')).toBe(
+      `Sell ${formatMissionEur(1_000_000, 'en')}`
+    );
+    expect(formatMissionEur(1_000_000, 'en')).toBe('€10,000');
     expect(
       isQuantitativeMission({ progressTarget: 50_000, completed: false })
     ).toBe(true);

@@ -38,8 +38,8 @@ const t = {
   socialWaiting: 'Vérifie...',
   socialThanks: 'Merci ! Réclame ta récompense',
   items: {
-    WEEKLY_SELL_500: { label: 'Vendre 500 €', description: 'Atteins 500 €.' },
-    WEEKLY_GIVEAWAY_3: { label: 'Participer à 3 giveaways', description: 'Rejoins 3 giveaways.' },
+    WEEKLY_SELL_500: { label: 'Vendre {amount}', description: 'Atteins 500 €.' },
+    WEEKLY_GIVEAWAY_3: { label: '3 giveaways', description: 'Rejoins 3 giveaways différents.' },
     SOCIAL_DISCORD: { label: 'Rejoindre Discord', description: 'Rejoins Discord.' },
     DAILY_SELL_SKIN: { label: 'Vendre un skin', description: 'Réalise 1 vente.' },
   },
@@ -88,7 +88,7 @@ describe('MissionCard', () => {
       />
     );
     expect(screen.getByRole('link', { name: 'Vendre →' })).toHaveAttribute('href', '/sell');
-    expect(screen.getByText('120 € / 500 €')).toBeInTheDocument();
+    expect(screen.getByText(/120\s*€\s*\/\s*500\s*€/)).toBeInTheDocument();
     expect(screen.queryByText(/Non disponible/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /cadenas|lock/i })).not.toBeInTheDocument();
   });
@@ -109,12 +109,14 @@ describe('MissionCard', () => {
       />
     );
     expect(screen.getByRole('link', { name: 'Participer →' })).toHaveAttribute('href', '/giveaways');
+    expect(screen.getByRole('button', { name: 'Détail de la mission' })).toBeInTheDocument();
+    expect(screen.queryByText('Rejoins 3 giveaways différents.')).not.toBeInTheDocument();
   });
 
   it('shows claimed state with a local reset line', () => {
     render(
       <MissionCard
-        mission={row({ key: 'WEEKLY_SELL_500', completed: true, eligible: false })}
+        mission={row({ key: 'WEEKLY_SELL_500', completed: true, eligible: false, thresholdCents: 50_000 })}
         onClaim={() => {}}
         claimingKey={null}
         returnsLabel="Revient dans 5h 12min"
@@ -142,7 +144,7 @@ describe('MissionCard', () => {
   it('keeps the mission icon after claim and hides repeating social descriptions', () => {
     const { container } = render(
       <MissionCard
-        mission={row({ key: 'WEEKLY_SELL_500', completed: true, eligible: false })}
+        mission={row({ key: 'WEEKLY_SELL_500', completed: true, eligible: false, thresholdCents: 50_000 })}
         onClaim={() => {}}
         claimingKey={null}
         returnsLabel={null}
@@ -150,8 +152,8 @@ describe('MissionCard', () => {
       />
     );
     expect(container.querySelector('.mission-quest__icon-badge')).toBeTruthy();
-    expect(screen.getByText('Vendre 500 €')).toBeInTheDocument();
-    expect(screen.getByText('Atteins 500 €.')).toBeInTheDocument();
+    expect(screen.getByText(/Vendre\s*500\s*€/)).toBeInTheDocument();
+    expect(screen.queryByText('Atteins 500 €.')).not.toBeInTheDocument();
 
     render(
       <MissionCard
@@ -198,13 +200,13 @@ describe('MissionCard', () => {
   it('renders claimed missions as a compact row with the original logo', () => {
     const { container } = render(
       <MissionClaimedRow
-        mission={row({ key: 'WEEKLY_SELL_500', completed: true, eligible: false })}
+        mission={row({ key: 'WEEKLY_SELL_500', completed: true, eligible: false, thresholdCents: 50_000 })}
         t={t}
       />
     );
     expect(container.querySelector('.mission-quest-compact')).toBeTruthy();
     expect(container.querySelector('.mission-quest__icon-badge')).toBeTruthy();
-    expect(screen.getByText('Vendre 500 €')).toBeInTheDocument();
+    expect(screen.getByText(/Vendre\s*500\s*€/)).toBeInTheDocument();
     expect(screen.getByText('Réclamée')).toBeInTheDocument();
   });
 });

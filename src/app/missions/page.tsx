@@ -49,12 +49,14 @@ function MissionCardGrid({
   claimingKey,
   returnsLabel,
   t,
+  locale,
 }: {
   missions: MissionRow[];
   onClaim: (missionKey: string, origin?: HTMLElement | null) => void;
   claimingKey: string | null;
   returnsLabel: string | null;
   t: Parameters<typeof MissionCard>[0]['t'];
+  locale: string;
 }) {
   if (missions.length === 0) return null;
   return (
@@ -67,11 +69,9 @@ function MissionCardGrid({
           claimingKey={claimingKey}
           returnsLabel={returnsLabel}
           t={t}
+          locale={locale}
         />
       ))}
-      <div className="mission-quest-grid__filler" aria-hidden />
-      <div className="mission-quest-grid__filler" aria-hidden />
-      <div className="mission-quest-grid__filler" aria-hidden />
     </div>
   );
 }
@@ -79,15 +79,22 @@ function MissionCardGrid({
 function MissionClaimedGrid({
   missions,
   t,
+  locale,
 }: {
   missions: MissionRow[];
   t: Parameters<typeof MissionClaimedRow>[0]['t'];
+  locale: string;
 }) {
   if (missions.length === 0) return null;
   return (
     <div className="mission-quest-compact-grid">
       {missions.map((mission) => (
-        <MissionClaimedRow key={`${mission.key}-${mission.periodKey}`} mission={mission} t={t} />
+        <MissionClaimedRow
+          key={`${mission.key}-${mission.periodKey}`}
+          mission={mission}
+          t={t}
+          locale={locale}
+        />
       ))}
     </div>
   );
@@ -206,7 +213,7 @@ export default function MissionsPage() {
   const monthResetLabel = formatMissionResetLine(t.resetIn, monthResetAt, durationLabels, t.uniqueMissions, now);
   const socialResetLabel = t.uniqueMissions;
   const todayReturnsLabel = dailyResetAt
-    ? t.returnsIn.replace('{duration}', formatMissionDuration(dailyResetAt, durationLabels, now))
+    ? t.returnsInShort.replace('{duration}', formatMissionDuration(dailyResetAt, durationLabels, now))
     : t.claimed;
   const weekReturnsLabel = weekResetAt
     ? t.returnsIn.replace('{duration}', formatMissionDuration(weekResetAt, durationLabels, now))
@@ -339,8 +346,9 @@ export default function MissionsPage() {
                   claimingKey={claimingKey}
                   returnsLabel={todayReturnsLabel}
                   t={t}
+                  locale={locale}
                 />
-                <MissionClaimedGrid missions={dailyActions.claimed} t={t} />
+                <MissionClaimedGrid missions={dailyActions.claimed} t={t} locale={locale} />
               </MissionSection>
             </GiveawayPageReveal>
           ) : null}
@@ -368,8 +376,9 @@ export default function MissionsPage() {
                       claimingKey={claimingKey}
                       returnsLabel={weekReturnsLabel}
                       t={t}
+                      locale={locale}
                     />
-                    <MissionClaimedGrid missions={weekly.claimed} t={t} />
+                    <MissionClaimedGrid missions={weekly.claimed} t={t} locale={locale} />
                   </MissionSection>
                 </GiveawayPageReveal>
               ) : null}
@@ -389,8 +398,9 @@ export default function MissionsPage() {
                       claimingKey={claimingKey}
                       returnsLabel={monthReturnsLabel}
                       t={t}
+                      locale={locale}
                     />
-                    <MissionClaimedGrid missions={monthly.claimed} t={t} />
+                    <MissionClaimedGrid missions={monthly.claimed} t={t} locale={locale} />
                   </MissionSection>
                 </GiveawayPageReveal>
               ) : null}
@@ -410,8 +420,9 @@ export default function MissionsPage() {
                       claimingKey={claimingKey}
                       returnsLabel={null}
                       t={t}
+                      locale={locale}
                     />
-                    <MissionClaimedGrid missions={social.claimed} t={t} />
+                    <MissionClaimedGrid missions={social.claimed} t={t} locale={locale} />
                   </MissionSection>
                 </GiveawayPageReveal>
               ) : null}

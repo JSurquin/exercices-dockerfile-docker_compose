@@ -12,6 +12,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   GiftIcon,
+  InformationCircleIcon,
   LockClosedIcon,
   SparklesIcon,
   StarIcon,
@@ -20,9 +21,11 @@ import { cn } from '@/lib/utils';
 import { SOCIAL_MISSION_URLS } from '@/lib/moonskin-social';
 import { getSocialMissionIcon } from '@/components/ui/social-brand-icons';
 import { FragmentAmount } from '@/components/ui/level-badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   formatClaimRewardLabel,
   formatMissionProgressLabel,
+  formatMissionTitle,
   getMissionAccent,
   getMissionActionHref,
   getMissionActionKind,
@@ -177,14 +180,24 @@ function SocialMissionActions({
   );
 }
 
+function resolvedMissionTitle(
+  mission: MissionRow,
+  t: Messages['missions'],
+  locale: string
+): string {
+  const itemMeta = t.items[mission.key as keyof typeof t.items];
+  return formatMissionTitle(itemMeta?.label ?? mission.key.replace(/_/g, ' '), mission, locale);
+}
+
 export function MissionClaimedRow({
   mission,
   t,
+  locale = 'fr',
 }: {
   mission: MissionRow;
   t: Messages['missions'];
+  locale?: string;
 }) {
-  const itemMeta = t.items[mission.key as keyof typeof t.items];
   const kind = getMissionKind(mission.key);
   const accent = getMissionAccent(mission.key, mission.category);
 
@@ -198,7 +211,7 @@ export function MissionClaimedRow({
     >
       <MissionIcon missionKey={mission.key} completed />
       <p className="mission-quest-compact__title truncate">
-        {itemMeta?.label ?? mission.key.replace(/_/g, ' ')}
+        {resolvedMissionTitle(mission, t, locale)}
       </p>
       <FragmentAmount
         amount={mission.rewardFragments}
@@ -220,17 +233,20 @@ export function MissionCard({
   claimingKey,
   returnsLabel,
   t,
+  locale = 'fr',
 }: {
   mission: MissionRow;
   onClaim: (key: string, origin?: HTMLElement | null) => void;
   claimingKey: string | null;
   returnsLabel: string | null;
   t: Messages['missions'];
+  locale?: string;
 }) {
+  const title = resolvedMissionTitle(mission, t, locale);
   const itemMeta = t.items[mission.key as keyof typeof t.items];
   const isSocial = mission.category === 'SOCIAL';
   const showProgress = isQuantitativeMission(mission);
-  const progressText = formatMissionProgressLabel(mission);
+  const progressText = formatMissionProgressLabel(mission, locale);
   const progressPct =
     showProgress && mission.progressTarget
       ? Math.min(100, ((mission.progressCurrent ?? 0) / mission.progressTarget) * 100)
@@ -240,7 +256,7 @@ export function MissionCard({
   const status = getMissionUiStatus(mission);
   const blockReason = getMissionBlockReason(mission);
   const isClaiming = claimingKey === mission.key;
-  const description =
+  const conditionHint =
     hasUsefulMissionDescription(mission) && itemMeta?.description ? itemMeta.description : null;
 
   return (
@@ -252,13 +268,20 @@ export function MissionCard({
       style={kind === 'social' ? undefined : ({ '--mission-accent': accent } as CSSProperties)}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex min-w-0 items-start gap-2.5">
           <MissionIcon missionKey={mission.key} completed={mission.completed} />
-          <div className="min-w-0">
-            <p className="mission-quest__title truncate">
-              {itemMeta?.label ?? mission.key.replace(/_/g, ' ')}
-            </p>
-            {description ? <p className="mission-quest__desc truncate">{description}</p> : null}
+          <div className="flex min-w-0 items-start gap-1">
+            <p className="mission-quest__title">{title}</p>
+            {conditionHint ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="mission-quest__info mt-0.5 shrink-0" aria-label={t.moreInfo}>
+                    <InformationCircleIcon className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{conditionHint}</TooltipContent>
+              </Tooltip>
+            ) : null}
           </div>
         </div>
         <FragmentAmount
@@ -269,14 +292,12 @@ export function MissionCard({
         />
       </div>
 
-      <div className="mission-quest__progress">
-        {showProgress && progressPct != null ? (
-          <>
-            <Progress value={progressPct} className="mission-progress h-2" />
-            <p className="mission-quest__meta tabular-nums">{progressText}</p>
-          </>
-        ) : null}
-      </div>
+      {showProgress && progressPct != null && progressText ? (
+        <div className="mission-quest__progress">
+          <Progress value={progressPct} className="mission-progress h-2" />
+          <p className="mission-quest__meta tabular-nums">{progressText}</p>
+        </div>
+      ) : null}
 
       <div className="mt-auto">
         {status === 'claimed' ? (
@@ -310,9 +331,9 @@ export function MissionCard({
         ) : (
           <MissionActionButton mission={mission} t={t} />
         )}
-        <p className="mission-quest__foot">
-          {status === 'claimed' && returnsLabel ? returnsLabel : '\u00a0'}
-        </p>
+        {status === 'claimed' && returnsLabel ? (
+          <p className="mission-quest__foot">{returnsLabel}</p>
+        ) : null}
       </div>
     </div>
   );

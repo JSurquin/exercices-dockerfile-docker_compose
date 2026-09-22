@@ -1277,12 +1277,11 @@ body.next-dev-overlay-present #sentry-feedback {
   .mission-quest {
     --mission-accent: var(--mission-kind-daily, var(--theme-accent));
     height: 100%;
-    min-height: 100%;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     border-radius: 1rem;
-    padding: 1rem;
+    padding: 20px;
     border: 1px solid color-mix(in srgb, var(--mission-accent) 32%, transparent);
     background: color-mix(in srgb, var(--card) 88%, transparent);
     box-shadow:
@@ -1354,6 +1353,15 @@ body.next-dev-overlay-present #sentry-feedback {
     color: var(--foreground);
   }
 
+  .mission-quest .mission-quest__title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
   .mission-quest__desc,
   .mission-quest__thanks {
     font-size: 0.8125rem;
@@ -1375,7 +1383,6 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .mission-quest__foot {
-    min-height: 1.25rem;
     margin-top: 0.35rem;
     text-align: center;
   }
@@ -1391,7 +1398,20 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .mission-quest__progress {
-    min-height: 2.25rem;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mission-quest__progress .mission-progress {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .mission-quest__progress .mission-quest__meta {
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .mission-quest__claim {
@@ -1410,14 +1430,15 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .mission-stack {
+    --section-gap: 32px;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: var(--section-gap);
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 768px) {
     .mission-stack {
-      gap: 3rem;
+      --section-gap: 40px;
     }
   }
 
@@ -1474,13 +1495,14 @@ body.next-dev-overlay-present #sentry-feedback {
 
   .mission-quest-grid {
     display: grid;
+    align-items: stretch;
     gap: 16px;
-    grid-auto-rows: 1fr;
     grid-template-columns: 1fr;
   }
 
   .mission-quest-compact-grid {
     display: grid;
+    align-items: stretch;
     gap: 8px;
     grid-template-columns: 1fr;
   }
@@ -1525,16 +1547,6 @@ body.next-dev-overlay-present #sentry-feedback {
     color: color-mix(in srgb, var(--foreground) 70%, transparent);
   }
 
-  .mission-quest-grid__filler {
-    display: none;
-    min-height: 0;
-    height: 0;
-    padding: 0;
-    border: 0;
-    pointer-events: none;
-    visibility: hidden;
-  }
-
   @media (min-width: 768px) {
     .mission-quest-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1543,17 +1555,10 @@ body.next-dev-overlay-present #sentry-feedback {
     .mission-quest-compact-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
-    .mission-quest-grid__filler {
-      display: block;
-    }
   }
 
-  @media (min-width: 1280px) {
-    .mission-quest-grid {
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
-
+  @media (min-width: 1200px) {
+    .mission-quest-grid,
     .mission-quest-compact-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
@@ -1561,6 +1566,7 @@ body.next-dev-overlay-present #sentry-feedback {
 
   .mission-today-row {
     display: flex;
+    align-items: stretch;
     gap: 12px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
@@ -1571,6 +1577,7 @@ body.next-dev-overlay-present #sentry-feedback {
   @media (min-width: 768px) {
     .mission-today-row {
       display: grid;
+      align-items: stretch;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       overflow: visible;
       scroll-snap-type: none;
@@ -1580,6 +1587,7 @@ body.next-dev-overlay-present #sentry-feedback {
   .mission-today-tile {
     --mission-accent: var(--mission-kind-daily, var(--theme-accent));
     display: flex;
+    height: 100%;
     min-height: 4.75rem;
     flex: 0 0 min(85vw, 20rem);
     align-items: center;
@@ -1590,6 +1598,19 @@ body.next-dev-overlay-present #sentry-feedback {
     border: 1px solid color-mix(in srgb, var(--mission-accent) 32%, transparent);
     background: color-mix(in srgb, var(--card) 88%, transparent);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+  }
+
+  .mission-today-tile__status {
+    display: inline-flex;
+    min-height: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    white-space: nowrap;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--foreground) 80%, transparent);
   }
 
   .mission-today-tile[data-kind="sell"] { --mission-accent: var(--mission-kind-sell); }

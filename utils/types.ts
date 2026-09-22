@@ -4195,6 +4195,7 @@ export interface Messages {
     todaySubtitle: string;
     resetIn: string;
     returnsIn: string;
+    returnsInShort: string;
     noReset: string;
     uniqueMissions: string;
     claimableBadge: string;

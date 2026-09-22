@@ -61,11 +61,9 @@ export function MissionTodayTile({
         />
       </div>
       {mission.completed ? (
-        <p className="mission-quest__meta max-w-[9.5rem] text-right font-medium leading-snug">
-          <span className="inline-flex items-center gap-1">
-            <CheckCircleIcon className="h-4 w-4 text-theme-success" />
-            {returnsLabel}
-          </span>
+        <p className="mission-today-tile__status">
+          <CheckCircleIcon className="h-4 w-4 text-theme-success" />
+          {returnsLabel}
         </p>
       ) : (
         <Button

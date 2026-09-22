@@ -16,6 +16,7 @@ import { FragmentAmount } from '@/components/ui/level-badge';
 import Link from 'next/link';
 import { GiveawayStarfield } from '@/components/giveaway/giveaway-starfield';
 import { getSocialMissionIcon } from '@/components/ui/social-brand-icons';
+import { formatMissionEur, formatMissionTitle } from '@/lib/mission-presentation';
 import type { Messages } from '~/utils/types';
 
 type MissionKey = keyof Messages['missions']['items'];
@@ -35,7 +36,9 @@ const DEMO_SECTIONS: Array<{
     reward: number;
     completed: boolean;
     eligible: boolean;
-    progress?: string;
+    progressCurrent?: number;
+    progressTarget?: number;
+    thresholdCents?: number;
     kind: 'sell' | 'giveaway' | 'social' | 'daily';
     action?: 'sell' | 'giveaway' | 'visit';
   }>;
@@ -50,7 +53,8 @@ const DEMO_SECTIONS: Array<{
         reward: 15,
         completed: false,
         eligible: false,
-        progress: '0 / 1',
+        progressCurrent: 0,
+        progressTarget: 1,
         kind: 'sell',
         action: 'sell',
       },
@@ -66,7 +70,9 @@ const DEMO_SECTIONS: Array<{
         reward: 50,
         completed: false,
         eligible: false,
-        progress: '340 € / 500 €',
+        progressCurrent: 34_000,
+        progressTarget: 50_000,
+        thresholdCents: 50_000,
         kind: 'sell',
         action: 'sell',
       },
@@ -75,7 +81,9 @@ const DEMO_SECTIONS: Array<{
         reward: 100,
         completed: false,
         eligible: false,
-        progress: '340 € / 1 000 €',
+        progressCurrent: 34_000,
+        progressTarget: 100_000,
+        thresholdCents: 100_000,
         kind: 'sell',
         action: 'sell',
       },
@@ -91,7 +99,9 @@ const DEMO_SECTIONS: Array<{
         reward: 200,
         completed: false,
         eligible: false,
-        progress: '1 200 € / 5 000 €',
+        progressCurrent: 120_000,
+        progressTarget: 500_000,
+        thresholdCents: 500_000,
         kind: 'sell',
         action: 'sell',
       },
@@ -127,7 +137,7 @@ function DemoIcon({ missionKey }: { missionKey: MissionKey }) {
 }
 
 export function MissionsTourDemo() {
-  const { messages } = useLocale();
+  const { messages, locale } = useLocale();
   const t = messages.missions;
   const resetExample = t.resetIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`);
 
@@ -222,8 +232,9 @@ export function MissionsTourDemo() {
                           <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward mt-0.5" />
                         </div>
                         {m.completed ? (
-                          <p className="mission-quest__meta max-w-[9.5rem] text-right font-medium">
-                            {t.returnsIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`)}
+                          <p className="mission-today-tile__status">
+                            <CheckCircleIcon className="h-4 w-4 text-theme-success" />
+                            {t.returnsInShort.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`)}
                           </p>
                         ) : (
                           <Button size="sm" className="mission-quest__claim shrink-0" disabled>
@@ -250,13 +261,21 @@ export function MissionsTourDemo() {
                             <div className="mission-quest__icon">
                               <DemoIcon missionKey={m.key} />
                             </div>
-                            <p className="mission-quest__title truncate">{t.items[m.key].label}</p>
+                            <p className="mission-quest__title">
+                              {formatMissionTitle(t.items[m.key].label, { thresholdCents: m.thresholdCents }, locale)}
+                            </p>
                           </div>
                           <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward" />
                         </div>
-                        <div className="mission-quest__progress">
-                          {m.progress ? <p className="mission-quest__meta tabular-nums">{m.progress}</p> : null}
-                        </div>
+                        {m.progressTarget != null && m.progressCurrent != null ? (
+                          <div className="mission-quest__progress">
+                            <p className="mission-quest__meta tabular-nums">
+                              {m.thresholdCents != null
+                                ? `${formatMissionEur(m.progressCurrent, locale)} / ${formatMissionEur(m.progressTarget, locale)}`
+                                : `${m.progressCurrent} / ${m.progressTarget}`}
+                            </p>
+                          </div>
+                        ) : null}
                         <div className="mt-auto">
                           {m.eligible ? (
                             <Button size="sm" className="mission-quest__claim w-full" disabled>
@@ -273,13 +292,9 @@ export function MissionsTourDemo() {
                               </Link>
                             </Button>
                           )}
-                          <p className="mission-quest__foot">{'\u00a0'}</p>
                         </div>
                       </div>
                     ))}
-                    <div className="mission-quest-grid__filler" aria-hidden />
-                    <div className="mission-quest-grid__filler" aria-hidden />
-                    <div className="mission-quest-grid__filler" aria-hidden />
                   </div>
                 ) : null}
 
@@ -299,7 +314,9 @@ export function MissionsTourDemo() {
                             <CheckCircleIcon className="h-3.5 w-3.5" />
                           </span>
                         </div>
-                        <p className="mission-quest-compact__title truncate">{t.items[m.key].label}</p>
+                        <p className="mission-quest-compact__title truncate">
+                          {formatMissionTitle(t.items[m.key].label, { thresholdCents: m.thresholdCents }, locale)}
+                        </p>
                         <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward shrink-0" />
                         <span className="mission-quest-compact__claimed">
                           <CheckCircleIcon className="h-4 w-4 text-theme-success" />

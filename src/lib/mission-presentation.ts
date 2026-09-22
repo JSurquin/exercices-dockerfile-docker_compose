@@ -1,5 +1,6 @@
 import {
   getTimeRemaining,
+  localeToDateLocale,
   type CompactDurationLabels,
 } from '@/lib/giveaway-presentation';
 
@@ -103,12 +104,14 @@ export function isDailyActionMission(mission: Pick<MissionRow, 'key' | 'category
   return mission.category === 'DAILY' && !isTodayMissionKey(mission.key) && !isWelcomeMissionKey(mission.key);
 }
 
+const MISSIONS_WITH_CONDITION_HINT = new Set(['WEEKLY_GIVEAWAY_3', 'DAILY_SELL_SKIN']);
+
 export function hasUsefulMissionDescription(
   mission: Pick<MissionRow, 'key' | 'category'>
 ): boolean {
   if (mission.category === 'SOCIAL') return false;
   if (isTodayMissionKey(mission.key) || isWelcomeMissionKey(mission.key)) return false;
-  return true;
+  return MISSIONS_WITH_CONDITION_HINT.has(mission.key);
 }
 
 export function areAllMissionsClaimed(missions: Pick<MissionRow, 'eligible' | 'completed'>[]): boolean {
@@ -316,12 +319,33 @@ export function isQuantitativeMission(
   return !mission.completed && mission.progressTarget != null && mission.progressTarget > 0;
 }
 
+export function formatMissionEur(cents: number, locale = 'fr'): string {
+  const amount = Math.max(0, Math.round((Number.isFinite(cents) ? cents : 0) / 100));
+  return new Intl.NumberFormat(localeToDateLocale(locale), {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(amount);
+}
+
+export function formatMissionTitle(
+  template: string,
+  mission: Pick<MissionRow, 'thresholdCents'>,
+  locale = 'fr'
+): string {
+  if (!template.includes('{amount}')) return template;
+  if (mission.thresholdCents == null) return template.replace('{amount}', '').replace(/\s+/g, ' ').trim();
+  return template.replace('{amount}', formatMissionEur(mission.thresholdCents, locale));
+}
+
 export function formatMissionProgressLabel(
-  mission: Pick<MissionRow, 'progressCurrent' | 'progressTarget' | 'thresholdCents'>
+  mission: Pick<MissionRow, 'progressCurrent' | 'progressTarget' | 'thresholdCents'>,
+  locale = 'fr'
 ): string | null {
   if (mission.progressTarget == null || mission.progressCurrent == null) return null;
   if (mission.thresholdCents != null) {
-    return `${Math.round(mission.progressCurrent / 100)} € / ${Math.round(mission.progressTarget / 100)} €`;
+    return `${formatMissionEur(mission.progressCurrent, locale)} / ${formatMissionEur(mission.progressTarget, locale)}`;
   }
   return `${mission.progressCurrent} / ${mission.progressTarget}`;
 }

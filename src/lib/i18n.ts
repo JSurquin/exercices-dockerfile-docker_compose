@@ -992,6 +992,7 @@ export const messages: Record<Locale, Messages> = {
       todaySubtitle: "Récompenses gratuites du jour, à réclamer maintenant.",
       resetIn: "Réinitialisation dans {duration}",
       returnsIn: "Revient dans {duration}",
+      returnsInShort: "Dans {duration}",
       noReset: "Missions uniques — pas de réinitialisation",
       uniqueMissions: "Missions uniques",
       claimableBadge: "{n} à réclamer",
@@ -1028,23 +1029,23 @@ export const messages: Record<Locale, Messages> = {
           description: "Ouvre ton dashboard pour valider ta présence du jour.",
         },
         WEEKLY_SELL_500: {
-          label: "Vendre 500 €",
+          label: "Vendre {amount}",
           description: "Atteins 500 € de volume vendu cette semaine.",
         },
         WEEKLY_SELL_1000: {
-          label: "Vendre 1 000 €",
+          label: "Vendre {amount}",
           description: "Atteins 1 000 € de volume vendu cette semaine.",
         },
         WEEKLY_GIVEAWAY_3: {
-          label: "Participer à 3 giveaways",
+          label: "3 giveaways",
           description: "Rejoins au moins 3 giveaways différents cette semaine.",
         },
         MONTHLY_SELL_5000: {
-          label: "Vendre 5 000 €",
+          label: "Vendre {amount}",
           description: "Atteins 5 000 € de volume vendu ce mois-ci.",
         },
         MONTHLY_SELL_10000: {
-          label: "Vendre 10 000 €",
+          label: "Vendre {amount}",
           description: "Atteins 10 000 € de volume vendu ce mois-ci.",
         },
         SOCIAL_NEWSLETTER: {
@@ -9359,6 +9360,7 @@ export const messages: Record<Locale, Messages> = {
       todaySubtitle: "Today’s free rewards, ready to claim.",
       resetIn: "Resets in {duration}",
       returnsIn: "Back in {duration}",
+      returnsInShort: "In {duration}",
       noReset: "One-time missions — no reset",
       uniqueMissions: "One-time missions",
       claimableBadge: "{n} to claim",
@@ -9395,23 +9397,23 @@ export const messages: Record<Locale, Messages> = {
           description: "Open your dashboard to validate today’s visit.",
         },
         WEEKLY_SELL_500: {
-          label: "Sell €500",
+          label: "Sell {amount}",
           description: "Reach €500 in sold volume this week.",
         },
         WEEKLY_SELL_1000: {
-          label: "Sell €1,000",
+          label: "Sell {amount}",
           description: "Reach €1,000 in sold volume this week.",
         },
         WEEKLY_GIVEAWAY_3: {
-          label: "Join 3 giveaways",
+          label: "3 giveaways",
           description: "Enter at least 3 different giveaways this week.",
         },
         MONTHLY_SELL_5000: {
-          label: "Sell €5,000",
+          label: "Sell {amount}",
           description: "Reach €5,000 in sold volume this month.",
         },
         MONTHLY_SELL_10000: {
-          label: "Sell €10,000",
+          label: "Sell {amount}",
           description: "Reach €10,000 in sold volume this month.",
         },
         SOCIAL_NEWSLETTER: {
@@ -17721,6 +17723,7 @@ export const messages: Record<Locale, Messages> = {
       todaySubtitle: "今日免费奖励，可立即领取。",
       resetIn: "{duration} 后重置",
       returnsIn: "{duration} 后回来",
+      returnsInShort: "{duration} 后",
       noReset: "一次性任务 — 不会重置",
       uniqueMissions: "一次性任务",
       claimableBadge: "{n} 待领取",
@@ -17757,23 +17760,23 @@ export const messages: Record<Locale, Messages> = {
           description: "打开仪表盘以完成当日签到。",
         },
         WEEKLY_SELL_500: {
-          label: "出售 500 €",
+          label: "出售 {amount}",
           description: "本周累计出售额达到 500 €。",
         },
         WEEKLY_SELL_1000: {
-          label: "出售 1 000 €",
+          label: "出售 {amount}",
           description: "本周累计出售额达到 1 000 €。",
         },
         WEEKLY_GIVEAWAY_3: {
-          label: "参与 3 次抽奖",
+          label: "3 次抽奖",
           description: "本周至少参加 3 个不同的抽奖。",
         },
         MONTHLY_SELL_5000: {
-          label: "出售 5 000 €",
+          label: "出售 {amount}",
           description: "本月累计出售额达到 5 000 €。",
         },
         MONTHLY_SELL_10000: {
-          label: "出售 10 000 €",
+          label: "出售 {amount}",
           description: "本月累计出售额达到 10 000 €。",
         },
         SOCIAL_NEWSLETTER: {
