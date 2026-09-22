@@ -88,6 +88,13 @@ export function countClaimable(missions: MissionRow[]): number {
   return missions.filter(isMissionClaimable).length;
 }
 
+export function sumClaimableRewards(missions: Pick<MissionRow, 'eligible' | 'completed' | 'rewardFragments'>[]): number {
+  return missions.reduce(
+    (total, mission) => total + (isMissionClaimable(mission) ? mission.rewardFragments : 0),
+    0
+  );
+}
+
 export function isWelcomeMissionKey(key: string): boolean {
   return key === WELCOME_BONUS_MISSION_KEY;
 }

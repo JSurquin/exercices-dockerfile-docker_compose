@@ -1221,14 +1221,13 @@ body.next-dev-overlay-present #sentry-feedback {
   .mission-welcome::before {
     content: "";
     position: absolute;
-    inset: -30% auto auto -8%;
-    width: 18rem;
-    height: 18rem;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--theme-accent) 38%, transparent),
-      transparent 70%
+    inset: 0 auto 0 0;
+    width: min(48%, 26rem);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--theme-accent) 28%, transparent) 0%,
+      color-mix(in srgb, var(--theme-accent) 12%, transparent) 55%,
+      transparent 100%
     );
     pointer-events: none;
     z-index: 0;
@@ -1536,7 +1535,7 @@ body.next-dev-overlay-present #sentry-feedback {
     visibility: hidden;
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 768px) {
     .mission-quest-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1550,7 +1549,7 @@ body.next-dev-overlay-present #sentry-feedback {
     }
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 1280px) {
     .mission-quest-grid {
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
@@ -1569,7 +1568,7 @@ body.next-dev-overlay-present #sentry-feedback {
     -webkit-overflow-scrolling: touch;
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 768px) {
     .mission-today-row {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1598,7 +1597,7 @@ body.next-dev-overlay-present #sentry-feedback {
   .mission-today-tile[data-kind="social"] { --mission-accent: var(--mission-kind-social); }
   .mission-today-tile[data-kind="daily"] { --mission-accent: var(--mission-kind-daily); }
 
-  @media (min-width: 640px) {
+  @media (min-width: 768px) {
     .mission-today-tile {
       flex: unset;
     }

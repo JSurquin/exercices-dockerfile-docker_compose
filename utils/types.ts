@@ -4162,6 +4162,7 @@ export interface Messages {
     backToGiveaways: string;
     pageSubtitle: string;
     statsFragments: string;
+    statsClaimableToday: string;
     statsToClaim: string;
     statsCompleted: string;
     globalProgress: string;

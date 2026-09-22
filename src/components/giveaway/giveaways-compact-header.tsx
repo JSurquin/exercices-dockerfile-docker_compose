@@ -14,7 +14,7 @@ export function GiveawaysCompactHeader({ messages }: { messages: Messages }) {
       <div className="flex items-center gap-2.5">
         <GiftIcon className="h-6 w-6 shrink-0 text-theme-accent" />
         <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-[1.75rem]">
-          {messages.giveaways.title}
+          {messages.nav.giveaways}
         </h1>
       </div>
       <p className="mt-1 max-w-2xl text-sm leading-snug text-foreground/70 line-clamp-2">

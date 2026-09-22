@@ -149,14 +149,14 @@ export function MissionsTourDemo() {
           </div>
           <div data-tour="missions-stats" className="flex shrink-0 flex-wrap items-center gap-3">
             <div className="mission-balance-pill">
-              <FragmentAmount amount={340} size="xs" className="font-display text-base font-semibold text-theme-accent" />
-              <span className="text-[13px] text-foreground/80">{t.statsFragments}</span>
+              <FragmentAmount amount={85} size="xs" className="font-display text-base font-semibold text-theme-accent" />
+              <span className="text-[13px] text-foreground/80">{t.statsClaimableToday}</span>
             </div>
             <Link
               href="/giveaways"
               className="inline-flex items-center gap-1 text-sm font-semibold text-theme-accent hover:underline"
             >
-              {messages.giveaways.title}
+              {messages.nav.giveaways}
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
@@ -170,9 +170,6 @@ export function MissionsTourDemo() {
                   <GiftIcon className="h-6 w-6 text-theme-accent" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-theme-accent">
-                    {t.welcomeBadge}
-                  </p>
                   <h2 className="font-display text-lg font-semibold tracking-tight sm:text-xl">
                     {t.items.WELCOME_BONUS.label}
                   </h2>

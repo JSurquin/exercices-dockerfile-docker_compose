@@ -251,6 +251,7 @@ export function Header() {
             <>
               {/* Compteur de fragments */}
               <Link
+                id="nav-fragments"
                 href="/missions"
                 className="hidden sm:flex h-9 items-center gap-1.5 overflow-visible rounded-full border border-white/10 bg-white/[0.04] px-2.5 text-sm font-semibold text-[#ffffff] hover:bg-white/[0.06] transition-colors"
               >

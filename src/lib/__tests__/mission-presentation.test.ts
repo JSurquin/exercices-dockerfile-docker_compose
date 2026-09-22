@@ -1,5 +1,6 @@
 import {
   countClaimable,
+  sumClaimableRewards,
   formatClaimRewardLabel,
   formatMissionDuration,
   formatMissionProgressLabel,
@@ -117,6 +118,17 @@ describe('mission presentation', () => {
         mission({ key: 'C', eligible: false, completed: false }),
       ])
     ).toBe(1);
+  });
+
+  it('sums currently claimable rewards without a new request', () => {
+    expect(
+      sumClaimableRewards([
+        mission({ key: 'A', eligible: true, completed: false, rewardFragments: 10 }),
+        mission({ key: 'B', eligible: true, completed: true, rewardFragments: 1000 }),
+        mission({ key: 'C', eligible: false, completed: false, rewardFragments: 50 }),
+        mission({ key: 'D', eligible: true, completed: false, rewardFragments: 25 }),
+      ])
+    ).toBe(35);
   });
 
   it('computes UTC day / week / month resets without exposing UTC in the label', () => {

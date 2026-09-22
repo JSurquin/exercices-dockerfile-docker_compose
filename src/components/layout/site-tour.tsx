@@ -64,7 +64,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="nav-giveaways"]',
       popover: {
-        title: t('Concours', 'Giveaways', '抽奖活动'),
+        title: t('Concours', 'Giveaways', '抽奖'),
         description: t(
           'Participez aux concours avec vos <strong>fragments</strong> gagnés lors de vos ventes. Plus vous vendez, plus vous accumulez de fragments pour tenter de gagner des skins, du cash ou des items exclusifs.',
           'Enter giveaways with your <strong>fragments</strong> earned from your sales. The more you sell, the more fragments you collect to win skins, cash or exclusive items.',
@@ -250,7 +250,7 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="giveaways-tabs"]',
       popover: {
-        title: t('Giveaways en cours / historique', 'Active giveaways / history', '进行中的抽奖 / 历史'),
+        title: t('Concours en cours / historique', 'Active giveaways / history', '进行中的抽奖 / 历史'),
         description: t(
           'La liste montre les concours en cours. Cliquez sur une carte pour l’afficher en haut et y entrer. Le bouton <strong>Historique</strong> ouvre les tirages terminés.',
           'The list shows ongoing giveaways. Click a card to feature it at the top and enter. The <strong>History</strong> button reveals ended draws.',
@@ -276,11 +276,11 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="missions-stats"]',
       popover: {
-        title: t('Vos fragments', 'Your fragments', '您的碎片'),
+        title: t('À réclamer aujourd’hui', 'To claim today', '今日可领取'),
         description: t(
-          'Le solde de <strong>fragments disponibles</strong> est affiché ici. Cliquez sur Giveaways pour les dépenser dans un concours. Chaque mission réclamée ajoute des fragments à ce solde.',
-          'Your <strong>available fragments</strong> are shown here. Open Giveaways to spend them in a contest. Each claimed mission adds fragments to this balance.',
-          '这里显示您的<strong>可用碎片</strong>。点击抽奖即可用于参赛。每领取一项任务都会增加该余额。'
+          'Ici tu vois le total des fragments <strong>encore réclamables</strong>. Le solde est dans la barre du haut. Clique sur <strong>Concours</strong> pour les dépenser.',
+          'This is the total of fragments you can <strong>still claim</strong>. Your balance is in the top bar. Open <strong>Giveaways</strong> to spend them.',
+          '这里显示<strong>仍可领取</strong>的碎片总数。余额在顶部导航栏。点击<strong>抽奖</strong>即可使用。'
         ),
         side: 'bottom',
       },

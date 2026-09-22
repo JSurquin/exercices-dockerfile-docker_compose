@@ -32,13 +32,9 @@ export function MissionWelcomeBanner({
             <GiftIcon className="h-6 w-6 text-theme-accent" />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-theme-accent">
-              {t.welcomeBadge}
-            </p>
             <h2 className="font-display text-lg font-semibold tracking-tight sm:text-xl">
               {item.label}
             </h2>
-            <p className="mt-0.5 text-sm leading-snug text-muted-foreground">{item.description}</p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-4 sm:flex-col sm:items-end">

@@ -25,6 +25,7 @@ import {
   SECTION_RESET_PERIOD,
   areAllMissionsClaimed,
   countClaimable,
+  sumClaimableRewards,
   formatMissionDuration,
   formatMissionResetLine,
   groupMissionsForPage,
@@ -140,7 +141,10 @@ export default function MissionsPage() {
     onSuccess: async (j: { fragments?: number }) => {
       const earned = j.fragments ?? 0;
       const fromRect = claimOriginRef.current?.getBoundingClientRect();
-      const toRect = balanceRef.current?.getBoundingClientRect();
+      const navBalance = document.getElementById('nav-fragments');
+      const toEl =
+        navBalance && navBalance.getClientRects().length > 0 ? navBalance : balanceRef.current;
+      const toRect = toEl?.getBoundingClientRect();
       if (fromRect && toRect && earned > 0) {
         setFly({
           id: Date.now(),
@@ -192,6 +196,7 @@ export default function MissionsPage() {
   const weekClaimable = countClaimable(grouped.weekly);
   const monthClaimable = countClaimable(grouped.monthly);
   const socialClaimable = countClaimable(grouped.social);
+  const claimableRewardTotal = sumClaimableRewards(missions);
 
   const dailyResetAt = nextMissionResetAt(SECTION_RESET_PERIOD.TODAY, new Date(now));
   const weekResetAt = nextMissionResetAt(SECTION_RESET_PERIOD.WEEKLY, new Date(now));
@@ -264,17 +269,17 @@ export default function MissionsPage() {
             <div data-tour="missions-stats" className="flex shrink-0 flex-wrap items-center gap-3">
               <div ref={balanceRef} id="mission-balance-pill" className="mission-balance-pill">
                 <FragmentAmount
-                  amount={user.fragments ?? 0}
+                  amount={claimableRewardTotal}
                   size="xs"
                   className="font-display text-base font-semibold text-theme-accent"
                 />
-                <span className="text-[13px] text-foreground/80">{t.statsFragments}</span>
+                <span className="text-[13px] text-foreground/80">{t.statsClaimableToday}</span>
               </div>
               <Link
                 href="/giveaways"
                 className="inline-flex items-center gap-1 text-sm font-semibold text-theme-accent hover:underline"
               >
-                {messages.giveaways.title}
+                {messages.nav.giveaways}
                 <ArrowRightIcon className="h-4 w-4" />
               </Link>
             </div>
