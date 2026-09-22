@@ -2030,28 +2030,39 @@ body.next-dev-overlay-present #sentry-feedback {
     }
   }
 
-  /* Sticky nav — liquid glass */
+  /* Sticky nav — liquid glass.
+     Blur lives on ::before so Safari/macOS does not clip the right-side actions
+     (backdrop-filter on the same box as the flex row acts like overflow:hidden). */
   .lunar-nav {
+    background: transparent;
+    border-bottom: none;
+    backface-visibility: hidden;
+    isolation: isolate;
+  }
+
+  .lunar-nav::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     background: rgba(255, 255, 255, 0.04);
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    backface-visibility: hidden;
-    isolation: isolate;
-    overflow: visible;
   }
 
-  .moonskin .lunar-nav {
+  .moonskin .lunar-nav::before {
     background: rgba(255, 255, 255, 0.04);
     border-bottom-color: rgba(255, 255, 255, 0.07);
   }
 
-  .cs2 .lunar-nav {
+  .cs2 .lunar-nav::before {
     background: rgba(255, 255, 255, 0.04);
     border-bottom-color: rgba(255, 255, 255, 0.07);
   }
 
-  .light .lunar-nav {
+  .light .lunar-nav::before {
     background: rgba(255, 255, 255, 0.72);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
@@ -4139,6 +4150,7 @@ html.perf-lite .chrome-shimmer {
 }
 
 html.perf-lite .lunar-nav,
+html.perf-lite .lunar-nav::before,
 html.perf-lite [data-giveaway-wallet] {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
