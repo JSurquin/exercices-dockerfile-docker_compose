@@ -1009,10 +1009,12 @@ body.next-dev-overlay-present #sentry-feedback {
   /* Lunar glass card */
   .lunar-card {
     position: relative;
+    isolation: isolate;
+    z-index: 1;
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(150, 155, 170, 0.05) 100%
+      rgba(18, 18, 24, 0.88) 0%,
+      rgba(14, 14, 20, 0.82) 100%
     );
     border: 1px solid rgba(200, 205, 220, 0.12);
     border-radius: 16px;
@@ -1054,6 +1056,7 @@ body.next-dev-overlay-present #sentry-feedback {
     content: "";
     position: absolute;
     inset: -1px;
+    z-index: 0;
     border-radius: inherit;
     pointer-events: none;
     box-shadow: 0 0 28px rgba(210, 210, 230, 0.22);
@@ -1118,7 +1121,6 @@ body.next-dev-overlay-present #sentry-feedback {
     color: #e8e8f2;
     position: relative;
     overflow: hidden;
-    animation: chrome-shimmer 3s ease-in-out infinite;
   }
 
   .btn-select-all::before {
@@ -2005,14 +2007,16 @@ body.next-dev-overlay-present #sentry-feedback {
 
   /* Hero product float */
   .hero-product {
-    animation: lunar-float 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+    position: relative;
+    isolation: isolate;
+    z-index: 2;
     filter:
       drop-shadow(0 40px 80px rgba(0, 0, 0, 0.95))
       drop-shadow(0 8px 20px rgba(0, 0, 0, 0.8))
       drop-shadow(0 0 2px rgba(210, 215, 235, 0.25));
   }
 
-  .hero-product .chrome-shimmer {
+  .hero-product .chrome-shimmer::before {
     animation: chrome-shimmer 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
   }
 
@@ -2368,7 +2372,7 @@ body.next-dev-overlay-present #sentry-feedback {
 
   /* CS2 — lunar-card : style sombre original + relief orange */
   .cs2 .lunar-card {
-    background: rgba(0, 0, 0, 0.32);
+    background: rgba(8, 8, 10, 0.78);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.9),
@@ -2387,7 +2391,7 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .cs2 .lunar-footer__card {
-    background: rgba(0, 0, 0, 0.36);
+    background: rgba(8, 8, 10, 0.82);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow:
       0 24px 70px rgba(0, 0, 0, 0.9),
@@ -3386,120 +3390,143 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 }
 
-.home-enter-left {
-  animation: home-enter-from-left 0.8s ease both;
+.home-enter-left,
+.home-enter-right,
+.home-enter-up,
+.home-enter-up-lg,
+.home-reveal-up,
+.home-reveal-up-sm,
+.home-reveal-up-md,
+.home-reveal-left,
+.home-reveal-right,
+.home-reveal-scale,
+.home-reveal-fade {
+  opacity: 1;
+  transform: none;
 }
 
-.home-enter-right {
-  animation: home-enter-from-right 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 0.55s;
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.perf-lite) .home-enter-left {
+    animation: home-enter-from-left 0.8s ease both;
+  }
+
+  html:not(.perf-lite) .home-enter-right {
+    animation: home-enter-from-right 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.55s;
+  }
+
+  html:not(.perf-lite) .home-enter-up {
+    animation: home-enter-from-bottom 0.6s ease both;
+  }
+
+  html:not(.perf-lite) .home-enter-up-lg {
+    animation: home-enter-from-bottom-lg 0.8s ease both;
+  }
+
+  html:not(.perf-lite) .hero-product {
+    animation: lunar-float 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  }
 }
 
-.home-enter-up {
-  animation: home-enter-from-bottom 0.6s ease both;
-}
-
-.home-enter-up-lg {
-  animation: home-enter-from-bottom-lg 0.8s ease both;
-}
-
-.home-delay-200 {
+html:not(.perf-lite) .home-delay-200 {
   animation-delay: 0.2s;
 }
 
-.home-delay-300 {
+html:not(.perf-lite) .home-delay-300 {
   animation-delay: 0.3s;
 }
 
-.home-delay-400 {
+html:not(.perf-lite) .home-delay-400 {
   animation-delay: 0.4s;
 }
 
-.home-delay-500 {
+html:not(.perf-lite) .home-delay-500 {
   animation-delay: 0.5s;
 }
 
-.home-delay-600 {
+html:not(.perf-lite) .home-delay-600 {
   animation-delay: 0.6s;
 }
 
-.home-delay-650 {
+html:not(.perf-lite) .home-delay-650 {
   animation-delay: 0.65s;
 }
 
-.home-delay-700 {
+html:not(.perf-lite) .home-delay-700 {
   animation-delay: 0.7s;
 }
 
 @supports (animation-timeline: view()) {
-  .home-reveal-up {
-    opacity: 0;
-    transform: translate3d(0, 30px, 0);
-    animation: home-reveal-up 0.6s ease both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 40%;
-  }
+  @media (prefers-reduced-motion: no-preference) {
+    html:not(.perf-lite) .home-reveal-up {
+      opacity: 0;
+      transform: translate3d(0, 30px, 0);
+      animation: home-reveal-up 0.6s ease both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
 
-  .home-reveal-up-sm {
-    opacity: 0;
-    transform: translate3d(0, 20px, 0);
-    animation: home-reveal-up-sm 0.6s ease both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 40%;
-  }
+    html:not(.perf-lite) .home-reveal-up-sm {
+      opacity: 0;
+      transform: translate3d(0, 20px, 0);
+      animation: home-reveal-up-sm 0.6s ease both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
 
-  .home-reveal-up-md {
-    opacity: 0;
-    transform: translate3d(0, 24px, 0);
-    animation: home-reveal-up-md 0.5s ease both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 40%;
-  }
+    html:not(.perf-lite) .home-reveal-up-md {
+      opacity: 0;
+      transform: translate3d(0, 24px, 0);
+      animation: home-reveal-up-md 0.5s ease both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
 
-  .home-reveal-left {
-    opacity: 0;
-    transform: translate3d(-20px, 0, 0);
-    animation: home-reveal-left 0.6s ease both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 40%;
-  }
+    html:not(.perf-lite) .home-reveal-left {
+      opacity: 0;
+      transform: translate3d(-20px, 0, 0);
+      animation: home-reveal-left 0.6s ease both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
 
-  .home-reveal-right {
-    opacity: 0;
-    transform: translate3d(20px, 0, 0);
-    animation: home-reveal-right 0.6s ease both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 40%;
-  }
+    html:not(.perf-lite) .home-reveal-right {
+      opacity: 0;
+      transform: translate3d(20px, 0, 0);
+      animation: home-reveal-right 0.6s ease both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
 
-  .home-reveal-scale {
-    opacity: 0;
-    transform: scale(0.8);
-    animation: home-reveal-scale 0.4s ease both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 40%;
-  }
+    html:not(.perf-lite) .home-reveal-scale {
+      opacity: 0;
+      transform: scale(0.8);
+      animation: home-reveal-scale 0.4s ease both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
 
-  .home-reveal-fade {
-    opacity: 0;
-    animation: home-reveal-fade 0.6s ease both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 40%;
-  }
+    html:not(.perf-lite) .home-reveal-fade {
+      opacity: 0;
+      animation: home-reveal-fade 0.6s ease both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
 
-  .home-stagger-0 { animation-range: entry 0% entry 40%; }
-  .home-stagger-1 { animation-range: entry 4% entry 44%; }
-  .home-stagger-2 { animation-range: entry 8% entry 48%; }
-  .home-stagger-3 { animation-range: entry 12% entry 52%; }
-  .home-stagger-4 { animation-range: entry 16% entry 56%; }
-  .home-stagger-5 { animation-range: entry 20% entry 60%; }
-  .home-stagger-6 { animation-range: entry 24% entry 64%; }
-  .home-stagger-7 { animation-range: entry 28% entry 68%; }
-  .home-stagger-8 { animation-range: entry 32% entry 72%; }
-  .home-stagger-9 { animation-range: entry 36% entry 76%; }
-  .home-stagger-10 { animation-range: entry 40% entry 80%; }
-  .home-stagger-11 { animation-range: entry 44% entry 84%; }
-  .home-stagger-12 { animation-range: entry 48% entry 88%; }
+    html:not(.perf-lite) .home-stagger-0 { animation-range: entry 0% entry 40%; }
+    html:not(.perf-lite) .home-stagger-1 { animation-range: entry 4% entry 44%; }
+    html:not(.perf-lite) .home-stagger-2 { animation-range: entry 8% entry 48%; }
+    html:not(.perf-lite) .home-stagger-3 { animation-range: entry 12% entry 52%; }
+    html:not(.perf-lite) .home-stagger-4 { animation-range: entry 16% entry 56%; }
+    html:not(.perf-lite) .home-stagger-5 { animation-range: entry 20% entry 60%; }
+    html:not(.perf-lite) .home-stagger-6 { animation-range: entry 24% entry 64%; }
+    html:not(.perf-lite) .home-stagger-7 { animation-range: entry 28% entry 68%; }
+    html:not(.perf-lite) .home-stagger-8 { animation-range: entry 32% entry 72%; }
+    html:not(.perf-lite) .home-stagger-9 { animation-range: entry 36% entry 76%; }
+    html:not(.perf-lite) .home-stagger-10 { animation-range: entry 40% entry 80%; }
+    html:not(.perf-lite) .home-stagger-11 { animation-range: entry 44% entry 84%; }
+    html:not(.perf-lite) .home-stagger-12 { animation-range: entry 48% entry 88%; }
+  }
 }
 
 .home-hover-scale {
@@ -3594,6 +3621,7 @@ body.next-dev-overlay-present #sentry-feedback {
 
 .home-neon-card {
   position: relative;
+  z-index: 1;
   border-radius: 16px;
   isolation: isolate;
 }
@@ -3637,7 +3665,7 @@ body.next-dev-overlay-present #sentry-feedback {
   z-index: 1;
   border-radius: inherit;
   border: none !important;
-  background: rgba(12, 12, 16, 0.72);
+  background: rgba(12, 12, 16, 0.86);
   box-shadow:
     0 16px 48px rgba(0, 0, 0, 0.45),
     0 1px 0 rgba(255, 255, 255, 0.06) inset;
@@ -4009,6 +4037,8 @@ html:not(.moonskin) .cb-root {
   .home-count-up,
   .home-neon-pill__glow,
   .home-neon-card::before,
+  .hero-product,
+  .chrome-shimmer,
   .cb-nebula,
   .cb-star-layer,
   .cb-comet-fixed,
@@ -4018,6 +4048,10 @@ html:not(.moonskin) .cb-root {
     transition: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .chrome-shimmer::before {
+    animation: none !important;
   }
 
   .home-count-up::after {
@@ -4070,8 +4104,37 @@ html.perf-lite .giveaway-prestige__particle,
 html.perf-lite .giveaway-prize-skin-wrap--float,
 html.perf-lite .chrome-shimmer::before,
 html.perf-lite .lunar-card::after,
-html.perf-lite .home-neon-card::before {
+html.perf-lite .home-neon-card::before,
+html.perf-lite .hero-product,
+html.perf-lite .home-enter-left,
+html.perf-lite .home-enter-right,
+html.perf-lite .home-enter-up,
+html.perf-lite .home-enter-up-lg,
+html.perf-lite .home-reveal-up,
+html.perf-lite .home-reveal-up-sm,
+html.perf-lite .home-reveal-up-md,
+html.perf-lite .home-reveal-left,
+html.perf-lite .home-reveal-right,
+html.perf-lite .home-reveal-scale,
+html.perf-lite .home-reveal-fade {
   animation: none !important;
+}
+
+html.perf-lite .home-enter-left,
+html.perf-lite .home-enter-right,
+html.perf-lite .home-enter-up,
+html.perf-lite .home-enter-up-lg,
+html.perf-lite .home-reveal-up,
+html.perf-lite .home-reveal-up-sm,
+html.perf-lite .home-reveal-up-md,
+html.perf-lite .home-reveal-left,
+html.perf-lite .home-reveal-right,
+html.perf-lite .home-reveal-scale,
+html.perf-lite .home-reveal-fade,
+html.perf-lite .hero-product,
+html.perf-lite .chrome-shimmer {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 html.perf-lite .lunar-nav,

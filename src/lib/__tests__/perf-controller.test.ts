@@ -24,6 +24,17 @@ describe('applyPerfLiteClass', () => {
     expect(tokens.contains('perf-lite')).toBe(true);
   });
 
+  it('adds perf-lite when macOS-style reduced motion is enabled', () => {
+    Object.defineProperty(navigator, 'hardwareConcurrency', {
+      configurable: true,
+      value: 8,
+    });
+    window.matchMedia = jest.fn().mockReturnValue({ matches: true });
+    const tokens = document.documentElement.classList;
+    expect(applyPerfLiteClass(tokens)).toBe(true);
+    expect(tokens.contains('perf-lite')).toBe(true);
+  });
+
   it('keeps full effects on capable machines without reduced motion', () => {
     Object.defineProperty(navigator, 'hardwareConcurrency', {
       configurable: true,

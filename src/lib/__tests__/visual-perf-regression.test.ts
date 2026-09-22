@@ -1,0 +1,51 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const css = readFileSync(join(__dirname, '../../app/globals.css'), 'utf8');
+
+function blockAfter(selector: string): string {
+  const marker = `${selector} {`;
+  const start = css.indexOf(marker);
+  expect(start).toBeGreaterThan(-1);
+  const from = start + marker.length;
+  const end = css.indexOf('}', from);
+  return css.slice(from, end);
+}
+
+describe('visual perf regression guards', () => {
+  it('keeps chrome-shimmer opacity on the glow overlay, not the hero card', () => {
+    expect(css).toMatch(
+      /\.hero-product\s+\.chrome-shimmer::before\s*\{[\s\S]*?animation:\s*chrome-shimmer/
+    );
+    expect(css).not.toMatch(
+      /\.hero-product\s+\.chrome-shimmer\s*\{[\s\S]*?animation:\s*chrome-shimmer/
+    );
+    expect(blockAfter('.btn-select-all')).not.toMatch(/animation:\s*chrome-shimmer/);
+  });
+
+  it('defaults enter/reveal elements to the final visible state', () => {
+    const beforeMotion = css.split('@supports (animation-timeline: view())')[0];
+    expect(beforeMotion).toMatch(
+      /\.home-enter-left,[\s\S]*?\.home-reveal-fade \{\s*opacity:\s*1;\s*transform:\s*none;/
+    );
+    expect(beforeMotion).toMatch(
+      /@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*html:not\(\.perf-lite\) \.home-enter-right/
+    );
+  });
+
+  it('only applies scroll-reveal opacity 0 when motion can actually play', () => {
+    const revealBlock = css.split('@supports (animation-timeline: view())')[1] ?? '';
+    expect(revealBlock).toMatch(/prefers-reduced-motion: no-preference/);
+    expect(revealBlock).toMatch(/html:not\(\.perf-lite\) \.home-reveal-up/);
+    expect(css).toMatch(/html\.perf-lite \.home-reveal-up[\s\S]*?opacity:\s*1 !important/);
+    expect(css).toMatch(/html\.perf-lite \.chrome-shimmer \{\s*opacity:\s*1 !important/);
+  });
+
+  it('restores a stacking context and an opaque glass fallback on lunar cards', () => {
+    const lunar = blockAfter('.lunar-card');
+    expect(lunar).toMatch(/isolation:\s*isolate/);
+    expect(lunar).toMatch(/z-index:\s*1/);
+    expect(lunar).toMatch(/rgba\(18,\s*18,\s*24,\s*0\.88\)/);
+    expect(lunar).not.toMatch(/rgba\(255,\s*255,\s*255,\s*0\.08\)/);
+  });
+});

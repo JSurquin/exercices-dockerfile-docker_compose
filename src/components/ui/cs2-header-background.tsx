@@ -28,15 +28,15 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
   const showOrange = currentTheme === "cs2" || currentTheme === "light";
 
   return (
-    <div className={cn("relative overflow-hidden grid", className)}>
-      <div className="col-start-1 row-start-1 absolute inset-0" aria-hidden>
+    <div className={cn("relative isolate overflow-hidden grid", className)}>
+      <div className="pointer-events-none col-start-1 row-start-1 absolute inset-0 z-0" aria-hidden>
         <Image
           src={HERO_ARTWORK_SRC}
           alt=""
           fill
           priority={priority}
           sizes="100vw"
-          className="cs2-hero-background__artwork object-cover md:object-fill"
+          className="cs2-hero-background__artwork pointer-events-none object-cover md:object-fill"
         />
 
         {overlay && (
