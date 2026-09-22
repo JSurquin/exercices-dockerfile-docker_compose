@@ -61,4 +61,12 @@ describe('visual perf regression guards', () => {
     expect(css).toMatch(/\.surface-interactive\.home-hover-scale:hover\s*\{/);
     expect(css).not.toMatch(/(?<!surface-interactive)\.home-hover-scale:hover\s*\{/);
   });
+
+  it('does not force cursor: default on .surface so content text stays selectable', () => {
+    expect(css).not.toMatch(/\.surface\s*\{[^}]*cursor:\s*default/);
+    expect(css).toMatch(/:where\(h1,\s*h2,\s*h3,\s*h4,\s*h5,\s*h6,\s*p/);
+    expect(css).toMatch(/cursor:\s*text/);
+    expect(css).toMatch(/::selection\s*\{/);
+    expect(blockAfter('.surface-interactive')).toMatch(/cursor:\s*pointer/);
+  });
 });

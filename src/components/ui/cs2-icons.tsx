@@ -100,7 +100,7 @@ export const SecurityShieldIcon: React.FC<IconProps> = ({
 export const CS2Background: React.FC<{ className?: string }> = ({
   className = "",
 }) => (
-  <div className={`absolute inset-0 ${className}`}>
+  <div className={`cs2-deco-layer pointer-events-none select-none absolute inset-0 ${className}`} aria-hidden>
     <svg
       className="absolute inset-0 w-full h-full"
       viewBox="0 0 100 100"

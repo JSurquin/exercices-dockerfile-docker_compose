@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatMessage } from "@/lib/i18n";
+import { splitHighlightedMessage } from "@/lib/rich-message";
 import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -234,7 +235,7 @@ export function HeroSection({
   return (
     <CS2HeroBackground className="relative overflow-hidden">
       {/* CS2 Background Pattern Overlay pour plus de texture */}
-      <CS2Background className="opacity-20" />
+      <CS2Background className="opacity-20 pointer-events-none select-none" />
       <SectionBottomFade to="muted" />
 
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-18">
@@ -274,7 +275,18 @@ export function HeroSection({
                   })}
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-gaming-body text-foreground/70 max-w-lg">
-                {messages.hero.subtitle}
+                {splitHighlightedMessage(messages.hero.subtitle).map((part, i) =>
+                  part.highlight ? (
+                    <strong
+                      key={i}
+                      className="font-semibold text-theme-accent"
+                    >
+                      {part.text}
+                    </strong>
+                  ) : (
+                    part.text
+                  )
+                )}
               </p>
             </div>
 
@@ -490,7 +502,7 @@ export function HeroSection({
               </div>
 
               {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-theme-accent rounded-full flex items-center justify-center shadow-[0_0_20px_var(--cta-shadow)]">
+              <div className="pointer-events-none select-none absolute -top-4 -right-4 w-8 h-8 bg-theme-accent rounded-full flex items-center justify-center shadow-[0_0_20px_var(--cta-shadow)]" aria-hidden>
                 <CheckCircleIcon className="w-5 h-5 text-white" />
               </div>
             </CardTilt>

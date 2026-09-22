@@ -3496,14 +3496,63 @@ html:not(.perf-lite) .home-delay-700 {
 }
 
 /* Contract: hover halo / elevation / pointer exist ONLY on .surface-interactive
-   (real links, buttons, clickable cards). .surface is static informational chrome. */
-.surface {
-  cursor: default;
-}
-
+   (real links, buttons, clickable cards). .surface is static informational chrome.
+   Do not set cursor: default on .surface — it inherits and replaces the native
+   text I-beam on titles, paragraphs and prices. */
 .surface-interactive {
   cursor: pointer;
   transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* Content text: native I-beam + selection. Never inherit a forced default cursor. */
+:where(h1, h2, h3, h4, h5, h6, p, li, blockquote, figcaption, dt, dd) {
+  cursor: text;
+  user-select: text;
+}
+
+/* Clickable controls keep pointer, including labels inside them. */
+a,
+button,
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+summary,
+.surface-interactive {
+  cursor: pointer;
+}
+
+a :where(h1, h2, h3, h4, h5, h6, p, li, span),
+.surface-interactive :where(h1, h2, h3, h4, h5, h6, p, li, span) {
+  cursor: pointer;
+}
+
+/* Double-click must not select button / tab / control labels. */
+button,
+[role="button"],
+[role="tab"],
+[data-slot="button"],
+[data-slot="tabs-trigger"] {
+  user-select: none;
+}
+
+button :where(h1, h2, h3, h4, h5, h6, p, li, span),
+[role="button"] :where(h1, h2, h3, h4, h5, h6, p, li, span),
+[role="tab"] :where(h1, h2, h3, h4, h5, h6, p, li, span) {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Decorative layers never capture the cursor or a text selection. */
+.cs2-hero-background__artwork,
+.cs2-deco-layer {
+  pointer-events: none;
+  user-select: none;
+}
+
+::selection {
+  background: var(--theme-accent);
+  color: #0b1018;
 }
 
 .surface-interactive:focus-visible {
