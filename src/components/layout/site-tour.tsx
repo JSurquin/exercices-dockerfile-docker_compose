@@ -276,11 +276,11 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="missions-stats"]',
       popover: {
-        title: t('Vos compteurs', 'Your counters', '您的计数器'),
+        title: t('Vos fragments', 'Your fragments', '您的碎片'),
         description: t(
-          'Trois chiffres essentiels : <strong>fragments accumulés</strong>, <strong>fragments à réclamer</strong> (missions complétées en attente de validation) et <strong>missions terminées</strong>. Cliquez sur "Réclamer" pour encaisser chaque récompense.',
-          'Three key numbers: <strong>accumulated fragments</strong>, <strong>fragments to claim</strong> (completed missions pending validation) and <strong>completed missions</strong>. Click "Claim" to collect each reward.',
-          '三个关键数字：<strong>累积碎片</strong>、<strong>待领取碎片</strong>（已完成但待验证的任务）和<strong>已完成任务</strong>。点击"领取"收集每个奖励。'
+          'Le solde de <strong>fragments disponibles</strong> est affiché ici. Cliquez sur Giveaways pour les dépenser dans un concours. Chaque mission réclamée ajoute des fragments à ce solde.',
+          'Your <strong>available fragments</strong> are shown here. Open Giveaways to spend them in a contest. Each claimed mission adds fragments to this balance.',
+          '这里显示您的<strong>可用碎片</strong>。点击抽奖即可用于参赛。每领取一项任务都会增加该余额。'
         ),
         side: 'bottom',
       },
@@ -288,11 +288,11 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="missions-categories"]',
       popover: {
-        title: t('Catégories de missions', 'Mission Categories', '任务类别'),
+        title: t('Onglets de missions', 'Mission tabs', '任务选项卡'),
         description: t(
-          'Les missions sont organisées en <strong>5 catégories</strong> : <em>Bonus</em> (surprises), <em>Quotidiennes</em> (visite journalière, vente du jour), <em>Hebdomadaires</em> (volume de vente sur 7 jours), <em>Mensuelles</em> (grands objectifs) et <em>Sociales</em> (rejoindre Discord, Telegram, suivre sur Instagram…).',
-          'Missions are organized into <strong>5 categories</strong>: <em>Bonus</em> (surprises), <em>Daily</em> (daily visit, day\'s sale), <em>Weekly</em> (7-day sales volume), <em>Monthly</em> (big objectives) and <em>Social</em> (join Discord, Telegram, follow on Instagram…).',
-          '任务分为<strong>5个类别</strong>：<em>奖励</em>（惊喜）、<em>每日</em>（每日访问、当日销售）、<em>每周</em>（7天销售额）、<em>每月</em>（大目标）和<em>社交</em>（加入Discord、Telegram、关注Instagram…）。'
+          'Les missions sont classées par période : <em>Quotidiennes</em>, <em>Hebdomadaires</em>, <em>Mensuelles</em> et <em>Sociales</em>. Une pastille indique le nombre de récompenses à réclamer. Les cadeaux du jour (surprise, claim, visite) sont regroupés au-dessus.',
+          'Missions are grouped by period: <em>Daily</em>, <em>Weekly</em>, <em>Monthly</em> and <em>Social</em>. A badge shows how many rewards you can claim. Today’s free gifts (surprise, daily claim, visit) sit above the tabs.',
+          '任务按周期分组：<em>每日</em>、<em>每周</em>、<em>每月</em>和<em>社交</em>。角标显示可领取的奖励数量。今日免费奖励（惊喜、每日领取、访问）显示在选项卡上方。'
         ),
         side: 'top',
       },

@@ -4180,6 +4180,22 @@ export interface Messages {
     celebrationComplete: string;
     toastEarnedTitle: string;
     toastEarnedDescription: string;
+    todayTitle: string;
+    todaySubtitle: string;
+    resetIn: string;
+    returnsIn: string;
+    noReset: string;
+    inProgress: string;
+    durationDays: string;
+    durationHours: string;
+    durationMinutes: string;
+    durationSeconds: string;
+    tabs: {
+      DAILY: string;
+      WEEKLY: string;
+      MONTHLY: string;
+      SOCIAL: string;
+    };
     items: {
       DAILY_CLAIM: { label: string; description: string };
       DAILY_SELL_SKIN: { label: string; description: string };

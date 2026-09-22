@@ -977,6 +977,22 @@ export const messages: Record<Locale, Messages> = {
       celebrationComplete: "Mission complétée !",
       toastEarnedTitle: "+{amount} fragments récupérés !",
       toastEarnedDescription: "Tes fragments ont été ajoutés à ton compte",
+      todayTitle: "Aujourd'hui",
+      todaySubtitle: "Récompenses gratuites du jour, à réclamer maintenant.",
+      resetIn: "Réinitialisation dans {duration}",
+      returnsIn: "Revient dans {duration}",
+      noReset: "Missions uniques — pas de réinitialisation",
+      inProgress: "En cours",
+      durationDays: "j",
+      durationHours: "h",
+      durationMinutes: "min",
+      durationSeconds: "s",
+      tabs: {
+        DAILY: "Quotidiennes",
+        WEEKLY: "Hebdomadaires",
+        MONTHLY: "Mensuelles",
+        SOCIAL: "Sociales",
+      },
       items: {
         DAILY_CLAIM: {
           label: "Claim quotidien",
@@ -1054,15 +1070,15 @@ export const messages: Record<Locale, Messages> = {
       categories: {
         DAILY: {
           label: "Missions quotidiennes",
-          description: "Se réinitialisent chaque jour à minuit UTC.",
+          description: "Se réinitialisent chaque jour.",
         },
         WEEKLY: {
           label: "Missions hebdomadaires",
-          description: "Se réinitialisent chaque lundi.",
+          description: "Se réinitialisent chaque semaine.",
         },
         MONTHLY: {
           label: "Missions mensuelles",
-          description: "Se réinitialisent le 1er du mois.",
+          description: "Se réinitialisent chaque mois.",
         },
         SOCIAL: {
           label: "Missions sociales",
@@ -9307,6 +9323,22 @@ export const messages: Record<Locale, Messages> = {
       celebrationComplete: "Mission complete!",
       toastEarnedTitle: "+{amount} fragments claimed!",
       toastEarnedDescription: "Fragments have been added to your account",
+      todayTitle: "Today",
+      todaySubtitle: "Today’s free rewards, ready to claim.",
+      resetIn: "Resets in {duration}",
+      returnsIn: "Back in {duration}",
+      noReset: "One-time missions — no reset",
+      inProgress: "In progress",
+      durationDays: "d",
+      durationHours: "h",
+      durationMinutes: "min",
+      durationSeconds: "s",
+      tabs: {
+        DAILY: "Daily",
+        WEEKLY: "Weekly",
+        MONTHLY: "Monthly",
+        SOCIAL: "Social",
+      },
       items: {
         DAILY_CLAIM: {
           label: "Daily claim",
@@ -9384,15 +9416,15 @@ export const messages: Record<Locale, Messages> = {
       categories: {
         DAILY: {
           label: "Daily missions",
-          description: "Reset every day at midnight UTC.",
+          description: "Reset every day.",
         },
         WEEKLY: {
           label: "Weekly missions",
-          description: "Reset every Monday.",
+          description: "Reset every week.",
         },
         MONTHLY: {
           label: "Monthly missions",
-          description: "Reset on the 1st of each month.",
+          description: "Reset every month.",
         },
         SOCIAL: {
           label: "Social missions",
@@ -17632,6 +17664,22 @@ export const messages: Record<Locale, Messages> = {
       celebrationComplete: "任务完成！",
       toastEarnedTitle: "已获得 +{amount} 碎片！",
       toastEarnedDescription: "碎片已添加到你的账户",
+      todayTitle: "今日",
+      todaySubtitle: "今日免费奖励，可立即领取。",
+      resetIn: "{duration} 后重置",
+      returnsIn: "{duration} 后回来",
+      noReset: "一次性任务 — 不会重置",
+      inProgress: "进行中",
+      durationDays: "天",
+      durationHours: "小时",
+      durationMinutes: "分钟",
+      durationSeconds: "秒",
+      tabs: {
+        DAILY: "每日",
+        WEEKLY: "每周",
+        MONTHLY: "每月",
+        SOCIAL: "社交",
+      },
       items: {
         DAILY_CLAIM: {
           label: "每日领取",
@@ -17709,15 +17757,15 @@ export const messages: Record<Locale, Messages> = {
       categories: {
         DAILY: {
           label: "每日任务",
-          description: "每天 UTC 零点重置。",
+          description: "每天重置。",
         },
         WEEKLY: {
           label: "每周任务",
-          description: "每周一重置。",
+          description: "每周重置。",
         },
         MONTHLY: {
           label: "每月任务",
-          description: "每月 1 日重置。",
+          description: "每月重置。",
         },
         SOCIAL: {
           label: "社交任务",
