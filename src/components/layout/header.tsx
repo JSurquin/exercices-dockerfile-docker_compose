@@ -65,7 +65,7 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
       href={item.href}
       data-tour={item.tourId}
       className={cn(
-        "group relative flex h-16 shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap text-xs font-medium transition-all duration-200",
+        "group relative flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap text-xs font-medium transition-all duration-200",
         isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
       )}
     >
@@ -78,7 +78,7 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
       <span className="whitespace-nowrap">{item.name}</span>
       <div
         className={cn(
-          "absolute bottom-0 left-0 right-0 h-0.5 lunar-nav-active-indicator transition-transform duration-200",
+          "absolute -bottom-[21px] left-0 right-0 h-0.5 lunar-nav-active-indicator transition-transform duration-200",
           isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
         )}
       />
@@ -172,9 +172,6 @@ export function Header() {
   ];
 
   const overflowNavigation: NavItem[] = [
-    ...(canModerate
-      ? [{ id: "moderation", name: messages.nav.moderation, href: "/moderation", icon: ChatBubbleLeftRightIcon, tourId: "nav-moderation" }]
-      : []),
     {
       id: "support",
       name: messages.nav.support,
@@ -186,6 +183,9 @@ export function Header() {
 
   const sheetNavigation: NavItem[] = [
     ...primaryNavigation,
+    ...(canModerate
+      ? [{ id: "moderation", name: messages.nav.moderation, href: "/moderation", icon: ChatBubbleLeftRightIcon, tourId: "nav-moderation" }]
+      : []),
     ...overflowNavigation,
   ];
 
@@ -209,7 +209,7 @@ export function Header() {
     <Link
       id="nav-fragments"
       href="/missions"
-      className="flex h-8 shrink-0 items-center gap-1 overflow-visible rounded-full border border-white/10 bg-white/[0.04] px-2 text-xs font-semibold text-[#ffffff] hover:bg-white/[0.06] transition-colors"
+      className="flex h-9 shrink-0 items-center gap-1.5 overflow-visible rounded-full border border-white/10 bg-white/[0.04] px-2.5 text-sm font-semibold text-[#ffffff] hover:bg-white/[0.06] transition-colors"
     >
       <FragmentAmount
         amount={(user as unknown as { fragments?: number })?.fragments ?? 0}
@@ -225,7 +225,7 @@ export function Header() {
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 shrink-0 hover:bg-theme-accent/10 hover:text-theme-accent relative"
+        className="h-9 w-9 shrink-0 hover:bg-theme-accent/10 hover:text-theme-accent relative"
       >
         <BellIcon className="h-4 w-4" />
         {unreadCount > 0 && (
@@ -243,32 +243,32 @@ export function Header() {
   return (
     <header
       className={cn(
-        "lunar-nav sticky top-0 z-[100] w-full max-w-full transition-transform duration-100 ease-out",
+        "lunar-nav sticky top-0 z-[100] w-full overflow-visible transition-transform duration-100 ease-out",
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
-      <div className="mx-auto flex h-16 w-full min-w-0 max-w-7xl items-center gap-2 px-3 sm:px-4">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
+      <div className="container mx-auto flex h-16 min-w-0 w-full items-center justify-between gap-2 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex min-w-0 shrink-0 items-center space-x-2 sm:space-x-3 mr-1 sm:mr-4 lg:mr-6">
           <div className="relative group">
-            <div className="h-9 w-9 shrink-0 rounded-lg sm:h-10 sm:w-10">
+            <div className="h-10 w-10 shrink-0 rounded-lg">
               <Image src="/images/logo.webp" alt="MoonSkin" width={40} height={40} />
             </div>
           </div>
           <div className="hidden min-[400px]:flex flex-col">
-            <span className="text-gaming-title whitespace-nowrap text-lg text-chrome-gradient sm:text-xl">
+            <span className="text-gaming-title whitespace-nowrap text-xl text-chrome-gradient">
               MoonSkin
             </span>
           </div>
         </Link>
 
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-          <nav className="hidden min-w-0 min-[1100px]:flex items-center justify-end gap-2.5 overflow-hidden">
+        <nav className="hidden min-w-0 min-[1100px]:flex flex-1 items-center justify-center">
+          <div className="flex min-w-0 items-center gap-3 min-[1400px]:gap-8">
             {primaryNavigation.map((item) => (
               <DesktopNavLink key={item.id} item={item} pathname={pathname} />
             ))}
 
             {overflowNavigation.map((item) => (
-              <span key={item.id} className="hidden h-16 min-[1400px]:flex items-center">
+              <span key={item.id} className="hidden min-[1400px]:contents">
                 <DesktopNavLink item={item} pathname={pathname} />
               </span>
             ))}
@@ -277,14 +277,14 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="group relative flex h-16 min-[1400px]:hidden shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap text-xs font-medium text-muted-foreground transition-all duration-200 hover:text-foreground"
+                  className="group relative flex min-[1400px]:hidden shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap text-xs font-medium text-muted-foreground transition-all duration-200 hover:text-foreground"
                   aria-label={messages.nav.more}
                 >
                   <EllipsisHorizontalIcon className="h-4 w-4 shrink-0" />
                   <span className="whitespace-nowrap">{messages.nav.more}</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[160px] z-[210]">
+              <DropdownMenuContent align="center" className="min-w-[160px] z-[210]">
                 {overflowNavigation.map((item) => (
                   <DropdownMenuItem key={item.id} asChild>
                     <Link href={item.href} data-tour={item.tourId} className="flex items-center gap-2">
@@ -295,13 +295,14 @@ export function Header() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-          </nav>
+          </div>
+        </nav>
 
-          <div className="flex shrink-0 items-center justify-end gap-1">
-            <NavPreferencesMenu className="h-8 w-8" />
+        <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-2">
+          <NavPreferencesMenu />
 
           {user ? (
-            <div className="flex h-8 shrink-0 items-center justify-end gap-1" data-slot="header-auth">
+            <div className="flex h-9 shrink-0 items-center justify-end gap-1 sm:gap-2" data-slot="header-auth">
               {fragmentsChip}
               {notificationsButton}
 
@@ -584,7 +585,6 @@ export function Header() {
               </div>
             </SheetContent>
           </Sheet>
-          </div>
         </div>
       </div>
     </header>

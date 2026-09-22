@@ -2038,6 +2038,7 @@ body.next-dev-overlay-present #sentry-feedback {
     border-bottom: none;
     backface-visibility: hidden;
     isolation: isolate;
+    overflow: visible;
   }
 
   .lunar-nav::before {
