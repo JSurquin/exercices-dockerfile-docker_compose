@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocale } from '@/components/providers/locale-provider';
 import {
   SparklesIcon,
@@ -11,12 +10,12 @@ import {
   StarIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-  InformationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { TourDemoBanner } from './tour-demo-banner';
 import { FragmentAmount } from '@/components/ui/level-badge';
 import Link from 'next/link';
 import { GiveawayStarfield } from '@/components/giveaway/giveaway-starfield';
+import { getSocialMissionIcon } from '@/components/ui/social-brand-icons';
 import type { Messages } from '~/utils/types';
 
 type MissionKey = keyof Messages['missions']['items'];
@@ -27,9 +26,10 @@ const DEMO_TODAY: Array<{ key: MissionKey; reward: number; completed: boolean }>
   { key: 'DAILY_VISIT', reward: 5, completed: true },
 ];
 
-const DEMO_TABS: Array<{
-  id: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL';
+const DEMO_SECTIONS: Array<{
+  id: 'TODAY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL';
   claimable: number;
+  reset: 'day' | 'week' | 'month' | 'once';
   missions: Array<{
     key: MissionKey;
     reward: number;
@@ -41,8 +41,9 @@ const DEMO_TABS: Array<{
   }>;
 }> = [
   {
-    id: 'DAILY',
-    claimable: 0,
+    id: 'TODAY',
+    claimable: 1,
+    reset: 'day',
     missions: [
       {
         key: 'DAILY_SELL_SKIN',
@@ -58,6 +59,7 @@ const DEMO_TABS: Array<{
   {
     id: 'WEEKLY',
     claimable: 0,
+    reset: 'week',
     missions: [
       {
         key: 'WEEKLY_SELL_500',
@@ -82,6 +84,7 @@ const DEMO_TABS: Array<{
   {
     id: 'MONTHLY',
     claimable: 0,
+    reset: 'month',
     missions: [
       {
         key: 'MONTHLY_SELL_5000',
@@ -97,6 +100,7 @@ const DEMO_TABS: Array<{
   {
     id: 'SOCIAL',
     claimable: 1,
+    reset: 'once',
     missions: [
       { key: 'SOCIAL_DISCORD', reward: 25, completed: true, eligible: false, kind: 'social' },
       { key: 'SOCIAL_INSTAGRAM', reward: 15, completed: false, eligible: true, kind: 'social' },
@@ -112,11 +116,20 @@ const DEMO_TABS: Array<{
   },
 ];
 
+function DemoIcon({ missionKey }: { missionKey: MissionKey }) {
+  const SocialIcon = getSocialMissionIcon(missionKey);
+  if (SocialIcon) return <SocialIcon className="h-5 w-5" />;
+  if (missionKey === 'BONUS_DAILY_SURPRISE') return <StarIcon className="h-5 w-5" />;
+  if (missionKey === 'DAILY_VISIT') return <ClockIcon className="h-5 w-5" />;
+  if (missionKey === 'DAILY_CLAIM') return <SparklesIcon className="h-5 w-5" />;
+  if (missionKey.includes('GIVEAWAY')) return <GiftIcon className="h-5 w-5" />;
+  return <ChartBarIcon className="h-5 w-5" />;
+}
+
 export function MissionsTourDemo() {
   const { messages } = useLocale();
   const t = messages.missions;
-  const defaultTab =
-    DEMO_TABS.reduce((best, tab) => (tab.claimable > best.claimable ? tab : best), DEMO_TABS[0]!).id;
+  const resetExample = t.resetIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`);
 
   return (
     <div className="container relative mx-auto px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
@@ -149,144 +162,160 @@ export function MissionsTourDemo() {
           </div>
         </header>
 
-        <div className="mission-welcome lunar-card mb-5 px-4 py-4 sm:px-6 sm:py-5">
-          <div className="relative z-[1] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-theme-accent/30 bg-theme-accent/15">
-                <GiftIcon className="h-6 w-6 text-theme-accent" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-theme-accent">
-                  {t.welcomeBadge}
-                </p>
-                <h2 className="font-display text-lg font-semibold tracking-tight sm:text-xl">
-                  {t.items.WELCOME_BONUS.label}
-                </h2>
-              </div>
-            </div>
-            <div className="flex shrink-0 items-center gap-4 sm:flex-col sm:items-end">
-              <FragmentAmount amount={1000} prefix="+" size="sm" className="mission-quest__reward text-2xl" />
-              <Button size="lg" className="mission-quest__claim min-w-[9.5rem]" disabled>
-                {t.claimReward.replace('{n}', '1000')}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <section className="mb-5">
-          <h2 className="mb-2 font-display text-lg font-semibold">{t.todayTitle}</h2>
-          <div className="mission-today-row">
-            {DEMO_TODAY.map((m) => (
-              <div key={m.key} data-type="daily" data-kind="daily" className="mission-today-tile">
-                <div className="mission-quest__icon shrink-0">
-                  {m.key === 'BONUS_DAILY_SURPRISE' ? (
-                    <StarIcon className="h-5 w-5" />
-                  ) : m.key === 'DAILY_VISIT' ? (
-                    <ClockIcon className="h-5 w-5" />
-                  ) : (
-                    <SparklesIcon className="h-5 w-5" />
-                  )}
+        <div className="mission-stack">
+          <div className="mission-welcome lunar-card px-4 py-4 sm:px-6 sm:py-5">
+            <div className="relative z-[1] flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-theme-accent/30 bg-theme-accent/15">
+                  <GiftIcon className="h-6 w-6 text-theme-accent" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="mission-quest__title truncate">{t.items[m.key].label}</p>
-                  <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward mt-0.5" />
-                </div>
-                {m.completed ? (
-                  <p className="mission-quest__meta max-w-[9.5rem] text-right font-medium">
-                    {t.returnsIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`)}
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-theme-accent">
+                    {t.welcomeBadge}
                   </p>
-                ) : (
-                  <Button size="sm" className="mission-quest__claim shrink-0" disabled>
-                    {t.claimReward.replace('{n}', String(m.reward))}
-                  </Button>
-                )}
+                  <h2 className="font-display text-lg font-semibold tracking-tight sm:text-xl">
+                    {t.items.WELCOME_BONUS.label}
+                  </h2>
+                </div>
               </div>
-            ))}
+              <div className="flex shrink-0 items-center gap-4 sm:flex-col sm:items-end">
+                <FragmentAmount amount={1000} prefix="+" size="sm" className="mission-quest__reward text-2xl" />
+                <Button size="lg" className="mission-quest__claim min-w-[9.5rem]" disabled>
+                  {t.claimReward.replace('{n}', '1000')}
+                </Button>
+              </div>
+            </div>
           </div>
-        </section>
 
-        <Tabs defaultValue={defaultTab} data-tour="missions-categories">
-          <TabsList className="mission-tabs h-auto w-full justify-start gap-2 bg-transparent p-0">
-            {DEMO_TABS.map((tab) => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="mission-tab data-[state=active]:bg-theme-accent/15 data-[state=active]:text-theme-highlight data-[state=active]:shadow-none"
+          {DEMO_SECTIONS.map((section) => {
+            const resetLabel = section.reset === 'once' ? t.uniqueMissions : resetExample;
+            const active = section.missions.filter((m) => !m.completed);
+            const claimed = section.missions.filter((m) => m.completed);
+            const isToday = section.id === 'TODAY';
+
+            return (
+              <section
+                key={section.id}
+                className="mission-section"
+                data-tour={isToday ? 'missions-categories' : undefined}
               >
-                {t.tabs[tab.id]}
-                {tab.claimable > 0 ? <span className="mission-tab-badge">{tab.claimable}</span> : null}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          <p className="mt-2 text-[13px] text-foreground/80" data-countdown>
-            {t.resetIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`)}
-          </p>
-          {DEMO_TABS.map((tab) => (
-            <TabsContent key={tab.id} value={tab.id} className="mt-3">
-              <div className="mission-quest-grid">
-                {tab.missions.map((m, i) => (
-                  <div
-                    key={i}
-                    data-type={m.kind}
-                    data-kind={m.kind}
-                    data-completed={m.completed ? 'true' : 'false'}
-                    className={`mission-quest ${m.completed ? 'mission-quest--done' : ''}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-2.5">
-                        <div className="mission-quest__icon">
-                          {m.completed ? (
-                            <CheckCircleIcon className="h-5 w-5 text-theme-success" />
-                          ) : tab.id === 'WEEKLY' || tab.id === 'MONTHLY' || tab.id === 'DAILY' ? (
-                            <ChartBarIcon className="h-5 w-5" />
-                          ) : (
-                            <SparklesIcon className="h-5 w-5" />
-                          )}
+                <div className="mission-section__head">
+                  <div className="mission-section__head-main">
+                    <h2 className="mission-section__title">{t.sections[section.id]}</h2>
+                    <p className="mission-section__meta" data-countdown>
+                      {resetLabel}
+                    </p>
+                  </div>
+                  {section.claimable > 0 ? (
+                    <span className="mission-section__badge">
+                      {t.claimableBadge.replace('{n}', String(section.claimable))}
+                    </span>
+                  ) : null}
+                </div>
+
+                {isToday ? (
+                  <div className="mission-today-row">
+                    {DEMO_TODAY.map((m) => (
+                      <div key={m.key} data-type="daily" data-kind="daily" className="mission-today-tile">
+                        <div className="mission-quest__icon shrink-0">
+                          <DemoIcon missionKey={m.key} />
                         </div>
-                        <p className="mission-quest__title truncate">{t.items[m.key].label}</p>
-                        <InformationCircleIcon className="h-4 w-4 shrink-0 text-foreground/70" />
+                        <div className="min-w-0 flex-1">
+                          <p className="mission-quest__title truncate">{t.items[m.key].label}</p>
+                          <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward mt-0.5" />
+                        </div>
+                        {m.completed ? (
+                          <p className="mission-quest__meta max-w-[9.5rem] text-right font-medium">
+                            {t.returnsIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`)}
+                          </p>
+                        ) : (
+                          <Button size="sm" className="mission-quest__claim shrink-0" disabled>
+                            {t.claimReward.replace('{n}', String(m.reward))}
+                          </Button>
+                        )}
                       </div>
-                      <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward" />
-                    </div>
-                    <div className="mission-quest__progress">
-                      {m.progress ? <p className="mission-quest__meta tabular-nums">{m.progress}</p> : null}
-                    </div>
-                    <div className="mt-auto">
-                      {m.eligible && !m.completed ? (
-                        <Button size="sm" className="mission-quest__claim w-full" disabled>
-                          {t.claimReward.replace('{n}', String(m.reward))}
-                        </Button>
-                      ) : m.completed ? (
-                        <Button size="sm" variant="outline" disabled className="mission-quest__btn w-full">
+                    ))}
+                  </div>
+                ) : null}
+
+                {active.length > 0 ? (
+                  <div className="mission-quest-grid">
+                    {active.map((m, i) => (
+                      <div
+                        key={`${section.id}-${i}`}
+                        data-type={m.kind}
+                        data-kind={m.kind}
+                        data-completed="false"
+                        className="mission-quest"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <div className="mission-quest__icon">
+                              <DemoIcon missionKey={m.key} />
+                            </div>
+                            <p className="mission-quest__title truncate">{t.items[m.key].label}</p>
+                          </div>
+                          <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward" />
+                        </div>
+                        <div className="mission-quest__progress">
+                          {m.progress ? <p className="mission-quest__meta tabular-nums">{m.progress}</p> : null}
+                        </div>
+                        <div className="mt-auto">
+                          {m.eligible ? (
+                            <Button size="sm" className="mission-quest__claim w-full" disabled>
+                              {t.claimReward.replace('{n}', String(m.reward))}
+                            </Button>
+                          ) : (
+                            <Button size="sm" className="mission-quest__claim w-full" asChild>
+                              <Link href={m.action === 'giveaway' ? '/giveaways' : m.action === 'visit' ? '/giveaways' : '/sell'}>
+                                {m.action === 'giveaway'
+                                  ? t.actionParticipate
+                                  : m.action === 'visit'
+                                    ? t.actionVisit
+                                    : t.actionSell}
+                              </Link>
+                            </Button>
+                          )}
+                          <p className="mission-quest__foot">{'\u00a0'}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="mission-quest-grid__filler" aria-hidden />
+                    <div className="mission-quest-grid__filler" aria-hidden />
+                    <div className="mission-quest-grid__filler" aria-hidden />
+                  </div>
+                ) : null}
+
+                {claimed.length > 0 ? (
+                  <div className="mission-quest-compact-grid">
+                    {claimed.map((m) => (
+                      <div
+                        key={m.key}
+                        data-type={m.kind}
+                        data-kind={m.kind}
+                        data-completed="true"
+                        className="mission-quest-compact"
+                      >
+                        <div className="mission-quest__icon">
+                          <DemoIcon missionKey={m.key} />
+                          <span className="mission-quest__icon-badge" aria-hidden>
+                            <CheckCircleIcon className="h-3.5 w-3.5" />
+                          </span>
+                        </div>
+                        <p className="mission-quest-compact__title truncate">{t.items[m.key].label}</p>
+                        <FragmentAmount amount={m.reward} prefix="+" size="xs" className="mission-quest__reward shrink-0" />
+                        <span className="mission-quest-compact__claimed">
                           <CheckCircleIcon className="h-4 w-4 text-theme-success" />
                           {t.claimed}
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="outline" className="mission-quest__btn w-full" asChild>
-                          <Link href={m.action === 'giveaway' ? '/giveaways' : m.action === 'visit' ? '/giveaways' : '/sell'}>
-                            {m.action === 'giveaway'
-                              ? t.actionParticipate
-                              : m.action === 'visit'
-                                ? t.actionVisit
-                                : t.actionSell}
-                          </Link>
-                        </Button>
-                      )}
-                      <p className="mission-quest__foot">
-                        {m.completed
-                          ? t.returnsIn.replace('{duration}', `5${t.durationHours} 12${t.durationMinutes}`)
-                          : '\u00a0'}
-                      </p>
-                    </div>
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                <div className="mission-quest-grid__filler" aria-hidden />
-                <div className="mission-quest-grid__filler" aria-hidden />
-                <div className="mission-quest-grid__filler" aria-hidden />
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+                ) : null}
+              </section>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

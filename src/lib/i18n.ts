@@ -992,6 +992,10 @@ export const messages: Record<Locale, Messages> = {
       resetIn: "Réinitialisation dans {duration}",
       returnsIn: "Revient dans {duration}",
       noReset: "Missions uniques — pas de réinitialisation",
+      uniqueMissions: "Missions uniques",
+      claimableBadge: "{n} à réclamer",
+      sectionAllDone: "Tout est fait ✓ · {reset}",
+      socialThanks: "Merci ! Réclame ta récompense",
       inProgress: "En cours",
       durationDays: "j",
       durationHours: "h",
@@ -1002,6 +1006,12 @@ export const messages: Record<Locale, Messages> = {
         WEEKLY: "Hebdomadaires",
         MONTHLY: "Mensuelles",
         SOCIAL: "Sociales",
+      },
+      sections: {
+        TODAY: "Aujourd'hui",
+        WEEKLY: "Cette semaine",
+        MONTHLY: "Ce mois-ci",
+        SOCIAL: "Réseaux sociaux",
       },
       items: {
         DAILY_CLAIM: {
@@ -9348,6 +9358,10 @@ export const messages: Record<Locale, Messages> = {
       resetIn: "Resets in {duration}",
       returnsIn: "Back in {duration}",
       noReset: "One-time missions — no reset",
+      uniqueMissions: "One-time missions",
+      claimableBadge: "{n} to claim",
+      sectionAllDone: "All done ✓ · {reset}",
+      socialThanks: "Thanks! Claim your reward",
       inProgress: "In progress",
       durationDays: "d",
       durationHours: "h",
@@ -9358,6 +9372,12 @@ export const messages: Record<Locale, Messages> = {
         WEEKLY: "Weekly",
         MONTHLY: "Monthly",
         SOCIAL: "Social",
+      },
+      sections: {
+        TODAY: "Today",
+        WEEKLY: "This week",
+        MONTHLY: "This month",
+        SOCIAL: "Social networks",
       },
       items: {
         DAILY_CLAIM: {
@@ -17699,6 +17719,10 @@ export const messages: Record<Locale, Messages> = {
       resetIn: "{duration} 后重置",
       returnsIn: "{duration} 后回来",
       noReset: "一次性任务 — 不会重置",
+      uniqueMissions: "一次性任务",
+      claimableBadge: "{n} 待领取",
+      sectionAllDone: "全部完成 ✓ · {reset}",
+      socialThanks: "谢谢！领取你的奖励",
       inProgress: "进行中",
       durationDays: "天",
       durationHours: "小时",
@@ -17709,6 +17733,12 @@ export const messages: Record<Locale, Messages> = {
         WEEKLY: "每周",
         MONTHLY: "每月",
         SOCIAL: "社交",
+      },
+      sections: {
+        TODAY: "今日",
+        WEEKLY: "本周",
+        MONTHLY: "本月",
+        SOCIAL: "社交网络",
       },
       items: {
         DAILY_CLAIM: {

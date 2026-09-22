@@ -6,8 +6,10 @@ import {
 export type { CompactDurationLabels };
 
 export type MissionCategory = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL' | 'BONUS';
-export type MissionPeriodTab = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL';
+export type MissionSectionId = 'TODAY' | 'WEEKLY' | 'MONTHLY' | 'SOCIAL';
 export type MissionResetPeriod = 'day' | 'week' | 'month' | 'once';
+
+export const WELCOME_BONUS_MISSION_KEY = 'WELCOME_BONUS';
 
 export type MissionRow = {
   key: string;
@@ -25,14 +27,16 @@ export type MissionRow = {
 export const TODAY_MISSION_KEYS = ['BONUS_DAILY_SURPRISE', 'DAILY_CLAIM', 'DAILY_VISIT'] as const;
 export type TodayMissionKey = (typeof TODAY_MISSION_KEYS)[number];
 
-export const MISSION_PERIOD_TABS: MissionPeriodTab[] = ['DAILY', 'WEEKLY', 'MONTHLY', 'SOCIAL'];
+export const MISSION_SECTIONS: MissionSectionId[] = ['TODAY', 'WEEKLY', 'MONTHLY', 'SOCIAL'];
 
-export const TAB_RESET_PERIOD: Record<MissionPeriodTab, MissionResetPeriod> = {
-  DAILY: 'day',
+export const SECTION_RESET_PERIOD: Record<MissionSectionId, MissionResetPeriod> = {
+  TODAY: 'day',
   WEEKLY: 'week',
   MONTHLY: 'month',
   SOCIAL: 'once',
 };
+
+export const SOCIAL_VISIT_STORAGE_KEY = 'moonskin.socialMissionVisited';
 
 /** Accents par type d’action (contraste ≥ 4.5:1 sur texte blanc). */
 export type MissionKind = 'sell' | 'giveaway' | 'social' | 'daily';
@@ -84,19 +88,112 @@ export function countClaimable(missions: MissionRow[]): number {
   return missions.filter(isMissionClaimable).length;
 }
 
-export function pickDefaultMissionTab(
-  claimableByTab: Record<MissionPeriodTab, number>
-): MissionPeriodTab {
-  let best: MissionPeriodTab = 'DAILY';
-  let max = claimableByTab.DAILY ?? 0;
-  for (const tab of MISSION_PERIOD_TABS) {
-    const n = claimableByTab[tab] ?? 0;
-    if (n > max) {
-      max = n;
-      best = tab;
-    }
+export function isWelcomeMissionKey(key: string): boolean {
+  return key === WELCOME_BONUS_MISSION_KEY;
+}
+
+export function isDailyActionMission(mission: Pick<MissionRow, 'key' | 'category'>): boolean {
+  return mission.category === 'DAILY' && !isTodayMissionKey(mission.key) && !isWelcomeMissionKey(mission.key);
+}
+
+export function hasUsefulMissionDescription(
+  mission: Pick<MissionRow, 'key' | 'category'>
+): boolean {
+  if (mission.category === 'SOCIAL') return false;
+  if (isTodayMissionKey(mission.key) || isWelcomeMissionKey(mission.key)) return false;
+  return true;
+}
+
+export function areAllMissionsClaimed(missions: Pick<MissionRow, 'eligible' | 'completed'>[]): boolean {
+  return missions.length > 0 && missions.every((mission) => mission.completed);
+}
+
+export function partitionMissionsByClaimed<T extends Pick<MissionRow, 'eligible' | 'completed'>>(
+  missions: T[]
+): { active: T[]; claimed: T[] } {
+  const sorted = sortMissionsByStatus(missions);
+  return {
+    active: sorted.filter((mission) => getMissionUiStatus(mission) !== 'claimed'),
+    claimed: sorted.filter((mission) => getMissionUiStatus(mission) === 'claimed'),
+  };
+}
+
+export function groupMissionsForPage(missions: MissionRow[]): {
+  welcome: MissionRow | undefined;
+  todayTiles: MissionRow[];
+  dailyActions: MissionRow[];
+  weekly: MissionRow[];
+  monthly: MissionRow[];
+  social: MissionRow[];
+} {
+  const welcome = missions.find((mission) => isWelcomeMissionKey(mission.key));
+  const todayTiles = TODAY_MISSION_KEYS.map((key) => missions.find((mission) => mission.key === key)).filter(
+    (mission): mission is MissionRow => Boolean(mission)
+  );
+  const dailyActions: MissionRow[] = [];
+  const weekly: MissionRow[] = [];
+  const monthly: MissionRow[] = [];
+  const social: MissionRow[] = [];
+
+  for (const mission of missions) {
+    if (isWelcomeMissionKey(mission.key) || isTodayMissionKey(mission.key)) continue;
+    if (isDailyActionMission(mission)) dailyActions.push(mission);
+    else if (mission.category === 'WEEKLY') weekly.push(mission);
+    else if (mission.category === 'MONTHLY') monthly.push(mission);
+    else if (mission.category === 'SOCIAL') social.push(mission);
   }
-  return best;
+
+  return { welcome, todayTiles, dailyActions, weekly, monthly, social };
+}
+
+export function formatClaimableBadge(template: string, count: number): string | null {
+  if (count <= 0) return null;
+  return template.replace('{n}', String(count));
+}
+
+export function formatSectionAllDone(template: string, resetLabel: string): string {
+  return template.replace('{reset}', resetLabel);
+}
+
+function readJsonArray(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function readVisitedSocialMissions(storage?: Pick<Storage, 'getItem'> | null): string[] {
+  const store = storage ?? (typeof window === 'undefined' ? null : window.localStorage);
+  if (!store) return [];
+  try {
+    return readJsonArray(store.getItem(SOCIAL_VISIT_STORAGE_KEY));
+  } catch {
+    return [];
+  }
+}
+
+export function hasVisitedSocialMission(
+  key: string,
+  storage?: Pick<Storage, 'getItem'> | null
+): boolean {
+  return readVisitedSocialMissions(storage).includes(key);
+}
+
+export function markSocialMissionVisited(
+  key: string,
+  storage?: Pick<Storage, 'getItem' | 'setItem'> | null
+): string[] {
+  const store = storage ?? (typeof window === 'undefined' ? null : window.localStorage);
+  const next = Array.from(new Set([...readVisitedSocialMissions(store), key]));
+  try {
+    store?.setItem(SOCIAL_VISIT_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore quota / private mode */
+  }
+  return next;
 }
 
 /**

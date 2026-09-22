@@ -2,9 +2,10 @@
  * @jest-environment jsdom
  */
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
-import { MissionCard } from '@/components/missions/mission-card';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { MissionCard, MissionClaimedRow } from '@/components/missions/mission-card';
 import type { MissionRow } from '@/lib/mission-presentation';
+import { SOCIAL_VISIT_STORAGE_KEY } from '@/lib/mission-presentation';
 import type { Messages } from '~/utils/types';
 
 jest.mock('next/link', () => ({
@@ -35,6 +36,7 @@ const t = {
   socialVisit: 'Visiter',
   socialConfirm: 'Confirmer',
   socialWaiting: 'Vérifie...',
+  socialThanks: 'Merci ! Réclame ta récompense',
   items: {
     WEEKLY_SELL_500: { label: 'Vendre 500 €', description: 'Atteins 500 €.' },
     WEEKLY_GIVEAWAY_3: { label: 'Participer à 3 giveaways', description: 'Rejoins 3 giveaways.' },
@@ -135,5 +137,74 @@ describe('MissionCard', () => {
       />
     );
     expect(screen.getByRole('button', { name: /Réclamer \+50/ })).toBeDisabled();
+  });
+
+  it('keeps the mission icon after claim and hides repeating social descriptions', () => {
+    const { container } = render(
+      <MissionCard
+        mission={row({ key: 'WEEKLY_SELL_500', completed: true, eligible: false })}
+        onClaim={() => {}}
+        claimingKey={null}
+        returnsLabel={null}
+        t={t}
+      />
+    );
+    expect(container.querySelector('.mission-quest__icon-badge')).toBeTruthy();
+    expect(screen.getByText('Vendre 500 €')).toBeInTheDocument();
+    expect(screen.getByText('Atteins 500 €.')).toBeInTheDocument();
+
+    render(
+      <MissionCard
+        mission={row({
+          key: 'SOCIAL_DISCORD',
+          category: 'SOCIAL',
+          eligible: true,
+          rewardFragments: 25,
+        })}
+        onClaim={() => {}}
+        claimingKey={null}
+        returnsLabel={null}
+        t={t}
+      />
+    );
+    expect(screen.getByText('Rejoindre Discord')).toBeInTheDocument();
+    expect(screen.queryByText('Rejoins Discord.')).not.toBeInTheDocument();
+  });
+
+  it('opens a social link then shows a filled claim CTA with thanks copy', () => {
+    window.localStorage.removeItem(SOCIAL_VISIT_STORAGE_KEY);
+    const open = jest.spyOn(window, 'open').mockImplementation(() => null);
+    render(
+      <MissionCard
+        mission={row({
+          key: 'SOCIAL_DISCORD',
+          category: 'SOCIAL',
+          eligible: true,
+          rewardFragments: 25,
+        })}
+        onClaim={() => {}}
+        claimingKey={null}
+        returnsLabel={null}
+        t={t}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Visiter →' }));
+    expect(open).toHaveBeenCalled();
+    expect(screen.getByText('Merci ! Réclame ta récompense')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Réclamer \+25/ })).toBeEnabled();
+    open.mockRestore();
+  });
+
+  it('renders claimed missions as a compact row with the original logo', () => {
+    const { container } = render(
+      <MissionClaimedRow
+        mission={row({ key: 'WEEKLY_SELL_500', completed: true, eligible: false })}
+        t={t}
+      />
+    );
+    expect(container.querySelector('.mission-quest-compact')).toBeTruthy();
+    expect(container.querySelector('.mission-quest__icon-badge')).toBeTruthy();
+    expect(screen.getByText('Vendre 500 €')).toBeInTheDocument();
+    expect(screen.getByText('Réclamée')).toBeInTheDocument();
   });
 });

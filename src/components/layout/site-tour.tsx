@@ -288,11 +288,11 @@ function buildTourSteps(locale: string): TourStep[] {
     {
       element: '[data-tour="missions-categories"]',
       popover: {
-        title: t('Onglets de missions', 'Mission tabs', '任务选项卡'),
+        title: t('Les missions, toutes visibles', 'Every mission, all visible', '所有任务都可见'),
         description: t(
-          'Les missions sont classées par période : <em>Quotidiennes</em>, <em>Hebdomadaires</em>, <em>Mensuelles</em> et <em>Sociales</em>. Une pastille indique le nombre de récompenses à réclamer. Les cadeaux du jour (surprise, claim, visite) sont regroupés au-dessus.',
-          'Missions are grouped by period: <em>Daily</em>, <em>Weekly</em>, <em>Monthly</em> and <em>Social</em>. A badge shows how many rewards you can claim. Today’s free gifts (surprise, daily claim, visit) sit above the tabs.',
-          '任务按周期分组：<em>每日</em>、<em>每周</em>、<em>每月</em>和<em>社交</em>。角标显示可领取的奖励数量。今日免费奖励（惊喜、每日领取、访问）显示在选项卡上方。'
+          'Toutes les missions sont affichées en sections : <em>Aujourd’hui</em>, <em>Cette semaine</em>, <em>Ce mois-ci</em> et <em>Réseaux sociaux</em>. Une pastille indique le nombre de récompenses à réclamer. Les cadeaux du jour restent en haut de « Aujourd’hui ».',
+          'Every mission is shown in sections: <em>Today</em>, <em>This week</em>, <em>This month</em> and <em>Social networks</em>. A badge shows how many rewards you can claim. Today’s free gifts stay at the top of Today.',
+          '所有任务按区块显示：<em>今日</em>、<em>本周</em>、<em>本月</em>和<em>社交网络</em>。角标显示可领取的奖励数量。今日免费奖励仍显示在「今日」顶部。'
         ),
         side: 'top',
       },

@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
 import { useTourMode } from '@/components/providers/tour-provider';
@@ -17,28 +16,24 @@ import { FragmentAmount } from '@/components/ui/level-badge';
 import { GiveawayStarfield } from '@/components/giveaway/giveaway-starfield';
 import { GiveawayPageReveal } from '@/components/giveaway/giveaway-motion-surface';
 import { useLiveNow } from '@/components/giveaway/giveaway-countdown';
-import { MissionCard } from '@/components/missions/mission-card';
+import { MissionCard, MissionClaimedRow } from '@/components/missions/mission-card';
 import { MissionClaimFly, type MissionClaimFlyPoint } from '@/components/missions/mission-claim-fly';
 import { MissionWelcomeBanner } from '@/components/missions/mission-welcome';
 import { MissionTodayTile } from '@/components/missions/mission-today';
+import { MissionSection } from '@/components/missions/mission-section';
 import {
-  TODAY_MISSION_KEYS,
-  MISSION_PERIOD_TABS,
-  TAB_RESET_PERIOD,
+  SECTION_RESET_PERIOD,
+  areAllMissionsClaimed,
   countClaimable,
   formatMissionDuration,
   formatMissionResetLine,
-  isTodayMissionKey,
+  groupMissionsForPage,
   mapMissionClaimError,
   nextMissionResetAt,
-  pickDefaultMissionTab,
-  sortMissionsByStatus,
+  partitionMissionsByClaimed,
   type CompactDurationLabels,
-  type MissionPeriodTab,
   type MissionRow,
 } from '@/lib/mission-presentation';
-
-const WELCOME_BONUS_MISSION_KEY = 'WELCOME_BONUS';
 
 function pointFromRect(rect: DOMRect, at: 'center' | 'top'): MissionClaimFlyPoint {
   return {
@@ -47,13 +42,62 @@ function pointFromRect(rect: DOMRect, at: 'center' | 'top'): MissionClaimFlyPoin
   };
 }
 
+function MissionCardGrid({
+  missions,
+  onClaim,
+  claimingKey,
+  returnsLabel,
+  t,
+}: {
+  missions: MissionRow[];
+  onClaim: (missionKey: string, origin?: HTMLElement | null) => void;
+  claimingKey: string | null;
+  returnsLabel: string | null;
+  t: Parameters<typeof MissionCard>[0]['t'];
+}) {
+  if (missions.length === 0) return null;
+  return (
+    <div className="mission-quest-grid">
+      {missions.map((mission) => (
+        <MissionCard
+          key={`${mission.key}-${mission.periodKey}`}
+          mission={mission}
+          onClaim={onClaim}
+          claimingKey={claimingKey}
+          returnsLabel={returnsLabel}
+          t={t}
+        />
+      ))}
+      <div className="mission-quest-grid__filler" aria-hidden />
+      <div className="mission-quest-grid__filler" aria-hidden />
+      <div className="mission-quest-grid__filler" aria-hidden />
+    </div>
+  );
+}
+
+function MissionClaimedGrid({
+  missions,
+  t,
+}: {
+  missions: MissionRow[];
+  t: Parameters<typeof MissionClaimedRow>[0]['t'];
+}) {
+  if (missions.length === 0) return null;
+  return (
+    <div className="mission-quest-compact-grid">
+      {missions.map((mission) => (
+        <MissionClaimedRow key={`${mission.key}-${mission.periodKey}`} mission={mission} t={t} />
+      ))}
+    </div>
+  );
+}
+
 export default function MissionsPage() {
   const { user, isLoading: authLoading, refreshUser } = useAuth();
   const { messages, locale } = useLocale();
   const { isTourMode } = useTourMode();
   const t = messages.missions;
   const queryClient = useQueryClient();
-  const [tabOverride, setTabOverride] = useState<MissionPeriodTab | null>(null);
   const [fly, setFly] = useState<{
     id: number;
     amount: number;
@@ -131,68 +175,46 @@ export default function MissionsPage() {
   const clearFly = useCallback(() => setFly(null), []);
 
   const missions = useMemo(() => data?.missions ?? [], [data?.missions]);
-  const welcomeMission = useMemo(
-    () => missions.find((m) => m.key === WELCOME_BONUS_MISSION_KEY),
-    [missions]
+  const grouped = useMemo(() => groupMissionsForPage(missions), [missions]);
+  const dailyActions = useMemo(
+    () => partitionMissionsByClaimed(grouped.dailyActions),
+    [grouped.dailyActions]
   );
-  const todayMissions = useMemo(
-    () =>
-      TODAY_MISSION_KEYS.map((key) => missions.find((m) => m.key === key)).filter(
-        (m): m is MissionRow => Boolean(m)
-      ),
-    [missions]
+  const weekly = useMemo(() => partitionMissionsByClaimed(grouped.weekly), [grouped.weekly]);
+  const monthly = useMemo(() => partitionMissionsByClaimed(grouped.monthly), [grouped.monthly]);
+  const social = useMemo(() => partitionMissionsByClaimed(grouped.social), [grouped.social]);
+
+  const todayAll = useMemo(
+    () => [...grouped.todayTiles, ...grouped.dailyActions],
+    [grouped.todayTiles, grouped.dailyActions]
   );
-  const tabMissions = useMemo(() => {
-    const byTab: Record<MissionPeriodTab, MissionRow[]> = {
-      DAILY: [],
-      WEEKLY: [],
-      MONTHLY: [],
-      SOCIAL: [],
-    };
-    for (const mission of missions) {
-      if (mission.key === WELCOME_BONUS_MISSION_KEY || isTodayMissionKey(mission.key)) continue;
-      if (mission.category === 'DAILY') byTab.DAILY.push(mission);
-      else if (mission.category === 'WEEKLY') byTab.WEEKLY.push(mission);
-      else if (mission.category === 'MONTHLY') byTab.MONTHLY.push(mission);
-      else if (mission.category === 'SOCIAL') byTab.SOCIAL.push(mission);
-    }
-    return {
-      DAILY: sortMissionsByStatus(byTab.DAILY),
-      WEEKLY: sortMissionsByStatus(byTab.WEEKLY),
-      MONTHLY: sortMissionsByStatus(byTab.MONTHLY),
-      SOCIAL: sortMissionsByStatus(byTab.SOCIAL),
-    };
-  }, [missions]);
-  const claimableByTab = useMemo(
-    () => ({
-      DAILY: countClaimable(tabMissions.DAILY),
-      WEEKLY: countClaimable(tabMissions.WEEKLY),
-      MONTHLY: countClaimable(tabMissions.MONTHLY),
-      SOCIAL: countClaimable(tabMissions.SOCIAL),
-    }),
-    [tabMissions]
-  );
-  const defaultTab = useMemo(() => pickDefaultMissionTab(claimableByTab), [claimableByTab]);
-  const activeTab = tabOverride ?? defaultTab;
-  const dailyResetAt = nextMissionResetAt('day', new Date(now));
-  const tabResetAt = nextMissionResetAt(TAB_RESET_PERIOD[activeTab], new Date(now));
-  const tabResetLabel = formatMissionResetLine(
-    t.resetIn,
-    tabResetAt,
-    durationLabels,
-    t.noReset,
-    now
-  );
+  const todayClaimable = countClaimable(todayAll);
+  const weekClaimable = countClaimable(grouped.weekly);
+  const monthClaimable = countClaimable(grouped.monthly);
+  const socialClaimable = countClaimable(grouped.social);
+
+  const dailyResetAt = nextMissionResetAt(SECTION_RESET_PERIOD.TODAY, new Date(now));
+  const weekResetAt = nextMissionResetAt(SECTION_RESET_PERIOD.WEEKLY, new Date(now));
+  const monthResetAt = nextMissionResetAt(SECTION_RESET_PERIOD.MONTHLY, new Date(now));
+  const todayResetLabel = formatMissionResetLine(t.resetIn, dailyResetAt, durationLabels, t.uniqueMissions, now);
+  const weekResetLabel = formatMissionResetLine(t.resetIn, weekResetAt, durationLabels, t.uniqueMissions, now);
+  const monthResetLabel = formatMissionResetLine(t.resetIn, monthResetAt, durationLabels, t.uniqueMissions, now);
+  const socialResetLabel = t.uniqueMissions;
   const todayReturnsLabel = dailyResetAt
     ? t.returnsIn.replace('{duration}', formatMissionDuration(dailyResetAt, durationLabels, now))
     : t.claimed;
-  const tabReturnsLabel = tabResetAt
-    ? t.returnsIn.replace('{duration}', formatMissionDuration(tabResetAt, durationLabels, now))
+  const weekReturnsLabel = weekResetAt
+    ? t.returnsIn.replace('{duration}', formatMissionDuration(weekResetAt, durationLabels, now))
     : null;
+  const monthReturnsLabel = monthResetAt
+    ? t.returnsIn.replace('{duration}', formatMissionDuration(monthResetAt, durationLabels, now))
+    : null;
+
   const claimingKey = claim.isPending ? (claim.variables ?? null) : null;
   const claimError = claim.isError
     ? mapMissionClaimError((claim.error as Error)?.message ?? t.genericError, t)
     : null;
+  const showWelcome = Boolean(grouped.welcome && !grouped.welcome.completed);
 
   if (authLoading) {
     return (
@@ -259,13 +281,13 @@ export default function MissionsPage() {
           </div>
         </GiveawayPageReveal>
 
-        <div className="space-y-5">
+        <div className="mission-stack">
           {isLoading ? (
             <div className="h-20 animate-pulse rounded-2xl bg-muted/40" />
-          ) : welcomeMission && !welcomeMission.completed ? (
+          ) : showWelcome && grouped.welcome ? (
             <GiveawayPageReveal as="section" index={1}>
               <MissionWelcomeBanner
-                mission={welcomeMission}
+                mission={grouped.welcome}
                 onClaim={handleClaim}
                 claimingKey={claimingKey}
                 t={t}
@@ -279,22 +301,42 @@ export default function MissionsPage() {
                 <div key={i} className="h-20 animate-pulse rounded-2xl bg-muted/40" />
               ))}
             </div>
-          ) : todayMissions.length > 0 ? (
-            <GiveawayPageReveal as="section" index={2}>
-              <h2 className="mb-2 font-display text-lg font-semibold">{t.todayTitle}</h2>
-              <p className="sr-only">{t.todaySubtitle}</p>
-              <div className="mission-today-row">
-                {todayMissions.map((mission) => (
-                  <MissionTodayTile
-                    key={`${mission.key}-${mission.periodKey}`}
-                    mission={mission}
-                    onClaim={handleClaim}
-                    claimingKey={claimingKey}
-                    returnsLabel={todayReturnsLabel}
-                    t={t}
-                  />
-                ))}
-              </div>
+          ) : todayAll.length > 0 ? (
+            <GiveawayPageReveal as="div" index={2}>
+              <MissionSection
+                title={t.sections.TODAY}
+                resetLabel={todayResetLabel}
+                claimable={todayClaimable}
+                allClaimed={areAllMissionsClaimed(todayAll)}
+                tourTarget
+                t={t}
+              >
+                {grouped.todayTiles.length > 0 ? (
+                  <>
+                    <p className="sr-only">{t.todaySubtitle}</p>
+                    <div className="mission-today-row">
+                      {grouped.todayTiles.map((mission) => (
+                        <MissionTodayTile
+                          key={`${mission.key}-${mission.periodKey}`}
+                          mission={mission}
+                          onClaim={handleClaim}
+                          claimingKey={claimingKey}
+                          returnsLabel={todayReturnsLabel}
+                          t={t}
+                        />
+                      ))}
+                    </div>
+                  </>
+                ) : null}
+                <MissionCardGrid
+                  missions={dailyActions.active}
+                  onClaim={handleClaim}
+                  claimingKey={claimingKey}
+                  returnsLabel={todayReturnsLabel}
+                  t={t}
+                />
+                <MissionClaimedGrid missions={dailyActions.claimed} t={t} />
+              </MissionSection>
             </GiveawayPageReveal>
           ) : null}
 
@@ -305,54 +347,70 @@ export default function MissionsPage() {
               ))}
             </div>
           ) : (
-            <GiveawayPageReveal as="section" index={3}>
-              <Tabs
-                value={activeTab}
-                onValueChange={(value) => setTabOverride(value as MissionPeriodTab)}
-                data-tour="missions-categories"
-              >
-                <TabsList className="mission-tabs h-auto w-full justify-start gap-2 bg-transparent p-0">
-                  {MISSION_PERIOD_TABS.map((tab) => (
-                    <TabsTrigger
-                      key={tab}
-                      value={tab}
-                      className="mission-tab data-[state=active]:bg-theme-accent/15 data-[state=active]:text-theme-highlight data-[state=active]:shadow-none"
-                    >
-                      {t.tabs[tab]}
-                      {claimableByTab[tab] > 0 ? (
-                        <span className="mission-tab-badge">{claimableByTab[tab]}</span>
-                      ) : null}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                <p className="mt-2 text-[13px] text-foreground/80" data-countdown>
-                  {tabResetLabel}
-                </p>
-                {MISSION_PERIOD_TABS.map((tab) => (
-                  <TabsContent key={tab} value={tab} className="mt-3">
-                    {tabMissions[tab].length === 0 ? (
-                      <p className="text-[13px] text-foreground/80">{t.noMissionsInCategory}</p>
-                    ) : (
-                      <div className="mission-quest-grid">
-                        {tabMissions[tab].map((mission) => (
-                          <MissionCard
-                            key={`${mission.key}-${mission.periodKey}`}
-                            mission={mission}
-                            onClaim={handleClaim}
-                            claimingKey={claimingKey}
-                            returnsLabel={tabReturnsLabel}
-                            t={t}
-                          />
-                        ))}
-                        <div className="mission-quest-grid__filler" aria-hidden />
-                        <div className="mission-quest-grid__filler" aria-hidden />
-                        <div className="mission-quest-grid__filler" aria-hidden />
-                      </div>
-                    )}
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </GiveawayPageReveal>
+            <>
+              {grouped.weekly.length > 0 ? (
+                <GiveawayPageReveal as="div" index={3}>
+                  <MissionSection
+                    title={t.sections.WEEKLY}
+                    resetLabel={weekResetLabel}
+                    claimable={weekClaimable}
+                    allClaimed={areAllMissionsClaimed(grouped.weekly)}
+                    t={t}
+                  >
+                    <MissionCardGrid
+                      missions={weekly.active}
+                      onClaim={handleClaim}
+                      claimingKey={claimingKey}
+                      returnsLabel={weekReturnsLabel}
+                      t={t}
+                    />
+                    <MissionClaimedGrid missions={weekly.claimed} t={t} />
+                  </MissionSection>
+                </GiveawayPageReveal>
+              ) : null}
+
+              {grouped.monthly.length > 0 ? (
+                <GiveawayPageReveal as="div" index={4}>
+                  <MissionSection
+                    title={t.sections.MONTHLY}
+                    resetLabel={monthResetLabel}
+                    claimable={monthClaimable}
+                    allClaimed={areAllMissionsClaimed(grouped.monthly)}
+                    t={t}
+                  >
+                    <MissionCardGrid
+                      missions={monthly.active}
+                      onClaim={handleClaim}
+                      claimingKey={claimingKey}
+                      returnsLabel={monthReturnsLabel}
+                      t={t}
+                    />
+                    <MissionClaimedGrid missions={monthly.claimed} t={t} />
+                  </MissionSection>
+                </GiveawayPageReveal>
+              ) : null}
+
+              {grouped.social.length > 0 ? (
+                <GiveawayPageReveal as="div" index={5}>
+                  <MissionSection
+                    title={t.sections.SOCIAL}
+                    resetLabel={socialResetLabel}
+                    claimable={socialClaimable}
+                    allClaimed={areAllMissionsClaimed(grouped.social)}
+                    t={t}
+                  >
+                    <MissionCardGrid
+                      missions={social.active}
+                      onClaim={handleClaim}
+                      claimingKey={claimingKey}
+                      returnsLabel={null}
+                      t={t}
+                    />
+                    <MissionClaimedGrid missions={social.claimed} t={t} />
+                  </MissionSection>
+                </GiveawayPageReveal>
+              ) : null}
+            </>
           )}
 
           {claimError ? (

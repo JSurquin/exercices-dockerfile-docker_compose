@@ -4195,6 +4195,10 @@ export interface Messages {
     resetIn: string;
     returnsIn: string;
     noReset: string;
+    uniqueMissions: string;
+    claimableBadge: string;
+    sectionAllDone: string;
+    socialThanks: string;
     inProgress: string;
     durationDays: string;
     durationHours: string;
@@ -4202,6 +4206,12 @@ export interface Messages {
     durationSeconds: string;
     tabs: {
       DAILY: string;
+      WEEKLY: string;
+      MONTHLY: string;
+      SOCIAL: string;
+    };
+    sections: {
+      TODAY: string;
       WEEKLY: string;
       MONTHLY: string;
       SOCIAL: string;

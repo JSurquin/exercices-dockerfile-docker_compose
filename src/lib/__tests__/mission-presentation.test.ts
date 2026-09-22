@@ -11,9 +11,17 @@ import {
   getMissionUiStatus,
   isQuantitativeMission,
   isTodayMissionKey,
+  areAllMissionsClaimed,
+  formatClaimableBadge,
+  formatSectionAllDone,
+  groupMissionsForPage,
+  hasUsefulMissionDescription,
+  hasVisitedSocialMission,
+  markSocialMissionVisited,
+  MISSION_SECTIONS,
+  partitionMissionsByClaimed,
   mapMissionClaimError,
   nextMissionResetAt,
-  pickDefaultMissionTab,
   sortMissionsByStatus,
   TODAY_MISSION_KEYS,
   type MissionRow,
@@ -41,16 +49,64 @@ describe('mission presentation', () => {
     expect(isTodayMissionKey('DAILY_SELL_SKIN')).toBe(false);
   });
 
-  it('opens the tab with the most claimable missions, else daily', () => {
-    expect(
-      pickDefaultMissionTab({ DAILY: 0, WEEKLY: 0, MONTHLY: 0, SOCIAL: 0 })
-    ).toBe('DAILY');
-    expect(
-      pickDefaultMissionTab({ DAILY: 1, WEEKLY: 3, MONTHLY: 2, SOCIAL: 0 })
-    ).toBe('WEEKLY');
-    expect(
-      pickDefaultMissionTab({ DAILY: 2, WEEKLY: 2, MONTHLY: 0, SOCIAL: 0 })
-    ).toBe('DAILY');
+  it('groups today tiles separately from daily action missions without duplicates', () => {
+    const grouped = groupMissionsForPage([
+      mission({ key: 'WELCOME_BONUS', category: 'BONUS' }),
+      mission({ key: 'BONUS_DAILY_SURPRISE', category: 'BONUS' }),
+      mission({ key: 'DAILY_CLAIM', category: 'DAILY' }),
+      mission({ key: 'DAILY_VISIT', category: 'DAILY' }),
+      mission({ key: 'DAILY_SELL_SKIN', category: 'DAILY' }),
+      mission({ key: 'WEEKLY_SELL_500', category: 'WEEKLY' }),
+      mission({ key: 'MONTHLY_SELL_5000', category: 'MONTHLY' }),
+      mission({ key: 'SOCIAL_DISCORD', category: 'SOCIAL' }),
+    ]);
+    expect(grouped.todayTiles.map((row) => row.key)).toEqual([
+      'BONUS_DAILY_SURPRISE',
+      'DAILY_CLAIM',
+      'DAILY_VISIT',
+    ]);
+    expect(grouped.dailyActions.map((row) => row.key)).toEqual(['DAILY_SELL_SKIN']);
+    expect(grouped.weekly.map((row) => row.key)).toEqual(['WEEKLY_SELL_500']);
+    expect(grouped.monthly.map((row) => row.key)).toEqual(['MONTHLY_SELL_5000']);
+    expect(grouped.social.map((row) => row.key)).toEqual(['SOCIAL_DISCORD']);
+    expect(grouped.welcome?.key).toBe('WELCOME_BONUS');
+    expect(MISSION_SECTIONS).toEqual(['TODAY', 'WEEKLY', 'MONTHLY', 'SOCIAL']);
+  });
+
+  it('hides social descriptions that repeat the title and keeps useful conditions', () => {
+    expect(hasUsefulMissionDescription({ key: 'SOCIAL_DISCORD', category: 'SOCIAL' })).toBe(false);
+    expect(hasUsefulMissionDescription({ key: 'DAILY_SELL_SKIN', category: 'DAILY' })).toBe(true);
+    expect(hasUsefulMissionDescription({ key: 'WEEKLY_SELL_500', category: 'WEEKLY' })).toBe(true);
+  });
+
+  it('splits claimed missions to the end and formats section badges', () => {
+    const { active, claimed } = partitionMissionsByClaimed([
+      mission({ key: 'C', eligible: false, completed: true }),
+      mission({ key: 'B', eligible: false, completed: false }),
+      mission({ key: 'A', eligible: true, completed: false }),
+    ]);
+    expect(active.map((row) => row.key)).toEqual(['A', 'B']);
+    expect(claimed.map((row) => row.key)).toEqual(['C']);
+    expect(areAllMissionsClaimed(claimed)).toBe(true);
+    expect(areAllMissionsClaimed(active)).toBe(false);
+    expect(formatClaimableBadge('{n} à réclamer', 0)).toBeNull();
+    expect(formatClaimableBadge('{n} à réclamer', 2)).toBe('2 à réclamer');
+    expect(formatSectionAllDone('Tout est fait ✓ · {reset}', 'Réinitialisation dans 5h')).toBe(
+      'Tout est fait ✓ · Réinitialisation dans 5h'
+    );
+  });
+
+  it('persists social visits in the provided storage without a backend call', () => {
+    const memory = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => memory.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        memory.set(key, value);
+      },
+    };
+    expect(hasVisitedSocialMission('SOCIAL_DISCORD', storage)).toBe(false);
+    markSocialMissionVisited('SOCIAL_DISCORD', storage);
+    expect(hasVisitedSocialMission('SOCIAL_DISCORD', storage)).toBe(true);
   });
 
   it('counts only eligible unclaimed missions', () => {
