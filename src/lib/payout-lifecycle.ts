@@ -245,4 +245,41 @@ export class PayoutLifecycle {
 
     return { unfrozen: true };
   }
+
+  /**
+   * Payout marqué FAILED alors que le prestataire a bien payé (timeout, webhook
+   * « declined » Revolut puis crédit réel). Réinitialise le verrou onFailed
+   * puis débite. Idempotent si déjà corrigé.
+   */
+  static async correctFailedToPaid(
+    userId: string,
+    payoutId: string,
+    amountCents: number,
+    options: { tradeId?: string | null; reason?: string } = {},
+  ): Promise<{ debited: boolean }> {
+    const reset = await prisma.payout.updateMany({
+      where: {
+        id: payoutId,
+        status: { in: ['FAILED', 'FLEXIFY_FAILED'] },
+      },
+      data: { balanceDebitedAt: null, status: 'PROCESSING' },
+    });
+
+    if (reset.count === 0) {
+      const current = await prisma.payout.findUnique({
+        where: { id: payoutId },
+        select: { status: true, balanceDebitedAt: true },
+      });
+      if (current?.status === 'PAID' || current?.status === 'FLEXIFY_PAID') {
+        return { debited: false };
+      }
+    }
+
+    return this.onCompleted(userId, payoutId, amountCents, {
+      tradeId: options.tradeId,
+      reason: options.reason ?? `Correction: payout ${payoutId} FAILED→PAID`,
+      finalStatus: 'PAID',
+      paidAt: new Date(),
+    });
+  }
 }

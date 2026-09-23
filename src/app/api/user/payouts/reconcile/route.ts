@@ -9,6 +9,7 @@ import {
   isTransactionCompleted as isFlexifyCompleted,
   isTransactionFailed as isFlexifyFailed,
   flexifyLog,
+  shouldFinalizeFlexifyFailure,
   type FlexifyTransactionStatus,
 } from '@/lib/flexify';
 import {
@@ -97,8 +98,23 @@ async function fetchFlexifyStatus(
 
 async function reconcileFlexifyPayout(
   userId: string,
-  payout: { id: string; flexifyPayoutId: string | null; gateFiOrderId: string | null; status: string; amountCents: number; tradeId: string | null; paymentMethodType: string | null },
+  payout: { id: string; flexifyPayoutId: string | null; gateFiOrderId: string | null; status: string; amountCents: number; tradeId: string | null; paymentMethodType: string | null; createdAt: Date },
 ): Promise<ReconcileResult> {
+  // Faux échec (timeout / Revolut « declined » puis crédit) : Flexify dit maintenant success
+  if (payout.status === 'FAILED' || payout.status === 'FLEXIFY_FAILED') {
+    const flexifyStatus = await fetchFlexifyStatus(payout);
+    if (!flexifyStatus) {
+      return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
+    }
+    if (isFlexifyCompleted(flexifyStatus)) {
+      return correctFailedFlexifyToPaid(userId, payout);
+    }
+    if (isFlexifyFailed(flexifyStatus) && shouldFinalizeFlexifyFailure(payout.createdAt)) {
+      return applyFailed(userId, payout, 'flexify');
+    }
+    return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
+  }
+
   // Statut interne déjà « payé » mais débit balance pas rejoué : on revérifie Flexify avant tout débit
   if (payout.status === 'FLEXIFY_PAID' || payout.status === 'PAID') {
     const flexifyStatus = await fetchFlexifyStatus(payout);
@@ -106,6 +122,9 @@ async function reconcileFlexifyPayout(
       return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
     }
     if (isFlexifyFailed(flexifyStatus)) {
+      if (!shouldFinalizeFlexifyFailure(payout.createdAt)) {
+        return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
+      }
       return applyFailed(userId, payout, 'flexify');
     }
     if (!isFlexifyCompleted(flexifyStatus)) {
@@ -124,6 +143,10 @@ async function reconcileFlexifyPayout(
     return applyDebit(userId, payout, 'flexify');
   }
   if (isFlexifyFailed(flexifyStatus)) {
+    // Revolut / émetteur : un « failed » peut précéder le crédit réel. On attend 24h.
+    if (!shouldFinalizeFlexifyFailure(payout.createdAt)) {
+      return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
+    }
     return applyFailed(userId, payout, 'flexify');
   }
   return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
@@ -236,6 +259,24 @@ async function applyFailed(
 }
 
 /**
+ * Correction : payout marqué FAILED chez nous mais success chez Flexify
+ * (timeout HTTP, webhook declined Revolut puis crédit réel).
+ */
+async function correctFailedFlexifyToPaid(
+  userId: string,
+  payout: { id: string; amountCents: number; tradeId: string | null },
+): Promise<ReconcileResult> {
+  const { debited } = await PayoutLifecycle.correctFailedToPaid(
+    userId, payout.id, payout.amountCents,
+    { tradeId: payout.tradeId, reason: `Correction: Flexify ${payout.id} = success (payout était FAILED)` },
+  );
+  if (!debited) {
+    return { payoutId: payout.id, action: 'unchanged', amountCents: payout.amountCents, provider: 'flexify' };
+  }
+  return { payoutId: payout.id, action: 'corrected', amountCents: payout.amountCents, provider: 'flexify' };
+}
+
+/**
  * Correction : payout marqué FAILED dans notre système mais COMPLETE chez Whitepay.
  * Cela arrive quand onFailed s'est déclenché (timeout > 24h) avant l'arrivée du webhook.
  * Le solde a déjà été dégélé (unfreezeBalance) → on doit juste débiter et passer en PAID.
@@ -331,7 +372,7 @@ export async function GET(request: NextRequest) {
       },
       select: {
         id: true, flexifyPayoutId: true, gateFiOrderId: true, status: true, amountCents: true,
-        tradeId: true,
+        tradeId: true, createdAt: true,
         paymentMethod: { select: { type: true } },
       },
     });
@@ -342,6 +383,7 @@ export async function GET(request: NextRequest) {
       status: p.status,
       amountCents: p.amountCents,
       tradeId: p.tradeId,
+      createdAt: p.createdAt,
       paymentMethodType: p.paymentMethod?.type ?? null,
     }));
 
@@ -359,6 +401,34 @@ export async function GET(request: NextRequest) {
     // Payouts FAILED Whitepay : vérifier que Whitepay ne les a pas marqués COMPLETE
     // (cas : onFailed déclenché par timeout avant l'arrivée du webhook Whitepay)
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const failedFlexifyToCheckRaw = await prisma.payout.findMany({
+      where: {
+        userId,
+        status: { in: ['FAILED', 'FLEXIFY_FAILED'] },
+        paidAt: null,
+        paymentMethod: { type: { in: ['FLEXIFY_CARD', 'SEPA', 'CARD', 'FLEXIFY_SEPA'] } },
+        OR: [
+          { flexifyPayoutId: { not: null } },
+          { gateFiOrderId: { not: null } },
+        ],
+      },
+      select: {
+        id: true, flexifyPayoutId: true, gateFiOrderId: true, status: true, amountCents: true,
+        tradeId: true, createdAt: true,
+        paymentMethod: { select: { type: true } },
+      },
+    });
+    const failedFlexifyToCheck = failedFlexifyToCheckRaw.map((p) => ({
+      id: p.id,
+      flexifyPayoutId: p.flexifyPayoutId,
+      gateFiOrderId: p.gateFiOrderId,
+      status: p.status,
+      amountCents: p.amountCents,
+      tradeId: p.tradeId,
+      createdAt: p.createdAt,
+      paymentMethodType: p.paymentMethod?.type ?? null,
+    }));
+
     const failedWhitepayToCheck = await prisma.payout.findMany({
       where: {
         userId,
@@ -389,10 +459,17 @@ export async function GET(request: NextRequest) {
       flexify: flexifyPayouts.length,
       whitepay: whitepayPayouts.length,
       orphanWhitepay: orphanWhitepayPayouts.length,
+      failedFlexifyToCorrect: failedFlexifyToCheck.length,
       failedWhitepayToCorrect: failedWhitepayToCheck.length,
     });
 
-    if (flexifyPayouts.length === 0 && whitepayPayouts.length === 0 && orphanWhitepayPayouts.length === 0 && failedWhitepayToCheck.length === 0) {
+    if (
+      flexifyPayouts.length === 0
+      && whitepayPayouts.length === 0
+      && orphanWhitepayPayouts.length === 0
+      && failedWhitepayToCheck.length === 0
+      && failedFlexifyToCheck.length === 0
+    ) {
       return NextResponse.json({ results: [] });
     }
 
@@ -413,6 +490,16 @@ export async function GET(request: NextRequest) {
       } catch (err) {
         console.error('[RECONCILE] Whitepay error:', p.id, err);
         results.push({ payoutId: p.id, action: 'error', amountCents: p.amountCents, provider: 'whitepay' });
+      }
+    }
+
+    for (const p of failedFlexifyToCheck) {
+      try {
+        const r = await reconcileFlexifyPayout(userId, p);
+        if (r.action !== 'unchanged') results.push(r);
+      } catch (err) {
+        flexifyLog('RECONCILE_PAYOUT_ERROR', { payoutId: p.id, provider: 'flexify', error: String(err) }, 'error');
+        results.push({ payoutId: p.id, action: 'error', amountCents: p.amountCents, provider: 'flexify' });
       }
     }
 

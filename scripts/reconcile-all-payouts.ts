@@ -34,6 +34,7 @@ import {
   checkPayoutByReference as checkFlexifyByRef,
   isTransactionCompleted as isFlexifyCompleted,
   isTransactionFailed as isFlexifyFailed,
+  shouldFinalizeFlexifyFailure,
   type FlexifyTransactionStatus,
 } from '@/lib/flexify';
 import {
@@ -150,8 +151,21 @@ async function reconcileOne(p: {
       return { ...baseAction, providerStatus: null, action: 'unchanged', detail: 'Flexify n\'a pas répondu' };
     }
     if (isFlexifyCompleted(flexStatus)) {
+      const wasFailed = p.status === 'FAILED' || p.status === 'FLEXIFY_FAILED';
       if (DRY_RUN) {
-        return { ...baseAction, providerStatus: flexStatus, action: 'debited', detail: '(dry-run) would mark PAID + debit' };
+        return {
+          ...baseAction,
+          providerStatus: flexStatus,
+          action: 'debited',
+          detail: wasFailed ? '(dry-run) would correct FAILED→PAID + debit' : '(dry-run) would mark PAID + debit',
+        };
+      }
+      if (wasFailed) {
+        const { debited } = await PayoutLifecycle.correctFailedToPaid(
+          p.userId, p.id, p.amountCents,
+          { tradeId: p.tradeId, reason: `Reconcile CLI : Flexify ${p.id} corrigé FAILED→PAID` },
+        );
+        return { ...baseAction, providerStatus: flexStatus, action: debited ? 'debited' : 'unchanged', detail: 'corrected FAILED→PAID' };
       }
       const { debited } = await PayoutLifecycle.onCompleted(
         p.userId, p.id, p.amountCents,
@@ -160,6 +174,9 @@ async function reconcileOne(p: {
       return { ...baseAction, providerStatus: flexStatus, action: debited ? 'debited' : 'unchanged' };
     }
     if (isFlexifyFailed(flexStatus)) {
+      if (!shouldFinalizeFlexifyFailure(p.createdAt)) {
+        return { ...baseAction, providerStatus: flexStatus, action: 'unchanged', detail: 'échec provider < 24h, solde gelé' };
+      }
       if (DRY_RUN) {
         return { ...baseAction, providerStatus: flexStatus, action: 'failed', detail: '(dry-run) would mark FAILED + unfreeze' };
       }
@@ -247,7 +264,18 @@ async function main() {
 
   const payouts = await prisma.payout.findMany({
     where: {
-      ...(PAYOUT_FILTER ? { id: PAYOUT_FILTER } : { status: { in: NON_FINAL_STATUSES } }),
+      ...(PAYOUT_FILTER
+        ? { id: PAYOUT_FILTER }
+        : {
+            OR: [
+              { status: { in: NON_FINAL_STATUSES } },
+              {
+                status: { in: ['FAILED', 'FLEXIFY_FAILED'] },
+                paidAt: null,
+                paymentMethod: { type: { in: ['FLEXIFY_CARD', 'SEPA', 'CARD', 'FLEXIFY_SEPA'] } },
+              },
+            ],
+          }),
       ...(USER_FILTER ? { userId: USER_FILTER } : {}),
     },
     select: {

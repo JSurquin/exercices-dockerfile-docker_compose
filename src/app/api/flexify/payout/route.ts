@@ -13,8 +13,10 @@ import {
   centsToEur,
   convertFlexifyStatus,
   isTransactionCompleted,
+  isTransactionFailed,
   FlexifyApiError,
   flexifyLog,
+  isAmbiguousFlexifyError,
 } from '@/lib/flexify';
 import { isFrenchIban } from '@/lib/iban-sepa';
 import { canUserMakePayout } from '@/lib/kycaid';
@@ -40,6 +42,36 @@ import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
 const payoutRateLimiter = new RateLimiter('PAYOUT_FLEXIFY', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
 
 const generateReference = () => `MOON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+
+/**
+ * Timeout / 5xx : le virement a pu partir (Revolut crédité). On garde le solde
+ * gelé en PROCESSING. Un échec de validation (4xx, carte refusée sans TX) rembourse.
+ */
+async function handleFlexifyCreateError(
+  apiErr: unknown,
+  ctx: { userId: string; payoutId: string; amountCents: number; tradeId: string | null },
+): Promise<'ambiguous' | 'failed'> {
+  const message = apiErr instanceof Error ? apiErr.message : 'Erreur Flexify';
+  if (isAmbiguousFlexifyError(apiErr)) {
+    await prisma.payout.update({
+      where: { id: ctx.payoutId },
+      data: {
+        status: 'PROCESSING',
+        errorMessage: `pending_confirmation: ${message}`,
+      },
+    });
+    return 'ambiguous';
+  }
+  await PayoutLifecycle.onFailed(ctx.userId, ctx.payoutId, ctx.amountCents, {
+    tradeId: ctx.tradeId,
+    finalStatus: 'FAILED',
+  });
+  await prisma.payout.update({
+    where: { id: ctx.payoutId },
+    data: { errorMessage: message },
+  });
+  return 'failed';
+}
 
 /** Log toutes les étapes (dev + prod) pour tracer Flexify */
 const LOG = (step: string, data?: object) => {
@@ -482,26 +514,52 @@ export async function POST(request: NextRequest) {
           throw new Error(flexifyResponse.error_message || 'Échec de la création du payout carte');
         }
       } catch (apiErr) {
-        await PayoutLifecycle.onFailed(userId, payout.id, validatedAmount, {
+        const outcome = await handleFlexifyCreateError(apiErr, {
+          userId,
+          payoutId: payout.id,
+          amountCents: validatedAmount,
           tradeId: tradeId || null,
-          finalStatus: 'FAILED',
         });
-        await prisma.payout.update({
-          where: { id: payout.id },
-          data: { errorMessage: apiErr instanceof Error ? apiErr.message : 'Erreur Flexify' },
-        });
+        if (outcome === 'ambiguous') {
+          LOG('CARD_PAYOUT_AMBIGUOUS_KEEP_FROZEN', {
+            payoutId: payout.id,
+            message: apiErr instanceof Error ? apiErr.message : String(apiErr),
+          });
+          return NextResponse.json({
+            success: true,
+            payout: {
+              id: payout.id,
+              reference,
+              status: 'PROCESSING',
+              amountCents: validatedAmount,
+              fees: {
+                processingCents: fees.processingFeeCents,
+                networkCents: fees.networkFeeCents,
+                totalCents: fees.totalFeeCents,
+              },
+              netCents: validatedAmount - fees.totalFeeCents,
+              method: 'CARD',
+              estimatedArrival: 'Instantané à 24h',
+            },
+          });
+        }
         throw apiErr;
       }
       LOG('CARD_PAYOUT_OK', { transactionId: flexifyResponse.transaction?.id });
 
       const txStatus = flexifyResponse.transaction!.status;
-      const internalStatus = convertFlexifyStatus(txStatus) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
+      const internalStatus = isTransactionFailed(txStatus)
+        ? 'PROCESSING'
+        : convertFlexifyStatus(txStatus) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
       await prisma.payout.update({
         where: { id: payout.id },
         data: {
           status: internalStatus,
           flexifyPayoutId: flexifyResponse.transaction!.id,
           ...(isTransactionCompleted(txStatus) && { paidAt: new Date() }),
+          ...(isTransactionFailed(txStatus) && {
+            errorMessage: `Flexify ${txStatus} — confirmation pending`,
+          }),
         },
       });
 
@@ -841,26 +899,48 @@ export async function POST(request: NextRequest) {
         throw new Error(flexifyResponse.error_message || 'Échec de la création du payout');
       }
     } catch (apiErr) {
-      await PayoutLifecycle.onFailed(userId, payout.id, validatedAmount, {
+      const outcome = await handleFlexifyCreateError(apiErr, {
+        userId,
+        payoutId: payout.id,
+        amountCents: validatedAmount,
         tradeId: tradeId || null,
-        finalStatus: 'FAILED',
       });
-      await prisma.payout.update({
-        where: { id: payout.id },
-        data: { errorMessage: apiErr instanceof Error ? apiErr.message : 'Erreur Flexify' },
-      });
+      if (outcome === 'ambiguous') {
+        LOG('SEPA_PAYOUT_AMBIGUOUS_KEEP_FROZEN', {
+          payoutId: payout.id,
+          message: apiErr instanceof Error ? apiErr.message : String(apiErr),
+        });
+        return NextResponse.json({
+          success: true,
+          payout: {
+            id: payout.id,
+            reference,
+            status: 'PROCESSING',
+            amountCents: validatedAmount,
+            fees,
+            netCents: validatedAmount - fees.totalFeeCents,
+            method: 'SEPA',
+            estimatedArrival: 'Instantané',
+          },
+        });
+      }
       throw apiErr;
     }
     LOG('SEPA_PAYOUT_OK', { transactionId: flexifyResponse.transaction?.id });
 
     const txStatusSepa = flexifyResponse.transaction.status;
-    const internalStatusSepa = convertFlexifyStatus(txStatusSepa) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
+    const internalStatusSepa = isTransactionFailed(txStatusSepa)
+      ? 'PROCESSING'
+      : convertFlexifyStatus(txStatusSepa) as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
     await prisma.payout.update({
       where: { id: payout.id },
       data: {
         status: internalStatusSepa,
         flexifyPayoutId: flexifyResponse.transaction.id,
         ...(isTransactionCompleted(txStatusSepa) && { paidAt: new Date() }),
+        ...(isTransactionFailed(txStatusSepa) && {
+          errorMessage: `Flexify ${txStatusSepa} — confirmation pending`,
+        }),
       },
     });
 

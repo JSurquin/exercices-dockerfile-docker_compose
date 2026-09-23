@@ -11,7 +11,7 @@ import {
   type WhitepayTravelRule,
   type WhitepayTransactionStatus,
 } from '@/lib/whitepay';
-import { createCardPayout, createSepaPayout, convertFlexifyStatus, isTransactionCompleted } from '@/lib/flexify';
+import { createCardPayout, createSepaPayout, convertFlexifyStatus, isTransactionCompleted, isTransactionFailed, isAmbiguousFlexifyError } from '@/lib/flexify';
 import { decrypt } from '@/lib/encryption';
 import crypto from 'crypto';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
@@ -90,13 +90,18 @@ export async function POST(
           if (res.code !== 0 || !res.transaction) {
             throw new Error(res.error_message || 'Échec Flexify carte');
           }
-          const internalStatus = convertFlexifyStatus(res.transaction.status);
+          const internalStatus = isTransactionFailed(res.transaction.status)
+            ? 'PROCESSING'
+            : convertFlexifyStatus(res.transaction.status);
           await prisma.payout.update({
             where: { id: payoutId },
             data: {
               status: internalStatus as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED',
               flexifyPayoutId: res.transaction.id,
               pendingFlexifyRequestEncrypted: null,
+              ...(isTransactionFailed(res.transaction.status) && {
+                errorMessage: `Flexify ${res.transaction.status} — confirmation pending`,
+              }),
             },
           });
           if (isTransactionCompleted(res.transaction.status)) {
@@ -140,13 +145,18 @@ export async function POST(
           if (res.code !== 0 || !res.transaction) {
             throw new Error(res.error_message || 'Échec Flexify SEPA');
           }
-          const internalStatus = convertFlexifyStatus(res.transaction.status);
+          const internalStatus = isTransactionFailed(res.transaction.status)
+            ? 'PROCESSING'
+            : convertFlexifyStatus(res.transaction.status);
           await prisma.payout.update({
             where: { id: payoutId },
             data: {
               status: internalStatus as 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED',
               flexifyPayoutId: res.transaction.id,
               pendingFlexifyRequestEncrypted: null,
+              ...(isTransactionFailed(res.transaction.status) && {
+                errorMessage: `Flexify ${res.transaction.status} — confirmation pending`,
+              }),
             },
           });
           if (isTransactionCompleted(res.transaction.status)) {
@@ -181,16 +191,33 @@ export async function POST(
         }
       } catch (err) {
         console.error('[admin/payouts/approve] Flexify error:', err);
+        const message = err instanceof Error ? err.message : 'Erreur Flexify';
+        if (isAmbiguousFlexifyError(err)) {
+          await prisma.payout.update({
+            where: { id: payoutId },
+            data: {
+              status: 'PROCESSING',
+              errorMessage: `pending_confirmation: ${message}`,
+            },
+          });
+          return NextResponse.json({
+            success: true,
+            payoutId,
+            status: 'PROCESSING',
+            pendingConfirmation: true,
+            message: 'Appel Flexify interrompu (timeout/réseau). Le solde reste gelé jusqu’à confirmation.',
+          });
+        }
         await PayoutLifecycle.onFailed(payout.userId, payoutId, payout.amountCents, {
           tradeId: payout.tradeId,
           finalStatus: 'FAILED',
         });
         await prisma.payout.update({
           where: { id: payoutId },
-          data: { errorMessage: err instanceof Error ? err.message : 'Erreur Flexify' },
+          data: { errorMessage: message },
         });
         return NextResponse.json(
-          { error: 'Échec de l\'appel Flexify. Payout marqué en échec.', details: err instanceof Error ? err.message : String(err) },
+          { error: 'Échec de l\'appel Flexify. Payout marqué en échec.', details: message },
           { status: 502 }
         );
       }

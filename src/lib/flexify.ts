@@ -66,6 +66,77 @@ export class FlexifyApiError extends Error {
   }
 }
 
+/**
+ * Timeout / 5xx / réseau après envoi du payout : Flexify a pu débiter
+ * (ex. Revolut crédité) alors que notre HTTP a échoué. Ne jamais rembourser
+ * le solde dans ce cas — attendre webhook / réconciliation.
+ */
+export class FlexifyAmbiguousPayoutError extends Error {
+  constructor(
+    message: string,
+    public readonly response?: { status: number; data: unknown },
+  ) {
+    super(message);
+    this.name = 'FlexifyAmbiguousPayoutError';
+    Object.setPrototypeOf(this, FlexifyAmbiguousPayoutError.prototype);
+  }
+}
+
+/** Délai avant de considérer un échec Flexify comme définitif et de dégeler le solde. */
+export const FLEXIFY_FAILURE_CONFIRM_MS = 24 * 60 * 60 * 1000;
+
+export function shouldFinalizeFlexifyFailure(createdAt: Date, now: number = Date.now()): boolean {
+  return now - createdAt.getTime() >= FLEXIFY_FAILURE_CONFIRM_MS;
+}
+
+export function buildFlexifyWebhookIdempotencyKey(
+  identifier: string | undefined,
+  reference: string | undefined,
+  status: string | undefined,
+): string {
+  const base = identifier || reference || 'unknown';
+  return status ? `${base}:${status}` : base;
+}
+
+export function isAmbiguousFlexifyError(error: unknown): boolean {
+  if (error instanceof FlexifyAmbiguousPayoutError) return true;
+  if (error instanceof FlexifyApiError) {
+    const status = error.response?.status;
+    return status !== undefined && status >= 500;
+  }
+  if (!error) return false;
+  const err = error as Error & { code?: string; cause?: { code?: string }; response?: { status?: number } };
+  const message = (err.message || String(error)).toLowerCase();
+  const code = err.code || err.cause?.code || '';
+  const status = err.response?.status;
+
+  if (status !== undefined && status >= 500) return true;
+  if (
+    code === 'ETIMEDOUT' ||
+    code === 'ECONNRESET' ||
+    code === 'ECONNREFUSED' ||
+    code === 'ENOTFOUND' ||
+    code === 'ABORT_ERR' ||
+    code === 'UND_ERR_CONNECT_TIMEOUT' ||
+    code === 'UND_ERR_HEADERS_TIMEOUT' ||
+    code === 'UND_ERR_BODY_TIMEOUT'
+  ) {
+    return true;
+  }
+  if (
+    message.includes('timeout') ||
+    message.includes('timed out') ||
+    message.includes('gateway timeout') ||
+    message.includes('fetch failed') ||
+    message.includes('socket hang up') ||
+    message.includes('econnreset') ||
+    /flexify api error: 5\d\d/.test(message)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export type FlexifyPaymentMethod = 'sepa' | 'card';
 export type FlexifyTransactionStatus = 
   | 'new'
@@ -393,10 +464,21 @@ async function flexifyRequest<T>(
       if (response.status === 504) {
         flexifyLog('STEP_504_GATEWAY_TIMEOUT', {
           attempt,
+          path,
           hint: 'Attendre le callback ou faire un check pour obtenir le statut final',
         }, 'warn');
+        // POST /v1/payout : ne jamais retry (risque de double virement) ni traiter comme échec définitif
+        if (path === '/v1/payout') {
+          throw new FlexifyAmbiguousPayoutError(
+            'Flexify Gateway Timeout (504). Attendre callback ou faire check.',
+            { status: 504, data: rawText },
+          );
+        }
         if (attempt === retries) {
-          throw new Error('Flexify Gateway Timeout (504) après tous les retries. Attendre callback ou faire check.');
+          throw new FlexifyAmbiguousPayoutError(
+            'Flexify Gateway Timeout (504) après tous les retries. Attendre callback ou faire check.',
+            { status: 504, data: rawText },
+          );
         }
         await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
         continue;
@@ -458,11 +540,24 @@ async function flexifyRequest<T>(
         if (response.status === 403) {
           await logOutboundIpForWhitelist();
         }
+        const hasExistingTx = Boolean(
+          (normalized as FlexifyPayoutResponse).request_id
+          || (normalized as FlexifyPayoutResponse).transaction
+        );
+        if (path === '/v1/payout' && hasExistingTx) {
+          throw new FlexifyAmbiguousPayoutError(msg, responsePayload);
+        }
         throw new FlexifyApiError(msg, responsePayload, errorFields ?? undefined);
       }
 
       if (!response.ok) {
         flexifyLog('STEP_HTTP_NOT_OK', { status: response.status, data }, 'error');
+        if (path === '/v1/payout' && response.status >= 500) {
+          throw new FlexifyAmbiguousPayoutError(
+            `Flexify API error: ${response.status}`,
+            { status: response.status, data },
+          );
+        }
         throw new Error(`Flexify API error: ${response.status} - ${JSON.stringify(data)}`);
       }
 
@@ -474,6 +569,10 @@ async function flexifyRequest<T>(
       });
       return (path === '/v1/payout' ? normalized : data) as T;
     } catch (error) {
+      // POST payout : aucun retry (la requête a pu aboutir côté Flexify)
+      if (path === '/v1/payout') {
+        throw error;
+      }
       if (attempt === retries) {
         flexifyLog('STEP_REQUEST_FAILED_AFTER_RETRIES', { attempt, error: String(error) }, 'error');
         throw error;
@@ -656,7 +755,7 @@ export async function createSepaPayout(
   });
   logPayoutTransaction('CREATE_SEPA_PAYOUT', params.reference, { amount: params.amountCents });
 
-  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request, 3, false, 'sepa');
+  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request, 1, false, 'sepa');
 }
 
 // =============================================================================
@@ -757,7 +856,7 @@ export async function createCardPayout(
   });
   logPayoutTransaction('CREATE_CARD_PAYOUT', params.reference, { amount: params.amountCents });
 
-  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request, 3, false, 'card');
+  return flexifyRequest<FlexifyPayoutResponse>('POST', '/v1/payout', request, 1, false, 'card');
 }
 
 // =============================================================================

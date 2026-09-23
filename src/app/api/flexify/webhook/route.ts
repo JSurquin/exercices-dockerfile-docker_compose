@@ -7,6 +7,7 @@ import {
   isTransactionCompleted,
   isTransactionFailed,
   flexifyLog,
+  buildFlexifyWebhookIdempotencyKey,
   type FlexifyWebhookPayload,
 } from '@/lib/flexify';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
 
     flexifyMeta = extractFlexifyWebhookMeta(payload);
     const flexifyId = payload.identifier ?? payload.transaction_id;
-    webhookId = flexifyId || payload.reference;
+    webhookId = buildFlexifyWebhookIdempotencyKey(flexifyId, payload.reference, payload.status);
 
     const idempotency = await ensureWebhookIdempotency(webhookId, 'flexify_payout');
     if (!idempotency.allowed) {
@@ -177,25 +178,13 @@ export async function POST(request: NextRequest) {
     }
 
     const newStatus = convertFlexifyStatus(payload.status);
+    const alreadyPaid = payout.status === 'PAID' || payout.status === 'FLEXIFY_PAID';
 
-    const statusUpdate = await prisma.payout.updateMany({
-      where: {
-        id: payout.id,
-        status: { notIn: ['PAID', 'FAILED'] },
-      },
-      data: {
-        status: newStatus as 'PENDING' | 'PENDING_APPROVAL' | 'VERIFICATION_REQUIRED' | 'VERIFIED' | 'SCHEDULED' | 'PROCESSING' | 'PAID' | 'FAILED',
-        txId: flexifyId,
-        flexifyPayoutId: flexifyId,
-        paymentReference: payload.reference,
-        ...(isTransactionCompleted(payload.status) && { paidAt: new Date() }),
-      },
-    });
-
-    if (statusUpdate.count === 0) {
+    // Jamais rétrograder un payout déjà payé (webhook « failed » tardif / Revolut).
+    if (alreadyPaid && !isTransactionCompleted(payload.status)) {
       await markWebhookProcessed(webhookId, 'flexify_payout', {
         success: true,
-        data: { payoutId: payout.id, skipped: true, reason: 'already_final' },
+        data: { payoutId: payout.id, skipped: true, reason: 'already_paid' },
       });
       await auditFlexifyCall(
         request,
@@ -206,32 +195,71 @@ export async function POST(request: NextRequest) {
           httpStatus: 200,
           webhookId,
           payoutId: payout.id,
-          internalStatus: newStatus,
+          internalStatus: payout.status,
         },
         payout.userId
       );
       return NextResponse.json({ received: true, processed: true });
     }
 
+    await prisma.payout.update({
+      where: { id: payout.id },
+      data: {
+        txId: flexifyId,
+        flexifyPayoutId: flexifyId,
+        paymentReference: payload.reference,
+      },
+    });
+
     try {
       if (isTransactionCompleted(payload.status)) {
-        await PayoutLifecycle.onCompleted(
-          payout.userId,
-          payout.id,
-          payout.amountCents,
-          {
-            tradeId: payout.tradeId,
-            reason: `Payout Flexify ${payout.id} complété (webhook)`,
-            finalStatus: newStatus,
-            paidAt: new Date(),
-          }
-        );
-      }
-
-      if (isTransactionFailed(payload.status)) {
-        await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, {
-          tradeId: payout.tradeId,
-          finalStatus: newStatus,
+        const wasFailed = payout.status === 'FAILED' || payout.status === 'FLEXIFY_FAILED';
+        if (wasFailed) {
+          await PayoutLifecycle.correctFailedToPaid(
+            payout.userId,
+            payout.id,
+            payout.amountCents,
+            {
+              tradeId: payout.tradeId,
+              reason: `Payout Flexify ${payout.id} corrigé FAILED→PAID (webhook success)`,
+            },
+          );
+        } else {
+          await PayoutLifecycle.onCompleted(
+            payout.userId,
+            payout.id,
+            payout.amountCents,
+            {
+              tradeId: payout.tradeId,
+              reason: `Payout Flexify ${payout.id} complété (webhook)`,
+              finalStatus: newStatus,
+              paidAt: new Date(),
+            }
+          );
+        }
+      } else if (isTransactionFailed(payload.status)) {
+        // Ne pas rembourser tout de suite : Revolut/émetteur peut afficher un échec
+        // puis créditer. Le solde reste gelé jusqu'à confirmation (24h) via reconcile.
+        if (!alreadyPaid) {
+          await prisma.payout.updateMany({
+            where: { id: payout.id, status: { notIn: ['PAID', 'FLEXIFY_PAID'] } },
+            data: {
+              errorMessage:
+                payload.error_reason
+                || (payload.error_code != null ? `Flexify error ${payload.error_code}` : undefined)
+                || `Flexify ${payload.status} — confirmation pending`,
+            },
+          });
+        }
+      } else {
+        await prisma.payout.updateMany({
+          where: {
+            id: payout.id,
+            status: { notIn: ['PAID', 'FAILED', 'FLEXIFY_PAID', 'FLEXIFY_FAILED'] },
+          },
+          data: {
+            status: newStatus as 'PENDING' | 'PENDING_APPROVAL' | 'VERIFICATION_REQUIRED' | 'VERIFIED' | 'SCHEDULED' | 'PROCESSING' | 'PAID' | 'FAILED',
+          },
         });
       }
     } catch (lifecycleErr) {
