@@ -26,6 +26,7 @@ import { CurrencyDollarIcon, CreditCardIcon } from '@heroicons/react/24/outline'
 import { Snowflake } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
+import { sanitizePayoutAmountInput } from '@/lib/payout-amount-input';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
 import { PageLoading } from '@/components/ui/page-loading';
 import { FeePreview, computeFees } from '@/components/payout/FeePreview';
@@ -1050,13 +1051,12 @@ export default function PayoutPage() {
                   <div className="relative">
                     <Input
                       id="amount"
-                      type="number"
-                      min="10"
-                      max="10000"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      autoComplete="off"
                       value={amount}
                       onChange={(e) => {
-                        setAmount(e.target.value);
+                        setAmount(sanitizePayoutAmountInput(e.target.value));
                         setQuote(null);
                       }}
                       placeholder={text.request.amountPlaceholder}
