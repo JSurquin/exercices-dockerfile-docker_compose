@@ -232,6 +232,9 @@ export function AdminPayoutsTable() {
   };
 
   const handleCancelPayout = async (payoutId: string) => {
+    if (!window.confirm(tp.cancelConfirm ?? 'Annuler ce payout ? Le solde sera recrédité et le client sera prévenu.')) {
+      return;
+    }
     setCancellingId(payoutId);
     try {
       const res = await fetch(`/api/admin/payouts/${payoutId}/cancel`, {

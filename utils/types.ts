@@ -6217,6 +6217,7 @@ export interface Messages {
         toastCancelFailed?: string;
         requestFailed?: string;
         cancelReasonByAdmin?: string;
+        cancelConfirm?: string;
         perPage?: string;
         page?: string;
         total?: string;

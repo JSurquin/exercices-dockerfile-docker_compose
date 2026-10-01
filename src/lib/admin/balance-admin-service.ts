@@ -139,7 +139,16 @@ export async function cancelPayout(
 ): Promise<void> {
   const payout = await prisma.payout.findUnique({
     where: { id: payoutId },
-    select: { id: true, userId: true, status: true, amountCents: true, balanceFrozenAt: true, balanceDebitedAt: true },
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      amountCents: true,
+      balanceFrozenAt: true,
+      balanceDebitedAt: true,
+      gateFiOrderId: true,
+      user: { select: { name: true, email: true, contactEmail: true } },
+    },
   });
   if (!payout) throw new Error('Payout not found');
   const cancellable = [
@@ -156,24 +165,43 @@ export async function cancelPayout(
     throw new Error(`Payout cannot be cancelled (status: ${payout.status})`);
   }
 
+  const cancelReason = reason.trim() || 'Annulé par l’admin';
+
   if (payout.balanceFrozenAt && !payout.balanceDebitedAt) {
     const { PayoutLifecycle } = await import('@/lib/payout-lifecycle');
     await PayoutLifecycle.onFailed(payout.userId, payout.id, payout.amountCents, {
       finalStatus: 'CANCELLED',
     });
+    await prisma.payout.update({
+      where: { id: payoutId },
+      data: { errorMessage: cancelReason },
+    });
   } else {
     await prisma.payout.update({
       where: { id: payoutId },
-      data: { status: 'CANCELLED', errorMessage: reason },
+      data: { status: 'CANCELLED', errorMessage: cancelReason },
     });
   }
 
   await auditLog(
     adminId,
     AUDIT_ACTIONS.ADMIN_PAYOUT_CANCELLED,
-    { payoutId, targetUserId: payout.userId, reason, amountCents: payout.amountCents, balanceUnfrozen: !!payout.balanceFrozenAt },
+    { payoutId, targetUserId: payout.userId, reason: cancelReason, amountCents: payout.amountCents, balanceUnfrozen: !!payout.balanceFrozenAt },
     ipAddress
   );
+
+  const { isSepaFrPayout, notifySepaFrRejected } = await import('@/lib/sepa-fr-notify');
+  if (isSepaFrPayout(payout.gateFiOrderId)) {
+    try {
+      await notifySepaFrRejected({
+        user: payout.user,
+        amountCents: payout.amountCents,
+        reason: cancelReason,
+      });
+    } catch (err) {
+      console.error('[cancelPayout] SEPA FR rejection email failed', payoutId, err);
+    }
+  }
 }
 
 /**

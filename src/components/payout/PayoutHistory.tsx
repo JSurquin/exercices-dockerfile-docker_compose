@@ -17,6 +17,7 @@ interface Payout {
   createdAt: string;
   paidAt?: string;
   gateFiOrderId?: string | null;
+  errorMessage?: string | null;
   paymentMethod: {
     id: string;
     type: string;
@@ -32,6 +33,21 @@ interface Payout {
     ticketId: string;
     grossCents: number;
   };
+}
+
+function isPublicPayoutError(message: string | null | undefined, status: string): string | null {
+  if (!message) return null;
+  if (status !== 'CANCELLED' && status !== 'FAILED' && status !== 'FLEXIFY_FAILED' && status !== 'WHITEPAY_DECLINED') {
+    return null;
+  }
+  if (
+    message.startsWith('pending_confirmation:') ||
+    message === 'freeze_failed' ||
+    message.includes('confirmation pending')
+  ) {
+    return null;
+  }
+  return message;
 }
 
 export function PayoutHistory() {
@@ -188,7 +204,9 @@ export function PayoutHistory() {
         ) : (
           <>
             <div className="space-y-4">
-              {payouts.map((payout: Payout) => (
+              {payouts.map((payout: Payout) => {
+                const publicError = isPublicPayoutError(payout.errorMessage, payout.status);
+                return (
                 <div
                   key={payout.id}
                   className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
@@ -208,6 +226,11 @@ export function PayoutHistory() {
                           <span className="ml-2">• Trade #{payout.trade.ticketId}</span>
                         )}
                       </div>
+                      {publicError && (
+                        <div className="text-xs text-destructive mt-1 max-w-md">
+                          {publicError}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -222,7 +245,8 @@ export function PayoutHistory() {
                     )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Pagination */}
