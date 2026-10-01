@@ -13,8 +13,14 @@ export function isValidChatAttachmentUrl(url: string): boolean {
   return CHAT_ATTACHMENT_URL_PATTERN.test(url);
 }
 
+const LIKELY_CHAT_IMAGE_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']);
+
 export function isLikelyChatImageFile(file: { type?: string; name?: string }): boolean {
-  if (file.type?.toLowerCase().startsWith('image/')) return true;
+  const type = file.type?.toLowerCase().trim();
+  if (type) {
+    if (LIKELY_CHAT_IMAGE_TYPES.has(type)) return true;
+    if (type.startsWith('image/')) return false;
+  }
   return /\.(jpe?g|png|webp|gif)$/i.test(file.name ?? '');
 }
 

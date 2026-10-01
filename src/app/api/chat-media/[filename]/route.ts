@@ -2,6 +2,12 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveChatImageFilePath } from '@/lib/chat-image-upload';
+import {
+  authorizeChatMediaRequest,
+  CHAT_MEDIA_HEADERS,
+  chatMediaJson,
+  isSafeChatMediaFilename,
+} from '@/lib/chat-media-access';
 
 interface RouteParams {
   params: Promise<{ filename: string }>;
@@ -15,20 +21,21 @@ const MIME_BY_EXTENSION: Record<string, string> = {
   gif: 'image/gif',
 };
 
-function isSafeFilename(filename: string): boolean {
-  return /^[a-zA-Z0-9-]+\.(jpg|jpeg|png|webp|gif)$/i.test(filename);
-}
-
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { filename } = await params;
-    if (!isSafeFilename(filename)) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (!isSafeChatMediaFilename(filename)) {
+      return chatMediaJson('Not found', 404);
+    }
+
+    const access = await authorizeChatMediaRequest(request, filename);
+    if (!access.ok) {
+      return chatMediaJson(access.error, access.status);
     }
 
     const resolved = await resolveChatImageFilePath(filename);
     if (!resolved) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return chatMediaJson('Not found', 404);
     }
 
     const buffer = await readFile(resolved);
@@ -37,11 +44,12 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     return new NextResponse(buffer, {
       headers: {
+        ...CHAT_MEDIA_HEADERS,
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return chatMediaJson('Not found', 404);
   }
 }

@@ -70,6 +70,10 @@ describe('chat-attachment', () => {
     expect(isLikelyChatImageFile({ type: 'image/png', name: 'x.bin' })).toBe(true);
     expect(isLikelyChatImageFile({ type: '', name: 'photo.JPG' })).toBe(true);
     expect(isLikelyChatImageFile({ type: '', name: 'notes.pdf' })).toBe(false);
+    expect(isLikelyChatImageFile({ type: 'image/svg+xml', name: 'photo.jpg' })).toBe(false);
+    expect(isLikelyChatImageFile({ type: '', name: 'icon.svg' })).toBe(false);
+    expect(isLikelyChatImageFile({ type: 'image/gif', name: 'anim.gif' })).toBe(true);
+    expect(isLikelyChatImageFile({ type: 'image/webp', name: 'shot.webp' })).toBe(true);
   });
 
   it('fusionne les métadonnées de traduction et de pièce jointe', () => {

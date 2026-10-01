@@ -2,7 +2,9 @@ import {
   buildChatImagePublicUrl,
   ChatImageUploadError,
   getChatUploadFile,
+  isChatImageContentLengthTooLarge,
   isChatImageUploadError,
+  MAX_CHAT_IMAGE_BYTES,
   resetChatUploadDirectoryCache,
   resolveChatImageFilePath,
   resolveChatImageMimeType,
@@ -12,6 +14,21 @@ import {
 import { chmodSync, mkdirSync, writeFileSync } from 'fs';
 import os from 'os';
 import path from 'path';
+import sharp from 'sharp';
+
+async function makeJpegBuffer(): Promise<Buffer> {
+  return sharp({
+    create: { width: 8, height: 8, channels: 3, background: { r: 220, g: 40, b: 40 } },
+  })
+    .jpeg()
+    .toBuffer();
+}
+
+function toFileBits(buffer: Buffer): ArrayBuffer {
+  const copy = new ArrayBuffer(buffer.byteLength);
+  new Uint8Array(copy).set(buffer);
+  return copy;
+}
 
 describe('chat-image-upload', () => {
   afterEach(() => {
@@ -19,9 +36,9 @@ describe('chat-image-upload', () => {
     delete process.env.CHAT_UPLOAD_DIR;
   });
 
-  it('accepte un JPEG sans type MIME via extension', () => {
+  it('accepte un JPEG via magic bytes même sans type MIME', () => {
     const buffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
-    const file = new File([buffer], 'screenshot.jpg', { type: '' });
+    const file = new File([buffer], 'screenshot.bin', { type: '' });
     expect(resolveChatImageMimeType(file, buffer)).toBe('image/jpeg');
   });
 
@@ -31,10 +48,37 @@ describe('chat-image-upload', () => {
     expect(resolveChatImageMimeType(file, buffer)).toBe('image/png');
   });
 
+  it('refuse un SVG déguisé en .jpg malgré un MIME JPEG déclaré', () => {
+    const buffer = Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+    );
+    const file = new File([toFileBits(buffer)], 'photo.jpg', { type: 'image/jpeg' });
+    expect(() => resolveChatImageMimeType(file, buffer)).toThrow(ChatImageUploadError);
+    expect(() => resolveChatImageMimeType(file, buffer)).toThrow(/SVG/);
+  });
+
+  it('refuse un HTML déguisé en image', () => {
+    const buffer = Buffer.from('<html><body><script>alert(1)</script></body></html>');
+    const file = new File([buffer], 'photo.png', { type: 'image/png' });
+    expect(() => resolveChatImageMimeType(file, buffer)).toThrow(/HTML|SVG|non autorisé/);
+  });
+
   it('refuse un type non supporté', () => {
     const buffer = Buffer.from('%PDF-1.4');
     const file = new File([buffer], 'doc.pdf', { type: 'application/pdf' });
     expect(() => resolveChatImageMimeType(file, buffer)).toThrow(ChatImageUploadError);
+  });
+
+  it('ne fait pas confiance à l’extension si les magic bytes ne correspondent pas', () => {
+    const buffer = Buffer.from('not-an-image');
+    const file = new File([toFileBits(buffer)], 'photo.jpg', { type: 'image/jpeg' });
+    expect(() => resolveChatImageMimeType(file, buffer)).toThrow(ChatImageUploadError);
+  });
+
+  it('refuse tôt un Content-Length trop élevé', () => {
+    expect(isChatImageContentLengthTooLarge(String(MAX_CHAT_IMAGE_BYTES + 65 * 1024))).toBe(true);
+    expect(isChatImageContentLengthTooLarge(String(1024))).toBe(false);
+    expect(isChatImageContentLengthTooLarge(null)).toBe(false);
   });
 
   it('extrait le fichier même s’il n’est pas une instance File', () => {
@@ -55,12 +99,50 @@ describe('chat-image-upload', () => {
     expect(buildChatImagePublicUrl('abc.jpg')).toBe('/api/chat-media/abc.jpg');
   });
 
-  it('enregistre une image et renvoie une URL publique', async () => {
-    const buffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]);
-    const file = new File([buffer], 'photo.jpg', { type: 'image/jpeg' });
+  it('enregistre une image ré-encodée et renvoie une URL publique', async () => {
+    const buffer = await makeJpegBuffer();
+    const file = new File([toFileBits(buffer)], 'photo.jpg', { type: 'image/jpeg' });
     const result = await saveChatImage(file);
 
     expect(result.url).toMatch(/^\/api\/chat-media\/[a-f0-9-]+\.jpg$/);
+  });
+
+  it('refuse un fichier trop volumineux via size', async () => {
+    const file = {
+      type: 'image/jpeg',
+      name: 'huge.jpg',
+      size: MAX_CHAT_IMAGE_BYTES + 1,
+      arrayBuffer: async () => {
+        throw new Error('ne doit pas lire le corps');
+      },
+    };
+    await expect(saveChatImage(file)).rejects.toThrow(/trop volumineux/);
+  });
+
+  it('refuse un fichier trop volumineux via buffer.byteLength', async () => {
+    const buffer = Buffer.alloc(MAX_CHAT_IMAGE_BYTES + 1);
+    buffer[0] = 0xff;
+    buffer[1] = 0xd8;
+    buffer[2] = 0xff;
+    const copy = Uint8Array.from(buffer);
+    const file = {
+      type: 'image/jpeg',
+      name: 'huge.jpg',
+      size: 100,
+      arrayBuffer: async () => copy.buffer.slice(copy.byteOffset, copy.byteOffset + copy.byteLength),
+    };
+    await expect(saveChatImage(file)).rejects.toThrow(/trop volumineux/);
+  });
+
+  it('ré-encode un GIF en PNG pour supprimer animation et métadonnées', async () => {
+    const gif = await sharp({
+      create: { width: 4, height: 4, channels: 3, background: { r: 0, g: 80, b: 200 } },
+    })
+      .gif()
+      .toBuffer();
+    const file = new File([toFileBits(gif)], 'anim.gif', { type: 'image/gif' });
+    const result = await saveChatImage(file);
+    expect(result.url).toMatch(/^\/api\/chat-media\/[a-f0-9-]+\.png$/);
   });
 
   it('bascule sur un dossier temporaire si public/uploads/chat est en lecture seule', async () => {
@@ -69,8 +151,8 @@ describe('chat-image-upload', () => {
     chmodSync(publicDir, 0o555);
 
     try {
-      const buffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]);
-      const file = new File([buffer], 'photo.jpg', { type: 'image/jpeg' });
+      const buffer = await makeJpegBuffer();
+      const file = new File([toFileBits(buffer)], 'photo.jpg', { type: 'image/jpeg' });
       const result = await saveChatImage(file);
 
       expect(result.url).toMatch(/^\/api\/chat-media\//);

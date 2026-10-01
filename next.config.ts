@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_SHOW_SENTRY: showSentry ? 'true' : 'false',
   },
   poweredByHeader: false,
+  serverExternalPackages: ['sharp'],
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
     const cspDirectives = [

@@ -107,6 +107,12 @@ export const RATE_LIMIT_CONFIGS = {
     windowMs: 60 * 60 * 1000,
     maxRequests: 40,
   },
+
+  // Upload d'images du chat support
+  CHAT_IMAGE_UPLOAD: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 20,
+  },
 } as const;
 
 export class RateLimiter {
@@ -276,6 +282,7 @@ export const rateLimiters = {
   newsletterSubscribe: new RateLimiter('newsletter_subscribe', RATE_LIMIT_CONFIGS.NEWSLETTER_SUBSCRIBE),
   newsletterResendWelcome: new RateLimiter('newsletter_resend_welcome', RATE_LIMIT_CONFIGS.NEWSLETTER_RESEND_WELCOME),
   newsletterUnsubscribe: new RateLimiter('newsletter_unsubscribe', RATE_LIMIT_CONFIGS.NEWSLETTER_UNSUBSCRIBE),
+  chatImageUpload: new RateLimiter('chat_image_upload', RATE_LIMIT_CONFIGS.CHAT_IMAGE_UPLOAD),
 };
 
 /**
