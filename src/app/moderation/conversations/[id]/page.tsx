@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, type ChangeEvent } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +18,8 @@ import { useSession } from '~/lib/auth-client';
 import {
   ArrowLeftIcon,
   PaperAirplaneIcon,
+  PhotoIcon,
+  XMarkIcon,
   UserIcon,
   ClockIcon,
   CheckIcon,
@@ -48,6 +51,7 @@ import {
   shouldPlayModeratorNotificationSound,
 } from '@/lib/chat-notification-logic';
 import { isValidModeratorRole } from '@/lib/chat-logic';
+import { isLikelyChatImageFile } from '@/lib/chat-attachment';
 import { playNotificationSound } from '@/lib/play-notification-sound';
 import { CHAT_WIDGET_RATING_EMOJIS } from '@/lib/chat-widget-styles';
 
@@ -61,7 +65,10 @@ export default function ConversationPage() {
 
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
+  const [pendingImage, setPendingImage] = useState<{ file: File; previewUrl: string } | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const prevUserMsgCountRef = useRef<number | null>(null);
   const seenMessageIdsRef = useRef<Set<string>>(new Set());
   const seenMessagesConversationRef = useRef<string | null>(null);
@@ -76,8 +83,25 @@ export default function ConversationPage() {
   }
 
   useEffect(() => {
+    return () => {
+      if (pendingImage?.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(pendingImage.previewUrl);
+      }
+    };
+  }, [pendingImage]);
+
+  useEffect(() => {
     setMessage('');
     setSending(false);
+    setPendingImage((current) => {
+      if (current?.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(current.previewUrl);
+      }
+      return null;
+    });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   }, [routeConversationId]);
 
   const { data: conversation, isLoading: loading, refetch: refetchConversation } = useQuery({
@@ -115,21 +139,86 @@ export default function ConversationPage() {
     prevUserMsgCountRef.current = userCount;
   }, [conversation?.messages]);
 
+  const clearPendingImage = useCallback(() => {
+    setPendingImage((current) => {
+      if (current?.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(current.previewUrl);
+      }
+      return null;
+    });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
+
+  const handleImageSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !isLikelyChatImageFile(file)) {
+      event.target.value = '';
+      return;
+    }
+    setPendingImage((current) => {
+      if (current?.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(current.previewUrl);
+      }
+      return {
+        file,
+        previewUrl: URL.createObjectURL(file),
+      };
+    });
+  };
+
   const sendMessage = async () => {
-    if (!message.trim() || sending) return;
+    const trimmed = message.trim();
+    if ((!trimmed && !pendingImage) || sending || uploadingImage) return;
     const targetConversationId = activeConversationIdRef.current;
     if (!targetConversationId) return;
 
     setSending(true);
+    const contentToRestore = message;
     try {
+      let attachmentUrl: string | undefined;
+      if (pendingImage) {
+        setUploadingImage(true);
+        try {
+          const formData = new FormData();
+          formData.append('file', pendingImage.file);
+          const uploadResponse = await fetch('/api/chat/images', {
+            method: 'POST',
+            body: formData,
+          });
+          if (!uploadResponse.ok) {
+            throw new Error('upload failed');
+          }
+          const payload = (await uploadResponse.json()) as { url?: string };
+          if (!payload.url) {
+            throw new Error('missing url');
+          }
+          attachmentUrl = payload.url;
+          if (pendingImage.previewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(pendingImage.previewUrl);
+          }
+          setPendingImage(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+        } catch {
+          toast.error(messages.chatWidget.imageUploadError);
+          return;
+        } finally {
+          setUploadingImage(false);
+        }
+      }
+
       const response = await fetch('/api/chat/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           conversationId: targetConversationId,
-          content: message.trim(),
+          content: trimmed,
           replyContext: 'moderation',
           locale,
+          ...(attachmentUrl ? { attachmentUrl } : {}),
         }),
       });
 
@@ -141,6 +230,7 @@ export default function ConversationPage() {
       await refetchConversation();
       toast.success(messages.moderation.conversation.messages.messageSent);
     } catch (error) {
+      setMessage(contentToRestore);
       toast.error(messages.moderation.conversation.messages.sendError);
       console.error(error);
     } finally {
@@ -438,7 +528,49 @@ export default function ConversationPage() {
 
             {/* Zone saisie, ancrée en bas, jamais couverte */}
             <div className="flex-shrink-0 border-t border-border/50 bg-background/30 backdrop-blur-sm px-3 sm:px-4 py-2.5 sm:py-3">
+              {pendingImage ? (
+                <div className="mb-2 flex items-start gap-2">
+                  <div className="relative shrink-0">
+                    <Image
+                      src={pendingImage.previewUrl}
+                      alt={messages.chatWidget.attachImage}
+                      width={72}
+                      height={72}
+                      unoptimized
+                      className="h-[72px] w-[72px] rounded-md border border-border/50 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={clearPendingImage}
+                      className="absolute -top-1.5 -right-1.5 rounded-full bg-background border border-border/60 p-0.5 shadow-sm"
+                      aria-label={messages.chatWidget.removeImage}
+                    >
+                      <XMarkIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : null}
               <div className="flex gap-2 items-end">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  data-testid="moderation-image-input"
+                  onChange={handleImageSelect}
+                />
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  data-testid="moderation-attach-image"
+                  className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 self-end text-muted-foreground hover:text-foreground"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={sending || uploadingImage}
+                  aria-label={messages.chatWidget.attachImage}
+                >
+                  <PhotoIcon className="h-5 w-5" />
+                </Button>
                 <Textarea
                   data-testid="moderation-reply-input"
                   placeholder={messages.moderation.conversation.typeYourReply}
@@ -447,21 +579,21 @@ export default function ConversationPage() {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      sendMessage();
+                      void sendMessage();
                     }
                   }}
                   className={cn('flex-1 min-h-[52px] sm:min-h-[60px] max-h-[200px] resize-none text-sm', panelGlassField)}
-                  disabled={sending}
+                  disabled={sending || uploadingImage}
                 />
                 <Button
                   data-testid="moderation-reply-send"
-                  onClick={sendMessage}
-                  disabled={!message.trim() || sending}
+                  onClick={() => void sendMessage()}
+                  disabled={(!message.trim() && !pendingImage) || sending || uploadingImage}
                   size="icon"
                   variant="cta"
                   className={cn('flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 self-end', adminBtnPrimary)}
                 >
-                  {sending ? (
+                  {sending || uploadingImage ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
                   ) : (
                     <PaperAirplaneIcon className="w-4 h-4" />
@@ -469,7 +601,7 @@ export default function ConversationPage() {
                 </Button>
               </div>
               <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 select-none">
-                {messages.moderation.conversation.sendHint}
+                {uploadingImage ? messages.chatWidget.imageUploading : messages.moderation.conversation.sendHint}
               </p>
             </div>
           </Card>

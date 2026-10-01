@@ -5,10 +5,30 @@ export type ChatMessageImageAttachment = {
   url: string;
 };
 
+const CHAT_ATTACHMENT_URL_PATTERN =
+  /^(?:\/uploads\/chat|\/api\/chat-media)\/[a-zA-Z0-9-]+\.(jpg|jpeg|png|webp|gif)$/;
+
 export function isValidChatAttachmentUrl(url: string): boolean {
-  if (!url.startsWith('/uploads/chat/')) return false;
   if (url.includes('..')) return false;
-  return /^\/uploads\/chat\/[a-zA-Z0-9-]+\.(jpg|jpeg|png|webp|gif)$/.test(url);
+  return CHAT_ATTACHMENT_URL_PATTERN.test(url);
+}
+
+export function isLikelyChatImageFile(file: { type?: string; name?: string }): boolean {
+  if (file.type?.toLowerCase().startsWith('image/')) return true;
+  return /\.(jpe?g|png|webp|gif)$/i.test(file.name ?? '');
+}
+
+export function mergeChatMessageMetadata(
+  ...parts: Array<object | undefined | null>
+): Record<string, unknown> | undefined {
+  const merged: Record<string, unknown> = {};
+  let hasAny = false;
+  for (const part of parts) {
+    if (!part || typeof part !== 'object') continue;
+    Object.assign(merged, part);
+    hasAny = true;
+  }
+  return hasAny ? merged : undefined;
 }
 
 export function parseChatMessageAttachment(

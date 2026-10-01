@@ -766,6 +766,49 @@ describe('POST /api/chat/messages — modération', () => {
     expect(body.senderType).toBe('MODERATOR');
     expect(body.content).toContain('vérification');
   });
+
+  it('conserve la pièce jointe image dans les métadonnées d’un message modérateur', async () => {
+    mockResolveChatIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'MODERATOR',
+      session: { user: { id: 'mod-1' } },
+    });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      userId: 'u1',
+      status: 'ACTIVE',
+      assignedTo: 'mod-1',
+      lastMessageAt: new Date(),
+      category: 'trade',
+      user: null,
+    });
+    (prisma.chatMessage.create as jest.Mock).mockResolvedValue({
+      id: 'm-img',
+      senderType: 'MODERATOR',
+    });
+    (prisma.conversation.update as jest.Mock).mockResolvedValue({});
+    (prisma.chatMessage.findMany as jest.Mock).mockResolvedValue([]);
+
+    const res = await postMessage(
+      makeRequest('http://localhost/api/chat/messages', {
+        method: 'POST',
+        body: {
+          conversationId: 'c1',
+          attachmentUrl: '/api/chat-media/abc-123.jpg',
+          replyContext: 'moderation',
+        },
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    const createArg = (prisma.chatMessage.create as jest.Mock).mock.calls[0][0];
+    expect(createArg.data.senderType).toBe('MODERATOR');
+    expect(createArg.data.metadata).toEqual(
+      expect.objectContaining({
+        attachment: { type: 'image', url: '/api/chat-media/abc-123.jpg' },
+      }),
+    );
+  });
 });
 
 describe('POST /api/chat/conversations/[id]/rate', () => {

@@ -91,6 +91,7 @@ import { useChat } from "@/hooks/use-chat";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
+import { isLikelyChatImageFile } from "@/lib/chat-attachment";
 import {
   ChatBubbleBottomCenterTextIcon,
   XMarkIcon,
@@ -306,7 +307,7 @@ const ChatWidgetInput = memo(function ChatWidgetInput({
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) {
+    if (!file || !isLikelyChatImageFile(file)) {
       event.target.value = '';
       return;
     }

@@ -48,7 +48,7 @@ import {
 } from '@/lib/chat-support-translation';
 import { isValidChatAiLocale } from '@/lib/chat-ai-locale';
 import { autoAssignModeratorOnReplyIfUnassigned } from '@/lib/chat-assignment';
-import { prepareChatOutgoingMessage } from '@/lib/chat-attachment';
+import { mergeChatMessageMetadata, prepareChatOutgoingMessage } from '@/lib/chat-attachment';
 
 async function assertConversationAccess(
   request: NextRequest,
@@ -346,14 +346,14 @@ export async function POST(
 
     let messageMetadata: Prisma.InputJsonValue | undefined;
     if (senderType === 'USER') {
-      messageMetadata = {
-        ...buildOutgoingMessageLocaleMetadata({
+      messageMetadata = mergeChatMessageMetadata(
+        buildOutgoingMessageLocaleMetadata({
           senderType,
           content: outgoingMessage.content,
           uiLocale: body.locale,
         }),
-        ...outgoingMessage.metadata,
-      } as Prisma.InputJsonValue;
+        outgoingMessage.metadata,
+      ) as Prisma.InputJsonValue | undefined;
     } else if (senderType === 'MODERATOR') {
       const clientLocale = resolveConversationClientLocale(
         priorUserMessages.map((m) => ({
@@ -362,11 +362,14 @@ export async function POST(
           metadata: m.metadata,
         })),
       );
-      messageMetadata = await prepareModeratorMessageMetadata({
-        content: outgoingMessage.content,
-        uiLocale: body.locale,
-        clientLocale,
-      });
+      messageMetadata = mergeChatMessageMetadata(
+        await prepareModeratorMessageMetadata({
+          content: outgoingMessage.content,
+          uiLocale: body.locale,
+          clientLocale,
+        }),
+        outgoingMessage.metadata,
+      ) as Prisma.InputJsonValue | undefined;
     }
 
     if (senderType === 'MODERATOR' && identity.kind === 'user') {

@@ -276,4 +276,44 @@ describe('POST /api/chat/conversations/[id]/messages', () => {
       expect.objectContaining({ senderType: 'MODERATOR' }),
     );
   });
+
+  it('conserve la pièce jointe image d’un message modérateur', async () => {
+    mockIdentity.mockResolvedValue({
+      kind: 'user',
+      role: 'MODERATOR',
+      session: { user: { id: 'mod-1' } },
+    });
+    (prisma.conversation.findUnique as jest.Mock).mockResolvedValue({
+      id: 'c1',
+      userId: 'u1',
+      status: 'ACTIVE',
+      assignedTo: 'mod-1',
+      lastMessageAt: new Date(),
+      category: 'support',
+      user: null,
+    });
+    (prisma.chatMessage.findMany as jest.Mock).mockResolvedValue([]);
+    mockCreateMsg.mockResolvedValue({ id: 'm-img', senderType: 'MODERATOR' });
+
+    const res = await postThreadMessage(
+      makeRequest('http://localhost/api/chat/conversations/c1/messages', {
+        method: 'POST',
+        body: {
+          attachmentUrl: '/api/chat-media/abc-123.jpg',
+          replyContext: 'moderation',
+        },
+      }),
+      { params: Promise.resolve({ id: 'c1' }) },
+    );
+
+    expect(res.status).toBe(201);
+    expect(mockCreateMsg).toHaveBeenCalledWith(
+      expect.objectContaining({
+        senderType: 'MODERATOR',
+        metadata: expect.objectContaining({
+          attachment: { type: 'image', url: '/api/chat-media/abc-123.jpg' },
+        }),
+      }),
+    );
+  });
 });

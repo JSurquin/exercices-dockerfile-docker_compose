@@ -95,13 +95,18 @@ jest.mock('@/components/providers/locale-provider', () => ({
       },
       chatWidget: {
         aiLabel: 'Réponse IA',
+        imageMessage: '📷 Photo',
+        attachImage: 'Joindre une photo',
+        removeImage: 'Retirer la photo',
+        imageUploading: 'Envoi de la photo…',
+        imageUploadError: "Impossible d'envoyer la photo",
       },
     },
   }),
 }));
 
-jest.mock('@/lib/chat-markdown', () => ({
-  ChatMarkdownContent: ({ content }: { content: string }) => {
+jest.mock('@/lib/chat-markdown', () => {
+  const ChatMarkdownContent = ({ content }: { content: string }) => {
     const boldMatch = content.match(/\*\*(.+?)\*\*([\s\S]*)/);
     if (boldMatch) {
       return (
@@ -118,8 +123,26 @@ jest.mock('@/lib/chat-markdown', () => ({
         <p>{content}</p>
       </div>
     );
-  },
-  shouldRenderChatMarkdown: (senderType: string) => senderType !== 'USER',
+  };
+  return {
+    ChatMarkdownContent,
+    shouldRenderChatMarkdown: (senderType: string) => senderType !== 'USER',
+    ChatMessageContent: ({
+      content,
+      senderType,
+    }: {
+      content: string;
+      senderType: string;
+    }) =>
+      senderType === 'USER' ? <p>{content}</p> : <ChatMarkdownContent content={content} />,
+  };
+});
+
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: { alt?: string; src?: string }) => (
+    <img alt={props.alt ?? ''} src={typeof props.src === 'string' ? props.src : ''} />
+  ),
 }));
 
 import ConversationPage from '@/app/moderation/conversations/[id]/page';
@@ -169,6 +192,8 @@ function renderPage() {
 beforeEach(() => {
   jest.clearAllMocks();
   global.fetch = jest.fn();
+  global.URL.createObjectURL = jest.fn(() => 'blob:preview');
+  global.URL.revokeObjectURL = jest.fn();
 });
 
 describe('ModerationConversationPage', () => {
@@ -266,6 +291,66 @@ describe('ModerationConversationPage', () => {
           body: JSON.stringify({
             conversationId: 'conv-1',
             content: 'Nous regardons votre trade',
+            replyContext: 'moderation',
+            locale: 'fr',
+          }),
+        }),
+      );
+    });
+    expect(toast.success).toHaveBeenCalledWith('Message envoyé');
+  });
+
+  it('envoie une image jointe par un modérateur', async () => {
+    const jpeg = new File([new Uint8Array([0xff, 0xd8, 0xff])], 'photo.jpg', {
+      type: 'image/jpeg',
+    });
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => buildConversation(),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ url: '/api/chat-media/abc-123.jpg' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ id: 'm-img', senderType: 'MODERATOR' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => buildConversation(),
+      });
+
+    renderPage();
+    const input = (await screen.findByTestId('moderation-image-input')) as HTMLInputElement;
+    expect(screen.getByTestId('moderation-attach-image')).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [jpeg] } });
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('moderation-reply-send'));
+    });
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/chat/images',
+        expect.objectContaining({ method: 'POST' }),
+      );
+    });
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/chat/messages',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            conversationId: 'conv-1',
+            content: '',
+            replyContext: 'moderation',
+            locale: 'fr',
+            attachmentUrl: '/api/chat-media/abc-123.jpg',
           }),
         }),
       );

@@ -29,7 +29,7 @@ import {
   resolveConversationClientLocale,
 } from '@/lib/chat-support-translation';
 import { autoAssignModeratorOnReplyIfUnassigned } from '@/lib/chat-assignment';
-import { prepareChatOutgoingMessage } from '@/lib/chat-attachment';
+import { mergeChatMessageMetadata, prepareChatOutgoingMessage } from '@/lib/chat-attachment';
 
 // POST /api/chat/messages — création auto de conversation si conversationId absent
 export async function POST(request: NextRequest) {
@@ -172,14 +172,14 @@ export async function POST(request: NextRequest) {
 
     let messageMetadata: Prisma.InputJsonValue | undefined;
     if (senderType === 'USER') {
-      messageMetadata = {
-        ...buildOutgoingMessageLocaleMetadata({
+      messageMetadata = mergeChatMessageMetadata(
+        buildOutgoingMessageLocaleMetadata({
           senderType,
           content: outgoingMessage.content,
           uiLocale: body.locale,
         }),
-        ...outgoingMessage.metadata,
-      } as Prisma.InputJsonValue;
+        outgoingMessage.metadata,
+      ) as Prisma.InputJsonValue | undefined;
     } else if (senderType === 'MODERATOR') {
       const priorUserMessages = await prisma.chatMessage.findMany({
         where: { conversationId, senderType: 'USER' },
@@ -194,11 +194,14 @@ export async function POST(request: NextRequest) {
           metadata: m.metadata,
         })),
       );
-      messageMetadata = await prepareModeratorMessageMetadata({
-        content: outgoingMessage.content,
-        uiLocale: body.locale,
-        clientLocale,
-      });
+      messageMetadata = mergeChatMessageMetadata(
+        await prepareModeratorMessageMetadata({
+          content: outgoingMessage.content,
+          uiLocale: body.locale,
+          clientLocale,
+        }),
+        outgoingMessage.metadata,
+      ) as Prisma.InputJsonValue | undefined;
     }
 
     if (senderType === 'MODERATOR' && identity.kind === 'user') {

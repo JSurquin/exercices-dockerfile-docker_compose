@@ -51,6 +51,12 @@ describe('createChatMessageSchema', () => {
         attachmentUrl: '/uploads/chat/abc.jpg',
       }).success,
     ).toBe(true);
+    expect(
+      createChatMessageSchema.safeParse({
+        conversationId: 'c1',
+        attachmentUrl: '/api/chat-media/abc.jpg',
+      }).success,
+    ).toBe(true);
   });
 
   it('refuse un message vide sans image', () => {

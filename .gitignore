@@ -51,3 +51,7 @@ next-env.d.ts
 certificates
 # Sentry Config File
 .env.sentry-build-plugin
+
+# chat image uploads generated at runtime / tests
+/public/uploads/chat/*
+!/public/uploads/chat/.gitkeep
