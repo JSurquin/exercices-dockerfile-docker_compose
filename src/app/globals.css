@@ -2087,6 +2087,44 @@ body.next-dev-overlay-present #sentry-feedback {
     color: #e8e8f0;
   }
 
+  /* Navbar wallet — flash on value change (transform/opacity only) */
+  @keyframes nav-wallet-flash {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    40% {
+      opacity: 0.55;
+      transform: scale(1.06);
+    }
+  }
+
+  .nav-wallet-flash {
+    animation: nav-wallet-flash 420ms ease;
+  }
+
+  .nav-wallet-action {
+    background: linear-gradient(135deg, #2d5a8a 0%, #4a86c0 100%);
+    color: #ffffff;
+    transition: opacity 200ms ease, transform 200ms ease;
+  }
+
+  .nav-wallet-action:hover {
+    opacity: 0.92;
+  }
+
+  .light .nav-wallet-action {
+    background: linear-gradient(135deg, #24507a 0%, #3d6fa8 100%);
+    color: #ffffff;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-wallet-flash {
+      animation: none;
+    }
+  }
+
   /* Footer harmonisé */
   .lunar-footer {
     border-color: var(--lunar-border);

@@ -20,6 +20,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { ThemeSelector } from "@/components/ui/theme-selector";
 import { CurrencySelector } from "@/components/ui/currency-selector";
 import { NavPreferencesMenu } from "@/components/layout/nav-preferences-menu";
+import { NavWallet } from "@/components/layout/nav-wallet";
 import {
   HomeIcon,
   CurrencyDollarIcon,
@@ -42,7 +43,6 @@ import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
-import { FragmentAmount } from "@/components/ui/level-badge";
 import { cn } from "@/lib/utils";
 import { SteamBrandIcon } from "@/components/ui/social-brand-icons";
 
@@ -205,20 +205,7 @@ export function Header() {
     }
   };
 
-  const fragmentsChip = user ? (
-    <Link
-      id="nav-fragments"
-      href="/missions"
-      className="flex h-9 shrink-0 items-center gap-1.5 overflow-visible rounded-full border border-white/10 bg-white/[0.04] px-2.5 text-sm font-semibold text-[#ffffff] hover:bg-white/[0.06] transition-colors"
-    >
-      <FragmentAmount
-        amount={(user as unknown as { fragments?: number })?.fragments ?? 0}
-        size="sm"
-        badgeContainerClassName="fragment-btn shrink-0"
-        className="text-sm font-semibold tabular-nums text-[#ffffff] overflow-visible"
-      />
-    </Link>
-  ) : null;
+  const walletChip = user ? <NavWallet /> : null;
 
   const notificationsButton = user ? (
     <Link href="/notifications" className="shrink-0">
@@ -262,13 +249,13 @@ export function Header() {
         </Link>
 
         <nav className="hidden min-w-0 min-[1100px]:flex items-center justify-center">
-          <div className="flex min-w-0 items-center gap-3 min-[1400px]:gap-8">
+          <div className="flex min-w-0 items-center gap-2 min-[1512px]:gap-5">
             {primaryNavigation.map((item) => (
               <DesktopNavLink key={item.id} item={item} pathname={pathname} />
             ))}
 
             {overflowNavigation.map((item) => (
-              <span key={item.id} className="hidden min-[1400px]:contents">
+              <span key={item.id} className="hidden min-[1512px]:contents">
                 <DesktopNavLink item={item} pathname={pathname} />
               </span>
             ))}
@@ -277,7 +264,7 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="group relative flex min-[1400px]:hidden shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap text-xs font-medium text-muted-foreground transition-all duration-200 hover:text-foreground"
+                  className="group relative flex min-[1512px]:hidden shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap text-xs font-medium text-muted-foreground transition-all duration-200 hover:text-foreground"
                   aria-label={messages.nav.more}
                 >
                   <EllipsisHorizontalIcon className="h-4 w-4 shrink-0" />
@@ -298,12 +285,14 @@ export function Header() {
           </div>
         </nav>
 
-        <div className="col-start-3 flex shrink-0 items-center justify-end justify-self-end gap-1 sm:gap-2">
-          <NavPreferencesMenu />
+        <div className="col-start-3 flex shrink-0 items-center justify-end justify-self-end gap-1 sm:gap-1.5">
+          <span className="hidden min-[1100px]:contents">
+            <NavPreferencesMenu />
+          </span>
 
           {user ? (
-            <div className="flex h-9 shrink-0 items-center justify-end gap-1 sm:gap-2" data-slot="header-auth">
-              {fragmentsChip}
+            <div className="flex h-9 shrink-0 items-center justify-end gap-1 sm:gap-1.5" data-slot="header-auth">
+              {walletChip}
               {notificationsButton}
 
               <DropdownMenu>

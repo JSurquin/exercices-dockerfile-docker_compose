@@ -40,6 +40,19 @@ export const messages: Record<Locale, Messages> = {
       localeFr: "Français",
       localeEn: "English",
       localeZh: "中文",
+      wallet: {
+        label: "Portefeuille",
+        fragmentsHint:
+          "Les fragments servent à participer aux concours. Vendez vos skins ou complétez des missions pour en gagner.",
+        earnFragments: "En gagner",
+        availableFragments: "Fragments disponibles",
+        availableBalance: "Solde disponible",
+        pendingBalance: "Solde en attente",
+        viewBalance: "Voir le solde",
+        withdraw: "Retirer",
+        history: "Historique des transactions",
+        actionLabel: "Actions du portefeuille",
+      },
     },
     user: {
       level: "Niveau",
@@ -8422,6 +8435,19 @@ export const messages: Record<Locale, Messages> = {
       localeFr: "Français",
       localeEn: "English",
       localeZh: "中文",
+      wallet: {
+        label: "Wallet",
+        fragmentsHint:
+          "Fragments are used to enter giveaways. Sell your skins or complete missions to earn more.",
+        earnFragments: "Earn more",
+        availableFragments: "Available fragments",
+        availableBalance: "Available balance",
+        pendingBalance: "Pending balance",
+        viewBalance: "View balance",
+        withdraw: "Withdraw",
+        history: "Transaction history",
+        actionLabel: "Wallet actions",
+      },
     },
     user: {
       level: "Level",
@@ -16803,6 +16829,18 @@ export const messages: Record<Locale, Messages> = {
       localeFr: "Français",
       localeEn: "English",
       localeZh: "中文",
+      wallet: {
+        label: "钱包",
+        fragmentsHint: "碎片用于参加抽奖。出售皮肤或完成任务即可获取更多碎片。",
+        earnFragments: "去获取",
+        availableFragments: "可用碎片",
+        availableBalance: "可用余额",
+        pendingBalance: "待结算余额",
+        viewBalance: "查看余额",
+        withdraw: "提现",
+        history: "交易记录",
+        actionLabel: "钱包操作",
+      },
     },
     user: {
       level: "等级",

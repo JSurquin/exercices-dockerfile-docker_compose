@@ -94,6 +94,18 @@ export interface Messages {
     localeFr: string;
     localeEn: string;
     localeZh: string;
+    wallet: {
+      label: string;
+      fragmentsHint: string;
+      earnFragments: string;
+      availableFragments: string;
+      availableBalance: string;
+      pendingBalance: string;
+      viewBalance: string;
+      withdraw: string;
+      history: string;
+      actionLabel: string;
+    };
   };
   user: {
     level: string;
