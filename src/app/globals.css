@@ -2114,6 +2114,11 @@ body.next-dev-overlay-present #sentry-feedback {
     opacity: 0.92;
   }
 
+  .nav-wallet-action:focus-visible {
+    outline: 2px solid color-mix(in oklch, var(--ring) 80%, white);
+    outline-offset: 2px;
+  }
+
   .light .nav-wallet-action {
     background: linear-gradient(135deg, #24507a 0%, #3d6fa8 100%);
     color: #ffffff;
