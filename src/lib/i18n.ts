@@ -430,11 +430,11 @@ export const messages: Record<Locale, Messages> = {
         channelOther: "Autre",
         status: {
           PENDING: "En attente",
-          PENDING_APPROVAL: "En attente d'approbation",
+          PENDING_APPROVAL: "En cours de traitement",
           VERIFICATION_REQUIRED: "Vérification requise",
           VERIFIED: "Vérifié",
           SCHEDULED: "Planifié",
-          PROCESSING: "Traitement",
+          PROCESSING: "En cours de traitement",
           PAID: "Payé",
           FAILED: "Échoué",
           FLEXIFY_PENDING: "Flexify, en attente",
@@ -5667,12 +5667,12 @@ export const messages: Record<Locale, Messages> = {
         },
         status: {
           pending: 'En attente',
-          pendingApproval: 'En attente d\'approbation',
+          pendingApproval: 'En cours de traitement',
           verificationRequired: 'Vérification requise',
           verified: 'Vérifié',
           scheduled: 'Planifié',
           executed: 'Exécuté',
-          processing: 'En cours',
+          processing: 'En cours de traitement',
           paid: 'Payé',
           failed: 'Échoué',
           cancelled: 'Refusé / Annulé'
@@ -5727,7 +5727,7 @@ export const messages: Record<Locale, Messages> = {
         successDesc: 'Votre demande de retrait merchant a été enregistrée. Notre équipe la traitera manuellement.',
         successTimingNote:
           'Le traitement est généralement rapide, mais comme les retraits Merchant sont validés manuellement par notre équipe, cela peut prendre jusqu\'à 24 heures.',
-        statusProcessing: 'En cours',
+        statusProcessing: 'En cours de traitement',
         reference: 'Référence',
         newRequest: 'Nouvelle demande',
         grossAmount: 'Montant demandé',
@@ -8192,7 +8192,7 @@ export const messages: Record<Locale, Messages> = {
         empty: 'Aucun retrait pour le moment.',
         statusPaid: 'Payé',
         statusFailed: 'Échoué',
-        statusProcessing: 'En cours',
+        statusProcessing: 'En cours de traitement',
         statusVerification: 'Vérification',
         statusPending: 'En attente',
         paidAt: 'Payé le',
@@ -8824,7 +8824,7 @@ export const messages: Record<Locale, Messages> = {
         channelOther: "Other",
         status: {
           PENDING: "Pending",
-          PENDING_APPROVAL: "Pending approval",
+          PENDING_APPROVAL: "Processing",
           VERIFICATION_REQUIRED: "Verification required",
           VERIFIED: "Verified",
           SCHEDULED: "Scheduled",
@@ -12800,12 +12800,12 @@ export const messages: Record<Locale, Messages> = {
         },
         status: {
           pending: 'Pending',
-          pendingApproval: 'Pending approval',
+          pendingApproval: 'Processing',
           verificationRequired: 'Verification required',
           verified: 'Verified',
           scheduled: 'Scheduled',
           executed: 'Executed',
-          processing: 'In progress',
+          processing: 'Processing',
           paid: 'Paid',
           failed: 'Failed',
           cancelled: 'Declined / Cancelled'
@@ -17212,7 +17212,7 @@ export const messages: Record<Locale, Messages> = {
         channelOther: "其他",
         status: {
           PENDING: "待处理",
-          PENDING_APPROVAL: "待审批",
+          PENDING_APPROVAL: "处理中",
           VERIFICATION_REQUIRED: "需验证",
           VERIFIED: "已验证",
           SCHEDULED: "已计划",
@@ -20935,7 +20935,7 @@ export const messages: Record<Locale, Messages> = {
         },
         status: {
           pending: '待处理',
-          pendingApproval: '待审批',
+          pendingApproval: '处理中',
           verificationRequired: '需要验证',
           verified: '已验证',
           scheduled: '已计划',

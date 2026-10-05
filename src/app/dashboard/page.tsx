@@ -148,11 +148,24 @@ const formatPayoutReference = (p: DashboardPayoutApi) =>
 
 const payoutStatusBadgeClass = (status: string) => {
   const pill = "rounded-full font-normal backdrop-blur-sm";
-  if (["PAID", "FLEXIFY_PAID", "WHITEPAY_COMPLETE"].includes(status)) {
+  const display = status.toUpperCase();
+  if (["PAID", "FLEXIFY_PAID", "WHITEPAY_COMPLETE"].includes(display)) {
     return `${pill} bg-emerald-500/8 text-emerald-700/90 dark:text-emerald-300/80 border-emerald-500/20`;
   }
-  if (["FAILED", "FLEXIFY_FAILED", "WHITEPAY_DECLINED", "CANCELLED"].includes(status)) {
+  if (["FAILED", "FLEXIFY_FAILED", "WHITEPAY_DECLINED", "CANCELLED"].includes(display)) {
     return `${pill} bg-red-500/8 text-red-700/90 dark:text-red-300/80 border-red-500/20`;
+  }
+  if (
+    [
+      "PROCESSING",
+      "PENDING_APPROVAL",
+      "SCHEDULED",
+      "FLEXIFY_PROCESSING",
+      "WHITEPAY_PROCESSING_WITHDRAWAL",
+      "WHITEPAY_PENDING_WITHDRAWAL",
+    ].includes(display)
+  ) {
+    return `${pill} bg-blue-500/10 text-blue-700/90 dark:text-blue-300/80 border-blue-500/25`;
   }
   return `${pill} bg-theme-stat/10 text-theme-highlight border-theme-highlight/25`;
 };
@@ -1288,7 +1301,7 @@ export default function DashboardPage() {
                             <div className="space-y-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-medium tabular-nums">{formatPrice(p.amountCents)}</span>
-                                <Badge variant="outline" className={payoutStatusBadgeClass(p.status)}>
+                                <Badge variant="outline" className={payoutStatusBadgeClass(clientDisplayPayoutStatus(p.status, { gateFiOrderId: p.gateFiOrderId }))}>
                                   {payoutStatusLabel(p, messages.dashboard.payments.status)}
                                 </Badge>
                               </div>
@@ -1336,7 +1349,7 @@ export default function DashboardPage() {
                             <div className="space-y-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-medium tabular-nums">{formatPrice(p.amountCents)}</span>
-                                <Badge variant="outline" className={payoutStatusBadgeClass(p.status)}>
+                                <Badge variant="outline" className={payoutStatusBadgeClass(clientDisplayPayoutStatus(p.status, { gateFiOrderId: p.gateFiOrderId }))}>
                                   {payoutStatusLabel(p, messages.dashboard.payments.status)}
                                 </Badge>
                               </div>

@@ -106,6 +106,7 @@ export function PayoutHistory() {
           </Badge>
         );
       case 'PROCESSING':
+      case 'PENDING_APPROVAL':
       case 'SCHEDULED':
       case 'FLEXIFY_PROCESSING':
       case 'WHITEPAY_PROCESSING_WITHDRAWAL':
@@ -120,13 +121,6 @@ export function PayoutHistory() {
       case 'WHITEPAY_WAITING_CONFIRMATION':
         return (
           <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
-            <AlertCircle className="w-3 h-3 mr-1" />
-            {t.statusVerification}
-          </Badge>
-        );
-      case 'PENDING_APPROVAL':
-        return (
-          <Badge className="bg-theme-accent/20 text-theme-accent border-theme-accent/50">
             <AlertCircle className="w-3 h-3 mr-1" />
             {t.statusVerification}
           </Badge>

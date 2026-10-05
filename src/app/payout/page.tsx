@@ -835,6 +835,7 @@ export default function PayoutPage() {
       case 'whitepay_complete':
         return <Badge className="bg-green-500">{text.history.status.paid}</Badge>;
       case 'processing':
+      case 'pending_approval':
       case 'scheduled':
       case 'flexify_pending':
       case 'flexify_processing':
@@ -851,8 +852,6 @@ export default function PayoutPage() {
         return <Badge className="bg-red-500">{text.history.status.failed}</Badge>;
       case 'cancelled':
         return <Badge className="bg-slate-500">{text.history.status.cancelled}</Badge>;
-      case 'pending_approval':
-        return <Badge className="bg-theme-stat">{text.history.status.pendingApproval}</Badge>;
       default:
         return <Badge className="bg-yellow-500">{text.history.status.pending}</Badge>;
     }

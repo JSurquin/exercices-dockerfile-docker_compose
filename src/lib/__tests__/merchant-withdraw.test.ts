@@ -12,14 +12,15 @@ describe('merchant-withdraw', () => {
     expect(isMerchantWithdrawReference('MOON-SEPA-FR-123')).toBe(false);
   });
 
-  it('mappe PENDING_APPROVAL en Processing côté client pour les retraits merchant', () => {
+  it('mappe PENDING_APPROVAL en Processing côté client pour tous les retraits', () => {
     expect(
       clientDisplayPayoutStatus('PENDING_APPROVAL', { method: 'MERCHANT_WITHDRAW' }),
     ).toBe('PROCESSING');
     expect(
       clientDisplayPayoutStatus('PENDING_APPROVAL', { gateFiOrderId: `${MERCHANT_WITHDRAW_PREFIX}abc` }),
     ).toBe('PROCESSING');
-    expect(clientDisplayPayoutStatus('PENDING_APPROVAL', { method: 'SEPA_FR' })).toBe('PENDING_APPROVAL');
+    expect(clientDisplayPayoutStatus('PENDING_APPROVAL', { method: 'SEPA_FR' })).toBe('PROCESSING');
+    expect(clientDisplayPayoutStatus('PENDING_APPROVAL')).toBe('PROCESSING');
     expect(clientDisplayPayoutStatus('PROCESSING', { method: 'MERCHANT_WITHDRAW' })).toBe('PROCESSING');
   });
 

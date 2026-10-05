@@ -11,7 +11,7 @@ export function isMerchantWithdrawPayout(opts: {
   return opts.method === 'MERCHANT_WITHDRAW' || isMerchantWithdrawReference(opts.gateFiOrderId);
 }
 
-/** Client-facing status for merchant withdraw (display only — DB/API unchanged). */
+/** Client-facing status (display only — DB/API unchanged). */
 export function merchantWithdrawClientDisplayStatus(status: string): string {
   if (status.toUpperCase() === 'PENDING_APPROVAL') return 'PROCESSING';
   return status;
@@ -19,10 +19,7 @@ export function merchantWithdrawClientDisplayStatus(status: string): string {
 
 export function clientDisplayPayoutStatus(
   status: string,
-  opts?: { method?: string; gateFiOrderId?: string | null },
+  _opts?: { method?: string; gateFiOrderId?: string | null },
 ): string {
-  if (isMerchantWithdrawPayout(opts ?? {})) {
-    return merchantWithdrawClientDisplayStatus(status);
-  }
-  return status;
+  return merchantWithdrawClientDisplayStatus(status);
 }
