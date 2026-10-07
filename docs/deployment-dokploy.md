@@ -20,7 +20,7 @@ Vérifier : GitHub → Settings → Webhooks → l’URL `https://dp.moonskin.fu
 
 ## 1. Endpoint `/health`
 
-L’app expose `GET /health` → `{ "ok": true }` (sans accès DB).
+L’app expose `GET /health` → `{ "ok": true, "commit": "<sha court>" }` (sans accès DB). Le champ `commit` permet de vérifier que Dokploy a bien pris le dernier push GitHub.
 
 Vérifier dans le conteneur :
 

@@ -13,7 +13,7 @@ cmds = [
 [phases.build]
 cmds = [
   "npx prisma generate",
-  "pnpm run build"
+  "GIT_SHA=$(git rev-parse --short HEAD) NEXT_PUBLIC_GIT_SHA=$(git rev-parse --short HEAD) pnpm run build"
 ]
 
 [variables]

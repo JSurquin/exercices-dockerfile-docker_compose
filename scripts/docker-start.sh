@@ -9,6 +9,9 @@ log() {
 
 PORT="${PORT:-3000}"
 HOSTNAME="${HOSTNAME:-0.0.0.0}"
+COMMIT="${GIT_SHA:-${SOURCE_COMMIT:-${NEXT_PUBLIC_GIT_SHA:-unknown}}}"
+
+log "Booting commit=${COMMIT} node=$(node -v)"
 
 log "Applying Prisma migrations..."
 npx prisma migrate deploy

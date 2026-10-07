@@ -13,6 +13,7 @@ const showSentry = parseBooleanEnv(process.env.SHOW_SENTRY);
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_SHOW_SENTRY: showSentry ? 'true' : 'false',
+    GIT_SHA: process.env.GIT_SHA || process.env.SOURCE_COMMIT || process.env.NEXT_PUBLIC_GIT_SHA || '',
   },
   poweredByHeader: false,
   serverExternalPackages: ['sharp'],
