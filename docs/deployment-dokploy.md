@@ -12,6 +12,12 @@ Pendant les migrations (parfois 30–120 s) et le boot de Next, **aucun proces
 
 `nixpacks.toml` ne configure pas les healthchecks Docker (c’est le rôle de **Dokploy Swarm Settings**).
 
+## Auto-deploy sur `main`
+
+Dokploy se déclenche via le webhook GitHub du dépôt (événement `push`). Si ce webhook est **inactif**, les pushes sur `main` n’entraînent **aucun** déploiement.
+
+Vérifier : GitHub → Settings → Webhooks → l’URL `https://dp.moonskin.fun/api/deploy/…` doit être **Active**. Un GET sans payload GitHub renvoie `Branch Not Match` (normal) ; un POST `X-GitHub-Event: push` avec `{"ref":"refs/heads/main"}` doit répondre `Application deployed successfully`.
+
 ## 1. Endpoint `/health`
 
 L’app expose `GET /health` → `{ "ok": true }` (sans accès DB).
