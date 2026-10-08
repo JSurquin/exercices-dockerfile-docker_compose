@@ -8,10 +8,6 @@ import {
   isWhitepayCryptoNetworkSupported,
   isUserPayoutTickerAllowed,
   centsToEur,
-  getConservativeNetworkFeeCents,
-  getMinWithdrawalCentsForNetworkFee,
-  getCryptoFeeRatio,
-  WARN_CRYPTO_FEE_RATIO,
   WhitepayApiError,
   formatWhitepayApiErrorMessage,
 } from '@/lib/whitepay';
@@ -122,12 +118,6 @@ export async function POST(request: NextRequest) {
 
     const fees = calculateWhitepayFees(amount, networkFeeCents);
     const netCents = amount - fees.totalFeeCents;
-    const conservativeNetworkFeeCents =
-      targetCurrency && network
-        ? getConservativeNetworkFeeCents(targetCurrency, network, networkFeeCents)
-        : networkFeeCents;
-    const minAmountCents = getMinWithdrawalCentsForNetworkFee(conservativeNetworkFeeCents);
-    const feeRatio = getCryptoFeeRatio(amount, conservativeNetworkFeeCents);
 
     const quote = {
       method: 'CRYPTO',
@@ -145,17 +135,14 @@ export async function POST(request: NextRequest) {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
       quoteId: `wp-quote-${Date.now()}-${session.user.id.slice(0, 8)}`,
       feeSource: 'live' as const,
-      minAmountCents,
-      feeRatio,
-      feeRatioWarning: feeRatio > WARN_CRYPTO_FEE_RATIO,
-      belowMin: amount < minAmountCents,
+      networkFeeIsEstimate: true,
     };
 
-    LOG('✓ Devis crypto calculé', { amountCents: amount, netCents, networkFeeCents, minAmountCents });
+    LOG('✓ Devis crypto calculé', { amountCents: amount, netCents, networkFeeCents });
     return NextResponse.json({
       quote,
       limits: {
-        minCents: Math.max(limits.minCents, minAmountCents),
+        minCents: limits.minCents,
         maxCents: limits.maxCents,
       },
     });

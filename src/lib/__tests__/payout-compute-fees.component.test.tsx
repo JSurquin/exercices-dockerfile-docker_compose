@@ -10,17 +10,17 @@ describe('computeFees — shared payout preview / confirm calculation', () => {
     const first = computeFees('crypto', amountCents, { targetCurrency: 'USDT', network: 'ERC20' });
     const second = computeFees('crypto', amountCents, { targetCurrency: 'USDT', network: 'ERC20' });
     expect(second).toEqual(first);
-    expect(first.networkCents).toBe(954);
+    expect(first.networkCents).toBe(100);
     expect(first.netCents).toBe(amountCents - first.totalCents);
   });
 
   it('recalculates network fee and net when the blockchain network changes', () => {
-    const erc20 = computeFees('crypto', amountCents, { targetCurrency: 'USDT', network: 'ERC20' });
-    const trc20 = computeFees('crypto', amountCents, { targetCurrency: 'USDT', network: 'TRC20' });
-    expect(erc20.networkCents).toBe(954);
-    expect(trc20.networkCents).toBe(100);
-    expect(trc20.netCents).toBeGreaterThan(erc20.netCents);
-    expect(trc20.netCents - erc20.netCents).toBe(erc20.networkCents - trc20.networkCents);
+    const polygon = computeFees('crypto', amountCents, { targetCurrency: 'USDC', network: 'POLYGON' });
+    const eth = computeFees('crypto', amountCents, { targetCurrency: 'ETH', network: 'ERC20' });
+    expect(polygon.networkCents).toBe(100);
+    expect(eth.networkCents).toBeGreaterThan(polygon.networkCents);
+    expect(polygon.netCents).toBeGreaterThan(eth.netCents);
+    expect(polygon.netCents - eth.netCents).toBe(eth.networkCents - polygon.networkCents);
   });
 
   it('recalculates when the gross amount changes', () => {

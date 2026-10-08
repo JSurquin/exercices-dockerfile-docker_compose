@@ -8,15 +8,13 @@ import {
   estimateNetworkFeeCentsSync,
   calculateWhitepayFees,
   getDefaultWhitepayNetwork,
-  getConservativeNetworkFeeCents,
-  getMinWithdrawalCentsForNetworkFee,
-  getCryptoFeeRatio,
   isCryptoQuoteCurrent,
   formatWhitepayApiErrorMessage,
   translateWhitepayApiErrorMessage,
   resolveWhitepayClientError,
-  WARN_CRYPTO_FEE_RATIO,
-  MAX_CRYPTO_FEE_RATIO,
+  parseWhitepayLiveNetworkFeeUnits,
+  resolveWhitepayNetworkFeeUnits,
+  formatNetworkFeeEstimateHint,
 } from '@/lib/whitepay';
 
 describe('Whitepay crypto/network config', () => {
@@ -40,11 +38,11 @@ describe('Whitepay crypto/network config', () => {
     expect(getDefaultWhitepayNetwork('ETH')).toBe('ERC20');
   });
 
-  it('estimates ERC20 stablecoin network fees higher than cheap L2 networks', () => {
+  it('estimates ERC20 stablecoin network fees around 1 unit, not the 9.54 ceiling', () => {
     expect(estimateNetworkFeeCentsSync('USDC', 'POLYGON')).toBe(100);
-    expect(estimateNetworkFeeCentsSync('USDC', 'ERC20')).toBe(954);
+    expect(estimateNetworkFeeCentsSync('USDC', 'ERC20')).toBe(100);
     expect(estimateNetworkFeeCentsSync('USDT', 'TRC20')).toBe(100);
-    expect(estimateNetworkFeeCentsSync('USDT', 'ERC20')).toBe(954);
+    expect(estimateNetworkFeeCentsSync('USDT', 'ERC20')).toBe(100);
   });
 
   it('includes network fees in total Whitepay fee calculation', () => {
@@ -54,21 +52,24 @@ describe('Whitepay crypto/network config', () => {
     expect(fees.totalFeeCents).toBe(210);
   });
 
-  it('uses the higher of live and static network fees for the conservative cap', () => {
-    expect(getConservativeNetworkFeeCents('USDT', 'ERC20', 80)).toBe(954);
-    expect(getConservativeNetworkFeeCents('USDT', 'ERC20', 1200)).toBe(1200);
-    expect(getConservativeNetworkFeeCents('USDT', 'TRC20')).toBe(100);
-  });
-
-  it('requires a per-network minimum so conservative fees never exceed 10% of gross', () => {
-    const erc20Min = getMinWithdrawalCentsForNetworkFee(
-      getConservativeNetworkFeeCents('USDT', 'ERC20')
-    );
-    const fees = calculateWhitepayFees(erc20Min, 954);
-    expect(fees.totalFeeCents / erc20Min).toBeLessThanOrEqual(MAX_CRYPTO_FEE_RATIO);
-    expect(getCryptoFeeRatio(3000, 954)).toBeGreaterThan(WARN_CRYPTO_FEE_RATIO);
-    expect(erc20Min).toBeGreaterThan(3000);
-    expect(getMinWithdrawalCentsForNetworkFee(100)).toBeGreaterThanOrEqual(2120);
+  it('uses live network_fees[NETWORK].fixed instead of the static ceiling', () => {
+    expect(parseWhitepayLiveNetworkFeeUnits({ fixed: '0.6', max_amount: '0', min_amount: '10', is_memo_required: false })).toBe(0.6);
+    expect(
+      resolveWhitepayNetworkFeeUnits('USDC', 'ERC20', {
+        fixed: '0.6',
+        max_amount: '0',
+        min_amount: '10',
+        is_memo_required: false,
+      })
+    ).toEqual({ units: 0.6, source: 'live' });
+    expect(resolveWhitepayNetworkFeeUnits('USDC', 'ERC20')).toEqual({ units: 1, source: 'static' });
+    expect(
+      formatNetworkFeeEstimateHint(
+        'Frais réseau estimés : ~{amount} {ticker}, débit final au moment du transfert',
+        0.6,
+        'USDC'
+      )
+    ).toBe('Frais réseau estimés : ~0.6 USDC, débit final au moment du transfert');
   });
 
   it('treats a quote as current only when amount, asset, network and expiry match', () => {

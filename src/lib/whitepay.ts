@@ -257,7 +257,7 @@ export const WHITEPAY_SUPPORTED_CRYPTOS = [
   {
     ticker: 'USDT',
     name: 'Tether (USDT)',
-    // Réseaux bon marché en premier (ERC20 ~9,54 USDT de frais Whitepay — dernier recours)
+    // Réseaux bon marché en premier (ERC20 en dernier recours)
     networks: ['TRC20', 'BEP20', 'TON', 'POLYGON', 'ARBITRUM', 'SOL', 'NEAR', 'CCHAIN', 'ERC20'],
     is_stable: true,
   },
@@ -288,10 +288,13 @@ export function isUserPayoutTickerAllowed(ticker: string): boolean {
   return ticker.toUpperCase() !== 'USDT';
 }
 
-/** Frais réseau fixes de repli (unités crypto) — alignés sur la doc Whitepay withdrawals/fees */
+/**
+ * Frais réseau typiques de repli (unités crypto), utilisés pour l'aperçu UI
+ * si l'API n'a pas encore répondu. ERC20 stablecoins : ~1, pas le plafond doc 9,54.
+ */
 const WHITEPAY_STATIC_NETWORK_FEE_UNITS: Record<string, Record<string, number>> = {
-  USDT: { TRC20: 1, TON: 1, CCHAIN: 1, ERC20: 9.54, NEAR: 1, ARBITRUM: 1, POLYGON: 1, SOL: 1, BEP20: 1 },
-  USDC: { ERC20: 9.54, SOL: 1, POLYGON: 1, ARBITRUM: 1, BASE: 1, OPTIMISM: 1, NEAR: 1, STELLAR: 1, CCHAIN: 1, WHITECHAIN: 1, DOTASSETHUB: 1 },
+  USDT: { TRC20: 1, TON: 1, CCHAIN: 1, ERC20: 1, NEAR: 1, ARBITRUM: 1, POLYGON: 1, SOL: 1, BEP20: 1 },
+  USDC: { ERC20: 1, SOL: 1, POLYGON: 1, ARBITRUM: 1, BASE: 1, OPTIMISM: 1, NEAR: 1, STELLAR: 1, CCHAIN: 1, WHITECHAIN: 1, DOTASSETHUB: 1 },
   BTC: { BTC: 0.0001 },
   ETH: { ERC20: 0.002 },
   SOL: { SOL: 0.01 },
@@ -381,23 +384,72 @@ function cryptoNetworkFeeUnitsToEurCents(units: number, ticker: string): number 
   return Math.ceil(units * rate * 100);
 }
 
+export function eurCentsToNetworkFeeUnits(cents: number, ticker: string): number {
+  const rate = WHITEPAY_EUR_PER_CRYPTO_UNIT[ticker.toUpperCase()] ?? 1;
+  if (cents <= 0 || rate <= 0) return 0;
+  return cents / (rate * 100);
+}
+
 function getStaticNetworkFeeUnits(ticker: string, network: string): number {
   const byCrypto = WHITEPAY_STATIC_NETWORK_FEE_UNITS[ticker.toUpperCase()];
   if (!byCrypto) return 0;
   return byCrypto[network.toUpperCase()] ?? 0;
 }
 
-/** Frais réseau fixes Whitepay en unités crypto (doc /private-api/withdrawals/fees). */
+/** Champ API : `currencies[].network_fees[NETWORK].fixed` (unités crypto, string). */
+export function parseWhitepayLiveNetworkFeeUnits(
+  detail?: WhitepayNetworkFeeDetail | null
+): number | null {
+  if (!detail?.fixed) return null;
+  const fixed = parseFloat(detail.fixed);
+  if (Number.isNaN(fixed) || fixed <= 0) return null;
+  return fixed;
+}
+
+/** Prefers live `network_fees[NETWORK].fixed`; falls back to the typical static table. */
+export function resolveWhitepayNetworkFeeUnits(
+  ticker: string,
+  network: string,
+  live?: WhitepayNetworkFeeDetail | null
+): { units: number; source: 'live' | 'static' } {
+  const liveUnits = parseWhitepayLiveNetworkFeeUnits(live);
+  if (liveUnits != null) {
+    return { units: liveUnits, source: 'live' };
+  }
+  return { units: getStaticNetworkFeeUnits(ticker, network), source: 'static' };
+}
+
+/** Frais réseau typiques en unités crypto (aperçu UI, sans plafond doc). */
 export function getWhitepayNetworkFeeUnits(ticker: string, network: string): number {
   return getStaticNetworkFeeUnits(ticker, network);
 }
 
-/** Libellé indicatif du frais réseau, ex. « ~1 USDT » ou « ~9,54 USDT ». */
+export function formatWhitepayNetworkFeeAmount(units: number): string {
+  if (units <= 0 || Number.isNaN(units)) return '1';
+  return Number.isInteger(units) ? String(units) : String(Number(units.toFixed(2)));
+}
+
+export function formatWhitepayNetworkFeeUnitsLabel(
+  units: number,
+  ticker: string
+): string | null {
+  if (units <= 0 || Number.isNaN(units)) return null;
+  return `~${formatWhitepayNetworkFeeAmount(units)} ${ticker.toUpperCase()}`;
+}
+
+export function formatNetworkFeeEstimateHint(
+  template: string,
+  units: number,
+  ticker: string
+): string {
+  return template
+    .replaceAll('{amount}', formatWhitepayNetworkFeeAmount(units))
+    .replaceAll('{ticker}', ticker.toUpperCase());
+}
+
+/** Libellé indicatif du frais réseau, ex. « ~1 USDC ». */
 export function formatWhitepayNetworkFeeLabel(ticker: string, network: string): string | null {
-  const units = getStaticNetworkFeeUnits(ticker, network);
-  if (units <= 0) return null;
-  const formatted = Number.isInteger(units) ? String(units) : units.toFixed(2);
-  return `~${formatted} ${ticker.toUpperCase()}`;
+  return formatWhitepayNetworkFeeUnitsLabel(getStaticNetworkFeeUnits(ticker, network), ticker);
 }
 
 /** Estimation synchrone (UI) — frais réseau en centimes EUR */
@@ -443,13 +495,8 @@ export async function estimateNetworkFeeCents(
   const tickerU = ticker.toUpperCase();
   const feesData = await getWithdrawalFeesForTicker(tickerU);
   const live = feesData.network_fees?.[networkU];
-  if (live?.fixed) {
-    const fixed = parseFloat(live.fixed);
-    if (!Number.isNaN(fixed) && fixed > 0) {
-      return cryptoNetworkFeeUnitsToEurCents(fixed, tickerU);
-    }
-  }
-  return estimateNetworkFeeCentsSync(tickerU, networkU);
+  const resolved = resolveWhitepayNetworkFeeUnits(tickerU, networkU, live);
+  return cryptoNetworkFeeUnitsToEurCents(resolved.units, tickerU);
 }
 
 // =============================================================================
@@ -1084,11 +1131,6 @@ function isRateExpiredError(error: WhitepayApiError): boolean {
  */
 export const WHITEPAY_FEE_RATE = 0.011; // 1,1%
 
-/** Les frais totaux (traitement + réseau) ne doivent jamais dépasser 10 % du brut. */
-export const MAX_CRYPTO_FEE_RATIO = 0.10;
-/** Avertissement visible dès que les frais totaux dépassent 5 % du brut. */
-export const WARN_CRYPTO_FEE_RATIO = 0.05;
-
 /**
  * Calcule les frais estimés pour un retrait crypto Whitepay (1,1% du montant).
  * Utiliser parseWhitepayFeesFromResponse() pour les frais réels issus de l'API.
@@ -1108,50 +1150,6 @@ export function calculateWhitepayFees(
     networkFeeCents: safeNetworkFeeCents,
     totalFeeCents: processingFeeCents + safeNetworkFeeCents,
   };
-}
-
-/**
- * Frais réseau conservateurs : max(live, estimation haute statique).
- * Sert au minimum 10 % / alerte 5 %, pas à l'affichage du net.
- */
-export function getConservativeNetworkFeeCents(
-  ticker: string,
-  network: string,
-  liveCents?: number
-): number {
-  const staticCents = estimateNetworkFeeCentsSync(ticker, network);
-  if (liveCents == null || Number.isNaN(liveCents)) return staticCents;
-  return Math.max(liveCents, staticCents);
-}
-
-export function getCryptoFeeRatio(amountCents: number, networkFeeCents: number): number {
-  if (amountCents <= 0) return 0;
-  const fees = calculateWhitepayFees(amountCents, networkFeeCents);
-  return fees.totalFeeCents / amountCents;
-}
-
-/**
- * Plus petit montant brut tel que (frais traitement + frais réseau) ≤ 10 % du brut,
- * au moins égal au minimum plateforme Whitepay (21,20 €).
- */
-export function getMinWithdrawalCentsForNetworkFee(networkFeeCents: number): number {
-  const platformMin = getWhitepayLimits().minCents;
-  const safeNetwork = Math.max(0, Math.round(networkFeeCents));
-  if (safeNetwork <= 0) return platformMin;
-  const room = MAX_CRYPTO_FEE_RATIO - WHITEPAY_FEE_RATE;
-  if (room <= 0) return platformMin;
-  let amount = Math.max(platformMin, Math.ceil(safeNetwork / room));
-  while (amount < 50_000_000) {
-    const fees = calculateWhitepayFees(amount, safeNetwork);
-    if (
-      fees.totalFeeCents < amount &&
-      fees.totalFeeCents <= Math.floor(amount * MAX_CRYPTO_FEE_RATIO)
-    ) {
-      return amount;
-    }
-    amount += 1;
-  }
-  return amount;
 }
 
 export function isCryptoQuoteCurrent(

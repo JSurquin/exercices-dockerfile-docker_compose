@@ -5,7 +5,13 @@ import { ClockIcon } from '@heroicons/react/24/outline';
 import { Separator } from '@/components/ui/separator';
 import { formatCentsToCurrency } from '@/lib/currency-converter';
 import { useLocale } from '@/components/providers/locale-provider';
-import { calculateWhitepayFees, estimateNetworkFeeCentsSync, getWhitepayNetworkFeeUnits } from '@/lib/whitepay';
+import {
+  calculateWhitepayFees,
+  estimateNetworkFeeCentsSync,
+  eurCentsToNetworkFeeUnits,
+  formatNetworkFeeEstimateHint,
+  getWhitepayNetworkFeeUnits,
+} from '@/lib/whitepay';
 
 export type PayoutFeeMethod = 'card' | 'sepa' | 'crypto' | 'sepa_fr';
 
@@ -96,6 +102,16 @@ export function FeePreview({ method, amountCents, targetCurrency, network, fees:
 
   const label = labelMap[method];
   const delay = delayMap[method];
+  const networkFeeHint = cryptoContext
+    ? formatNetworkFeeEstimateHint(
+        'networkFeeHighHint' in fees
+          ? String(fees.networkFeeHighHint)
+          : 'Frais réseau estimés : ~{amount} {ticker}, débit final au moment du transfert',
+        eurCentsToNetworkFeeUnits(networkCents, cryptoContext.targetCurrency) ||
+          getWhitepayNetworkFeeUnits(cryptoContext.targetCurrency, cryptoContext.network),
+        cryptoContext.targetCurrency
+      )
+    : null;
 
   return (
     <motion.div
@@ -120,15 +136,9 @@ export function FeePreview({ method, amountCents, targetCurrency, network, fees:
           <span>-{formatCentsToCurrency(networkCents, 'EUR')}</span>
         </div>
       )}
-      {method === 'crypto' &&
-        cryptoContext &&
-        getWhitepayNetworkFeeUnits(cryptoContext.targetCurrency, cryptoContext.network) >= 5 && (
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {'networkFeeHighHint' in fees
-              ? String(fees.networkFeeHighHint)
-              : 'Le réseau Ethereum (ERC20) coûte environ 9,54 USDT de frais chez notre prestataire. Préférez TRC20 ou Polygon (~1 USDT) si votre wallet le permet.'}
-          </p>
-        )}
+      {networkFeeHint && (
+        <p className="text-xs text-muted-foreground leading-relaxed">{networkFeeHint}</p>
+      )}
       <Separator />
       <div className="flex justify-between font-semibold">
         <span>{labels.youReceive}</span>

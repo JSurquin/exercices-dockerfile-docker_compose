@@ -19,8 +19,6 @@ import {
   isWhitepayCryptoNetworkSupported,
   getWhitepayCryptoByTicker,
   isUserPayoutTickerAllowed,
-  getConservativeNetworkFeeCents,
-  getMinWithdrawalCentsForNetworkFee,
   formatWhitepayApiErrorMessage,
   WhitepayApiError,
   type WhitepayInstantWithdrawalRequest,
@@ -313,22 +311,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: message, quoteUnavailable: true },
         { status: 502 }
-      );
-    }
-
-    const conservativeNetworkFeeCents = getConservativeNetworkFeeCents(
-      targetCurrencyU,
-      networkU,
-      networkFeeCents
-    );
-    const minAmountCents = getMinWithdrawalCentsForNetworkFee(conservativeNetworkFeeCents);
-    if (amountCents < minAmountCents) {
-      return NextResponse.json(
-        {
-          error: `Montant minimum sur ${networkU} : ${centsToEur(minAmountCents)}€ (les frais ne doivent pas dépasser 10 % du retrait)`,
-          minAmountCents,
-        },
-        { status: 400 }
       );
     }
 

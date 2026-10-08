@@ -44,7 +44,11 @@ import {
   DEFAULT_USER_PAYOUT_CRYPTO,
   DEFAULT_USER_PAYOUT_NETWORK,
   isUserPayoutTickerAllowed,
+  isCryptoQuoteCurrent,
   resolveWhitepayClientError,
+  formatNetworkFeeEstimateHint,
+  eurCentsToNetworkFeeUnits,
+  getWhitepayNetworkFeeUnits,
 } from '@/lib/whitepay';
 import {
   Select,
@@ -117,6 +121,8 @@ function netReceivedFromHistoryRow(payout: {
 interface QuoteData {
   method: string;
   amountCents: number;
+  targetCurrency?: string | null;
+  network?: string | null;
   fees: {
     processingCents: number;
     networkCents: number;
@@ -127,6 +133,7 @@ interface QuoteData {
   currency: string;
   expiresAt: string;
   quoteId?: string;
+  networkFeeIsEstimate?: boolean;
 }
 
 interface PayoutFormData {
@@ -516,6 +523,22 @@ export default function PayoutPage() {
     if (payoutMethod !== 'card' && payoutMethod !== 'sepa' && payoutMethod !== 'crypto') {
       return null;
     }
+    if (
+      payoutMethod === 'crypto' &&
+      quote &&
+      isCryptoQuoteCurrent(quote, {
+        amountCents: parsedAmountCents,
+        targetCurrency: formData.selectedCrypto,
+        network: formData.selectedNetwork,
+      })
+    ) {
+      return {
+        totalCents: quote.fees.totalCents,
+        netCents: quote.netCents,
+        networkCents: quote.fees.networkCents,
+        processingCents: quote.fees.processingCents,
+      };
+    }
     return computeFees(
       payoutMethod,
       parsedAmountCents,
@@ -523,7 +546,13 @@ export default function PayoutPage() {
         ? { targetCurrency: formData.selectedCrypto, network: formData.selectedNetwork }
         : undefined
     );
-  }, [parsedAmountCents, payoutMethod, formData.selectedCrypto, formData.selectedNetwork]);
+  }, [
+    parsedAmountCents,
+    payoutMethod,
+    formData.selectedCrypto,
+    formData.selectedNetwork,
+    quote,
+  ]);
 
   // Obtenir un devis (Flexify pour SEPA, Whitepay pour Crypto)
   const getQuote = async () => {
@@ -966,6 +995,16 @@ export default function PayoutPage() {
               <span>{text.request.networkFee}</span>
               <span>-{formatCentsToCurrency(payoutPreviewFees.networkCents, 'EUR')}</span>
             </div>
+            {payoutMethod === 'crypto' && (
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {formatNetworkFeeEstimateHint(
+                  feeLabels.networkFeeHighHint,
+                  eurCentsToNetworkFeeUnits(payoutPreviewFees.networkCents, formData.selectedCrypto) ||
+                    getWhitepayNetworkFeeUnits(formData.selectedCrypto, formData.selectedNetwork),
+                  formData.selectedCrypto
+                )}
+              </p>
+            )}
             <Separator />
             <div className="flex justify-between font-semibold text-lg">
               <span>{text.request.youReceive}</span>

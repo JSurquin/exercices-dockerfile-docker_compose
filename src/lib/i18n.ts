@@ -5638,7 +5638,7 @@ export const messages: Record<Locale, Messages> = {
         euPlatformLabel: 'Plateforme européenne',
         euPlatformAriaLabel: 'Drapeau de l\'Union européenne — plateforme européenne',
         cryptoNetworkFeeEstimateHint:
-          'Les frais réseau affichés correspondent à une estimation haute, prévue pour couvrir les périodes de congestion de la blockchain. Dans la grande majorité des cas, les frais réellement appliqués sont nettement inférieurs.',
+          'Frais réseau estimés : ~1 USDC selon le réseau. Le débit définitif est fixé au moment du transfert.',
         quoteUnavailable:
           'Devis indisponible. Le retrait est bloqué tant que les frais réels ne peuvent pas être calculés.',
         quoteStale: 'Les frais ont changé. Patientez pendant le recalcul du devis.',
@@ -8150,7 +8150,7 @@ export const messages: Record<Locale, Messages> = {
         cryptoLabel: 'Frais crypto (1,1%)',
         networkFees: 'Frais réseau',
         networkFeeHighHint:
-          'Le réseau Ethereum (ERC20) coûte environ 9,54 USDT de frais chez notre prestataire. Préférez TRC20 ou Polygon (~1 USDT) si votre wallet le permet.',
+          'Frais réseau estimés : ~{amount} {ticker}, débit final au moment du transfert',
         cardDelay: 'Crédité sous 24h',
         sepaDelay: 'Instantané',
       },
@@ -12789,7 +12789,7 @@ export const messages: Record<Locale, Messages> = {
         euPlatformLabel: 'EU-regulated platform',
         euPlatformAriaLabel: 'European Union flag — EU-regulated platform',
         cryptoNetworkFeeEstimateHint:
-          'The network fees shown are a high-end estimate designed to cover periods of blockchain congestion. In the vast majority of cases, the fees actually applied are significantly lower.',
+          'Estimated network fees: ~1 USDC depending on the network. The final debit is set at transfer time.',
         quoteUnavailable:
           'Quote unavailable. Withdrawal is blocked until real fees can be calculated.',
         quoteStale: 'Fees have changed. Please wait while the quote is recalculated.',
@@ -16562,7 +16562,7 @@ export const messages: Record<Locale, Messages> = {
         cryptoLabel: 'Crypto fees (1.1%)',
         networkFees: 'Network fees',
         networkFeeHighHint:
-          'Ethereum (ERC20) costs about 9.54 USDT in provider network fees. Prefer TRC20 or Polygon (~1 USDT) if your wallet supports them.',
+          'Estimated network fees: ~{amount} {ticker}, final debit at transfer time',
         cardDelay: 'Credited within 24h',
         sepaDelay: 'Instant',
       },
@@ -20942,7 +20942,7 @@ export const messages: Record<Locale, Messages> = {
         euPlatformLabel: '欧洲平台',
         euPlatformAriaLabel: '欧盟旗帜 — 欧洲平台',
         cryptoNetworkFeeEstimateHint:
-          '显示的网络费用为偏高估算，用于覆盖区块链拥堵期。在绝大多数情况下，实际收取的费用会明显更低。',
+          '预估网络费：约 1 USDC（视网络而定）。最终扣款以转账时为准。',
         quoteUnavailable: '报价不可用。在无法计算实际费用之前，提款已被阻止。',
         quoteStale: '费用已变化，请等待重新计算报价。',
         feeRatioWarning: '费用可能占金额的 {percent}%。若钱包支持，请优先选择 TRC20 或 Polygon。',
@@ -24649,7 +24649,7 @@ export const messages: Record<Locale, Messages> = {
         cryptoLabel: '加密货币费 (1.1%)',
         networkFees: '网络费',
         networkFeeHighHint:
-          'Ethereum（ERC20）网络费约 9.54 USDT。若钱包支持，建议选择 TRC20 或 Polygon（约 1 USDT）。',
+          '预估网络费：约 {amount} {ticker}，最终扣款以转账时为准',
         cardDelay: '24小时内到账',
         sepaDelay: '即时',
       },
