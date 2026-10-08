@@ -43,7 +43,11 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { cn } from "@/lib/utils";
-import { computeCenteredNavShift } from "@/lib/centered-nav-shift";
+import {
+  clusterWidth,
+  desktopNavFits,
+  DESKTOP_NAV_MIN_GAP_PX,
+} from "@/lib/centered-nav-shift";
 import { SteamBrandIcon } from "@/components/ui/social-brand-icons";
 
 type NavItem = {
@@ -58,6 +62,21 @@ function isActivePath(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
+const NAV_LINKS_ROW_CLASS =
+  "flex w-max shrink-0 items-center gap-2.5 min-[1440px]:gap-3.5 min-[1512px]:gap-5";
+
+const NAV_LINK_LAYOUT_CLASS =
+  "flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-0.5 pb-[10px] text-xs font-medium min-[1440px]:gap-2.5 min-[1440px]:px-1 min-[1440px]:text-[13px]";
+
+function measurePx(el: HTMLElement | null): number {
+  if (!el) return 0;
+  return Math.max(
+    Math.ceil(el.getBoundingClientRect().width),
+    el.scrollWidth,
+    el.offsetWidth
+  );
+}
+
 function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string }) {
   const isActive = isActivePath(pathname, item.href);
   return (
@@ -65,7 +84,8 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
       href={item.href}
       data-tour={item.tourId}
       className={cn(
-        "group relative flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-0.5 pb-[10px] text-xs font-medium transition-all duration-200 min-[1440px]:gap-2.5 min-[1440px]:px-1 min-[1440px]:text-[13px]",
+        "group relative cursor-pointer transition-all duration-200",
+        NAV_LINK_LAYOUT_CLASS,
         isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
       )}
     >
@@ -86,18 +106,58 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
   );
 }
 
+function GuestAuthButtons({
+  isLoading,
+  steamLabel,
+  onSteam,
+  onDiscord,
+}: {
+  isLoading: boolean;
+  steamLabel: string;
+  onSteam: () => void;
+  onDiscord: () => void;
+}) {
+  return (
+    <>
+      <Button
+        onClick={onSteam}
+        disabled={isLoading}
+        variant="cta"
+        className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+      >
+        <div className="flex items-center space-x-2">
+          <SteamBrandIcon className="h-4 w-4 shrink-0" />
+          <span className="whitespace-nowrap">{steamLabel}</span>
+        </div>
+      </Button>
+      <Button
+        onClick={onDiscord}
+        disabled={isLoading}
+        variant="outline"
+        className="border-[#5865F2] text-[#5865F2] hover:bg-[#5865F2] hover:text-white"
+      >
+        <svg className="h-4 w-4 mr-2 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+        </svg>
+        Discord
+      </Button>
+    </>
+  );
+}
+
 export function Header() {
   const { user, loginWithSteam, loginWithDiscord, logout, isLoading } = useAuth();
   const { locale, setLocale, messages } = useLocale();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
-  const [navShift, setNavShift] = useState(0);
+  const [desktopNavFitsState, setDesktopNavFitsState] = useState(false);
   const lastScrollY = useRef(0);
-  const navShiftRef = useRef(0);
   const barRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLAnchorElement>(null);
-  const navRef = useRef<HTMLElement>(null);
-  const actionsRef = useRef<HTMLDivElement>(null);
+  const navLinksRef = useRef<HTMLDivElement>(null);
+  const prefsMeasureRef = useRef<HTMLDivElement>(null);
+  const guestAuthMeasureRef = useRef<HTMLDivElement>(null);
+  const authRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -187,55 +247,46 @@ export function Header() {
 
   const desktopNavigation: NavItem[] = [...primaryNavigation, supportNavigation];
 
-  navShiftRef.current = navShift;
-
   useLayoutEffect(() => {
     const bar = barRef.current;
     const logo = logoRef.current;
-    const nav = navRef.current;
-    const actions = actionsRef.current;
-    if (!bar || !logo || !nav || !actions) return;
+    const links = navLinksRef.current;
+    const prefs = prefsMeasureRef.current;
+    const auth = user ? authRef.current : guestAuthMeasureRef.current;
+    if (!bar || !logo || !links) return;
 
-    const desktopQuery = window.matchMedia("(min-width: 1100px)");
-
-    const updateShift = () => {
-      if (!desktopQuery.matches) {
-        setNavShift((current) => (current === 0 ? current : 0));
-        return;
-      }
-
-      const logoBox = logo.getBoundingClientRect();
-      const navBox = nav.getBoundingClientRect();
-      const actionsBox = actions.getBoundingClientRect();
-      const nextShift = Math.round(
-        computeCenteredNavShift({
-          logoRight: logoBox.right,
-          navLeft: navBox.left,
-          navRight: navBox.right,
-          actionsLeft: actionsBox.left,
-          currentShift: navShiftRef.current,
-        }) * 2
-      ) / 2;
-
-      setNavShift((current) => (current === nextShift ? current : nextShift));
+    const updateFit = () => {
+      const nextFits = desktopNavFits({
+        barWidth: Math.floor(bar.getBoundingClientRect().width),
+        logoWidth: measurePx(logo),
+        linksWidth: measurePx(links),
+        actionsWidth: clusterWidth([
+          measurePx(prefsMeasureRef.current),
+          measurePx(user ? authRef.current : guestAuthMeasureRef.current),
+        ]),
+      });
+      setDesktopNavFitsState((current) => (current === nextFits ? current : nextFits));
     };
 
-    const observer = new ResizeObserver(updateShift);
+    const observer = new ResizeObserver(updateFit);
     observer.observe(bar);
     observer.observe(logo);
-    observer.observe(nav);
-    observer.observe(actions);
-    desktopQuery.addEventListener("change", updateShift);
-    window.addEventListener("resize", updateShift);
-    void document.fonts?.ready.then(updateShift);
-    updateShift();
+    observer.observe(links);
+    if (prefs) observer.observe(prefs);
+    if (auth) observer.observe(auth);
+    window.addEventListener("resize", updateFit);
+    void document.fonts?.ready.then(updateFit);
+    updateFit();
 
     return () => {
       observer.disconnect();
-      desktopQuery.removeEventListener("change", updateShift);
-      window.removeEventListener("resize", updateShift);
+      window.removeEventListener("resize", updateFit);
     };
   }, [desktopNavigation.length, locale, user]);
+
+  useEffect(() => {
+    if (desktopNavFitsState && isMenuOpen) setIsMenuOpen(false);
+  }, [desktopNavFitsState, isMenuOpen]);
 
   const sheetNavigation: NavItem[] = [
     ...primaryNavigation,
@@ -290,16 +341,43 @@ export function Header() {
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
-      <div
-        ref={barRef}
-        data-slot="header-bar"
-        className="container relative mx-auto flex h-[4.25rem] min-w-0 w-full items-center pl-5 pr-4 sm:pl-7 sm:pr-6 lg:pl-9 lg:pr-8"
-      >
+      <div className="container mx-auto min-w-0 w-full pl-5 pr-4 sm:pl-7 sm:pr-6 lg:pl-9 lg:pr-8">
+        <div className="h-0 overflow-hidden" aria-hidden="true" inert>
+          <div ref={navLinksRef} className={NAV_LINKS_ROW_CLASS}>
+            {desktopNavigation.map((item) => (
+              <span key={item.id} className={NAV_LINK_LAYOUT_CLASS}>
+                <item.icon className="hidden h-4 w-4 shrink-0 min-[1440px]:block" />
+                <span className="whitespace-nowrap">{item.name}</span>
+              </span>
+            ))}
+          </div>
+          <div ref={prefsMeasureRef} className="h-9 w-9 shrink-0" />
+          {!user && (
+            <div
+              ref={guestAuthMeasureRef}
+              className="flex h-9 w-max shrink-0 items-center gap-2"
+            >
+              <GuestAuthButtons
+                isLoading={isLoading}
+                steamLabel={messages.common.steamLogin}
+                onSteam={handleSteamLogin}
+                onDiscord={handleDiscordLogin}
+              />
+            </div>
+          )}
+        </div>
+        <div
+          ref={barRef}
+          data-slot="header-bar"
+          data-desktop-nav={desktopNavFitsState ? "inline" : "menu"}
+          className="flex h-[4.25rem] min-w-0 w-full items-center justify-between"
+          style={{ gap: DESKTOP_NAV_MIN_GAP_PX }}
+        >
         <Link
           ref={logoRef}
           href="/"
           data-slot="header-logo"
-          className="relative z-10 flex min-w-0 shrink-0 items-center space-x-2 sm:space-x-3"
+          className="flex min-w-0 shrink-0 items-center space-x-2 sm:space-x-3"
         >
           <div className="relative group">
             <div className="h-10 w-10 shrink-0 rounded-lg">
@@ -314,12 +392,15 @@ export function Header() {
         </Link>
 
         <nav
-          ref={navRef}
           data-slot="header-nav"
-          className="absolute inset-y-0 left-1/2 z-0 hidden min-[1100px]:flex items-center"
-          style={{ transform: `translateX(calc(-50% + ${navShift}px))` }}
+          aria-hidden={!desktopNavFitsState}
+          {...(!desktopNavFitsState ? { inert: true } : {})}
+          className={cn(
+            "flex min-w-0 items-center",
+            desktopNavFitsState ? "shrink-0" : "hidden"
+          )}
         >
-          <div className="flex items-center gap-2.5 min-[1440px]:gap-3.5 min-[1512px]:gap-5">
+          <div className={NAV_LINKS_ROW_CLASS}>
             {desktopNavigation.map((item) => (
               <DesktopNavLink key={item.id} item={item} pathname={pathname} />
             ))}
@@ -327,16 +408,21 @@ export function Header() {
         </nav>
 
         <div
-          ref={actionsRef}
           data-slot="header-actions"
-          className="relative z-10 ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-1"
+          className="flex min-w-0 shrink-0 items-center justify-end gap-1"
         >
-          <span className="hidden min-[1100px]:contents">
-            <NavPreferencesMenu className="nav-chrome nav-hover-fill shadow-none transition-none hover:bg-transparent hover:text-foreground focus-visible:ring-0" />
-          </span>
+          {desktopNavFitsState ? (
+            <div data-slot="header-prefs" className="flex min-w-0 shrink-0 items-center">
+              <NavPreferencesMenu className="nav-chrome nav-hover-fill shadow-none transition-none hover:bg-transparent hover:text-foreground focus-visible:ring-0" />
+            </div>
+          ) : null}
 
           {user ? (
-            <div className="flex h-9 shrink-0 items-center justify-end gap-1" data-slot="header-auth">
+            <div
+              ref={authRef}
+              className="flex h-9 min-w-0 shrink-0 items-center justify-end gap-1"
+              data-slot="header-auth"
+            >
               {walletChip}
               {notificationsButton}
 
@@ -417,36 +503,29 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          ) : (
-            <div className="hidden min-[1100px]:flex h-9 shrink-0 items-center justify-end gap-2" data-slot="header-auth">
-              <Button
-                onClick={handleSteamLogin}
-                disabled={isLoading}
-                variant="cta"
-                className="border-0 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-              >
-                <div className="flex items-center space-x-2">
-                  <SteamBrandIcon className="h-4 w-4 shrink-0" />
-                  <span className="whitespace-nowrap">{messages.common.steamLogin}</span>
-                </div>
-              </Button>
-              <Button
-                onClick={handleDiscordLogin}
-                disabled={isLoading}
-                variant="outline"
-                className="border-[#5865F2] text-[#5865F2] hover:bg-[#5865F2] hover:text-white"
-              >
-                <svg className="h-4 w-4 mr-2 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-                </svg>
-                Discord
-              </Button>
+          ) : desktopNavFitsState ? (
+            <div
+              data-slot="header-auth"
+              className="flex h-9 min-w-0 shrink-0 items-center justify-end gap-2"
+            >
+              <GuestAuthButtons
+                isLoading={isLoading}
+                steamLabel={messages.common.steamLogin}
+                onSteam={handleSteamLogin}
+                onDiscord={handleDiscordLogin}
+              />
             </div>
-          )}
+          ) : null}
 
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0 min-[1100px]:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                data-slot="header-burger"
+                className={cn("shrink-0", desktopNavFitsState && "hidden")}
+                aria-label={messages.nav.more}
+              >
                 <Bars3Icon className="h-6 w-6" />
               </Button>
             </SheetTrigger>
@@ -619,6 +698,7 @@ export function Header() {
               </div>
             </SheetContent>
           </Sheet>
+        </div>
         </div>
       </div>
     </header>

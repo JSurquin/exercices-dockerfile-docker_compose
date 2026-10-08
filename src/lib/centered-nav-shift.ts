@@ -1,29 +1,33 @@
-/** Minimum space kept between logo, centered nav links, and the right actions. */
-export const DESKTOP_NAV_MIN_GAP_PX = 32;
+/** Minimum flex gap kept between logo, nav links, and the right actions. */
+export const DESKTOP_NAV_MIN_GAP_PX = 24;
 
-export function computeCenteredNavShift(params: {
-  logoRight: number;
-  navLeft: number;
-  navRight: number;
-  actionsLeft: number;
-  currentShift: number;
+/** Flex gap between items inside the actions cluster (Tailwind `gap-1`). */
+export const DESKTOP_NAV_ACTIONS_GAP_PX = 4;
+
+export function desktopNavFits(params: {
+  barWidth: number;
+  logoWidth: number;
+  linksWidth: number;
+  actionsWidth: number;
   minGap?: number;
-}): number {
+}): boolean {
   const minGap = params.minGap ?? DESKTOP_NAV_MIN_GAP_PX;
-  const naturalLeft = params.navLeft - params.currentShift;
-  const naturalRight = params.navRight - params.currentShift;
-  const navWidth = naturalRight - naturalLeft;
-  const minLeft = params.logoRight + minGap;
-  const maxRight = params.actionsLeft - minGap;
-  const available = maxRight - minLeft;
-
-  if (available >= navWidth) {
-    if (naturalLeft < minLeft) return minLeft - naturalLeft;
-    if (naturalRight > maxRight) return maxRight - naturalRight;
-    return 0;
+  if (
+    params.barWidth <= 0 ||
+    params.logoWidth <= 0 ||
+    params.linksWidth <= 0 ||
+    params.actionsWidth <= 0
+  ) {
+    return false;
   }
 
-  const slotCenter = (minLeft + maxRight) / 2;
-  const naturalCenter = (naturalLeft + naturalRight) / 2;
-  return slotCenter - naturalCenter;
+  const needed =
+    params.logoWidth + minGap + params.linksWidth + minGap + params.actionsWidth;
+  return params.barWidth >= needed;
+}
+
+export function clusterWidth(parts: number[], gapPx: number = DESKTOP_NAV_ACTIONS_GAP_PX): number {
+  const present = parts.filter((width) => width > 0);
+  if (present.length === 0) return 0;
+  return present.reduce((sum, width) => sum + width, 0) + gapPx * (present.length - 1);
 }
