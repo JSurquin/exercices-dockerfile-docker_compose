@@ -114,11 +114,13 @@ describe("NavWallet", () => {
     authUser = userFixture({ fragments: 12 });
     renderWallet();
 
-    const trigger = screen.getByRole("button", { name: "Portefeuille, Chargement..." });
-    const chip = trigger.closest("[data-slot='nav-wallet']");
+    const balance = screen.getByRole("button", { name: "Solde disponible, Chargement..." });
+    const chip = balance.closest("[data-slot='nav-wallet']");
     expect(chip).toHaveAttribute("aria-busy", "true");
     expect(chip).toHaveClass("h-9");
+    expect(chip).toHaveClass("nav-chrome");
     expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Fragments disponibles: 12" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Actions du portefeuille" })).toBeInTheDocument();
   });
 
@@ -138,10 +140,11 @@ describe("NavWallet", () => {
     renderWallet();
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/0\.00€/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /solde disponible: 0\.00€/i })).toBeInTheDocument();
     });
-    expect(screen.getByLabelText(/portefeuille: 0, 0\.00€/i)).toBeInTheDocument();
-    expect(screen.queryByLabelText(/chargement/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /fragments disponibles: 0/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /portefeuille: 0, 0\.00€/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /chargement/i })).not.toBeInTheDocument();
   });
 
   it("abrège les valeurs longues et expose la valeur exacte", async () => {
@@ -159,6 +162,14 @@ describe("NavWallet", () => {
     });
     expect(screen.getByRole("button", { name: /1\s?234\s?567/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /12345\.67€/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /1\s?234\s?567/ })).toHaveAttribute(
+      "data-slot",
+      "nav-wallet-fragments"
+    );
+    expect(screen.getByRole("button", { name: /12345\.67€/ })).toHaveAttribute(
+      "data-slot",
+      "nav-wallet-balance"
+    );
   });
 
   it("conserve le skeleton à la même hauteur que le bloc final", () => {
@@ -166,5 +177,22 @@ describe("NavWallet", () => {
     const chip = container.querySelector("[data-slot='nav-wallet']");
     expect(chip).toHaveClass("h-9");
     expect(chip).toHaveClass("min-w-[10.25rem]");
+    expect(chip).toHaveClass("nav-chrome");
+  });
+
+  it("expose deux zones distinctes pour les fragments et le solde", async () => {
+    authUser = userFixture({ fragments: 4 });
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      json: async () => ({ availableCents: 250, pendingBalanceCents: 0 }),
+    })) as unknown as typeof fetch;
+
+    renderWallet();
+
+    const fragments = await screen.findByRole("button", { name: /fragments disponibles: 4/i });
+    const balance = await screen.findByRole("button", { name: /solde disponible: 2\.50€/i });
+    expect(fragments).toHaveClass("nav-hover-fill");
+    expect(balance).toHaveClass("nav-hover-fill");
+    expect(fragments.closest("[data-slot='nav-wallet']")).toBe(balance.closest("[data-slot='nav-wallet']"));
   });
 });

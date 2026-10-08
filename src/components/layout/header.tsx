@@ -35,7 +35,6 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
   BellIcon,
-  EllipsisHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { Locale, locales } from "@/lib/i18n";
 import { useSession } from "~/lib/auth-client";
@@ -65,13 +64,13 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
       href={item.href}
       data-tour={item.tourId}
       className={cn(
-        "group relative flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap text-xs font-medium transition-all duration-200",
+        "group relative flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap text-[11px] font-medium transition-all duration-200 min-[1440px]:gap-2 min-[1440px]:text-xs",
         isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
       )}
     >
       <item.icon
         className={cn(
-          "h-4 w-4 shrink-0 transition-colors",
+          "hidden h-4 w-4 shrink-0 transition-colors min-[1440px]:block",
           isActive ? "lunar-nav-link-active" : "group-hover:text-foreground/80"
         )}
       />
@@ -171,22 +170,22 @@ export function Header() {
       : []),
   ];
 
-  const overflowNavigation: NavItem[] = [
-    {
-      id: "support",
-      name: messages.nav.support,
-      href: "/help",
-      icon: QuestionMarkCircleIcon,
-      tourId: "nav-support",
-    },
-  ];
+  const supportNavigation: NavItem = {
+    id: "support",
+    name: messages.nav.support,
+    href: "/help",
+    icon: QuestionMarkCircleIcon,
+    tourId: "nav-support",
+  };
+
+  const desktopNavigation: NavItem[] = [...primaryNavigation, supportNavigation];
 
   const sheetNavigation: NavItem[] = [
     ...primaryNavigation,
     ...(canModerate
       ? [{ id: "moderation", name: messages.nav.moderation, href: "/moderation", icon: ChatBubbleLeftRightIcon, tourId: "nav-moderation" }]
       : []),
-    ...overflowNavigation,
+    supportNavigation,
   ];
 
   const handleSteamLogin = async () => {
@@ -212,7 +211,7 @@ export function Header() {
       <Button
         variant="ghost"
         size="icon"
-        className="h-9 w-9 shrink-0 hover:bg-theme-accent/10 hover:text-theme-accent relative"
+        className="nav-chrome nav-hover-fill relative h-9 w-9 shrink-0 shadow-none transition-none hover:bg-transparent hover:text-foreground focus-visible:ring-0"
       >
         <BellIcon className="h-4 w-4" />
         {unreadCount > 0 && (
@@ -234,8 +233,8 @@ export function Header() {
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
-      <div className="container mx-auto grid h-16 min-w-0 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-4 sm:px-6 lg:px-8 min-[1100px]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-        <Link href="/" className="flex min-w-0 shrink-0 items-center space-x-2 justify-self-start sm:space-x-3">
+      <div className="container mx-auto flex h-16 min-w-0 w-full items-center gap-2 px-4 sm:px-6 lg:gap-3 lg:px-8">
+        <Link href="/" className="flex min-w-0 shrink-0 items-center space-x-2 sm:space-x-3">
           <div className="relative group">
             <div className="h-10 w-10 shrink-0 rounded-lg">
               <Image src="/images/logo.webp" alt="MoonSkin" width={40} height={40} />
@@ -248,50 +247,21 @@ export function Header() {
           </div>
         </Link>
 
-        <nav className="hidden min-w-0 min-[1100px]:flex items-center justify-center">
-          <div className="flex min-w-0 items-center gap-2 min-[1512px]:gap-5">
-            {primaryNavigation.map((item) => (
+        <nav className="hidden min-w-0 min-[1100px]:flex flex-1 items-center justify-start pl-1 min-[1440px]:pl-2">
+          <div className="flex min-w-0 items-center gap-1.5 min-[1440px]:gap-2.5 min-[1512px]:gap-3">
+            {desktopNavigation.map((item) => (
               <DesktopNavLink key={item.id} item={item} pathname={pathname} />
             ))}
-
-            {overflowNavigation.map((item) => (
-              <span key={item.id} className="hidden min-[1512px]:contents">
-                <DesktopNavLink item={item} pathname={pathname} />
-              </span>
-            ))}
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="group relative flex min-[1512px]:hidden shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap text-xs font-medium text-muted-foreground transition-all duration-200 hover:text-foreground"
-                  aria-label={messages.nav.more}
-                >
-                  <EllipsisHorizontalIcon className="h-4 w-4 shrink-0" />
-                  <span className="whitespace-nowrap">{messages.nav.more}</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="min-w-[160px] z-[210]">
-                {overflowNavigation.map((item) => (
-                  <DropdownMenuItem key={item.id} asChild>
-                    <Link href={item.href} data-tour={item.tourId} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      <span className="whitespace-nowrap">{item.name}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </nav>
 
-        <div className="col-start-3 flex shrink-0 items-center justify-end justify-self-end gap-1 sm:gap-1.5">
+        <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-1">
           <span className="hidden min-[1100px]:contents">
-            <NavPreferencesMenu />
+            <NavPreferencesMenu className="nav-chrome nav-hover-fill shadow-none transition-none hover:bg-transparent hover:text-foreground focus-visible:ring-0" />
           </span>
 
           {user ? (
-            <div className="flex h-9 shrink-0 items-center justify-end gap-1 sm:gap-1.5" data-slot="header-auth">
+            <div className="flex h-9 shrink-0 items-center justify-end gap-1" data-slot="header-auth">
               {walletChip}
               {notificationsButton}
 

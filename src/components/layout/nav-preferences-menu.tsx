@@ -127,7 +127,7 @@ export function NavPreferencesMenu({ menuClassName, className }: NavPreferencesM
       <Button
         variant="ghost"
         size="icon"
-        className={cn("h-9 w-9 shrink-0", className)}
+        className={cn("h-9 w-9 shrink-0 rounded-xl", className)}
         aria-hidden
       >
         <AdjustmentsHorizontalIcon className="h-4 w-4" />
@@ -142,7 +142,7 @@ export function NavPreferencesMenu({ menuClassName, className }: NavPreferencesM
           variant="ghost"
           size="icon"
           className={cn(
-            "h-9 w-9 shrink-0 hover:bg-theme-accent/10 hover:text-theme-accent",
+            "h-9 w-9 shrink-0 rounded-xl hover:bg-transparent hover:text-foreground",
             className
           )}
           data-tour="theme-selector"
