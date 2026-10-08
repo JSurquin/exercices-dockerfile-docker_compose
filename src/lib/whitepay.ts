@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import type { Locale } from '@/lib/locales';
 
 // =============================================================================
 // CONFIGURATION WHITEPAY
@@ -263,7 +264,8 @@ export const WHITEPAY_SUPPORTED_CRYPTOS = [
   {
     ticker: 'USDC',
     name: 'USD Coin (USDC)',
-    networks: ['SOL', 'POLYGON', 'ARBITRUM', 'BASE', 'OPTIMISM', 'NEAR', 'STELLAR', 'CCHAIN', 'WHITECHAIN', 'DOTASSETHUB', 'ERC20'],
+    // Polygon par défaut pour les retraits utilisateur (frais bas)
+    networks: ['POLYGON', 'SOL', 'ARBITRUM', 'BASE', 'OPTIMISM', 'NEAR', 'STELLAR', 'CCHAIN', 'WHITECHAIN', 'DOTASSETHUB', 'ERC20'],
     is_stable: true,
   },
   { ticker: 'BTC', name: 'Bitcoin (BTC)', networks: ['BTC'], is_stable: false },
@@ -274,6 +276,17 @@ export const WHITEPAY_SUPPORTED_CRYPTOS = [
 ] as const;
 
 export type WhitepaySupportedCrypto = (typeof WHITEPAY_SUPPORTED_CRYPTOS)[number];
+
+/** Cryptos proposées sur /payout (USDT réservé au retrait merchant Whitepay). */
+export const USER_PAYOUT_SUPPORTED_CRYPTOS = WHITEPAY_SUPPORTED_CRYPTOS.filter(
+  (c) => c.ticker !== 'USDT'
+);
+
+export const DEFAULT_USER_PAYOUT_CRYPTO = 'USDC';
+
+export function isUserPayoutTickerAllowed(ticker: string): boolean {
+  return ticker.toUpperCase() !== 'USDT';
+}
 
 /** Frais réseau fixes de repli (unités crypto) — alignés sur la doc Whitepay withdrawals/fees */
 const WHITEPAY_STATIC_NETWORK_FEE_UNITS: Record<string, Record<string, number>> = {
@@ -318,6 +331,22 @@ const WITHDRAWAL_FEES_CACHE_MS = 5 * 60 * 1000;
 export function getWhitepayCryptoByTicker(ticker: string): WhitepaySupportedCrypto | undefined {
   return WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === ticker.toUpperCase());
 }
+
+/** Réseaux bon marché préférés — jamais ERC20 par défaut. */
+const PREFERRED_WHITEPAY_NETWORKS = ['TRC20', 'POLYGON'] as const;
+
+/** Réseau par défaut : TRC20, sinon Polygon, sinon le premier réseau non ERC20. */
+export function getDefaultWhitepayNetwork(ticker: string): string {
+  const crypto = getWhitepayCryptoByTicker(ticker);
+  if (!crypto) return 'TRC20';
+  const networks = crypto.networks as readonly string[];
+  for (const preferred of PREFERRED_WHITEPAY_NETWORKS) {
+    if (networks.includes(preferred)) return preferred;
+  }
+  return networks.find((n) => n !== 'ERC20') ?? networks[0] ?? 'TRC20';
+}
+
+export const DEFAULT_USER_PAYOUT_NETWORK = getDefaultWhitepayNetwork(DEFAULT_USER_PAYOUT_CRYPTO);
 
 export function isWhitepayCryptoNetworkSupported(ticker: string, network: string): boolean {
   const crypto = getWhitepayCryptoByTicker(ticker);
@@ -377,36 +406,35 @@ export function estimateNetworkFeeCentsSync(ticker: string, network: string): nu
   return cryptoNetworkFeeUnitsToEurCents(units, ticker);
 }
 
-/** Récupère les frais / réseaux depuis l'API Whitepay (cache 5 min) */
+/** Récupère les frais / réseaux depuis l'API Whitepay (cache 5 min). Échoue si l'API est indisponible. */
 export async function getWithdrawalFeesForTicker(
   ticker: string
-): Promise<WhitepayWithdrawalFeesCurrency | null> {
+): Promise<WhitepayWithdrawalFeesCurrency> {
   const key = ticker.toUpperCase();
   const cached = withdrawalFeesCache.get(key);
   if (cached && Date.now() - cached.fetchedAt < WITHDRAWAL_FEES_CACHE_MS) {
     return cached.data;
   }
 
-  try {
-    validateConfig();
-    const qs = new URLSearchParams({ ticker: key });
-    const resp = await whitepayRequest<{ currencies: WhitepayWithdrawalFeesCurrency[] }>(
-      'GET',
-      `/private-api/withdrawals/fees?${qs.toString()}`
-    );
-    const found = resp.currencies.find((c) => c.currency?.ticker?.toUpperCase() === key);
-    if (found) {
-      withdrawalFeesCache.set(key, { data: found, fetchedAt: Date.now() });
-      return found;
-    }
-  } catch (error) {
-    console.error('[Whitepay] Failed to fetch withdrawal fees', { ticker: key, error });
+  validateConfig();
+  const qs = new URLSearchParams({ ticker: key });
+  const resp = await whitepayRequest<{ currencies: WhitepayWithdrawalFeesCurrency[] }>(
+    'GET',
+    `/private-api/withdrawals/fees?${qs.toString()}`
+  );
+  const found = resp.currencies.find((c) => c.currency?.ticker?.toUpperCase() === key);
+  if (!found) {
+    throw new Error(`Whitepay n'a renvoyé aucun barème de frais pour ${key}`);
   }
-
-  return null;
+  withdrawalFeesCache.set(key, { data: found, fetchedAt: Date.now() });
+  return found;
 }
 
-/** Estimation async — préfère l'API Whitepay, repli sur les valeurs statiques */
+/**
+ * Frais réseau live Whitepay. Si l'API est en panne, l'erreur est propagée
+ * (pas de repli silencieux sur l'estimation statique).
+ * Si l'API répond mais sans tarif pour ce réseau, on utilise le barème statique.
+ */
 export async function estimateNetworkFeeCents(
   ticker: string,
   network: string
@@ -414,7 +442,7 @@ export async function estimateNetworkFeeCents(
   const networkU = network.toUpperCase();
   const tickerU = ticker.toUpperCase();
   const feesData = await getWithdrawalFeesForTicker(tickerU);
-  const live = feesData?.network_fees?.[networkU];
+  const live = feesData.network_fees?.[networkU];
   if (live?.fixed) {
     const fixed = parseFloat(live.fixed);
     if (!Number.isNaN(fixed) && fixed > 0) {
@@ -525,6 +553,131 @@ export class WhitepayApiError extends Error {
     super(message);
     this.name = 'WhitepayApiError';
   }
+}
+
+/** Messages de validation extraits d'un objet `errors` Laravel/Whitepay. */
+export function extractWhitepayErrorMessages(errors: unknown): string[] {
+  if (!errors || typeof errors !== 'object') return [];
+  const msgs: string[] = [];
+  for (const val of Object.values(errors as Record<string, unknown>)) {
+    if (Array.isArray(val)) msgs.push(...val.map(String));
+    else if (typeof val === 'string') msgs.push(val);
+  }
+  return msgs.map((m) => m.trim()).filter(Boolean);
+}
+
+/** Extrait les messages de validation Whitepay (ex. 422 errors.field[]) pour l'UI. */
+export function formatWhitepayApiErrorMessage(error: {
+  message: string;
+  responseData?: unknown;
+}): string {
+  const data = error.responseData;
+  if (data && typeof data === 'object') {
+    const rec = data as { errors?: unknown; message?: string };
+    const msgs = extractWhitepayErrorMessages(rec.errors);
+    if (msgs.length) return msgs.join(' ');
+    if (typeof rec.message === 'string' && rec.message.trim()) return rec.message;
+  }
+  return error.message;
+}
+
+const WHITEPAY_FIELD_LABELS: Record<string, Record<Locale, string>> = {
+  target_currency: { fr: 'devise', en: 'currency', cn: '货币' },
+  currency: { fr: 'devise', en: 'currency', cn: '货币' },
+  destination_account: { fr: 'adresse du wallet', en: 'wallet address', cn: '钱包地址' },
+  address: { fr: 'adresse du wallet', en: 'wallet address', cn: '钱包地址' },
+  network: { fr: 'réseau', en: 'network', cn: '网络' },
+  amount: { fr: 'montant', en: 'amount', cn: '金额' },
+  memo: { fr: 'memo / tag', en: 'memo / tag', cn: 'memo / tag' },
+};
+
+function humanizeWhitepayField(field: string, locale: Locale): string {
+  const key = field.replace(/\s+/g, '_').toLowerCase();
+  return WHITEPAY_FIELD_LABELS[key]?.[locale] ?? field.replace(/_/g, ' ');
+}
+
+function translateOneWhitepayError(raw: string, locale: Locale): string {
+  const stripped = raw.replace(/^Whitepay API error:\s*\d+\s*-\s*/i, '').trim();
+  if (!stripped) return raw;
+
+  let m = stripped.match(/^The selected currency is unavailable:\s*(.+)$/i);
+  if (m) {
+    const currency = m[1].trim();
+    if (locale === 'en') return `The selected currency is unavailable: ${currency}`;
+    if (locale === 'cn') return `所选货币不可用：${currency}`;
+    return `La devise sélectionnée n'est pas disponible : ${currency}`;
+  }
+
+  m = stripped.match(/^The given data was invalid\.?$/i);
+  if (m) {
+    if (locale === 'en') return 'The submitted details are not valid.';
+    if (locale === 'cn') return '提交的信息无效。';
+    return 'Les informations envoyées ne sont pas valides.';
+  }
+
+  m = stripped.match(/^The selected (.+) is invalid\.?$/i);
+  if (m) {
+    const field = humanizeWhitepayField(m[1], locale);
+    if (locale === 'en') return `The selected ${field} is not valid.`;
+    if (locale === 'cn') return `所选${field}无效。`;
+    return `Le champ « ${field} » n'est pas valide.`;
+  }
+
+  m = stripped.match(/^The (.+) field is required\.?$/i);
+  if (m) {
+    const field = humanizeWhitepayField(m[1], locale);
+    if (locale === 'en') return `The ${field} field is required.`;
+    if (locale === 'cn') return `${field}为必填项。`;
+    return `Le champ « ${field} » est obligatoire.`;
+  }
+
+  m = stripped.match(/^The (.+) must be a valid (.+)\.?$/i);
+  if (m) {
+    const field = humanizeWhitepayField(m[1], locale);
+    if (locale === 'en') return `The ${field} is not valid.`;
+    if (locale === 'cn') return `${field}无效。`;
+    return `Le champ « ${field} » n'est pas valide.`;
+  }
+
+  return stripped;
+}
+
+/** Traduit un message Whitepay (souvent en anglais) dans la langue de l'utilisateur. */
+export function translateWhitepayApiErrorMessage(raw: string, locale: Locale = 'fr'): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return trimmed;
+  const parts = trimmed.split(/(?<=\.)\s+/).map((p) => p.trim()).filter(Boolean);
+  if (parts.length > 1) {
+    return parts.map((p) => translateOneWhitepayError(p, locale)).join(' ');
+  }
+  return translateOneWhitepayError(trimmed, locale);
+}
+
+export function resolveWhitepayClientError(
+  data: {
+    error?: unknown;
+    message?: unknown;
+    code?: unknown;
+    whitepayErrors?: unknown;
+    whitepayResponse?: unknown;
+  },
+  locale: Locale,
+  fallback: string
+): string {
+  const fromFields = extractWhitepayErrorMessages(data.whitepayErrors);
+  const fromResponse =
+    fromFields.length === 0 && data.whitepayResponse && typeof data.whitepayResponse === 'object'
+      ? extractWhitepayErrorMessages((data.whitepayResponse as { errors?: unknown }).errors)
+      : [];
+  const fieldMsgs = fromFields.length ? fromFields : fromResponse;
+  const raw = fieldMsgs.length
+    ? fieldMsgs.join(' ')
+    : typeof data.error === 'string' && data.error.trim()
+      ? data.error.trim()
+      : typeof data.message === 'string' && data.message.trim()
+        ? data.message.trim()
+        : fallback;
+  return translateWhitepayApiErrorMessage(raw, locale) || fallback;
 }
 
 // =============================================================================
@@ -931,6 +1084,11 @@ function isRateExpiredError(error: WhitepayApiError): boolean {
  */
 export const WHITEPAY_FEE_RATE = 0.011; // 1,1%
 
+/** Les frais totaux (traitement + réseau) ne doivent jamais dépasser 10 % du brut. */
+export const MAX_CRYPTO_FEE_RATIO = 0.10;
+/** Avertissement visible dès que les frais totaux dépassent 5 % du brut. */
+export const WARN_CRYPTO_FEE_RATIO = 0.05;
+
 /**
  * Calcule les frais estimés pour un retrait crypto Whitepay (1,1% du montant).
  * Utiliser parseWhitepayFeesFromResponse() pour les frais réels issus de l'API.
@@ -950,6 +1108,70 @@ export function calculateWhitepayFees(
     networkFeeCents: safeNetworkFeeCents,
     totalFeeCents: processingFeeCents + safeNetworkFeeCents,
   };
+}
+
+/**
+ * Frais réseau conservateurs : max(live, estimation haute statique).
+ * Sert au minimum 10 % / alerte 5 %, pas à l'affichage du net.
+ */
+export function getConservativeNetworkFeeCents(
+  ticker: string,
+  network: string,
+  liveCents?: number
+): number {
+  const staticCents = estimateNetworkFeeCentsSync(ticker, network);
+  if (liveCents == null || Number.isNaN(liveCents)) return staticCents;
+  return Math.max(liveCents, staticCents);
+}
+
+export function getCryptoFeeRatio(amountCents: number, networkFeeCents: number): number {
+  if (amountCents <= 0) return 0;
+  const fees = calculateWhitepayFees(amountCents, networkFeeCents);
+  return fees.totalFeeCents / amountCents;
+}
+
+/**
+ * Plus petit montant brut tel que (frais traitement + frais réseau) ≤ 10 % du brut,
+ * au moins égal au minimum plateforme Whitepay (21,20 €).
+ */
+export function getMinWithdrawalCentsForNetworkFee(networkFeeCents: number): number {
+  const platformMin = getWhitepayLimits().minCents;
+  const safeNetwork = Math.max(0, Math.round(networkFeeCents));
+  if (safeNetwork <= 0) return platformMin;
+  const room = MAX_CRYPTO_FEE_RATIO - WHITEPAY_FEE_RATE;
+  if (room <= 0) return platformMin;
+  let amount = Math.max(platformMin, Math.ceil(safeNetwork / room));
+  while (amount < 50_000_000) {
+    const fees = calculateWhitepayFees(amount, safeNetwork);
+    if (
+      fees.totalFeeCents < amount &&
+      fees.totalFeeCents <= Math.floor(amount * MAX_CRYPTO_FEE_RATIO)
+    ) {
+      return amount;
+    }
+    amount += 1;
+  }
+  return amount;
+}
+
+export function isCryptoQuoteCurrent(
+  quote: {
+    amountCents: number;
+    method?: string;
+    targetCurrency?: string | null;
+    network?: string | null;
+    expiresAt?: string;
+  },
+  selection: { amountCents: number; targetCurrency: string; network: string }
+): boolean {
+  if (quote.amountCents !== selection.amountCents) return false;
+  if ((quote.method ?? 'CRYPTO').toUpperCase() !== 'CRYPTO') return false;
+  if ((quote.targetCurrency ?? '').toUpperCase() !== selection.targetCurrency.toUpperCase()) {
+    return false;
+  }
+  if ((quote.network ?? '').toUpperCase() !== selection.network.toUpperCase()) return false;
+  if (quote.expiresAt && new Date(quote.expiresAt).getTime() <= Date.now()) return false;
+  return true;
 }
 
 /** Net EUR centimes après déduction de la marge plateforme (1,1 %), même formule que le devis / FeePreview. */

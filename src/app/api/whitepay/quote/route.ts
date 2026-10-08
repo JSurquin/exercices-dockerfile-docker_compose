@@ -4,10 +4,16 @@ import { headers } from 'next/headers';
 import {
   calculateWhitepayFees,
   estimateNetworkFeeCents,
-  estimateNetworkFeeCentsSync,
   getWhitepayLimits,
   isWhitepayCryptoNetworkSupported,
+  isUserPayoutTickerAllowed,
   centsToEur,
+  getConservativeNetworkFeeCents,
+  getMinWithdrawalCentsForNetworkFee,
+  getCryptoFeeRatio,
+  WARN_CRYPTO_FEE_RATIO,
+  WhitepayApiError,
+  formatWhitepayApiErrorMessage,
 } from '@/lib/whitepay';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { whitepayAmountBodySchema } from '@/lib/validation/schemas/integrations';
@@ -76,6 +82,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (targetCurrency && !isUserPayoutTickerAllowed(targetCurrency)) {
+      LOG('✗ USDT retiré des retraits utilisateur', { targetCurrency });
+      return NextResponse.json(
+        {
+          error: "USDT n'est plus proposé pour les retraits. Choisissez USDC sur le réseau Polygon.",
+          code: 'CRYPTO_USDT_DISABLED',
+        },
+        { status: 400 }
+      );
+    }
+
     if (targetCurrency && network && !isWhitepayCryptoNetworkSupported(targetCurrency, network)) {
       LOG('✗ Combinaison crypto/réseau non supportée', { targetCurrency, network });
       return NextResponse.json(
@@ -88,13 +105,29 @@ export async function POST(request: NextRequest) {
     if (targetCurrency && network) {
       try {
         networkFeeCents = await estimateNetworkFeeCents(targetCurrency, network);
-      } catch {
-        networkFeeCents = estimateNetworkFeeCentsSync(targetCurrency, network);
+      } catch (error) {
+        const message =
+          error instanceof WhitepayApiError
+            ? formatWhitepayApiErrorMessage(error)
+            : error instanceof Error
+              ? error.message
+              : 'Devis indisponible';
+        LOG('✗ Frais Whitepay indisponibles', { targetCurrency, network, message });
+        return NextResponse.json(
+          { error: message, quoteUnavailable: true },
+          { status: 502 }
+        );
       }
     }
 
     const fees = calculateWhitepayFees(amount, networkFeeCents);
     const netCents = amount - fees.totalFeeCents;
+    const conservativeNetworkFeeCents =
+      targetCurrency && network
+        ? getConservativeNetworkFeeCents(targetCurrency, network, networkFeeCents)
+        : networkFeeCents;
+    const minAmountCents = getMinWithdrawalCentsForNetworkFee(conservativeNetworkFeeCents);
+    const feeRatio = getCryptoFeeRatio(amount, conservativeNetworkFeeCents);
 
     const quote = {
       method: 'CRYPTO',
@@ -111,13 +144,18 @@ export async function POST(request: NextRequest) {
       currency: 'EUR',
       expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
       quoteId: `wp-quote-${Date.now()}-${session.user.id.slice(0, 8)}`,
+      feeSource: 'live' as const,
+      minAmountCents,
+      feeRatio,
+      feeRatioWarning: feeRatio > WARN_CRYPTO_FEE_RATIO,
+      belowMin: amount < minAmountCents,
     };
 
-    LOG('✓ Devis crypto calculé', { amountCents: amount, netCents, networkFeeCents });
+    LOG('✓ Devis crypto calculé', { amountCents: amount, netCents, networkFeeCents, minAmountCents });
     return NextResponse.json({
       quote,
       limits: {
-        minCents: limits.minCents,
+        minCents: Math.max(limits.minCents, minAmountCents),
         maxCents: limits.maxCents,
       },
     });

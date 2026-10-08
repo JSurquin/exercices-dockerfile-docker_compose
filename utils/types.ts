@@ -7216,6 +7216,7 @@ export interface Messages {
         cryptoWalletRequired: string;
         cryptoMemoRequired: string;
         cryptoMinAmount: string;
+        usdtDisabled: string;
         cardLabel: string;
         cardNumberRequired: string;
         cardHolderRequired: string;
@@ -7256,6 +7257,10 @@ export interface Messages {
         euPlatformLabel: string;
         euPlatformAriaLabel: string;
         cryptoNetworkFeeEstimateHint: string;
+        quoteUnavailable: string;
+        quoteStale: string;
+        feeRatioWarning: string;
+        cryptoNetworkMinAmount: string;
         security: {
           title: string;
           description: string;

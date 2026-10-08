@@ -15,6 +15,8 @@ import {
   networkRequiresMemo,
   isWhitepayCryptoNetworkSupported,
   getWhitepayCryptoByTicker,
+  isUserPayoutTickerAllowed,
+  formatWhitepayApiErrorMessage,
   WhitepayApiError,
   type WhitepayWithdrawalRequest,
   type WhitepayTravelRule,
@@ -132,6 +134,17 @@ export async function POST(request: NextRequest) {
       LOG('✗ Crypto non supportée', { targetCurrency });
       return NextResponse.json(
         { error: `Crypto non supportée: ${targetCurrency}` },
+        { status: 400 }
+      );
+    }
+
+    if (!isUserPayoutTickerAllowed(targetCurrency)) {
+      LOG('✗ USDT retiré des retraits utilisateur', { targetCurrency });
+      return NextResponse.json(
+        {
+          error: "USDT n'est plus proposé pour les retraits. Choisissez USDC sur le réseau Polygon.",
+          code: 'CRYPTO_USDT_DISABLED',
+        },
         { status: 400 }
       );
     }
@@ -432,12 +445,16 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erreur lors de la création du retrait crypto';
+    const message =
+      error instanceof WhitepayApiError
+        ? formatWhitepayApiErrorMessage(error)
+        : error instanceof Error
+          ? error.message
+          : 'Erreur lors de la création du retrait crypto';
     console.error('[PAYOUT WHITEPAY CRYPTO] Erreur', error);
     if (error instanceof WhitepayApiError && error.responseData) {
       console.error('[PAYOUT WHITEPAY CRYPTO] Détail API (ex. 422)', error.responseData);
     }
-    // Renvoyer le détail 422 au client pour diagnostic (quels champs invalides)
     const status = error instanceof WhitepayApiError ? error.statusCode : 500;
     const body: { error: string; whitepayErrors?: unknown } = { error: message };
     if (error instanceof WhitepayApiError && error.responseData && typeof error.responseData === 'object') {

@@ -36,10 +36,15 @@ import { MerchantWithdrawCard } from '@/components/payout/MerchantWithdrawCard';
 import { clientDisplayPayoutStatus } from '@/lib/merchant-withdraw-display';
 import { ReviewPrompt } from '@/components/review/review-prompt';
 import {
-  WHITEPAY_SUPPORTED_CRYPTOS,
+  USER_PAYOUT_SUPPORTED_CRYPTOS,
   MEMO_REQUIRED_NETWORKS,
   getWhitepayAddressPlaceholder,
   formatWhitepayNetworkFeeLabel,
+  getDefaultWhitepayNetwork,
+  DEFAULT_USER_PAYOUT_CRYPTO,
+  DEFAULT_USER_PAYOUT_NETWORK,
+  isUserPayoutTickerAllowed,
+  resolveWhitepayClientError,
 } from '@/lib/whitepay';
 import {
   Select,
@@ -173,8 +178,8 @@ export default function PayoutPage() {
     beneficiaryCountry: 'FR',
     beneficiaryEmail: '',
     walletAddress: '',
-    selectedCrypto: 'USDT',
-    selectedNetwork: 'TRC20',
+    selectedCrypto: DEFAULT_USER_PAYOUT_CRYPTO,
+    selectedNetwork: DEFAULT_USER_PAYOUT_NETWORK,
     memo: '',
   });
   const [useSavedIban, setUseSavedIban] = useState(false);
@@ -398,7 +403,10 @@ export default function PayoutPage() {
         network: m.network ?? null,
         targetCurrency: m.targetCurrency ?? null,
         memo: m.memo ?? null,
-      })),
+      }))
+      .filter((m: { targetCurrency: string | null }) =>
+        !!m.targetCurrency && isUserPayoutTickerAllowed(m.targetCurrency)
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [paymentMethodsData]
   );
@@ -495,7 +503,7 @@ export default function PayoutPage() {
   // validé, l'utilisateur voit le bloc "KYC requis" avec un lien vers /kyc.
 
   // Réseaux disponibles pour la crypto sélectionnée
-  const availableNetworks = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === formData.selectedCrypto)?.networks || [];
+  const availableNetworks = USER_PAYOUT_SUPPORTED_CRYPTOS.find((c) => c.ticker === formData.selectedCrypto)?.networks || [];
   const needsMemo = MEMO_REQUIRED_NETWORKS.includes(formData.selectedNetwork);
 
   const parsedAmountCents =
@@ -583,7 +591,10 @@ export default function PayoutPage() {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const errorMessage = typeof data?.error === 'string' ? data.error : data?.message ?? `HTTP ${response.status}`;
+        const errorMessage =
+          data?.code === 'CRYPTO_USDT_DISABLED'
+            ? text.request.usdtDisabled
+            : resolveWhitepayClientError(data, locale, text.toast.payoutError);
         throw new Error(errorMessage);
       }
 
@@ -732,10 +743,10 @@ export default function PayoutPage() {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        let errorMessage = typeof data?.error === 'string' ? data.error : data?.message ?? `HTTP ${response.status}`;
-        if (data?.whitepayErrors && process.env.NODE_ENV === 'development') {
-          errorMessage += `, Details: ${JSON.stringify(data.whitepayErrors)}`;
-        }
+        const errorMessage =
+          data?.code === 'CRYPTO_USDT_DISABLED'
+            ? text.request.usdtDisabled
+            : resolveWhitepayClientError(data, locale, text.toast.payoutError);
         // Carte obsolète supprimée côté serveur : on rafraîchit les méthodes et on bascule en saisie manuelle
         if (data?.code === 'CARD_STALE_DELETED') {
           queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethods });
@@ -1779,11 +1790,10 @@ export default function PayoutPage() {
                                         <Select
                                           value={formData.selectedCrypto}
                                           onValueChange={(v) => {
-                                            const crypto = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === v);
                                             setFormData(prev => ({
                                               ...prev,
                                               selectedCrypto: v,
-                                              selectedNetwork: crypto?.networks[0] || 'TRC20',
+                                              selectedNetwork: getDefaultWhitepayNetwork(v),
                                             }));
                                             setQuote(null);
                                           }}
@@ -1792,7 +1802,7 @@ export default function PayoutPage() {
                                             <SelectValue placeholder={text.request.cryptoPlaceholder} />
                                           </SelectTrigger>
                                           <SelectContent>
-                                            {WHITEPAY_SUPPORTED_CRYPTOS.map((c) => (
+                                            {USER_PAYOUT_SUPPORTED_CRYPTOS.map((c) => (
                                               <SelectItem key={c.ticker} value={c.ticker}>
                                                 <span className="flex items-center gap-2">
                                                   {c.name}

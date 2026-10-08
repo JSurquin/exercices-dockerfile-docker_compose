@@ -8,7 +8,6 @@ import {
   createInstantWithdrawal,
   calculateWhitepayFees,
   estimateNetworkFeeCents,
-  estimateNetworkFeeCentsSync,
   parseWhitepayFeesFromResponse,
   calculateWhitepayNetCents,
   parseWhitepayNetworkFeeCents,
@@ -19,6 +18,11 @@ import {
   convertWhitepayStatus,
   isWhitepayCryptoNetworkSupported,
   getWhitepayCryptoByTicker,
+  isUserPayoutTickerAllowed,
+  getConservativeNetworkFeeCents,
+  getMinWithdrawalCentsForNetworkFee,
+  formatWhitepayApiErrorMessage,
+  WhitepayApiError,
   type WhitepayInstantWithdrawalRequest,
   type WhitepayTravelRule,
 } from '@/lib/whitepay';
@@ -221,6 +225,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!isUserPayoutTickerAllowed(targetCurrencyU)) {
+      return NextResponse.json(
+        {
+          error: "USDT n'est plus proposé pour les retraits. Choisissez USDC sur le réseau Polygon.",
+          code: 'CRYPTO_USDT_DISABLED',
+        },
+        { status: 400 }
+      );
+    }
+
     if (!isWhitepayCryptoNetworkSupported(targetCurrencyU, networkU)) {
       return NextResponse.json(
         { error: `Réseau ${networkU} non supporté pour ${targetCurrencyU}` },
@@ -286,11 +300,36 @@ export async function POST(request: NextRequest) {
     }
     const forceManualApproval = !!withdrawalCheck.requiresManualVerification;
 
-    let networkFeeCents = estimateNetworkFeeCentsSync(targetCurrencyU, networkU);
+    let networkFeeCents: number;
     try {
       networkFeeCents = await estimateNetworkFeeCents(targetCurrencyU, networkU);
-    } catch {
-      // repli déjà calculé
+    } catch (feeErr) {
+      const message =
+        feeErr instanceof WhitepayApiError
+          ? formatWhitepayApiErrorMessage(feeErr)
+          : feeErr instanceof Error
+            ? feeErr.message
+            : 'Devis indisponible';
+      return NextResponse.json(
+        { error: message, quoteUnavailable: true },
+        { status: 502 }
+      );
+    }
+
+    const conservativeNetworkFeeCents = getConservativeNetworkFeeCents(
+      targetCurrencyU,
+      networkU,
+      networkFeeCents
+    );
+    const minAmountCents = getMinWithdrawalCentsForNetworkFee(conservativeNetworkFeeCents);
+    if (amountCents < minAmountCents) {
+      return NextResponse.json(
+        {
+          error: `Montant minimum sur ${networkU} : ${centsToEur(minAmountCents)}€ (les frais ne doivent pas dépasser 10 % du retrait)`,
+          minAmountCents,
+        },
+        { status: 400 }
+      );
     }
 
     const fees = calculateWhitepayFees(amountCents, networkFeeCents);
@@ -534,11 +573,12 @@ export async function POST(request: NextRequest) {
       message: 'Demande enregistrée. Elle sera traitée sous 24 h.',
     });
   } catch (error) {
-    if (error instanceof Error && error.name === 'WhitepayApiError') {
-      const wpError = error as Error & { statusCode?: number; responseData?: unknown };
+    if (error instanceof WhitepayApiError) {
+      const wpError = error;
       const responseDataStr = wpError.responseData
         ? JSON.stringify(wpError.responseData, null, 2)
         : 'no response data';
+      const clientMessage = formatWhitepayApiErrorMessage(wpError);
       console.error('[Whitepay PayoutRequest] WhitepayApiError:', {
         message: wpError.message,
         statusCode: wpError.statusCode,
@@ -546,11 +586,18 @@ export async function POST(request: NextRequest) {
       });
       return NextResponse.json(
         {
-          error: 'Erreur API Whitepay',
+          error: clientMessage || 'Erreur API Whitepay',
           details: wpError.message,
           statusCode: wpError.statusCode,
+          whitepayErrors:
+            wpError.responseData &&
+            typeof wpError.responseData === 'object' &&
+            'errors' in wpError.responseData
+              ? (wpError.responseData as { errors: unknown }).errors
+              : wpError.responseData ?? null,
           whitepayResponse: wpError.responseData ?? null,
           whitepayResponseRaw: responseDataStr,
+          quoteUnavailable: (wpError.statusCode ?? 500) >= 500,
         },
         { status: wpError.statusCode && wpError.statusCode >= 400 && wpError.statusCode < 500 ? 400 : 502 }
       );

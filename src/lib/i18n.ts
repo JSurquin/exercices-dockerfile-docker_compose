@@ -5597,6 +5597,7 @@ export const messages: Record<Locale, Messages> = {
         cryptoWalletRequired: 'Adresse wallet requise',
         cryptoMemoRequired: 'Memo/Tag requis pour ce réseau',
         cryptoMinAmount: 'Montant minimum pour la crypto : 21,20 €',
+        usdtDisabled: "USDT n'est plus proposé pour les retraits. Choisissez USDC sur le réseau Polygon.",
         cardLabel: 'Carte',
         cardNumberRequired: 'Numéro de carte requis',
         cardHolderRequired: 'Titulaire de la carte requis',
@@ -5638,6 +5639,13 @@ export const messages: Record<Locale, Messages> = {
         euPlatformAriaLabel: 'Drapeau de l\'Union européenne — plateforme européenne',
         cryptoNetworkFeeEstimateHint:
           'Les frais réseau affichés correspondent à une estimation haute, prévue pour couvrir les périodes de congestion de la blockchain. Dans la grande majorité des cas, les frais réellement appliqués sont nettement inférieurs.',
+        quoteUnavailable:
+          'Devis indisponible. Le retrait est bloqué tant que les frais réels ne peuvent pas être calculés.',
+        quoteStale: 'Les frais ont changé. Patientez pendant le recalcul du devis.',
+        feeRatioWarning:
+          'Les frais peuvent représenter {percent} % du montant. Préférez TRC20 ou Polygon si votre wallet le permet.',
+        cryptoNetworkMinAmount:
+          'Montant minimum sur {network} : {amount} (les frais ne doivent pas dépasser 10 % du retrait).',
         security: {
           title: 'Sécurité',
           description: 'Informations de sécurité pour vos retraits',
@@ -12740,6 +12748,7 @@ export const messages: Record<Locale, Messages> = {
         cryptoWalletRequired: 'Wallet address required',
         cryptoMemoRequired: 'Memo/Tag required for this network',
         cryptoMinAmount: 'Minimum amount for crypto: €21.20',
+        usdtDisabled: 'USDT is no longer available for withdrawals. Please choose USDC on the Polygon network.',
         cardLabel: 'Card',
         cardNumberRequired: 'Card number required',
         cardHolderRequired: 'Cardholder name required',
@@ -12781,6 +12790,13 @@ export const messages: Record<Locale, Messages> = {
         euPlatformAriaLabel: 'European Union flag — EU-regulated platform',
         cryptoNetworkFeeEstimateHint:
           'The network fees shown are a high-end estimate designed to cover periods of blockchain congestion. In the vast majority of cases, the fees actually applied are significantly lower.',
+        quoteUnavailable:
+          'Quote unavailable. Withdrawal is blocked until real fees can be calculated.',
+        quoteStale: 'Fees have changed. Please wait while the quote is recalculated.',
+        feeRatioWarning:
+          'Fees may represent {percent}% of the amount. Prefer TRC20 or Polygon if your wallet supports them.',
+        cryptoNetworkMinAmount:
+          'Minimum amount on {network}: {amount} (fees must not exceed 10% of the withdrawal).',
         security: {
           title: 'Security',
           description: 'Security information for your withdrawals',
@@ -20885,6 +20901,7 @@ export const messages: Record<Locale, Messages> = {
         cryptoWalletRequired: '需要钱包地址',
         cryptoMemoRequired: '此网络需要Memo/Tag',
         cryptoMinAmount: '加密货币最低金额：21.20€',
+        usdtDisabled: '已不再支持 USDT 提现。请选择 Polygon 网络上的 USDC。',
         cardLabel: '银行卡',
         cardNumberRequired: '请输入卡号',
         cardHolderRequired: '请输入持卡人姓名',
@@ -20926,6 +20943,10 @@ export const messages: Record<Locale, Messages> = {
         euPlatformAriaLabel: '欧盟旗帜 — 欧洲平台',
         cryptoNetworkFeeEstimateHint:
           '显示的网络费用为偏高估算，用于覆盖区块链拥堵期。在绝大多数情况下，实际收取的费用会明显更低。',
+        quoteUnavailable: '报价不可用。在无法计算实际费用之前，提款已被阻止。',
+        quoteStale: '费用已变化，请等待重新计算报价。',
+        feeRatioWarning: '费用可能占金额的 {percent}%。若钱包支持，请优先选择 TRC20 或 Polygon。',
+        cryptoNetworkMinAmount: '{network} 最低金额：{amount}（费用不得超过提款金额的 10%）。',
         security: {
           title: '安全',
           description: '提款安全信息',
