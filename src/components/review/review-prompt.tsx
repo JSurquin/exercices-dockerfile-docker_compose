@@ -8,7 +8,7 @@ import {
   TRUSTPILOT_EVALUATE_URL,
   type ReviewPromptAction,
   type ReviewPromptTrigger,
-} from '@/lib/review-prompt';
+} from '@/lib/review-prompt-shared';
 
 const APPEAR_DELAY_MS = 1800;
 
@@ -44,6 +44,10 @@ export function ReviewPrompt({ trigger, amount, onAsked }: ReviewPromptProps) {
     const timer = window.setTimeout(() => setReady(true), APPEAR_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, []);
+
+  if (!copy) {
+    return null;
+  }
 
   const settle = (action: ReviewPromptAction) => {
     if (settled) return;

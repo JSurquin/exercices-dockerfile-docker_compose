@@ -1907,7 +1907,7 @@ export default function PayoutPage() {
                       {text.result.newWithdrawal}
                     </Button>
                   </motion.div>
-                  {confirmationStatus === 'completed' && payoutResult.askReview && !reviewPromptAsked && (
+                  {confirmationStatus === 'completed' && payoutResult.askReview === true && !reviewPromptAsked && (
                     <ReviewPrompt
                       trigger="withdrawal"
                       amount={formatCentsToCurrency(resultNet, 'EUR')}
