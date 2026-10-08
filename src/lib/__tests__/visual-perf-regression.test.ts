@@ -65,7 +65,9 @@ describe('visual perf regression guards', () => {
   it('keeps the homepage starfield paint-cheap', () => {
     expect(css).toMatch(/\.cb-stars\s*\{/);
     expect(css).not.toMatch(/\.cb-stars\s*\{[^}]*animation:/);
-    expect(blockAfter('.cb-comet-fixed')).not.toMatch(/filter:/);
+    expect(css).not.toMatch(/\.cb-comet-fixed/);
+    expect(css).not.toMatch(/animation:\s*cb-comet-fly/);
+    expect(css).not.toMatch(/\.cs2-deco-layer/);
     expect(blockAfter('.cb-debris')).not.toMatch(/filter:/);
     expect(blockAfter('.hero-product')).not.toMatch(/filter:/);
     expect(css).not.toMatch(/filter:\s*blur\(40px\)/);

@@ -2313,68 +2313,6 @@ body.next-dev-overlay-present #sentry-feedback {
     opacity: 0.7;
   }
 
-  .lunar-comet {
-    position: absolute;
-    width: 120px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(220, 225, 240, 0.8), transparent);
-    filter: blur(1px);
-    opacity: 0;
-    border-radius: 50%;
-  }
-
-  .lunar-comet::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: -1px;
-    width: 40px;
-    height: 4px;
-    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.9), transparent);
-    filter: blur(3px);
-  }
-
-  .lunar-comet-1 {
-    top: 15%;
-    left: -120px;
-    transform: rotate(-35deg);
-    animation: lunar-comet-fly 12s linear infinite;
-    animation-delay: 0s;
-  }
-
-  .lunar-comet-2 {
-    top: 55%;
-    left: -120px;
-    transform: rotate(-25deg);
-    animation: lunar-comet-fly 18s linear infinite;
-    animation-delay: 6s;
-  }
-
-  .lunar-comet-3 {
-    top: 35%;
-    left: -120px;
-    transform: rotate(-40deg);
-    animation: lunar-comet-fly 15s linear infinite;
-    animation-delay: 10s;
-  }
-
-  @keyframes lunar-comet-fly {
-    0% {
-      opacity: 0;
-      transform: translateX(0) rotate(-35deg);
-    }
-    5% {
-      opacity: 0.8;
-    }
-    25% {
-      opacity: 0.6;
-    }
-    100% {
-      opacity: 0;
-      transform: translateX(calc(100vw + 240px)) rotate(-35deg);
-    }
-  }
-
   .lunar-asteroid {
     position: absolute;
     width: 80px;
@@ -3582,8 +3520,7 @@ button :where(h1, h2, h3, h4, h5, h6, p, li, span),
 }
 
 /* Decorative layers never capture the cursor or a text selection. */
-.cs2-hero-background__artwork,
-.cs2-deco-layer {
+.cs2-hero-background__artwork {
   pointer-events: none;
   user-select: none;
 }
@@ -3765,14 +3702,6 @@ button :where(h1, h2, h3, h4, h5, h6, p, li, span),
   display: block;
 }
 
-.cs2-deco-layer {
-  background-image:
-    radial-gradient(circle, currentColor 1px, transparent 1.6px),
-    linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(247, 147, 30, 0.02), rgba(255, 107, 53, 0.05));
-  background-size: 20px 20px, 100% 100%;
-  color: inherit;
-}
-
 .home-section-defer {
   content-visibility: auto;
   contain-intrinsic-size: auto 900px;
@@ -3818,11 +3747,6 @@ html:not(.moonskin) .cb-root {
   inset-inline: 0;
   top: 0;
   z-index: 80;
-}
-
-.cb-comets {
-  position: absolute;
-  inset: 0;
 }
 
 .cb-debris {
@@ -3875,64 +3799,6 @@ html:not(.moonskin) .cb-root {
     radial-gradient(1.5px 1.5px at 18% 62%, rgba(255, 255, 255, 0.75), transparent),
     radial-gradient(1px 1px at 36% 8%, rgba(255, 255, 255, 0.4), transparent),
     radial-gradient(1px 1px at 82% 28%, rgba(255, 255, 255, 0.6), transparent);
-}
-
-.cb-comet-fixed {
-  position: absolute;
-  width: 220px;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(220, 225, 235, 0.5) 40%,
-    rgba(255, 255, 255, 0.95) 95%,
-    #ffffff 100%
-  );
-  border-radius: 999px;
-  transform-origin: right center;
-  opacity: 0;
-}
-
-.cb-comet-fixed::after {
-  content: "";
-  position: absolute;
-  right: -3px;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ffffff;
-  transform: translateY(-50%);
-}
-
-.cb-comet-fixed--1 {
-  top: 12%;
-  left: -10%;
-  transform: rotate(20deg);
-  animation: cb-comet-fly-1 12s linear infinite;
-}
-
-/* Trajectoire unidirectionnelle : vol → reset invisible → pause (pas de retour animé) */
-@keyframes cb-comet-fly-1 {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(20deg);
-  }
-  3% {
-    opacity: 1;
-  }
-  12% {
-    opacity: 0.7;
-    transform: translate3d(120vw, 60vh, 0) rotate(20deg);
-  }
-  13% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(20deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(20deg);
-  }
 }
 
 /* Easter egg — pluie de cœurs (section partenaires) */
@@ -4002,11 +3868,6 @@ html:not(.moonskin) .cb-root {
     transform: none !important;
   }
 
-  .cb-comet-fixed {
-    animation: none !important;
-    opacity: 0 !important;
-  }
-
   .chrome-shimmer::before {
     animation: none !important;
   }
@@ -4047,7 +3908,6 @@ html:not(.moonskin) .cb-root {
 html.cb-paused .cb-nebula,
 html.cb-paused .cb-star-layer,
 html.cb-paused .cb-stars,
-html.cb-paused .cb-comet-fixed,
 html.cb-paused .cb-debris,
 html.cb-paused .giveaway-star,
 html.cb-paused .chrome-shimmer::before,
@@ -4055,7 +3915,6 @@ html.cb-paused .hero-product,
 html.cb-paused .hero-brand-shine,
 html.cb-paused .home-neon-pill__glow,
 html.cb-paused .home-neon-card::before,
-html.cb-paused .lunar-comet,
 html.cb-paused .lunar-asteroid {
   animation-play-state: paused !important;
 }
@@ -4063,7 +3922,6 @@ html.cb-paused .lunar-asteroid {
 html.perf-lite .cb-nebula,
 html.perf-lite .cb-star-layer,
 html.perf-lite .cb-stars,
-html.perf-lite .cb-comet-fixed,
 html.perf-lite .cb-debris,
 html.perf-lite .giveaway-star,
 html.perf-lite .giveaway-prestige__particle,

@@ -97,15 +97,6 @@ export const SecurityShieldIcon: React.FC<IconProps> = ({
   </svg>
 );
 
-export const CS2Background: React.FC<{ className?: string }> = ({
-  className = "",
-}) => (
-  <div
-    className={`cs2-deco-layer pointer-events-none select-none absolute inset-0 ${className}`}
-    aria-hidden
-  />
-);
-
 export const WeaponGradeIndicator: React.FC<{
   grade: string;
   className?: string;

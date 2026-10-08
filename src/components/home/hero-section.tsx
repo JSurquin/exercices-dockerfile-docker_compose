@@ -22,10 +22,7 @@ import {
   homeEnter,
   homeHover,
 } from "@/lib/home-animation-classes";
-import {
-  CS2Background,
-  WeaponGradeIndicator,
-} from "@/components/ui/cs2-icons";
+import { WeaponGradeIndicator } from "@/components/ui/cs2-icons";
 import { CS2HeroBackground } from "@/components/ui/cs2-header-background";
 import { CardTilt } from "@/components/ui/card-tilt";
 import { SectionBottomFade } from "@/components/home/section-bottom-fade";
@@ -234,8 +231,6 @@ export function HeroSection({
 
   return (
     <CS2HeroBackground className="relative overflow-hidden">
-      {/* CS2 Background Pattern Overlay pour plus de texture */}
-      <CS2Background className="opacity-20 pointer-events-none select-none" />
       <SectionBottomFade to="muted" />
 
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-18">

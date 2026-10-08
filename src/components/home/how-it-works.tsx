@@ -15,7 +15,6 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { SectionBottomFade } from "@/components/home/section-bottom-fade";
-import { CS2Background } from "@/components/ui/cs2-icons";
 import {
   HowItWorksCs2Step,
   HowItWorksTradeArrow,
@@ -75,7 +74,6 @@ export function HowItWorks() {
 
   return (
     <section id="how-it-works" className="home-section-defer relative overflow-hidden py-16 sm:py-20 lg:py-24 bg-muted/30">
-      <CS2Background className="opacity-30 pointer-events-none" />
       <SectionBottomFade to="background" />
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">

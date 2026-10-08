@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { normalizeStoredTheme } from "@/lib/themes";
 
 /**
- * Fond spatial chrome/lunaire, étoiles, comètes argentées, nébuleuse diffuse.
+ * Fond spatial chrome/lunaire, étoiles, nébuleuse diffuse.
  */
 export function SpaceBackground() {
   const { resolvedTheme, theme } = useTheme();
@@ -26,11 +26,6 @@ export function SpaceBackground() {
 
       {/* Champ d'étoiles */}
       <div className="absolute inset-0 lunar-stars" />
-
-      {/* Comètes */}
-      <div className="lunar-comet lunar-comet-1" />
-      <div className="lunar-comet lunar-comet-2" />
-      <div className="lunar-comet lunar-comet-3" />
 
       {/* Astéroïdes décoratifs */}
       <div className="lunar-asteroid lunar-asteroid-tl" />
