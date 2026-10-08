@@ -22,11 +22,18 @@ const FEE_CONFIG: Record<'card' | 'sepa', FeeNumericConfig> = {
   sepa: { rate: 0.02, fixedCents: 350 },
 };
 
+export type ComputedPayoutFees = {
+  totalCents: number;
+  netCents: number;
+  networkCents: number;
+  processingCents: number;
+};
+
 export function computeFees(
   method: PayoutFeeMethod,
   amountCents: number,
   crypto?: { targetCurrency: string; network: string }
-) {
+): ComputedPayoutFees {
   if (method === 'sepa_fr') {
     const processingCents = Math.ceil(amountCents * SEPA_FR_FEE_RATE);
     return {
@@ -57,6 +64,8 @@ interface FeePreviewProps {
   amountCents: number;
   targetCurrency?: string;
   network?: string;
+  /** Same `computeFees()` result as Confirm withdrawal — do not recompute here. */
+  fees: ComputedPayoutFees;
   labels: {
     feesPreview: string;
     grossAmount: string;
@@ -64,18 +73,14 @@ interface FeePreviewProps {
   };
 }
 
-export function FeePreview({ method, amountCents, targetCurrency, network, labels }: FeePreviewProps) {
+export function FeePreview({ method, amountCents, targetCurrency, network, fees: computedFees, labels }: FeePreviewProps) {
   const { messages } = useLocale();
   const fees = messages.payoutComponents.fees;
   const cryptoContext =
     method === 'crypto' && targetCurrency && network
       ? { targetCurrency, network }
       : undefined;
-  const { totalCents, netCents, networkCents, processingCents } = computeFees(
-    method,
-    amountCents,
-    cryptoContext
-  );
+  const { totalCents, netCents, networkCents, processingCents } = computedFees;
 
   const labelMap: Record<Exclude<PayoutFeeMethod, 'sepa_fr'>, string> = {
     card: fees.cardLabel,

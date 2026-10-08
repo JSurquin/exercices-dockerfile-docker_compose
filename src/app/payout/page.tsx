@@ -498,6 +498,25 @@ export default function PayoutPage() {
   const availableNetworks = WHITEPAY_SUPPORTED_CRYPTOS.find((c) => c.ticker === formData.selectedCrypto)?.networks || [];
   const needsMemo = MEMO_REQUIRED_NETWORKS.includes(formData.selectedNetwork);
 
+  const parsedAmountCents =
+    amount && Number.isFinite(parseFloat(amount)) && parseFloat(amount) > 0
+      ? toCents(parseFloat(amount))
+      : 0;
+
+  const payoutPreviewFees = useMemo(() => {
+    if (parsedAmountCents <= 0) return null;
+    if (payoutMethod !== 'card' && payoutMethod !== 'sepa' && payoutMethod !== 'crypto') {
+      return null;
+    }
+    return computeFees(
+      payoutMethod,
+      parsedAmountCents,
+      payoutMethod === 'crypto'
+        ? { targetCurrency: formData.selectedCrypto, network: formData.selectedNetwork }
+        : undefined
+    );
+  }, [parsedAmountCents, payoutMethod, formData.selectedCrypto, formData.selectedNetwork]);
+
   // Obtenir un devis (Flexify pour SEPA, Whitepay pour Crypto)
   const getQuote = async () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -871,14 +890,22 @@ export default function PayoutPage() {
     setMerchantWithdrawExpanded(false);
   };
 
-  const renderFlexifyMethodActions = () => (
+  const renderFlexifyMethodActions = () => {
+    const showFeePreview = !payoutResult && !!payoutPreviewFees;
+    const showConfirmRecap =
+      !payoutResult &&
+      !!payoutPreviewFees &&
+      (payoutMethod === 'crypto' || !!quote);
+
+    return (
     <>
-      {!payoutResult && amount && parseFloat(amount) > 0 && (
+      {showFeePreview && payoutPreviewFees && (
         <FeePreview
           method={payoutMethod as 'card' | 'sepa' | 'crypto'}
-          amountCents={toCents(parseFloat(amount))}
+          amountCents={parsedAmountCents}
           targetCurrency={payoutMethod === 'crypto' ? formData.selectedCrypto : undefined}
           network={payoutMethod === 'crypto' ? formData.selectedNetwork : undefined}
+          fees={payoutPreviewFees}
           labels={{
             feesPreview: text.request.feesPreview,
             grossAmount: text.request.grossAmount,
@@ -887,7 +914,7 @@ export default function PayoutPage() {
         />
       )}
 
-      {!quote && !payoutResult && (
+      {!quote && !payoutResult && payoutMethod !== 'crypto' && (
         <Button
           onClick={getQuote}
           disabled={isLoadingQuote || !amount || availableBalanceCents === null}
@@ -905,7 +932,7 @@ export default function PayoutPage() {
         </Button>
       )}
 
-      {quote && !payoutResult && (
+      {showConfirmRecap && payoutPreviewFees && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -918,21 +945,22 @@ export default function PayoutPage() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{text.request.grossAmount}</span>
-              <span>{formatCentsToCurrency(quote.amountCents, 'EUR')}</span>
+              <span>{formatCentsToCurrency(parsedAmountCents, 'EUR')}</span>
             </div>
             <div className="flex justify-between text-theme-accent">
               <span>{text.request.processingFee}</span>
-              <span>-{formatCentsToCurrency(quote.fees.processingCents, 'EUR')}</span>
+              <span>-{formatCentsToCurrency(payoutPreviewFees.processingCents, 'EUR')}</span>
             </div>
             <div className="flex justify-between text-theme-accent">
               <span>{text.request.networkFee}</span>
-              <span>-{formatCentsToCurrency(quote.fees.networkCents, 'EUR')}</span>
+              <span>-{formatCentsToCurrency(payoutPreviewFees.networkCents, 'EUR')}</span>
             </div>
             <Separator />
             <div className="flex justify-between font-semibold text-lg">
               <span>{text.request.youReceive}</span>
-              <span className="text-green-500">{formatCentsToCurrency(quote.netCents, 'EUR')}</span>
+              <span className="text-green-500">{formatCentsToCurrency(payoutPreviewFees.netCents, 'EUR')}</span>
             </div>
+            {quote?.estimatedDelivery && (
             <div className="flex justify-between text-muted-foreground">
               <span>{text.request.estimatedDelay}</span>
               <span className="flex items-center gap-1">
@@ -940,14 +968,15 @@ export default function PayoutPage() {
                 {quote.estimatedDelivery}
               </span>
             </div>
+            )}
           </div>
 
           <Button
-            onClick={handleSubmit}
-            disabled={isLoading}
+            onClick={quote ? handleSubmit : getQuote}
+            disabled={isLoading || isLoadingQuote || !amount || availableBalanceCents === null}
             className="w-full bg-cta-gradient hover:brightness-110"
           >
-            {isLoading ? (
+            {isLoading || isLoadingQuote ? (
               <>
                 <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
                 {text.request.submitting}
@@ -959,7 +988,8 @@ export default function PayoutPage() {
         </motion.div>
       )}
     </>
-  );
+    );
+  };
 
   return (
     <div className="relative z-0 container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
