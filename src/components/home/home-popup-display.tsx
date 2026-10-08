@@ -125,7 +125,7 @@ export function HomePopupDisplay() {
         if (!nextOpen) dismissCurrent();
       }}
     >
-      <DialogContent className="max-w-md border-theme-accent/30 bg-background/95 backdrop-blur-xl sm:rounded-2xl">
+      <DialogContent className="max-w-md border-theme-accent/30 bg-background sm:rounded-2xl">
         {currentPopup && popupText && (
           <>
             <DialogHeader className="space-y-3">

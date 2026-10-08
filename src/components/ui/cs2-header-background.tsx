@@ -1,10 +1,6 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
-import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import { normalizeStoredTheme } from "@/lib/themes";
 
 const HERO_ARTWORK_SRC = "/images/cs2/backgrounds/artworksite.webp";
 
@@ -23,10 +19,6 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
   overlayOpacity = 0.7,
   priority = false,
 }) => {
-  const { resolvedTheme } = useTheme();
-  const currentTheme = normalizeStoredTheme(resolvedTheme);
-  const showOrange = currentTheme === "cs2" || currentTheme === "light";
-
   return (
     <div className={cn("relative isolate overflow-hidden grid", className)}>
       <div className="pointer-events-none col-start-1 row-start-1 absolute inset-0 z-0" aria-hidden>
@@ -46,12 +38,8 @@ export const CS2HeaderBackground: React.FC<CS2HeaderBackgroundProps> = ({
           />
         )}
 
-        {showOrange && (
-          <>
-            <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-theme-accent/15 via-transparent to-background" />
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-theme-accent/20 to-transparent opacity-60" />
-          </>
-        )}
+        <div className="cs2-hero-theme-wash absolute inset-0 opacity-5 bg-gradient-to-br from-theme-accent/15 via-transparent to-background" />
+        <div className="cs2-hero-theme-wash absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-theme-accent/20 to-transparent opacity-60" />
       </div>
 
       {children && (

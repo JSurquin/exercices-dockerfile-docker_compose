@@ -62,6 +62,20 @@ describe('visual perf regression guards', () => {
     expect(css).not.toMatch(/(?<!surface-interactive)\.home-hover-scale:hover\s*\{/);
   });
 
+  it('keeps the homepage starfield paint-cheap', () => {
+    expect(css).toMatch(/\.cb-stars\s*\{/);
+    expect(css).not.toMatch(/\.cb-stars\s*\{[^}]*animation:/);
+    expect(blockAfter('.cb-comet-fixed')).not.toMatch(/filter:/);
+    expect(blockAfter('.cb-debris')).not.toMatch(/filter:/);
+    expect(blockAfter('.hero-product')).not.toMatch(/filter:/);
+    expect(css).not.toMatch(/filter:\s*blur\(40px\)/);
+    expect(css).not.toMatch(/animation:\s*cb-star-twinkle/);
+    expect(css).not.toMatch(/animation:\s*cb-nebula-drift/);
+    expect(css).not.toMatch(/animation:\s*neon-angle-spin/);
+    expect(css).not.toMatch(/animation:\s*hero-brand-shine/);
+    expect(blockAfter('.home-neon-pill__glow')).not.toMatch(/animation:/);
+  });
+
   it('does not force cursor: default on .surface so content text stays selectable', () => {
     expect(css).not.toMatch(/\.surface\s*\{[^}]*cursor:\s*default/);
     expect(css).toMatch(/:where\(h1,\s*h2,\s*h3,\s*h4,\s*h5,\s*h6,\s*p/);

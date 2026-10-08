@@ -88,7 +88,7 @@ export function LevelsSection() {
   const xpPerEuro = (1 / XP_RATE).toFixed(2);
 
   return (
-    <section className="pt-12 pb-16 md:pt-14 md:pb-20 relative overflow-hidden">
+    <section className="home-section-defer pt-12 pb-16 md:pt-14 md:pb-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-theme-accent/5 pointer-events-none" />
       <SectionBottomFade to="background" />
 
@@ -138,7 +138,7 @@ export function LevelsSection() {
                     {shortSummary}
                   </span>
 
-                  <div className="tooltip pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-52 rounded-xl border border-purple-500/20 bg-popover/95 backdrop-blur-sm p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
+                  <div className="tooltip pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-52 rounded-xl border border-purple-500/20 bg-popover p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
                     <p className="font-semibold text-sm mb-1">{name}</p>
                     <p className="text-xs text-muted-foreground mb-2">
                       {t.xpRequired}: {formatXp(level.xpStart)} – {formatXp(level.xpEnd)} XP

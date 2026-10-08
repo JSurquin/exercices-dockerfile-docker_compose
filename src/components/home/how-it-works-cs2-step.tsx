@@ -97,7 +97,7 @@ export function HowItWorksCs2Step({
           className="absolute right-2 top-2 z-[2] h-2.5 w-2.5 ring-2 ring-[#14141a]"
         />
         {locked && (
-          <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center gap-1 bg-black/45 backdrop-blur-[1px]">
+          <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center gap-1 bg-black/55">
             <LockClosedIcon className="h-6 w-6 text-white/80" aria-hidden />
             <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-white/70">
               {lockedLabel}

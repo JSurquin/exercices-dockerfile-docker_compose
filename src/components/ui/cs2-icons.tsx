@@ -100,40 +100,10 @@ export const SecurityShieldIcon: React.FC<IconProps> = ({
 export const CS2Background: React.FC<{ className?: string }> = ({
   className = "",
 }) => (
-  <div className={`cs2-deco-layer pointer-events-none select-none absolute inset-0 ${className}`} aria-hidden>
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-    >
-      <defs>
-        <pattern
-          id="cs2-pattern"
-          x="0"
-          y="0"
-          width="20"
-          height="20"
-          patternUnits="userSpaceOnUse"
-        >
-          <rect width="20" height="20" fill="transparent" />
-          <circle cx="10" cy="10" r="1" fill="currentColor" opacity="0.1" />
-        </pattern>
-        <linearGradient
-          id="cs2-bg-gradient"
-          x1="0%"
-          y1="0%"
-          x2="100%"
-          y2="100%"
-        >
-          <stop offset="0%" stopColor="#FF6B35" stopOpacity="0.05" />
-          <stop offset="50%" stopColor="#F7931E" stopOpacity="0.02" />
-          <stop offset="100%" stopColor="#FF6B35" stopOpacity="0.05" />
-        </linearGradient>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#cs2-bg-gradient)" />
-      <rect width="100%" height="100%" fill="url(#cs2-pattern)" />
-    </svg>
-  </div>
+  <div
+    className={`cs2-deco-layer pointer-events-none select-none absolute inset-0 ${className}`}
+    aria-hidden
+  />
 );
 
 export const WeaponGradeIndicator: React.FC<{

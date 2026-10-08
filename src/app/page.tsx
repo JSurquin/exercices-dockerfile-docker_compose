@@ -1,9 +1,5 @@
+import dynamic from 'next/dynamic';
 import { HeroSection } from '@/components/home/hero-section';
-import { HowItWorks } from '@/components/home/how-it-works';
-import { LevelsSection } from '@/components/home/levels-section';
-import { FeaturesSection } from '@/components/home/features-section';
-import { TestimonialsSection } from '@/components/home/testimonials-section';
-import { PartnersSection } from '@/components/home/partners-section';
 import { EMPTY_PUBLIC_STATS, getServerPublicStats } from '@/lib/get-public-stats';
 import {
   DEFAULT_PLATFORM_SETTINGS,
@@ -13,6 +9,22 @@ import {
   EMPTY_PUBLIC_PARTNERS,
   getServerPublicPartners,
 } from '@/lib/get-public-partners';
+
+const HowItWorks = dynamic(() =>
+  import('@/components/home/how-it-works').then((mod) => ({ default: mod.HowItWorks })),
+);
+const LevelsSection = dynamic(() =>
+  import('@/components/home/levels-section').then((mod) => ({ default: mod.LevelsSection })),
+);
+const FeaturesSection = dynamic(() =>
+  import('@/components/home/features-section').then((mod) => ({ default: mod.FeaturesSection })),
+);
+const TestimonialsSection = dynamic(() =>
+  import('@/components/home/testimonials-section').then((mod) => ({ default: mod.TestimonialsSection })),
+);
+const PartnersSection = dynamic(() =>
+  import('@/components/home/partners-section').then((mod) => ({ default: mod.PartnersSection })),
+);
 
 export const revalidate = 300;
 

@@ -72,6 +72,7 @@ function PartnerRemoteImage({
         height={height}
         className={className}
         sizes={sizes ?? `${width}px`}
+        loading="lazy"
       />
     );
   }
@@ -125,6 +126,7 @@ function VideoCard({ video }: { video: PartnerVideo }) {
           alt=""
           fill
           sizes="(min-width: 640px) 33vw, 280px"
+          loading="lazy"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -255,7 +257,7 @@ export function PartnersSection({
   return (
     <section
       id="partners"
-      className="relative overflow-hidden bg-muted/30 py-20"
+      className="home-section-defer relative overflow-hidden bg-muted/30 py-20"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-theme-accent/5 via-transparent to-transparent" />
       <SectionBottomFade to="background" />

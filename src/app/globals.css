@@ -1922,19 +1922,7 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .hero-title .hero-brand-shine {
-    background-size: 250% 100%;
-    animation: hero-brand-shine 3.5s ease-in-out infinite;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-  }
-
-  @keyframes hero-brand-shine {
-    0%,
-    100% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
+    background-size: 100% 100%;
   }
 
   .moonskin .hero-title .hero-brand-shine {
@@ -1965,7 +1953,6 @@ body.next-dev-overlay-present #sentry-feedback {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    filter: drop-shadow(0 0 12px rgba(250, 204, 21, 0.35));
   }
 
   .light .hero-title .hero-brand-shine {
@@ -1981,7 +1968,6 @@ body.next-dev-overlay-present #sentry-feedback {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.25));
   }
 
   /* Moonskin ONLY : dégradé chrome blanc→bleu */
@@ -2006,15 +1992,21 @@ body.next-dev-overlay-present #sentry-feedback {
     }
   }
 
-  /* Hero product float */
+  /* Hero product float — box-shadow on the card, never filter on the moving wrapper */
   .hero-product {
     position: relative;
     isolation: isolate;
     z-index: 2;
-    filter:
-      drop-shadow(0 40px 80px rgba(0, 0, 0, 0.95))
-      drop-shadow(0 8px 20px rgba(0, 0, 0, 0.8))
-      drop-shadow(0 0 2px rgba(210, 215, 235, 0.25));
+  }
+
+  .hero-product .lunar-card {
+    box-shadow:
+      0 40px 80px rgba(0, 0, 0, 0.55),
+      0 8px 20px rgba(0, 0, 0, 0.4),
+      0 24px 70px rgba(0, 0, 0, 0.88),
+      0 6px 20px rgba(0, 0, 0, 0.7),
+      0 1px 0 rgba(255, 255, 255, 0.1) inset,
+      0 0 0 1px rgba(180, 180, 200, 0.08) inset;
   }
 
   .hero-product .chrome-shimmer::before {
@@ -3402,37 +3394,6 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 }
 
-@property --neon-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@keyframes neon-spin {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
-@keyframes neon-angle-spin {
-  to {
-    --neon-angle: 360deg;
-  }
-}
-
-@keyframes cb-star-twinkle {
-  0%,
-  100% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 0.85;
-  }
-}
-
 .home-enter-left,
 .home-enter-right,
 .home-enter-up,
@@ -3697,22 +3658,15 @@ button :where(h1, h2, h3, h4, h5, h6, p, li, span),
 
 .home-neon-pill__glow {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200%;
-  aspect-ratio: 1;
-  background: conic-gradient(
-    from 0deg,
-    #ff0080,
-    #ff8c00,
-    #ffe000,
-    #00ff88,
-    #00cfff,
-    #a855f7,
-    #ff0080
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--theme-accent) 80%, transparent),
+    color-mix(in srgb, var(--theme-highlight) 55%, transparent),
+    color-mix(in srgb, var(--cta-from) 70%, transparent)
   );
-  animation: neon-spin 4s linear infinite;
-  will-change: transform;
+  opacity: 0.55;
   pointer-events: none;
 }
 
@@ -3743,16 +3697,13 @@ button :where(h1, h2, h3, h4, h5, h6, p, li, span),
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: conic-gradient(
-    from var(--neon-angle),
+  background: linear-gradient(
+    135deg,
     color-mix(in srgb, var(--theme-accent) 65%, transparent),
     color-mix(in srgb, var(--theme-highlight) 40%, transparent),
     color-mix(in srgb, var(--cta-from) 50%, transparent),
-    color-mix(in srgb, var(--theme-accent) 35%, transparent),
-    color-mix(in srgb, var(--theme-highlight) 45%, transparent),
     color-mix(in srgb, var(--theme-accent) 65%, transparent)
   );
-  animation: neon-angle-spin 8s linear infinite;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
@@ -3796,7 +3747,6 @@ button :where(h1, h2, h3, h4, h5, h6, p, li, span),
 
 .card-tilt {
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-  transform-style: preserve-3d;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -3804,6 +3754,28 @@ button :where(h1, h2, h3, h4, h5, h6, p, li, span),
     will-change: transform;
     transform: perspective(600px) rotateY(3deg) rotateX(-3deg) translate3d(0, -4px, 0);
   }
+}
+
+.cs2-hero-theme-wash {
+  display: none;
+}
+
+.cs2 .cs2-hero-theme-wash,
+.light .cs2-hero-theme-wash {
+  display: block;
+}
+
+.cs2-deco-layer {
+  background-image:
+    radial-gradient(circle, currentColor 1px, transparent 1.6px),
+    linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(247, 147, 30, 0.02), rgba(255, 107, 53, 0.05));
+  background-size: 20px 20px, 100% 100%;
+  color: inherit;
+}
+
+.home-section-defer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
 }
 
 html:not(.moonskin) .cb-root {
@@ -3814,12 +3786,15 @@ html:not(.moonskin) .cb-root {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  contain: paint;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   background: #060608;
   background-image:
     radial-gradient(ellipse at 20% 50%, rgba(140, 150, 170, 0.05) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(160, 160, 180, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at 80% 20%, rgba(160, 160, 180, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 30% 40%, rgba(180, 190, 220, 0.05), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(120, 130, 160, 0.04), transparent 60%);
   z-index: -10;
 }
 
@@ -3845,25 +3820,6 @@ html:not(.moonskin) .cb-root {
   z-index: 80;
 }
 
-.cb-nebula {
-  position: absolute;
-  inset: -10%;
-  background:
-    radial-gradient(circle at 30% 40%, rgba(180, 190, 220, 0.05), transparent 55%),
-    radial-gradient(circle at 70% 70%, rgba(120, 130, 160, 0.04), transparent 60%);
-  filter: blur(40px);
-  animation: cb-nebula-drift 28s ease-in-out infinite alternate;
-}
-
-@keyframes cb-nebula-drift {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  100% {
-    transform: translate3d(2%, -1.5%, 0) scale(1.05);
-  }
-}
-
 .cb-comets {
   position: absolute;
   inset: 0;
@@ -3877,7 +3833,6 @@ html:not(.moonskin) .cb-root {
     inset -4px -6px 14px rgba(0, 0, 0, 0.6),
     0 0 18px rgba(160, 170, 190, 0.05);
   opacity: 0.18;
-  filter: blur(0.3px);
 }
 
 .cb-debris--1 {
@@ -3885,9 +3840,6 @@ html:not(.moonskin) .cb-root {
   height: 90px;
   top: 8%;
   left: 4%;
-  animation:
-    cb-spin 60s linear infinite,
-    cb-float 12s ease-in-out infinite alternate;
 }
 
 .cb-debris--2 {
@@ -3895,35 +3847,6 @@ html:not(.moonskin) .cb-root {
   height: 56px;
   bottom: 12%;
   right: 6%;
-  animation:
-    cb-spin 80s linear infinite reverse,
-    cb-float 16s ease-in-out infinite alternate;
-}
-
-.cb-debris--3 {
-  width: 36px;
-  height: 36px;
-  top: 65%;
-  left: 80%;
-  opacity: 0.12;
-  animation:
-    cb-spin 100s linear infinite,
-    cb-float 18s ease-in-out infinite alternate;
-}
-
-@keyframes cb-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes cb-float {
-  0% {
-    translate: 0 0;
-  }
-  100% {
-    translate: 10px -14px;
-  }
 }
 
 .cb-vignette {
@@ -3932,13 +3855,10 @@ html:not(.moonskin) .cb-root {
   background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
 }
 
-.cb-star-layer {
+.cb-stars {
   position: absolute;
   inset: 0;
   pointer-events: none;
-}
-
-.cb-star-layer--1 {
   background-image:
     radial-gradient(1px 1px at 8% 18%, rgba(255, 255, 255, 0.7), transparent),
     radial-gradient(1px 1px at 22% 72%, rgba(255, 255, 255, 0.45), transparent),
@@ -3946,31 +3866,15 @@ html:not(.moonskin) .cb-root {
     radial-gradient(1px 1px at 52% 88%, rgba(255, 255, 255, 0.35), transparent),
     radial-gradient(1px 1px at 66% 12%, rgba(255, 255, 255, 0.6), transparent),
     radial-gradient(1px 1px at 78% 58%, rgba(255, 255, 255, 0.4), transparent),
-    radial-gradient(1px 1px at 92% 42%, rgba(255, 255, 255, 0.5), transparent);
-  animation: cb-star-twinkle 4s ease-in-out infinite;
-}
-
-.cb-star-layer--2 {
-  background-image:
+    radial-gradient(1px 1px at 92% 42%, rgba(255, 255, 255, 0.5), transparent),
     radial-gradient(1px 1px at 12% 48%, rgba(255, 255, 255, 0.5), transparent),
     radial-gradient(1px 1px at 28% 22%, rgba(255, 255, 255, 0.35), transparent),
     radial-gradient(1px 1px at 44% 64%, rgba(255, 255, 255, 0.65), transparent),
     radial-gradient(1px 1px at 58% 38%, rgba(255, 255, 255, 0.3), transparent),
     radial-gradient(1px 1px at 74% 78%, rgba(255, 255, 255, 0.55), transparent),
-    radial-gradient(1px 1px at 86% 16%, rgba(255, 255, 255, 0.45), transparent);
-  animation: cb-star-twinkle 6s ease-in-out infinite reverse;
-  animation-delay: 1.5s;
-}
-
-.cb-star-layer--3 {
-  background-image:
     radial-gradient(1.5px 1.5px at 18% 62%, rgba(255, 255, 255, 0.75), transparent),
     radial-gradient(1px 1px at 36% 8%, rgba(255, 255, 255, 0.4), transparent),
-    radial-gradient(1px 1px at 48% 52%, rgba(255, 255, 255, 0.5), transparent),
-    radial-gradient(1px 1px at 62% 92%, rgba(255, 255, 255, 0.35), transparent),
     radial-gradient(1px 1px at 82% 28%, rgba(255, 255, 255, 0.6), transparent);
-  animation: cb-star-twinkle 5s ease-in-out infinite;
-  animation-delay: 3s;
 }
 
 .cb-comet-fixed {
@@ -3985,7 +3889,6 @@ html:not(.moonskin) .cb-root {
     #ffffff 100%
   );
   border-radius: 999px;
-  filter: blur(0.6px) drop-shadow(0 0 6px rgba(200, 210, 230, 0.55));
   transform-origin: right center;
   opacity: 0;
 }
@@ -4000,31 +3903,13 @@ html:not(.moonskin) .cb-root {
   border-radius: 50%;
   background: #ffffff;
   transform: translateY(-50%);
-  box-shadow: 0 0 12px 2px rgba(220, 230, 255, 0.8);
 }
 
 .cb-comet-fixed--1 {
   top: 12%;
   left: -10%;
   transform: rotate(20deg);
-  animation: cb-comet-fly-1 7s linear infinite;
-  animation-delay: 0s;
-}
-
-.cb-comet-fixed--2 {
-  top: 38%;
-  left: -15%;
-  transform: rotate(20deg) scale(0.85);
-  animation: cb-comet-fly-2 9s linear infinite;
-  animation-delay: 3.5s;
-}
-
-.cb-comet-fixed--3 {
-  top: 58%;
-  left: -8%;
-  transform: rotate(20deg) scale(1.1);
-  animation: cb-comet-fly-3 8s linear infinite;
-  animation-delay: 6.8s;
+  animation: cb-comet-fly-1 12s linear infinite;
 }
 
 /* Trajectoire unidirectionnelle : vol → reset invisible → pause (pas de retour animé) */
@@ -4033,64 +3918,20 @@ html:not(.moonskin) .cb-root {
     opacity: 0;
     transform: translate3d(0, 0, 0) rotate(20deg);
   }
-  4% {
+  3% {
     opacity: 1;
   }
-  18% {
+  12% {
     opacity: 0.7;
     transform: translate3d(120vw, 60vh, 0) rotate(20deg);
   }
-  19% {
+  13% {
     opacity: 0;
     transform: translate3d(0, 0, 0) rotate(20deg);
   }
   100% {
     opacity: 0;
     transform: translate3d(0, 0, 0) rotate(20deg);
-  }
-}
-
-@keyframes cb-comet-fly-2 {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(20deg) scale(0.85);
-  }
-  4% {
-    opacity: 1;
-  }
-  20% {
-    opacity: 0.55;
-    transform: translate3d(115vw, 55vh, 0) rotate(20deg) scale(0.85);
-  }
-  21% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(20deg) scale(0.85);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(20deg) scale(0.85);
-  }
-}
-
-@keyframes cb-comet-fly-3 {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(20deg) scale(1.1);
-  }
-  4% {
-    opacity: 1;
-  }
-  17% {
-    opacity: 0.6;
-    transform: translate3d(125vw, 65vh, 0) rotate(20deg) scale(1.1);
-  }
-  18% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(20deg) scale(1.1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(20deg) scale(1.1);
   }
 }
 
@@ -4152,13 +3993,18 @@ html:not(.moonskin) .cb-root {
   .chrome-shimmer,
   .cb-nebula,
   .cb-star-layer,
-  .cb-comet-fixed,
+  .cb-stars,
   .cb-debris,
   .card-tilt.surface-interactive:hover {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .cb-comet-fixed {
+    animation: none !important;
+    opacity: 0 !important;
   }
 
   .chrome-shimmer::before {
@@ -4200,14 +4046,23 @@ html:not(.moonskin) .cb-root {
 
 html.cb-paused .cb-nebula,
 html.cb-paused .cb-star-layer,
+html.cb-paused .cb-stars,
 html.cb-paused .cb-comet-fixed,
 html.cb-paused .cb-debris,
-html.cb-paused .giveaway-star {
+html.cb-paused .giveaway-star,
+html.cb-paused .chrome-shimmer::before,
+html.cb-paused .hero-product,
+html.cb-paused .hero-brand-shine,
+html.cb-paused .home-neon-pill__glow,
+html.cb-paused .home-neon-card::before,
+html.cb-paused .lunar-comet,
+html.cb-paused .lunar-asteroid {
   animation-play-state: paused !important;
 }
 
 html.perf-lite .cb-nebula,
 html.perf-lite .cb-star-layer,
+html.perf-lite .cb-stars,
 html.perf-lite .cb-comet-fixed,
 html.perf-lite .cb-debris,
 html.perf-lite .giveaway-star,

@@ -68,7 +68,7 @@ export function ScrollToTopButton() {
         tabIndex={showButton ? 0 : -1}
         className={cn(
           "h-11 w-11 rounded-full",
-          "bg-background/90 backdrop-blur-md border border-theme-accent/30",
+          "bg-background/95 border border-theme-accent/30",
           "shadow-lg shadow-black/10 dark:shadow-black/40",
           "flex items-center justify-center cursor-pointer",
           "transition-transform duration-200 hover:scale-110 active:scale-95",

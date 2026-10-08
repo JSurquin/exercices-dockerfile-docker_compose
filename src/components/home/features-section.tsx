@@ -174,7 +174,7 @@ export function FeaturesSection() {
   );
 
   return (
-    <section className="relative py-24">
+    <section className="home-section-defer relative py-24">
       <SectionBottomFade to="muted" />
       <div className="relative z-10 container mx-auto px-4">
         <div className={`text-center mb-16 ${homeReveal.upSm}`}>

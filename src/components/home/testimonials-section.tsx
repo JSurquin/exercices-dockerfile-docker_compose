@@ -79,7 +79,7 @@ export function TestimonialsSection({ publicStats: publicStatsProp }: { publicSt
   }));
 
   return (
-    <section className="relative py-24 bg-muted/30">
+    <section className="home-section-defer relative py-24 bg-muted/30">
       <SectionBottomFade to="muted" />
       <div className="relative z-10 container mx-auto px-4">
         {/* Section Header */}
