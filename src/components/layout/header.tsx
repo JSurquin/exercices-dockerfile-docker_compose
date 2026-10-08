@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { cn } from "@/lib/utils";
+import { computeCenteredNavShift } from "@/lib/centered-nav-shift";
 import { SteamBrandIcon } from "@/components/ui/social-brand-icons";
 
 type NavItem = {
@@ -90,7 +91,13 @@ export function Header() {
   const { locale, setLocale, messages } = useLocale();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
+  const [navShift, setNavShift] = useState(0);
   const lastScrollY = useRef(0);
+  const navShiftRef = useRef(0);
+  const barRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLAnchorElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -180,6 +187,56 @@ export function Header() {
 
   const desktopNavigation: NavItem[] = [...primaryNavigation, supportNavigation];
 
+  navShiftRef.current = navShift;
+
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    const logo = logoRef.current;
+    const nav = navRef.current;
+    const actions = actionsRef.current;
+    if (!bar || !logo || !nav || !actions) return;
+
+    const desktopQuery = window.matchMedia("(min-width: 1100px)");
+
+    const updateShift = () => {
+      if (!desktopQuery.matches) {
+        setNavShift((current) => (current === 0 ? current : 0));
+        return;
+      }
+
+      const logoBox = logo.getBoundingClientRect();
+      const navBox = nav.getBoundingClientRect();
+      const actionsBox = actions.getBoundingClientRect();
+      const nextShift = Math.round(
+        computeCenteredNavShift({
+          logoRight: logoBox.right,
+          navLeft: navBox.left,
+          navRight: navBox.right,
+          actionsLeft: actionsBox.left,
+          currentShift: navShiftRef.current,
+        }) * 2
+      ) / 2;
+
+      setNavShift((current) => (current === nextShift ? current : nextShift));
+    };
+
+    const observer = new ResizeObserver(updateShift);
+    observer.observe(bar);
+    observer.observe(logo);
+    observer.observe(nav);
+    observer.observe(actions);
+    desktopQuery.addEventListener("change", updateShift);
+    window.addEventListener("resize", updateShift);
+    void document.fonts?.ready.then(updateShift);
+    updateShift();
+
+    return () => {
+      observer.disconnect();
+      desktopQuery.removeEventListener("change", updateShift);
+      window.removeEventListener("resize", updateShift);
+    };
+  }, [desktopNavigation.length, locale, user]);
+
   const sheetNavigation: NavItem[] = [
     ...primaryNavigation,
     ...(canModerate
@@ -233,8 +290,17 @@ export function Header() {
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
-      <div className="container mx-auto flex h-16 min-w-0 w-full items-center gap-2 px-4 sm:px-6 lg:gap-3 lg:px-8">
-        <Link href="/" className="flex min-w-0 shrink-0 items-center space-x-2 sm:space-x-3">
+      <div
+        ref={barRef}
+        data-slot="header-bar"
+        className="container relative mx-auto flex h-16 min-w-0 w-full items-center pl-4 pr-3 sm:pl-6 sm:pr-5 lg:pl-8 lg:pr-7"
+      >
+        <Link
+          ref={logoRef}
+          href="/"
+          data-slot="header-logo"
+          className="relative z-10 flex min-w-0 shrink-0 items-center space-x-2 sm:space-x-3"
+        >
           <div className="relative group">
             <div className="h-10 w-10 shrink-0 rounded-lg">
               <Image src="/images/logo.webp" alt="MoonSkin" width={40} height={40} />
@@ -247,15 +313,24 @@ export function Header() {
           </div>
         </Link>
 
-        <nav className="hidden min-w-0 min-[1100px]:flex flex-1 items-center justify-start pl-1 min-[1440px]:pl-2">
-          <div className="flex min-w-0 items-center gap-1.5 min-[1440px]:gap-2.5 min-[1512px]:gap-3">
+        <nav
+          ref={navRef}
+          data-slot="header-nav"
+          className="absolute top-1/2 left-1/2 z-0 hidden min-[1100px]:flex"
+          style={{ transform: `translate(calc(-50% + ${navShift}px), -50%)` }}
+        >
+          <div className="flex items-center gap-1.5 min-[1440px]:gap-2.5 min-[1512px]:gap-3">
             {desktopNavigation.map((item) => (
               <DesktopNavLink key={item.id} item={item} pathname={pathname} />
             ))}
           </div>
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-1">
+        <div
+          ref={actionsRef}
+          data-slot="header-actions"
+          className="relative z-10 ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-1"
+        >
           <span className="hidden min-[1100px]:contents">
             <NavPreferencesMenu className="nav-chrome nav-hover-fill shadow-none transition-none hover:bg-transparent hover:text-foreground focus-visible:ring-0" />
           </span>
