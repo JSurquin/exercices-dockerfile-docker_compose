@@ -1,16 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useLocale } from '@/components/providers/locale-provider';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   TRUSTPILOT_EVALUATE_URL,
   type ReviewPromptAction,
   type ReviewPromptTrigger,
 } from '@/lib/review-prompt-shared';
 
-const APPEAR_DELAY_MS = 1800;
+const APPEAR_DELAY_MS = 1500;
 
 type ReviewPromptProps = {
   trigger: ReviewPromptTrigger;
@@ -52,12 +60,12 @@ export function ReviewPrompt({ trigger, amount, onAsked }: ReviewPromptProps) {
   const settle = (action: ReviewPromptAction) => {
     if (settled) return;
     setSettled(true);
+    setOpen(false);
     void reportReviewPrompt(action, trigger);
     onAsked(action);
   };
 
   const handleDismiss = () => {
-    setOpen(false);
     settle('dismissed');
   };
 
@@ -68,48 +76,65 @@ export function ReviewPrompt({ trigger, amount, onAsked }: ReviewPromptProps) {
   const body = trigger === 'withdrawal' ? copy.withdrawalBody : copy.depositBody;
 
   return (
-    <AnimatePresence>
-      {ready && open && (
-        <motion.aside
-          role="region"
-          aria-label={copy.cta}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.28, ease: 'easeOut' }}
-          className="relative w-full p-4 pr-11 max-[560px]:p-4"
-          style={{
-            background: 'rgba(255,255,255,.03)',
-            border: '1px solid rgba(255,255,255,.08)',
-            borderRadius: 14,
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleDismiss}
-            className="absolute right-3 top-3 rounded-md p-1 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
-            aria-label={copy.close}
+    <Dialog
+      open={ready && open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) handleDismiss();
+      }}
+    >
+      <DialogContent
+        className="sm:max-w-[480px] text-center overflow-hidden"
+        showCloseButton
+      >
+        <DialogHeader className="items-center text-center sm:text-center">
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            className="flex flex-col items-center gap-4"
           >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-
-          <div className="flex items-center gap-4 max-[560px]:flex-col max-[560px]:items-stretch">
-            <div className="min-w-0 flex-1 space-y-1.5">
-              <p className="text-base font-semibold text-white">{title}</p>
-              <p className="text-sm leading-relaxed text-white/70">{body}</p>
+            <div className="relative">
+              <motion.div
+                className="absolute inset-0 rounded-full bg-green-500/30"
+                animate={{ scale: [1, 1.6, 1], opacity: [0.8, 0, 0.8] }}
+                transition={{ duration: 1.8, repeat: 2, ease: 'easeOut' }}
+              />
+              <CheckCircleIcon className="w-20 h-20 text-green-500 relative z-10" />
             </div>
-            <a
-              href={TRUSTPILOT_EVALUATE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => settle('clicked')}
-              className="inline-flex shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500 max-[560px]:w-full"
-            >
-              {copy.cta}
-            </a>
-          </div>
-        </motion.aside>
-      )}
-    </AnimatePresence>
+            <DialogTitle className="text-2xl font-bold text-center">
+              {title}
+            </DialogTitle>
+            <p className="text-base font-medium text-foreground">{copy.subtitle}</p>
+          </motion.div>
+        </DialogHeader>
+
+        <div className="space-y-4 pt-2">
+          <DialogDescription className="text-base text-center leading-relaxed">
+            {body}
+          </DialogDescription>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-col gap-3 pt-2"
+          >
+            <Button asChild className="w-full bg-green-600 hover:bg-green-700 text-white">
+              <a
+                href={TRUSTPILOT_EVALUATE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => settle('clicked')}
+              >
+                {copy.cta}
+              </a>
+            </Button>
+            <Button type="button" variant="outline" className="w-full" onClick={handleDismiss}>
+              {copy.later}
+            </Button>
+          </motion.div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

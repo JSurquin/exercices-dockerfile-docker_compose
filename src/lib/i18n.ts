@@ -8413,13 +8413,15 @@ export const messages: Record<Locale, Messages> = {
       close: 'Fermer',
     },
     reviewPrompt: {
-      withdrawalTitle: '{montant} envoyés. Comment ça s\'est passé ?',
+      withdrawalTitle: '{montant} envoyés !',
+      subtitle: 'Comment ça s\'est passé ?',
       withdrawalBody:
         'MoonSkin est jeune et on construit notre réputation trade par trade. 30 secondes de ton temps nous aident énormément — et dis les choses telles qu\'elles sont, même si quelque chose t\'a déplu.',
       depositTitle: 'Ton dépôt est passé',
       depositBody:
         'Tu as déjà cash-out chez nous une fois. Si l\'expérience t\'a convaincu, un avis public nous aide beaucoup à rassurer les prochains — honnête, même si tout n\'était pas parfait.',
       cta: 'Laisser un avis',
+      later: 'Plus tard',
       close: 'Fermer',
     },
   },
@@ -16825,13 +16827,15 @@ export const messages: Record<Locale, Messages> = {
       close: 'Close',
     },
     reviewPrompt: {
-      withdrawalTitle: '{montant} sent. How did it go?',
+      withdrawalTitle: '{montant} sent!',
+      subtitle: 'How did it go?',
       withdrawalBody:
         'MoonSkin is young and we build our reputation trade by trade. 30 seconds of your time helps us a lot — and tell it like it is, even if something bothered you.',
       depositTitle: 'Your deposit went through',
       depositBody:
         'You have already cashed out with us once. If the experience convinced you, a public review helps us a lot to reassure the next players — honest, even if everything was not perfect.',
       cta: 'Leave a review',
+      later: 'Later',
       close: 'Close',
     },
   },
@@ -24912,13 +24916,15 @@ export const messages: Record<Locale, Messages> = {
       close: '关闭',
     },
     reviewPrompt: {
-      withdrawalTitle: '{montant} 已汇出。体验如何？',
+      withdrawalTitle: '{montant} 已汇出！',
+      subtitle: '体验如何？',
       withdrawalBody:
         'MoonSkin 还很年轻，我们一笔交易一笔交易地建立口碑。只需 30 秒就能帮到我们很多——请如实评价，即使有地方让你不满意。',
       depositTitle: '你的充值已到账',
       depositBody:
         '你已经在我们这里提现过一次。如果这次体验让你信服，一条公开评价能帮我们打消后来者的顾虑——请诚实写，即使并非一切完美。',
       cta: '留下评价',
+      later: '稍后再说',
       close: '关闭',
     },
   },

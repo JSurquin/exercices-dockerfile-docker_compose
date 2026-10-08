@@ -83,8 +83,8 @@ function loadPageReviewPrompt(): Promise<PromptState | null> {
 }
 
 /**
- * Bandeau Trustpilot au chargement de /dashboard et /payout :
- * au moins un retrait PAID / FLEXIFY_PAID / WHITEPAY_COMPLETE, jamais (ou plus) sollicité.
+ * Modale Trustpilot au chargement de /dashboard et /payout :
+ * un nouveau retrait PAID / FLEXIFY_PAID / WHITEPAY_COMPLETE, sauf si l’avis a déjà été cliqué.
  */
 export function ReviewPromptBanner() {
   const [state, setState] = useState<PromptState | null>(null);
@@ -107,15 +107,13 @@ export function ReviewPromptBanner() {
   }
 
   return (
-    <div className="mb-4 sm:mb-5">
-      <ReviewPrompt
-        trigger="withdrawal"
-        amount={state.amount}
-        onAsked={() => {
-          persistDone();
-          window.setTimeout(() => setAsked(true), 320);
-        }}
-      />
-    </div>
+    <ReviewPrompt
+      trigger="withdrawal"
+      amount={state.amount}
+      onAsked={() => {
+        persistDone();
+        window.setTimeout(() => setAsked(true), 320);
+      }}
+    />
   );
 }

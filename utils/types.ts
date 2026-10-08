@@ -7962,10 +7962,12 @@ export interface Messages {
   };
   reviewPrompt: {
     withdrawalTitle: string;
+    subtitle: string;
     withdrawalBody: string;
     depositTitle: string;
     depositBody: string;
     cta: string;
+    later: string;
     close: string;
   };
 }
