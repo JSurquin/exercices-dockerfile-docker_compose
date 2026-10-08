@@ -89,19 +89,17 @@ export function HowItWorks() {
 
         <div
           className={cn(
-            "mb-10 grid grid-cols-1 gap-4 lg:mb-12",
-            "sm:grid-cols-2 sm:gap-4",
-            "xl:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr] xl:items-stretch xl:gap-0",
+            "mb-10 flex flex-wrap items-stretch justify-center gap-4 lg:mb-12",
+            "xl:flex-nowrap xl:gap-x-2 xl:gap-y-0 2xl:gap-x-3",
           )}
         >
           {steps.map((step, index) => (
             <Fragment key={step.step}>
               <div
                 className={cn(
+                  "w-full sm:max-w-[16.5rem] xl:w-[13rem] xl:max-w-[13rem] 2xl:w-[14.5rem] 2xl:max-w-[14.5rem]",
                   homeReveal.up,
                   homeStagger(index),
-                  index === steps.length - 1 &&
-                    "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-md xl:col-span-1 xl:mx-0 xl:max-w-none",
                 )}
               >
                 <HowItWorksCs2Step

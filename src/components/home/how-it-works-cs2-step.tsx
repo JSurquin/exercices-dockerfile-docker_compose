@@ -75,7 +75,7 @@ export function HowItWorksCs2Step({
 
       <div
         className={cn(
-          "relative mx-3 mt-2 flex aspect-[5/4] items-center justify-center overflow-hidden rounded-md bg-[#0a0a0f] ring-1 ring-white/10 cs2-grid-bg",
+          "relative mx-3 mt-2 flex h-28 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#0a0a0f] ring-1 ring-white/10 cs2-grid-bg",
           locked && "opacity-90",
         )}
       >
