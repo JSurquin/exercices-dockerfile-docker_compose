@@ -7,6 +7,7 @@ jest.mock('~/prisma/prisma', () => ({
     },
     payout: {
       count: jest.fn(),
+      findFirst: jest.fn(),
     },
   },
 }));
@@ -20,6 +21,8 @@ import { logger } from '@/lib/logger';
 import {
   shouldAskForReview,
   REVIEW_PROMPT_COOLDOWN_MS,
+  PAID_PAYOUT_STATUSES,
+  isPaidPayoutStatus,
   resolveAndConsumeReviewPrompt,
   jsonWithAskReview,
   jsonWithDepositAskReview,
@@ -30,12 +33,13 @@ const mockFindUnique = prisma.user.findUnique as jest.Mock;
 const mockUpdateMany = prisma.user.updateMany as jest.Mock;
 const mockUpdate = prisma.user.update as jest.Mock;
 const mockPayoutCount = prisma.payout.count as jest.Mock;
+const mockPayoutFindFirst = prisma.payout.findFirst as jest.Mock;
 const mockLoggerError = logger.error as jest.Mock;
 
 const eligibleUser = {
   reviewPromptSeenAt: null,
   reviewPromptAction: null,
-  completedWithdrawals: 0,
+  completedWithdrawals: 1,
 };
 
 const missingColumnError = Object.assign(
@@ -67,10 +71,30 @@ describe('shouldAskForReview', () => {
     ).toBe(false);
   });
 
-  it('accepte un retrait dès que l’utilisateur n’est pas bloqué par le cooldown', () => {
+  it('aligne les statuts payés sur PAID / FLEXIFY_PAID / WHITEPAY_COMPLETE, jamais completed', () => {
+    expect([...PAID_PAYOUT_STATUSES]).toEqual(['PAID', 'FLEXIFY_PAID', 'WHITEPAY_COMPLETE']);
+    expect(isPaidPayoutStatus('PAID')).toBe(true);
+    expect(isPaidPayoutStatus('FLEXIFY_PAID')).toBe(true);
+    expect(isPaidPayoutStatus('WHITEPAY_COMPLETE')).toBe(true);
+    expect(isPaidPayoutStatus('completed')).toBe(false);
+    expect(isPaidPayoutStatus('COMPLETED')).toBe(false);
+    expect(isPaidPayoutStatus('PROCESSING')).toBe(false);
+  });
+
+  it('accepte un retrait dès qu’au moins un payout est payé et que le cooldown ne bloque pas', () => {
     expect(
       shouldAskForReview(eligibleUser, { type: 'withdrawal', amount: 12_500 }, now),
     ).toBe(true);
+  });
+
+  it('refuse un retrait s’il n’y a aucun payout au statut payé', () => {
+    expect(
+      shouldAskForReview(
+        { ...eligibleUser, completedWithdrawals: 0 },
+        { type: 'withdrawal', amount: 12_500 },
+        now,
+      ),
+    ).toBe(false);
   });
 
   it('accepte un dépôt seulement si l’utilisateur a déjà cash-out au moins une fois', () => {
@@ -84,7 +108,9 @@ describe('shouldAskForReview', () => {
   });
 
   it('refuse un dépôt sans cash-out préalable (et tout autre cas)', () => {
-    expect(shouldAskForReview(eligibleUser, { type: 'deposit' }, now)).toBe(false);
+    expect(
+      shouldAskForReview({ ...eligibleUser, completedWithdrawals: 0 }, { type: 'deposit' }, now),
+    ).toBe(false);
   });
 
   it('retourne false si l’utilisateur est absent', () => {
@@ -99,9 +125,12 @@ describe('shouldAskForReview', () => {
 });
 
 describe('resolveAndConsumeReviewPrompt / jsonWithAskReview', () => {
+  const none = { askReview: false, amountCents: null };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockPayoutCount.mockResolvedValue(0);
+    mockPayoutFindFirst.mockResolvedValue(null);
     mockFindUnique.mockResolvedValue({
       reviewPromptSeenAt: null,
       reviewPromptAction: null,
@@ -111,8 +140,8 @@ describe('resolveAndConsumeReviewPrompt / jsonWithAskReview', () => {
   });
 
   it('retourne false sans lever si userId est absent', async () => {
-    await expect(resolveAndConsumeReviewPrompt(null, { type: 'withdrawal' })).resolves.toBe(
-      false,
+    await expect(resolveAndConsumeReviewPrompt(null, { type: 'withdrawal' })).resolves.toEqual(
+      none,
     );
     expect(mockFindUnique).not.toHaveBeenCalled();
   });
@@ -122,8 +151,37 @@ describe('resolveAndConsumeReviewPrompt / jsonWithAskReview', () => {
 
     await expect(
       resolveAndConsumeReviewPrompt('u1', { type: 'withdrawal' }),
-    ).resolves.toBe(false);
+    ).resolves.toEqual(none);
     expect(mockLoggerError).toHaveBeenCalled();
+  });
+
+  it('consomme le bandeau seulement si un retrait est réellement payé (PAID)', async () => {
+    mockPayoutFindFirst.mockResolvedValue({
+      amountCents: 10_000,
+      processingFeeCents: 50,
+      networkFeeCents: 0,
+    });
+
+    await expect(resolveAndConsumeReviewPrompt('u1', { type: 'withdrawal' })).resolves.toEqual({
+      askReview: true,
+      amountCents: 9950,
+    });
+    expect(mockPayoutFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: 'u1',
+          status: { in: ['PAID', 'FLEXIFY_PAID', 'WHITEPAY_COMPLETE'] },
+        },
+      }),
+    );
+    expect(mockUpdateMany).toHaveBeenCalled();
+  });
+
+  it('ne consomme pas s’il n’y a aucun payout PAID / FLEXIFY_PAID / WHITEPAY_COMPLETE', async () => {
+    await expect(resolveAndConsumeReviewPrompt('u1', { type: 'withdrawal' })).resolves.toEqual(
+      none,
+    );
+    expect(mockUpdateMany).not.toHaveBeenCalled();
   });
 
   it('jsonWithAskReview retombe sur askReview=false si Prisma lève', async () => {
@@ -172,6 +230,28 @@ describe('resolveAndConsumeReviewPrompt / jsonWithAskReview', () => {
       askReview: false,
     });
     expect(mockFindUnique).not.toHaveBeenCalled();
+  });
+
+  it('ne consomme plus le bandeau à la création du retrait (SEPA payé plus tard)', async () => {
+    mockPayoutFindFirst.mockResolvedValue({
+      amountCents: 5000,
+      processingFeeCents: 0,
+      networkFeeCents: 0,
+    });
+
+    const res = await jsonWithAskReview('u1', { type: 'withdrawal', amount: 5000 }, {
+      success: true,
+      payout: { id: 'p1', status: 'PROCESSING' },
+    });
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({
+      success: true,
+      payout: { id: 'p1', status: 'PROCESSING' },
+      askReview: false,
+    });
+    expect(mockFindUnique).not.toHaveBeenCalled();
+    expect(mockUpdateMany).not.toHaveBeenCalled();
   });
 
   it('recordReviewPromptAction n’explose pas si la colonne manque', async () => {

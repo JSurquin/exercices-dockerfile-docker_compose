@@ -5,6 +5,16 @@ export const REVIEW_PROMPT_COOLDOWN_MS = 90 * 24 * 60 * 60 * 1000;
 export const REVIEW_PROMPT_ACTIONS = ['clicked', 'dismissed'] as const;
 export const REVIEW_PROMPT_TRIGGERS = ['withdrawal', 'deposit'] as const;
 
+/** Statuts internes « Payé » (historique). Jamais `completed`. */
+export const PAID_PAYOUT_STATUSES = ['PAID', 'FLEXIFY_PAID', 'WHITEPAY_COMPLETE'] as const;
+
+export type PaidPayoutStatus = (typeof PAID_PAYOUT_STATUSES)[number];
+
+export function isPaidPayoutStatus(status: string | null | undefined): boolean {
+  if (!status) return false;
+  return (PAID_PAYOUT_STATUSES as readonly string[]).includes(status);
+}
+
 export type ReviewPromptAction = (typeof REVIEW_PROMPT_ACTIONS)[number];
 export type ReviewPromptTrigger = (typeof REVIEW_PROMPT_TRIGGERS)[number];
 
@@ -54,11 +64,7 @@ export function shouldAskForReview(
       }
     }
 
-    if (event.type === 'withdrawal') {
-      return true;
-    }
-
-    if (event.type === 'deposit') {
+    if (event.type === 'withdrawal' || event.type === 'deposit') {
       return (user.completedWithdrawals ?? 0) > 0;
     }
 

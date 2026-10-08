@@ -3,6 +3,7 @@ import type { PayoutStatus, TradeStatus } from '@prisma/client';
 import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import {
+  PAID_PAYOUT_STATUSES,
   REVIEW_PROMPT_COOLDOWN_MS,
   shouldAskForReview,
   type ReviewPromptAction,
@@ -15,6 +16,8 @@ export {
   REVIEW_PROMPT_COOLDOWN_MS,
   REVIEW_PROMPT_ACTIONS,
   REVIEW_PROMPT_TRIGGERS,
+  PAID_PAYOUT_STATUSES,
+  isPaidPayoutStatus,
   isReviewPromptAction,
   isReviewPromptTrigger,
   shouldAskForReview,
@@ -25,13 +28,15 @@ export type {
   ReviewPromptTrigger,
   ReviewPromptEvent,
   ReviewPromptUser,
+  PaidPayoutStatus,
 } from '@/lib/review-prompt-shared';
 
-const COMPLETED_PAYOUT_STATUSES: PayoutStatus[] = [
-  'PAID',
-  'FLEXIFY_PAID',
-  'WHITEPAY_COMPLETE',
-];
+export type ReviewPromptResolveResult = {
+  askReview: boolean;
+  amountCents: number | null;
+};
+
+const PAID_PAYOUT_STATUS_LIST: PayoutStatus[] = [...PAID_PAYOUT_STATUSES];
 
 const DEPOSIT_REVIEW_STATUSES = new Set<TradeStatus>([
   'IN_TRADE_HOLD',
@@ -44,11 +49,37 @@ export function shouldEvaluateDepositReview(status: string): boolean {
   return DEPOSIT_REVIEW_STATUSES.has(status as TradeStatus);
 }
 
+function netPaidAmountCents(payout: {
+  amountCents: number;
+  processingFeeCents: number | null;
+  networkFeeCents: number | null;
+}): number {
+  return Math.max(
+    0,
+    payout.amountCents - (payout.processingFeeCents ?? 0) - (payout.networkFeeCents ?? 0),
+  );
+}
+
 export async function countCompletedWithdrawals(userId: string): Promise<number> {
   return prisma.payout.count({
     where: {
       userId,
-      status: { in: COMPLETED_PAYOUT_STATUSES },
+      status: { in: PAID_PAYOUT_STATUS_LIST },
+    },
+  });
+}
+
+async function findLatestPaidPayout(userId: string) {
+  return prisma.payout.findFirst({
+    where: {
+      userId,
+      status: { in: PAID_PAYOUT_STATUS_LIST },
+    },
+    orderBy: [{ paidAt: 'desc' }, { updatedAt: 'desc' }],
+    select: {
+      amountCents: true,
+      processingFeeCents: true,
+      networkFeeCents: true,
     },
   });
 }
@@ -62,13 +93,14 @@ export async function resolveAndConsumeReviewPrompt(
   userId: string | null | undefined,
   event: ReviewPromptEvent,
   now: Date = new Date(),
-): Promise<boolean> {
+): Promise<ReviewPromptResolveResult> {
+  const none: ReviewPromptResolveResult = { askReview: false, amountCents: null };
   try {
     if (!userId) {
-      return false;
+      return none;
     }
 
-    const [row, completedWithdrawals] = await Promise.all([
+    const [row, paidPayout] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -76,25 +108,27 @@ export async function resolveAndConsumeReviewPrompt(
           reviewPromptAction: true,
         },
       }),
-      countCompletedWithdrawals(userId),
+      findLatestPaidPayout(userId),
     ]);
 
     if (!row) {
-      return false;
+      return none;
     }
+
+    const amountCents = paidPayout ? netPaidAmountCents(paidPayout) : null;
 
     if (
       !shouldAskForReview(
         {
           reviewPromptSeenAt: row.reviewPromptSeenAt,
           reviewPromptAction: row.reviewPromptAction,
-          completedWithdrawals,
+          completedWithdrawals: paidPayout ? 1 : 0,
         },
         event,
         now,
       )
     ) {
-      return false;
+      return none;
     }
 
     const cooldownAgo = new Date(now.getTime() - REVIEW_PROMPT_COOLDOWN_MS);
@@ -118,10 +152,14 @@ export async function resolveAndConsumeReviewPrompt(
       },
     });
 
-    return updated.count === 1;
+    if (updated.count !== 1) {
+      return none;
+    }
+
+    return { askReview: true, amountCents };
   } catch (error) {
     logger.error('Trustpilot review prompt resolution failed; skipping', error);
-    return false;
+    return none;
   }
 }
 
@@ -149,27 +187,26 @@ async function askReviewOrFalse(
   event: ReviewPromptEvent,
 ): Promise<boolean> {
   try {
-    return await resolveAndConsumeReviewPrompt(userId, event);
+    const result = await resolveAndConsumeReviewPrompt(userId, event);
+    return result.askReview;
   } catch (error) {
     logger.error('Trustpilot review prompt call failed; askReview=false', error);
     return false;
   }
 }
 
+/**
+ * Conservé sur les routes de création de retrait pour le champ API `askReview`.
+ * Le bandeau n'est plus consommé ici : un SEPA (et le crypto) passe à PAID
+ * plus tard, hors page. L'évaluation se fait au chargement de /dashboard et /payout.
+ */
 export async function jsonWithAskReview(
-  userId: string,
-  event: ReviewPromptEvent,
+  _userId: string,
+  _event: ReviewPromptEvent,
   body: object,
 ): Promise<NextResponse> {
   const record = body as Record<string, unknown>;
-  try {
-    const skip = record.pendingApproval === true;
-    const askReview = skip ? false : await askReviewOrFalse(userId, event);
-    return NextResponse.json({ ...record, askReview });
-  } catch (error) {
-    logger.error('Trustpilot review prompt call failed; askReview=false', error);
-    return NextResponse.json({ ...record, askReview: false });
-  }
+  return NextResponse.json({ ...record, askReview: false });
 }
 
 export async function jsonWithDepositAskReview(

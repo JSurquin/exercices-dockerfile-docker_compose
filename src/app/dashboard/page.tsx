@@ -68,6 +68,7 @@ import { LevelProgressBar } from "@/components/ui/level-progress-bar";
 
 import { getTradeStatusLabel } from "@/lib/trade-status-display";
 import { clientDisplayPayoutStatus, isMerchantWithdrawReference } from "@/lib/merchant-withdraw-display";
+import { ReviewPromptBanner } from "@/components/review/review-prompt-banner";
 
 const formatPrice = (centimes: number) => {
   return (centimes / 100).toFixed(2) + "€";
@@ -425,6 +426,7 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
       <div className="max-w-7xl mx-auto">
+        <ReviewPromptBanner />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

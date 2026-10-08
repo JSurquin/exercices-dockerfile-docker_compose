@@ -34,7 +34,7 @@ import { NetReceivePreview } from '@/components/payout/NetReceivePreview';
 import { SepaFrPremiumHint } from '@/components/payout/SepaFrPremiumHint';
 import { MerchantWithdrawCard } from '@/components/payout/MerchantWithdrawCard';
 import { clientDisplayPayoutStatus } from '@/lib/merchant-withdraw-display';
-import { ReviewPrompt } from '@/components/review/review-prompt';
+import { ReviewPromptBanner } from '@/components/review/review-prompt-banner';
 import {
   USER_PAYOUT_SUPPORTED_CRYPTOS,
   MEMO_REQUIRED_NETWORKS,
@@ -220,9 +220,7 @@ export default function PayoutPage() {
     netCents?: number;
     method: string;
     pendingApproval?: boolean;
-    askReview?: boolean;
   } | null>(null);
-  const [reviewPromptAsked, setReviewPromptAsked] = useState(false);
 
   // Traductions locales pour la page payout
   const text = messages.payoutPage;
@@ -794,9 +792,7 @@ export default function PayoutPage() {
         setPayoutResult({
           ...data.payout,
           pendingApproval: !!data.pendingApproval,
-          askReview: data.askReview === true,
         });
-        setReviewPromptAsked(false);
       }
 
       setQuote(null);
@@ -851,6 +847,7 @@ export default function PayoutPage() {
   if (!user.kycStatus || (user.kycStatus !== 'VERIFIED' && user.kycStatus !== 'KYCAID_VERIFIED')) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <ReviewPromptBanner />
         <Card className="max-w-md mx-auto text-center">
           <CardContent className="p-6 sm:p-8">
             <div className="relative">
@@ -1044,6 +1041,7 @@ export default function PayoutPage() {
   return (
     <div className="relative z-0 container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto">
+        <ReviewPromptBanner />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1942,7 +1940,6 @@ export default function PayoutPage() {
                           0,
                           payoutResult.amountCents - resultFees.processingCents - resultFees.networkCents,
                         );
-                  const confirmationStatus = payoutResult.pendingApproval ? 'pending' : 'completed';
                   return (
                   <div className="space-y-4">
                   <motion.div
@@ -1986,13 +1983,6 @@ export default function PayoutPage() {
                       {text.result.newWithdrawal}
                     </Button>
                   </motion.div>
-                  {confirmationStatus === 'completed' && payoutResult.askReview === true && !reviewPromptAsked && (
-                    <ReviewPrompt
-                      trigger="withdrawal"
-                      amount={formatCentsToCurrency(resultNet, 'EUR')}
-                      onAsked={() => window.setTimeout(() => setReviewPromptAsked(true), 320)}
-                    />
-                  )}
                   </div>
                   );
                 })()}

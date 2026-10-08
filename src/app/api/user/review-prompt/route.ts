@@ -2,8 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireUserSession } from '@/lib/require-session-user';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { reviewPromptBodySchema } from '@/lib/validation/schemas/user';
-import { recordReviewPromptAction } from '@/lib/review-prompt';
+import { recordReviewPromptAction, resolveAndConsumeReviewPrompt } from '@/lib/review-prompt';
 import { logger } from '@/lib/logger';
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await requireUserSession(request);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    }
+
+    const result = await resolveAndConsumeReviewPrompt(session.user.id, { type: 'withdrawal' });
+    return NextResponse.json({
+      askReview: result.askReview,
+      trigger: 'withdrawal',
+      amountCents: result.amountCents,
+    });
+  } catch (error) {
+    logger.error('Erreur lors de l\'évaluation du bandeau Trustpilot', {
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
+    });
+    return NextResponse.json({ askReview: false, trigger: 'withdrawal', amountCents: null });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
