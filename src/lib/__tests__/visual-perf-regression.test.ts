@@ -70,12 +70,61 @@ describe('visual perf regression guards', () => {
     expect(css).not.toMatch(/\.cs2-deco-layer/);
     expect(blockAfter('.cb-debris')).not.toMatch(/filter:/);
     expect(blockAfter('.hero-product')).not.toMatch(/filter:/);
+    expect(css).not.toMatch(/\.cs2 \.hero-product\s*\{[^}]*filter:/);
+    expect(css).not.toMatch(/\.light \.hero-product\s*\{[^}]*filter:/);
+    expect(css).not.toMatch(/animation:\s*cs2-shimmer/);
+    expect(css).toMatch(/\.cs2 \.hero-product \.lunar-card\s*\{/);
+    expect(css).toMatch(/\.light \.hero-product \.lunar-card\s*\{/);
+    expect(blockAfter('.cs2 .chrome-shimmer')).not.toMatch(/animation:/);
+    expect(blockAfter('.cs2 .chrome-shimmer::before')).toMatch(/box-shadow:/);
     expect(css).not.toMatch(/filter:\s*blur\(40px\)/);
     expect(css).not.toMatch(/animation:\s*cb-star-twinkle/);
     expect(css).not.toMatch(/animation:\s*cb-nebula-drift/);
     expect(css).not.toMatch(/animation:\s*neon-angle-spin/);
     expect(css).not.toMatch(/animation:\s*hero-brand-shine/);
     expect(blockAfter('.home-neon-pill__glow')).not.toMatch(/animation:/);
+  });
+
+  it('keeps the light theme on cream tokens instead of pure white', () => {
+    const light = css.slice(css.indexOf('.light {'));
+    const lightBlock = light.slice(0, light.indexOf('\n}'));
+    expect(lightBlock).toMatch(/--bg-page:\s*#FAF7F2/i);
+    expect(lightBlock).toMatch(/--bg-surface:\s*#FFFDF9/i);
+    expect(lightBlock).toMatch(/--bg-elevated:\s*#F5F1EA/i);
+    expect(lightBlock).toMatch(/--border:\s*#E8E2D8/i);
+    expect(lightBlock).toMatch(/--text-primary:\s*#1C1A17/i);
+    expect(lightBlock).toMatch(/--text-muted:\s*#6B655C/i);
+    expect(lightBlock).not.toMatch(/--background:\s*#ffffff/i);
+    expect(lightBlock).toMatch(/--primary-foreground:\s*#ffffff/i);
+    expect(css).toMatch(/\.light \.lunar-card\s*\{[^}]*var\(--bg-surface\)/);
+    expect(css).not.toMatch(/\.light body\s*\{[^}]*background:\s*#ffffff/);
+  });
+
+  it('keeps light-theme body copy above 4.5:1 on cream surfaces', () => {
+    const hex = (h: string) => [
+      parseInt(h.slice(1, 3), 16),
+      parseInt(h.slice(3, 5), 16),
+      parseInt(h.slice(5, 7), 16),
+    ] as const;
+    const lin = (c: number) => {
+      const s = c / 255;
+      return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    };
+    const lum = (h: string) => {
+      const [r, g, b] = hex(h);
+      return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    };
+    const contrast = (a: string, b: string) => {
+      const x = lum(a);
+      const y = lum(b);
+      const hi = Math.max(x, y);
+      const lo = Math.min(x, y);
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    for (const bg of ['#FAF7F2', '#FFFDF9', '#F5F1EA']) {
+      expect(contrast('#1C1A17', bg)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast('#6B655C', bg)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it('does not force cursor: default on .surface so content text stays selectable', () => {

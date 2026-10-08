@@ -197,7 +197,7 @@ export function chatWidgetHomeBodyClass(): string {
 }
 
 export function chatWidgetHomeCardClass(): string {
-  return 'w-full rounded-2xl border-0 bg-white dark:bg-neutral-900/80 shadow-sm p-3 text-left';
+  return 'w-full rounded-2xl border-0 bg-card dark:bg-neutral-900/80 shadow-sm p-3 text-left';
 }
 
 export function chatWidgetHomeCardInnerButtonClass(): string {
