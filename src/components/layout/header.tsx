@@ -65,7 +65,7 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
       href={item.href}
       data-tour={item.tourId}
       className={cn(
-        "group relative flex h-full shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap px-0.5 text-xs font-medium transition-all duration-200 min-[1440px]:gap-2.5 min-[1440px]:px-1 min-[1440px]:text-[13px]",
+        "group relative flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-0.5 pb-[10px] text-xs font-medium transition-all duration-200 min-[1440px]:gap-2.5 min-[1440px]:px-1 min-[1440px]:text-[13px]",
         isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
       )}
     >
@@ -78,7 +78,7 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
       <span className="whitespace-nowrap">{item.name}</span>
       <div
         className={cn(
-          "absolute bottom-0 left-0 right-0 h-0.5 lunar-nav-active-indicator transition-transform duration-200",
+          "absolute inset-x-0 -bottom-0.5 h-0.5 lunar-nav-active-indicator transition-transform duration-200",
           isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
         )}
       />
