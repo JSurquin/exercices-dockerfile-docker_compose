@@ -9,6 +9,7 @@ import {
 } from '@/lib/whitepay';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { whitepayPayoutTransactionBodySchema } from '@/lib/validation/schemas/integrations';
+import { jsonWithAskReview } from '@/lib/review-prompt';
 
 // =============================================================================
 // POST - Confirmer un retrait Whitepay (dans les 30 secondes)
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    return jsonWithAskReview(userId, { type: 'withdrawal', amount: payout.amountCents }, {
       success: true,
       payout: {
         id: payout.id,

@@ -38,6 +38,7 @@ import { flexifyPayoutBodySchema } from '@/lib/validation/schemas/integrations';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hooks';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { jsonWithAskReview } from '@/lib/review-prompt';
 
 const payoutRateLimiter = new RateLimiter('PAYOUT_FLEXIFY', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
 
@@ -442,7 +443,7 @@ export async function POST(request: NextRequest) {
         });
         LOG('DB_PAYOUT_CREATED_CARD_PENDING', { payoutId: payout.id });
         await notifyAdminsPayoutPendingApproval(payout.id, userId, validatedAmount, 'CARD');
-        return NextResponse.json({
+        return jsonWithAskReview(userId, { type: 'withdrawal', amount: validatedAmount }, {
           success: true,
           autoApproved: false,
           pendingApproval: true,
@@ -525,7 +526,7 @@ export async function POST(request: NextRequest) {
             payoutId: payout.id,
             message: apiErr instanceof Error ? apiErr.message : String(apiErr),
           });
-          return NextResponse.json({
+          return jsonWithAskReview(userId, { type: 'withdrawal', amount: validatedAmount }, {
             success: true,
             payout: {
               id: payout.id,
@@ -590,7 +591,7 @@ export async function POST(request: NextRequest) {
       });
 
       LOG('DB_PAYOUT_CREATED_CARD', { payoutId: payout.id, internalStatus });
-      return NextResponse.json({
+      return jsonWithAskReview(userId, { type: 'withdrawal', amount: validatedAmount }, {
         success: true,
         payout: {
           id: payout.id,
@@ -796,7 +797,7 @@ export async function POST(request: NextRequest) {
         });
       LOG('DB_PAYOUT_CREATED_SEPA_PENDING', { payoutId: payoutPending.id });
       await notifyAdminsPayoutPendingApproval(payoutPending.id, userId, validatedAmount, 'SEPA');
-      return NextResponse.json({
+      return jsonWithAskReview(userId, { type: 'withdrawal', amount: validatedAmount }, {
         success: true,
         autoApproved: false,
         pendingApproval: true,
@@ -910,7 +911,7 @@ export async function POST(request: NextRequest) {
           payoutId: payout.id,
           message: apiErr instanceof Error ? apiErr.message : String(apiErr),
         });
-        return NextResponse.json({
+        return jsonWithAskReview(userId, { type: 'withdrawal', amount: validatedAmount }, {
           success: true,
           payout: {
             id: payout.id,
@@ -971,7 +972,7 @@ export async function POST(request: NextRequest) {
     });
 
     LOG('DB_PAYOUT_CREATED_SEPA', { payoutId: payout.id, internalStatus: internalStatusSepa });
-    return NextResponse.json({
+    return jsonWithAskReview(userId, { type: 'withdrawal', amount: validatedAmount }, {
       success: true,
       payout: {
         id: payout.id,

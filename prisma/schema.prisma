@@ -61,6 +61,12 @@ model User {
   affiliateRewardsBlocked  Boolean                 @default(false)
   /// Bloque XP, tickets et fragments liés aux ventes pour cet utilisateur
   xpRewardsBlocked         Boolean                 @default(false)
+  /// Dernier affichage du bandeau d'avis Trustpilot (cooldown 90 jours)
+  reviewPromptSeenAt       DateTime?
+  /// Dernière action sur le bandeau : "clicked" | "dismissed"
+  reviewPromptAction       String?
+  /// Déclencheur du dernier bandeau : "withdrawal" | "deposit"
+  reviewPromptTrigger      String?
   reviewedApplications     AffiliateApplication[]  @relation("AffiliateApplicationReviewer")
   affiliateApplications    AffiliateApplication[]
   referrals                AffiliateReferral[]     @relation("AffiliateReferrals")

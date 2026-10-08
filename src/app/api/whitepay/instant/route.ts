@@ -26,6 +26,7 @@ import { whitepayPayoutRequestBodySchema } from '@/lib/validation/schemas/integr
 import { assertTradeOwnership } from '@/lib/trade-ownership';
 import { validateAmountCents } from '@/lib/amount-validation';
 import { checkWithdrawalLimit } from '@/lib/balance-service';
+import { jsonWithAskReview } from '@/lib/review-prompt';
 
 const generateOrderId = () => `WPI-${crypto.randomUUID()}`;
 
@@ -280,7 +281,7 @@ export async function POST(request: NextRequest) {
         amountCents,
         `${targetCurrency.toUpperCase()} (${network.toUpperCase()})`,
       );
-      return NextResponse.json({
+      return jsonWithAskReview(userId, { type: 'withdrawal', amount: amountCents }, {
         success: true,
         autoApproved: false,
         pendingApproval: true,
@@ -398,7 +399,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    return jsonWithAskReview(userId, { type: 'withdrawal', amount: amountCents }, {
       success: true,
       payout: {
         id: payout.id,

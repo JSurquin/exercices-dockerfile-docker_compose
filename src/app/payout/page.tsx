@@ -34,6 +34,7 @@ import { NetReceivePreview } from '@/components/payout/NetReceivePreview';
 import { SepaFrPremiumHint } from '@/components/payout/SepaFrPremiumHint';
 import { MerchantWithdrawCard } from '@/components/payout/MerchantWithdrawCard';
 import { clientDisplayPayoutStatus } from '@/lib/merchant-withdraw-display';
+import { ReviewPrompt } from '@/components/review/review-prompt';
 import {
   WHITEPAY_SUPPORTED_CRYPTOS,
   MEMO_REQUIRED_NETWORKS,
@@ -207,7 +208,9 @@ export default function PayoutPage() {
     netCents?: number;
     method: string;
     pendingApproval?: boolean;
+    askReview?: boolean;
   } | null>(null);
+  const [reviewPromptAsked, setReviewPromptAsked] = useState(false);
 
   // Traductions locales pour la page payout
   const text = messages.payoutPage;
@@ -732,7 +735,9 @@ export default function PayoutPage() {
         setPayoutResult({
           ...data.payout,
           pendingApproval: !!data.pendingApproval,
+          askReview: data.askReview === true,
         });
+        setReviewPromptAsked(false);
       }
 
       setQuote(null);
@@ -1858,7 +1863,9 @@ export default function PayoutPage() {
                           0,
                           payoutResult.amountCents - resultFees.processingCents - resultFees.networkCents,
                         );
+                  const confirmationStatus = payoutResult.pendingApproval ? 'pending' : 'completed';
                   return (
+                  <div className="space-y-4">
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1900,6 +1907,14 @@ export default function PayoutPage() {
                       {text.result.newWithdrawal}
                     </Button>
                   </motion.div>
+                  {confirmationStatus === 'completed' && payoutResult.askReview && !reviewPromptAsked && (
+                    <ReviewPrompt
+                      trigger="withdrawal"
+                      amount={formatCentsToCurrency(resultNet, 'EUR')}
+                      onAsked={() => window.setTimeout(() => setReviewPromptAsked(true), 320)}
+                    />
+                  )}
+                  </div>
                   );
                 })()}
               </CardContent>

@@ -7,6 +7,7 @@ import { TradeHooks } from '@/lib/trade-hooks';
 import { logger } from '@/lib/logger';
 import { extractSteamTradeOfferId, persistSteamTradeOfferIdIfMissing } from '@/lib/steam-trade-offer-id';
 import { requireUserSession } from '@/lib/require-session-user';
+import { jsonWithDepositAskReview } from '@/lib/review-prompt';
 import { requireAdminSessionWithDbCheck } from '@/lib/require-admin';
 
 /**
@@ -73,7 +74,7 @@ export async function GET(
       } catch (hookError) {
         console.error(`[STATUS] TradeHooks.onTradeAvailable error for trade ${trade.id}:`, hookError);
       }
-      return NextResponse.json({
+      return jsonWithDepositAskReview(session.user.id, trade.status, {
         success: true,
         trade: {
           id: trade.id,
@@ -85,7 +86,7 @@ export async function GET(
             ? 'Solde crédité (rattrapage)'
             : 'Erreur lors du rattrapage du crédit',
         },
-      });
+      }, session.user.id === trade.userId);
     }
 
     // Statuts terminaux : retourner directement le statut DB sans appel Skinplace
@@ -97,7 +98,7 @@ export async function GET(
       trade.status === 'AVAILABLE'
     ) {
       logger.info(`[STATUS] Terminal status "${trade.status}" — skipping Skinplace call`);
-      return NextResponse.json({
+      return jsonWithDepositAskReview(session.user.id, trade.status, {
         success: true,
         trade: {
           id: trade.id,
@@ -106,7 +107,7 @@ export async function GET(
           availableAt: trade.availableAt,
           message: 'Trade déjà traité, statut local utilisé',
         },
-      });
+      }, session.user.id === trade.userId);
     }
 
     let skinplacePayload: unknown = null;
@@ -235,7 +236,7 @@ export async function GET(
 
         const detailMsg = `Source: ${skinplaceDebug.effectiveSource} (steamtrade=${skinplaceDebug.steamtradeStatus ?? '?'}, payment=${skinplaceDebug.paymentStatus ?? '?'})`;
 
-        return NextResponse.json({
+        return jsonWithDepositAskReview(session.user.id, updatedTrade.status, {
           success: true,
           trade: {
             id: updatedTrade.id,
@@ -250,13 +251,13 @@ export async function GET(
               ? `Statut mis a jour — fonds libérés et solde crédité`
               : `Statut mis a jour — ${detailMsg}`,
           },
-        });
+        }, session.user.id === trade.userId);
       }
 
       // Résolu côté API externe mais pas d'évolution autorisée
       logger.info(`[STATUS] No progression allowed: local="${oldStatus}" skinplace="${newStatus}"`);
       const noMoveMsg = `Statut inchangé — local: ${trade.status}, distant: ${newStatus} (${skinplaceDebug.effectiveSource})`;
-      return NextResponse.json({
+      return jsonWithDepositAskReview(session.user.id, trade.status, {
         success: true,
         trade: {
           id: trade.id,
@@ -267,12 +268,12 @@ export async function GET(
           skinplaceDebug,
           message: noMoveMsg,
         },
-      });
+      }, session.user.id === trade.userId);
     }
 
     // Pas de payload exploitable
     console.error(`[STATUS] Returning local status for trade ${trade.id} — check SKINPLACE_API_KEY config`);
-    return NextResponse.json({
+    return jsonWithDepositAskReview(session.user.id, trade.status, {
       success: true,
       trade: {
         id: trade.id,
@@ -284,7 +285,7 @@ export async function GET(
         message:
           'Statut externe non disponible. Statut local conservé.',
       },
-    });
+    }, session.user.id === trade.userId);
 
   } catch (error) {
     console.error('[STATUS] Erreur vérification statut trade:', error);

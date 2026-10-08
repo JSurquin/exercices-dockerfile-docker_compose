@@ -31,6 +31,7 @@ import crypto from 'crypto';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { whitepayPayoutRequestBodySchema } from '@/lib/validation/schemas/integrations';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { jsonWithAskReview } from '@/lib/review-prompt';
 
 const payoutRateLimiter = new RateLimiter('PAYOUT_WHITEPAY', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
 
@@ -434,7 +435,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json({
+      return jsonWithAskReview(userId, { type: 'withdrawal', amount: amountCents }, {
         success: true,
         autoApproved: true,
         payout: {
@@ -515,7 +516,7 @@ export async function POST(request: NextRequest) {
       `${targetCurrency.toUpperCase()} (${network.toUpperCase()})`,
     );
 
-    return NextResponse.json({
+    return jsonWithAskReview(userId, { type: 'withdrawal', amount: amountCents }, {
       success: true,
       autoApproved: false,
       pendingApproval: true,

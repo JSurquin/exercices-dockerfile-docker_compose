@@ -52,3 +52,10 @@ export const notificationPreferencesPutSchema = z
 
 /** POST sans corps exploitable — bloque mass assignment */
 export const emptyObjectBodySchema = z.object({}).strict();
+
+export const reviewPromptBodySchema = z
+  .object({
+    action: z.enum(['clicked', 'dismissed']),
+    trigger: z.enum(['withdrawal', 'deposit']),
+  })
+  .strict();

@@ -7955,4 +7955,12 @@ export interface Messages {
   homePopup: {
     close: string;
   };
+  reviewPrompt: {
+    withdrawalTitle: string;
+    withdrawalBody: string;
+    depositTitle: string;
+    depositBody: string;
+    cta: string;
+    close: string;
+  };
 }

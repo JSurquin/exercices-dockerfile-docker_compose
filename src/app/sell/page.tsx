@@ -13,6 +13,7 @@ import { SkinplaceTradeCreator, TradeCreatedData } from "@/components/skinplace/
 import { ConvertedPrice } from "@/components/ui/converted-price";
 import { NormalizedInventoryItem } from "@/hooks/use-skinplace-inventory";
 import { TradeStatusModal, TradeModalStatus } from "@/components/sell/trade-status-modal";
+import { ReviewPrompt } from "@/components/review/review-prompt";
 import { parseSteamId64FromUserInput } from "@/lib/steam-id";
 import { SellAccountSidebar } from "@/components/sell/sell-account-sidebar";
 import {
@@ -62,6 +63,9 @@ export default function SellPage() {
   const [activeSteamId, setActiveSteamId] = useState(getInventorySteamId());
   const [selectionResetToken, setSelectionResetToken] = useState(0);
   const [modalStatus, setModalStatus] = useState<TradeModalStatus>(null);
+  const [depositStatus, setDepositStatus] = useState<'pending' | 'completed'>('pending');
+  const [askReview, setAskReview] = useState(false);
+  const [reviewPromptAsked, setReviewPromptAsked] = useState(false);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollAttemptsRef = useRef(0);
 
@@ -110,11 +114,15 @@ export default function SellPage() {
 
         const data = await res.json();
         const status: string = data?.trade?.status ?? "";
+        if (data?.askReview === true) {
+          setAskReview(true);
+        }
 
         if (status === "ACCEPTED_BY_BOT") {
           setModalStatus("pending");
         } else if (status === "IN_TRADE_HOLD" || status === "AVAILABLE") {
           stopPolling();
+          setDepositStatus("completed");
           setModalStatus("accepted");
         } else if (status === "CANCELLED" || status === "FAILED") {
           stopPolling();
@@ -142,6 +150,9 @@ export default function SellPage() {
   const handleTradeCreated = (trade: TradeCreatedData) => {
     setTradeData(trade);
     setCurrentStep(2);
+    setDepositStatus('pending');
+    setAskReview(false);
+    setReviewPromptAsked(false);
     toast.success(messages.sellPage.successMessages.tradeCreated);
     if (trade.trade_id) {
       startPolling(trade.trade_id);
@@ -158,6 +169,9 @@ export default function SellPage() {
     setSelectedItems([]);
     setPreviewItems([]);
     setCurrentStep(0);
+    setDepositStatus('pending');
+    setAskReview(false);
+    setReviewPromptAsked(false);
   };
 
   const handleStepNavigation = (targetIndex: number) => {
@@ -168,6 +182,9 @@ export default function SellPage() {
 
     if (targetIndex < 2) {
       setTradeData(null);
+      setDepositStatus('pending');
+      setAskReview(false);
+      setReviewPromptAsked(false);
     }
 
     if (targetIndex === 0) {
@@ -429,6 +446,13 @@ export default function SellPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {depositStatus === 'completed' && askReview && !reviewPromptAsked && (
+                <ReviewPrompt
+                  trigger="deposit"
+                  onAsked={() => window.setTimeout(() => setReviewPromptAsked(true), 320)}
+                />
+              )}
 
               {/* MoonSkin trade bot (profil technique fourni par l’API partenaire) */}
               {tradeData.bot && (
