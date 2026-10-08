@@ -1,7 +1,7 @@
 import { computeCenteredNavShift, DESKTOP_NAV_MIN_GAP_PX } from "@/lib/centered-nav-shift";
 
 describe("computeCenteredNavShift", () => {
-  it("garde le centrage optique quand les 24 px tiennent de chaque côté", () => {
+  it("garde le centrage optique quand les 32 px tiennent de chaque côté", () => {
     expect(
       computeCenteredNavShift({
         logoRight: 160,

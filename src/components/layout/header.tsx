@@ -65,7 +65,7 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
       href={item.href}
       data-tour={item.tourId}
       className={cn(
-        "group relative flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap text-[11px] font-medium transition-all duration-200 min-[1440px]:gap-2 min-[1440px]:text-xs",
+        "group relative flex h-full shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap px-0.5 text-xs font-medium transition-all duration-200 min-[1440px]:gap-2.5 min-[1440px]:px-1 min-[1440px]:text-[13px]",
         isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
       )}
     >
@@ -78,7 +78,7 @@ function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string })
       <span className="whitespace-nowrap">{item.name}</span>
       <div
         className={cn(
-          "absolute -bottom-[21px] left-0 right-0 h-0.5 lunar-nav-active-indicator transition-transform duration-200",
+          "absolute bottom-0 left-0 right-0 h-0.5 lunar-nav-active-indicator transition-transform duration-200",
           isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
         )}
       />
@@ -293,7 +293,7 @@ export function Header() {
       <div
         ref={barRef}
         data-slot="header-bar"
-        className="container relative mx-auto flex h-16 min-w-0 w-full items-center pl-4 pr-3 sm:pl-6 sm:pr-5 lg:pl-8 lg:pr-7"
+        className="container relative mx-auto flex h-[4.25rem] min-w-0 w-full items-center pl-5 pr-4 sm:pl-7 sm:pr-6 lg:pl-9 lg:pr-8"
       >
         <Link
           ref={logoRef}
@@ -316,10 +316,10 @@ export function Header() {
         <nav
           ref={navRef}
           data-slot="header-nav"
-          className="absolute top-1/2 left-1/2 z-0 hidden min-[1100px]:flex"
-          style={{ transform: `translate(calc(-50% + ${navShift}px), -50%)` }}
+          className="absolute inset-y-0 left-1/2 z-0 hidden min-[1100px]:flex items-center"
+          style={{ transform: `translateX(calc(-50% + ${navShift}px))` }}
         >
-          <div className="flex items-center gap-1.5 min-[1440px]:gap-2.5 min-[1512px]:gap-3">
+          <div className="flex items-center gap-2.5 min-[1440px]:gap-3.5 min-[1512px]:gap-5">
             {desktopNavigation.map((item) => (
               <DesktopNavLink key={item.id} item={item} pathname={pathname} />
             ))}

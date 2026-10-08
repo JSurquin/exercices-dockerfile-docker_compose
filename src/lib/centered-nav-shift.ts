@@ -1,5 +1,5 @@
 /** Minimum space kept between logo, centered nav links, and the right actions. */
-export const DESKTOP_NAV_MIN_GAP_PX = 24;
+export const DESKTOP_NAV_MIN_GAP_PX = 32;
 
 export function computeCenteredNavShift(params: {
   logoRight: number;
