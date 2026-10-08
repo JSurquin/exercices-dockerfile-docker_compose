@@ -18,6 +18,8 @@ Dokploy se déclenche via le webhook GitHub du dépôt (événement `push`). Si 
 
 Vérifier : GitHub → Settings → Webhooks → l’URL `https://dp.moonskin.fun/api/deploy/…` doit être **Active**. Un GET sans payload GitHub renvoie `Branch Not Match` (normal) ; un POST `X-GitHub-Event: push` avec `{"ref":"refs/heads/main"}` doit répondre `Application deployed successfully`.
 
+`Application deployed successfully` signifie seulement que le job est **en file**. Si le build Nixpacks échoue (souvent `sharp` / libvips) ou si le healthcheck Swarm tue le conteneur trop tôt, **www.moonskin.eu reste sur l’ancienne image**. Contrôler Dokploy → Deployments → logs, puis `GET https://www.moonskin.eu/health` : le champ `commit` doit matcher le SHA GitHub.
+
 ## 1. Endpoint `/health`
 
 L’app expose `GET /health` → `{ "ok": true, "commit": "<sha court>" }` (sans accès DB). Le champ `commit` permet de vérifier que Dokploy a bien pris le dernier push GitHub.

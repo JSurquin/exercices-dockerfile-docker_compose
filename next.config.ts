@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 
@@ -8,12 +9,34 @@ function parseBooleanEnv(value: string | undefined): boolean {
   return value === 'true' || value === '1';
 }
 
+function resolveGitSha(): string {
+  const fromEnv = (
+    process.env.SOURCE_COMMIT ||
+    process.env.GIT_SHA ||
+    process.env.NEXT_PUBLIC_GIT_SHA ||
+    process.env.NIXPACKS_GIT_COMMIT_SHA ||
+    ''
+  ).trim();
+  if (fromEnv) return fromEnv.slice(0, 12);
+  try {
+    return execSync('git rev-parse --short HEAD', {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .toString()
+      .trim();
+  } catch {
+    return '';
+  }
+}
+
 const showSentry = parseBooleanEnv(process.env.SHOW_SENTRY);
+const gitSha = resolveGitSha();
 
 const nextConfig: NextConfig = {
+  generateBuildId: async () => gitSha || `b${Date.now().toString(36)}`,
   env: {
     NEXT_PUBLIC_SHOW_SENTRY: showSentry ? 'true' : 'false',
-    GIT_SHA: process.env.GIT_SHA || process.env.SOURCE_COMMIT || process.env.NEXT_PUBLIC_GIT_SHA || '',
+    GIT_SHA: gitSha,
   },
   poweredByHeader: false,
   serverExternalPackages: ['sharp'],
@@ -59,11 +82,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  turbopack: {
-    rules: codeInspectorPlugin({
-      bundler: 'turbopack',
-    }),
-  },
+  ...(process.env.NODE_ENV === 'production'
+    ? {}
+    : {
+        turbopack: {
+          rules: codeInspectorPlugin({
+            bundler: 'turbopack',
+          }),
+        },
+      }),
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [

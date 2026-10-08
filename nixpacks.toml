@@ -13,13 +13,16 @@ cmds = [
 [phases.build]
 cmds = [
   "npx prisma generate",
-  "GIT_SHA=$(git rev-parse --short HEAD) NEXT_PUBLIC_GIT_SHA=$(git rev-parse --short HEAD) pnpm run build"
+  "sh -c 'GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || printf %s \"${SOURCE_COMMIT:-unknown}\"); export GIT_SHA NEXT_PUBLIC_GIT_SHA=\"$GIT_SHA\"; pnpm run build'"
 ]
 
 [variables]
 NODE_ENV = "production"
 PORT = "3000"
 HOSTNAME = "0.0.0.0"
+NIXPACKS_NODE_VERSION = "20"
+NODE_OPTIONS = "--max-old-space-size=4096"
+SHARP_IGNORE_GLOBAL_LIBVIPS = "1"
 PUPPETEER_EXECUTABLE_PATH = "/usr/bin/chromium"
 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
 
