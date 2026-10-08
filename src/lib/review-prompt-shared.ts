@@ -1,7 +1,5 @@
 export const TRUSTPILOT_EVALUATE_URL = 'https://www.trustpilot.com/evaluate/moonskin.eu';
 
-export const REVIEW_PROMPT_COOLDOWN_MS = 90 * 24 * 60 * 60 * 1000;
-
 export const REVIEW_PROMPT_ACTIONS = ['clicked', 'dismissed'] as const;
 export const REVIEW_PROMPT_TRIGGERS = ['withdrawal', 'deposit'] as const;
 
@@ -27,6 +25,7 @@ export type ReviewPromptUser = {
   reviewPromptSeenAt?: Date | string | null;
   reviewPromptAction?: string | null;
   completedWithdrawals?: number;
+  latestPaidAt?: Date | string | null;
 };
 
 export function isReviewPromptAction(value: unknown): value is ReviewPromptAction {
@@ -37,15 +36,24 @@ export function isReviewPromptTrigger(value: unknown): value is ReviewPromptTrig
   return value === 'withdrawal' || value === 'deposit';
 }
 
+function toMs(value: Date | string | null | undefined): number | null {
+  if (!value) return null;
+  const ms = new Date(value).getTime();
+  return Number.isFinite(ms) ? ms : null;
+}
+
 /**
  * Éligibilité Trustpilot — calculée uniquement côté serveur.
  * Ne filtre jamais selon la satisfaction (pas de note interne).
  * Ne lève jamais : visiteur absent, champs manquants ou donnée invalide → false.
+ *
+ * Affichage à chaque retrait payé, sauf si l’utilisateur a déjà cliqué vers Trustpilot.
+ * Un « Plus tard » n’empêche pas de redemander au prochain payout payé.
  */
 export function shouldAskForReview(
   user: ReviewPromptUser | null | undefined,
   event?: ReviewPromptEvent | null,
-  now: Date = new Date(),
+  _now: Date = new Date(),
 ): boolean {
   try {
     if (!user || !event) {
@@ -56,19 +64,19 @@ export function shouldAskForReview(
       return false;
     }
 
-    if (user.reviewPromptSeenAt) {
-      const seenAt = new Date(user.reviewPromptSeenAt);
-      const seenMs = seenAt.getTime();
-      if (Number.isFinite(seenMs) && now.getTime() - seenMs < REVIEW_PROMPT_COOLDOWN_MS) {
+    if ((user.completedWithdrawals ?? 0) <= 0) {
+      return false;
+    }
+
+    const seenMs = toMs(user.reviewPromptSeenAt);
+    if (seenMs !== null) {
+      const paidMs = toMs(user.latestPaidAt);
+      if (paidMs === null || paidMs <= seenMs) {
         return false;
       }
     }
 
-    if (event.type === 'withdrawal' || event.type === 'deposit') {
-      return (user.completedWithdrawals ?? 0) > 0;
-    }
-
-    return false;
+    return event.type === 'withdrawal' || event.type === 'deposit';
   } catch {
     return false;
   }

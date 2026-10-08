@@ -4,7 +4,6 @@ import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import {
   PAID_PAYOUT_STATUSES,
-  REVIEW_PROMPT_COOLDOWN_MS,
   shouldAskForReview,
   type ReviewPromptAction,
   type ReviewPromptEvent,
@@ -13,7 +12,6 @@ import {
 
 export {
   TRUSTPILOT_EVALUATE_URL,
-  REVIEW_PROMPT_COOLDOWN_MS,
   REVIEW_PROMPT_ACTIONS,
   REVIEW_PROMPT_TRIGGERS,
   PAID_PAYOUT_STATUSES,
@@ -80,13 +78,20 @@ async function findLatestPaidPayout(userId: string) {
       amountCents: true,
       processingFeeCents: true,
       networkFeeCents: true,
+      paidAt: true,
+      updatedAt: true,
     },
   });
 }
 
+function payoutMoment(payout: { paidAt: Date | null; updatedAt: Date }): Date {
+  return payout.paidAt ?? payout.updatedAt;
+}
+
 /**
  * Calcule l'éligibilité puis marque l'affichage en base (seenAt)
- * pour qu'il ne se reproduise pas sur un autre appareil pendant 90 jours.
+ * pour ne pas redemander le même payout sur un autre appareil.
+ * Un nouveau retrait payé relance la demande, sauf si l’avis a déjà été cliqué.
  * Toute erreur (colonnes absentes, user introuvable, DB) → false.
  */
 export async function resolveAndConsumeReviewPrompt(
@@ -116,6 +121,7 @@ export async function resolveAndConsumeReviewPrompt(
     }
 
     const amountCents = paidPayout ? netPaidAmountCents(paidPayout) : null;
+    const latestPaidAt = paidPayout ? payoutMoment(paidPayout) : null;
 
     if (
       !shouldAskForReview(
@@ -123,6 +129,7 @@ export async function resolveAndConsumeReviewPrompt(
           reviewPromptSeenAt: row.reviewPromptSeenAt,
           reviewPromptAction: row.reviewPromptAction,
           completedWithdrawals: paidPayout ? 1 : 0,
+          latestPaidAt,
         },
         event,
         now,
@@ -131,8 +138,6 @@ export async function resolveAndConsumeReviewPrompt(
       return none;
     }
 
-    const cooldownAgo = new Date(now.getTime() - REVIEW_PROMPT_COOLDOWN_MS);
-
     const updated = await prisma.user.updateMany({
       where: {
         id: userId,
@@ -140,9 +145,14 @@ export async function resolveAndConsumeReviewPrompt(
           {
             OR: [{ reviewPromptAction: null }, { reviewPromptAction: { not: 'clicked' } }],
           },
-          {
-            OR: [{ reviewPromptSeenAt: null }, { reviewPromptSeenAt: { lte: cooldownAgo } }],
-          },
+          latestPaidAt
+            ? {
+                OR: [
+                  { reviewPromptSeenAt: null },
+                  { reviewPromptSeenAt: { lt: latestPaidAt } },
+                ],
+              }
+            : { reviewPromptSeenAt: null },
         ],
       },
       data: {

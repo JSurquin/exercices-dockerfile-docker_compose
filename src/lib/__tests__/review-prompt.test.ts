@@ -20,7 +20,6 @@ import { prisma } from '~/prisma/prisma';
 import { logger } from '@/lib/logger';
 import {
   shouldAskForReview,
-  REVIEW_PROMPT_COOLDOWN_MS,
   PAID_PAYOUT_STATUSES,
   isPaidPayoutStatus,
   resolveAndConsumeReviewPrompt,
@@ -60,11 +59,49 @@ describe('shouldAskForReview', () => {
     ).toBe(false);
   });
 
-  it('refuse si le bandeau a déjà été vu il y a moins de 90 jours', () => {
-    const seenAt = new Date(now.getTime() - REVIEW_PROMPT_COOLDOWN_MS + 24 * 60 * 60 * 1000);
+  it('refuse si déjà montré pour ce même retrait payé', () => {
+    const paidAt = new Date('2026-09-01T12:00:00.000Z');
+    const seenAt = new Date('2026-09-01T12:05:00.000Z');
     expect(
       shouldAskForReview(
-        { ...eligibleUser, reviewPromptSeenAt: seenAt, reviewPromptAction: 'dismissed' },
+        {
+          ...eligibleUser,
+          reviewPromptSeenAt: seenAt,
+          reviewPromptAction: 'dismissed',
+          latestPaidAt: paidAt,
+        },
+        { type: 'withdrawal', amount: 5000 },
+        now,
+      ),
+    ).toBe(false);
+  });
+
+  it('accepte un nouveau retrait payé même après un « Plus tard »', () => {
+    const seenAt = new Date('2026-09-01T12:00:00.000Z');
+    const latestPaidAt = new Date('2026-10-01T12:00:00.000Z');
+    expect(
+      shouldAskForReview(
+        {
+          ...eligibleUser,
+          reviewPromptSeenAt: seenAt,
+          reviewPromptAction: 'dismissed',
+          latestPaidAt,
+        },
+        { type: 'withdrawal', amount: 5000 },
+        now,
+      ),
+    ).toBe(true);
+  });
+
+  it('refuse un nouveau retrait si l’utilisateur a déjà cliqué vers Trustpilot', () => {
+    expect(
+      shouldAskForReview(
+        {
+          ...eligibleUser,
+          reviewPromptAction: 'clicked',
+          latestPaidAt: now,
+          completedWithdrawals: 4,
+        },
         { type: 'withdrawal', amount: 5000 },
         now,
       ),
@@ -81,7 +118,7 @@ describe('shouldAskForReview', () => {
     expect(isPaidPayoutStatus('PROCESSING')).toBe(false);
   });
 
-  it('accepte un retrait dès qu’au moins un payout est payé et que le cooldown ne bloque pas', () => {
+  it('accepte un retrait dès qu’au moins un payout est payé', () => {
     expect(
       shouldAskForReview(eligibleUser, { type: 'withdrawal', amount: 12_500 }, now),
     ).toBe(true);
@@ -160,6 +197,8 @@ describe('resolveAndConsumeReviewPrompt / jsonWithAskReview', () => {
       amountCents: 10_000,
       processingFeeCents: 50,
       networkFeeCents: 0,
+      paidAt: new Date('2026-10-08T10:00:00.000Z'),
+      updatedAt: new Date('2026-10-08T10:00:00.000Z'),
     });
 
     await expect(resolveAndConsumeReviewPrompt('u1', { type: 'withdrawal' })).resolves.toEqual({
@@ -175,6 +214,10 @@ describe('resolveAndConsumeReviewPrompt / jsonWithAskReview', () => {
       }),
     );
     expect(mockUpdateMany).toHaveBeenCalled();
+    const updateArg = mockUpdateMany.mock.calls[0][0] as {
+      where: { AND: unknown[] };
+    };
+    expect(JSON.stringify(updateArg.where)).not.toContain('lte');
   });
 
   it('ne consomme pas s’il n’y a aucun payout PAID / FLEXIFY_PAID / WHITEPAY_COMPLETE', async () => {
@@ -232,11 +275,61 @@ describe('resolveAndConsumeReviewPrompt / jsonWithAskReview', () => {
     expect(mockFindUnique).not.toHaveBeenCalled();
   });
 
+  it('redemande après un nouveau payout payé si l’action précédente était dismissed', async () => {
+    const previousSeenAt = new Date('2026-09-01T12:00:00.000Z');
+    const newPaidAt = new Date('2026-10-08T10:00:00.000Z');
+    mockFindUnique.mockResolvedValue({
+      reviewPromptSeenAt: previousSeenAt,
+      reviewPromptAction: 'dismissed',
+    });
+    mockPayoutFindFirst.mockResolvedValue({
+      amountCents: 8000,
+      processingFeeCents: 0,
+      networkFeeCents: 0,
+      paidAt: newPaidAt,
+      updatedAt: newPaidAt,
+    });
+
+    await expect(resolveAndConsumeReviewPrompt('u1', { type: 'withdrawal' })).resolves.toEqual({
+      askReview: true,
+      amountCents: 8000,
+    });
+    expect(mockUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: 'u1',
+        }),
+      }),
+    );
+  });
+
+  it('ne redemande pas le même payout après un « Plus tard »', async () => {
+    const paidAt = new Date('2026-09-01T12:00:00.000Z');
+    mockFindUnique.mockResolvedValue({
+      reviewPromptSeenAt: new Date('2026-09-01T12:05:00.000Z'),
+      reviewPromptAction: 'dismissed',
+    });
+    mockPayoutFindFirst.mockResolvedValue({
+      amountCents: 8000,
+      processingFeeCents: 0,
+      networkFeeCents: 0,
+      paidAt,
+      updatedAt: paidAt,
+    });
+
+    await expect(resolveAndConsumeReviewPrompt('u1', { type: 'withdrawal' })).resolves.toEqual(
+      none,
+    );
+    expect(mockUpdateMany).not.toHaveBeenCalled();
+  });
+
   it('ne consomme plus le bandeau à la création du retrait (SEPA payé plus tard)', async () => {
     mockPayoutFindFirst.mockResolvedValue({
       amountCents: 5000,
       processingFeeCents: 0,
       networkFeeCents: 0,
+      paidAt: new Date('2026-10-08T10:00:00.000Z'),
+      updatedAt: new Date('2026-10-08T10:00:00.000Z'),
     });
 
     const res = await jsonWithAskReview('u1', { type: 'withdrawal', amount: 5000 }, {
