@@ -1434,7 +1434,10 @@ export default function DashboardPage() {
                         </p>
                       </div>
                       <Badge className="mission-glass-badge gap-1.5 font-normal">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-theme-success/70" />
+                        <span
+                          className="h-1.5 w-1.5 shrink-0 self-center rounded-full bg-current"
+                          aria-hidden
+                        />
                         {messages.dashboard.settings.enabled}
                       </Badge>
                     </div>
@@ -1446,7 +1449,10 @@ export default function DashboardPage() {
                         </p>
                       </div>
                       <Badge className="mission-glass-badge gap-1.5 font-normal">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-theme-success/70" />
+                        <span
+                          className="h-1.5 w-1.5 shrink-0 self-center rounded-full bg-current"
+                          aria-hidden
+                        />
                         {messages.dashboard.settings.enabled}
                       </Badge>
                     </div>
