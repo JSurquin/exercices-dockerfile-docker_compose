@@ -7195,6 +7195,9 @@ export interface Messages {
         maxAmount: string;
         grossAmount: string;
         estimatedDelay: string;
+        estimatedDelayFewMinutes: string;
+        estimatedDelayInstant: string;
+        estimatedDelayUpTo24h: string;
         ibanVerificationTitle: string;
         ibanLabel: string;
         ibanPlaceholder: string;

@@ -59,6 +59,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { validateSepaIban, isFrenchIban } from '@/lib/iban-sepa';
+import { localizeEstimatedDelivery } from '@/lib/payout-delivery-label';
 
 type PayoutMethod = 'card' | 'sepa' | 'crypto' | 'sepa_fr';
 
@@ -1012,7 +1013,11 @@ export default function PayoutPage() {
               <span>{text.request.estimatedDelay}</span>
               <span className="flex items-center gap-1">
                 <ClockIcon className="w-4 h-4" />
-                {quote.estimatedDelivery}
+                {localizeEstimatedDelivery(quote.estimatedDelivery, {
+                  fewMinutes: text.request.estimatedDelayFewMinutes,
+                  instant: text.request.estimatedDelayInstant,
+                  upTo24h: text.request.estimatedDelayUpTo24h,
+                })}
               </span>
             </div>
             )}

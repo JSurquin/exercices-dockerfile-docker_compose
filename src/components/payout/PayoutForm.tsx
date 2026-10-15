@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2, Wallet, Building2, AlertCircle, CheckCircle, Euro, Clock, Shield } from 'lucide-react';
 import { useLocale } from '@/components/providers/locale-provider';
+import { localizeEstimatedDelivery } from '@/lib/payout-delivery-label';
 import {
   USER_PAYOUT_SUPPORTED_CRYPTOS,
   MEMO_REQUIRED_NETWORKS,
@@ -246,7 +247,13 @@ export function PayoutForm({ availableAmountCents, tradeId, onSuccess, onError }
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
                 <Clock className="w-4 h-4" />
-                <span>{quote.estimatedDelivery}</span>
+                <span>
+                  {localizeEstimatedDelivery(quote.estimatedDelivery, {
+                    fewMinutes: messages.payoutPage.request.estimatedDelayFewMinutes,
+                    instant: messages.payoutPage.request.estimatedDelayInstant,
+                    upTo24h: messages.payoutPage.request.estimatedDelayUpTo24h,
+                  })}
+                </span>
               </div>
             </div>
           )}
