@@ -1,9 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { prisma } from '~/prisma/prisma';
-import { mapTradeStatusFromDb } from '@/lib/status-mapper';
 
 const COMPLETED_TRADE_STATUSES = ['PAID', 'PAYOUT_PENDING', 'AVAILABLE'] as const;
+
+/** Clé de jour locale YYYY-MM-DD, indépendante de la langue d’affichage. */
+function localDayKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/** Regroupe les statuts Prisma pour le camembert (libellés traduits côté client). */
+function statusGroupKey(dbStatus: string): string {
+  switch (dbStatus) {
+    case 'CREATED':
+    case 'ACCEPTED_BY_BOT':
+      return 'created';
+    case 'PAYOUT_PENDING':
+    case 'AVAILABLE':
+      return 'in_progress';
+    case 'IN_TRADE_HOLD':
+      return 'hold';
+    case 'PAID':
+      return 'paid';
+    case 'FAILED':
+      return 'failed';
+    case 'CANCELLED':
+      return 'cancelled';
+    default:
+      return dbStatus;
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,13 +97,13 @@ export async function GET(request: NextRequest) {
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      const dateKey = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+      const dateKey = localDayKey(date);
       volumeByDay.set(dateKey, 0);
     }
 
     // Remplir avec les données réelles
     tradesLastWeek.forEach(trade => {
-      const dateKey = trade.createdAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+      const dateKey = localDayKey(trade.createdAt);
       const currentVolume = volumeByDay.get(dateKey) || 0;
       volumeByDay.set(dateKey, currentVolume + trade.grossCents);
     });
@@ -99,7 +128,6 @@ export async function GET(request: NextRequest) {
     const statusMap = new Map<string, { count: number; color: string }>();
     
     tradesByStatus.forEach(item => {
-      const status = mapTradeStatusFromDb(item.status);
       const count = item._count.id;
       
       let color = '#7a7a8c';
@@ -126,22 +154,8 @@ export async function GET(request: NextRequest) {
           color = '#8a8a9c';
           break;
       }
-      
-      // Regrouper certains statuts pour l'affichage
-      let groupedStatus: string = status;
-      if (['créé', 'accepté_par_bot'].includes(status)) {
-        groupedStatus = 'Créés';
-      } else if (['paiement_en_cours', 'disponible'].includes(status)) {
-        groupedStatus = 'En cours';
-      } else if (status === 'en_trade_hold') {
-        groupedStatus = 'Hold';
-      } else if (status === 'payé') {
-        groupedStatus = 'Payés';
-      } else if (status === 'échoué') {
-        groupedStatus = 'Échoués';
-      } else if (status === 'annulé') {
-        groupedStatus = 'Annulés';
-      }
+
+      const groupedStatus = statusGroupKey(item.status);
       
       const existing = statusMap.get(groupedStatus);
       if (existing) {
@@ -151,8 +165,8 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const tradeStatusData = Array.from(statusMap.entries()).map(([name, data]) => ({
-      name,
+    const tradeStatusData = Array.from(statusMap.entries()).map(([key, data]) => ({
+      key,
       count: data.count,
       color: data.color,
     }));

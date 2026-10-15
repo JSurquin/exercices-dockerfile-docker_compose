@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { useSearchParams } from "next/navigation";
@@ -182,6 +182,36 @@ const payoutStatusLabel = (
 const dateLocaleTag = (locale: string) =>
   locale === "en" ? "en-GB" : locale === "cn" ? "zh-CN" : "fr-FR";
 
+/** Affiche une clé YYYY-MM-DD dans la langue de l’interface (sans décalage UTC). */
+function formatChartDay(isoDate: string, localeTag: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!match) return isoDate;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return date.toLocaleDateString(localeTag, { day: "2-digit", month: "short" });
+}
+
+function statusGroupLabel(
+  key: string,
+  groups: Messages["dashboard"]["analytics"]["statusGroups"],
+) {
+  switch (key) {
+    case "created":
+      return groups.created;
+    case "in_progress":
+      return groups.inProgress;
+    case "hold":
+      return groups.hold;
+    case "paid":
+      return groups.paid;
+    case "failed":
+      return groups.failed;
+    case "cancelled":
+      return groups.cancelled;
+    default:
+      return key;
+  }
+}
+
 export default function DashboardPage() {
   const { isTourMode } = useTourMode();
   const { data, isPending, error } = useSession();
@@ -228,6 +258,26 @@ export default function DashboardPage() {
 
   const { messages, locale: appLocale } = useLocale();
   const collectedVolumeDisplay = formatPlatformVolume(dashboardStats?.totalCollectedCents ?? 0);
+  const chartLocale = dateLocaleTag(appLocale);
+  const volumeChartData = useMemo(() => {
+    const rows = (dashboardStats?.volumeData ?? []) as { date: string; volume: number }[];
+    return rows.map((row) => ({
+      ...row,
+      dateLabel: formatChartDay(row.date, chartLocale),
+    }));
+  }, [dashboardStats?.volumeData, chartLocale]);
+  const statusChartData = useMemo(() => {
+    const groups = messages.dashboard.analytics.statusGroups;
+    const rows = (dashboardStats?.tradeStatusData ?? []) as {
+      key: string;
+      count: number;
+      color: string;
+    }[];
+    return rows.map((row) => ({
+      ...row,
+      name: statusGroupLabel(row.key, groups),
+    }));
+  }, [dashboardStats?.tradeStatusData, messages.dashboard.analytics.statusGroups]);
   
   // Auto-claim DAILY_VISIT silencieusement à l'ouverture du dashboard
   useEffect(() => {
@@ -1067,9 +1117,9 @@ export default function DashboardPage() {
                           </div>
                         ) : (
                           <ResponsiveContainer width="100%" height={200}>
-                            <LineChart data={dashboardStats?.volumeData || []}>
+                            <LineChart data={volumeChartData}>
                               <CartesianGrid strokeDasharray="3 3" stroke="rgba(200,205,220,0.15)" />
-                              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                              <XAxis dataKey="dateLabel" tick={{ fontSize: 11 }} />
                               <YAxis tick={{ fontSize: 11 }} />
                               <Tooltip
                                 formatter={(value) => [
@@ -1104,17 +1154,18 @@ export default function DashboardPage() {
                           <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                               <Pie
-                                data={dashboardStats?.tradeStatusData || []}
+                                data={statusChartData}
                                 cx="50%"
                                 cy="50%"
                                 outerRadius={64}
                                 fill="#8884d8"
                                 dataKey="count"
+                                nameKey="name"
                                 label={({ name, percent }) =>
-                                  `${name} ${(percent * 100).toFixed(0)}%`
+                                  `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                                 }
                               >
-                                {(dashboardStats?.tradeStatusData || []).map((entry: { name: string; count: number; color: string }, index: number) => (
+                                {statusChartData.map((entry, index) => (
                                   <Cell key={`cell-${index}`} fill={entry.color} />
                                 ))}
                               </Pie>

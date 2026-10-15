@@ -448,6 +448,14 @@ export interface Messages {
         personalSubtitle: string;
         tradingVolume: string;
         tradeStatus: string;
+        statusGroups: {
+          created: string;
+          inProgress: string;
+          hold: string;
+          paid: string;
+          failed: string;
+          cancelled: string;
+        };
       };
       payments: {
         title: string;

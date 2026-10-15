@@ -411,6 +411,14 @@ export const messages: Record<Locale, Messages> = {
         personalSubtitle: "Suivez votre activité personnelle sur les 7 derniers jours.",
         tradingVolume: "Volume de trading",
         tradeStatus: "Statut des trades",
+        statusGroups: {
+          created: "Créés",
+          inProgress: "En cours",
+          hold: "Hold",
+          paid: "Payés",
+          failed: "Échoués",
+          cancelled: "Annulés",
+        },
       },
       payments: {
         title: "Retraits et virements",
@@ -8825,6 +8833,14 @@ export const messages: Record<Locale, Messages> = {
         personalSubtitle: "Track your personal activity over the last 7 days.",
         tradingVolume: "Trading volume",
         tradeStatus: "Trade status",
+        statusGroups: {
+          created: "Created",
+          inProgress: "In progress",
+          hold: "Hold",
+          paid: "Paid",
+          failed: "Failed",
+          cancelled: "Cancelled",
+        },
       },
       payments: {
         title: "Payouts & transfers",
@@ -17234,6 +17250,14 @@ export const messages: Record<Locale, Messages> = {
         personalSubtitle: "跟踪您最近7天的个人活动。",
         tradingVolume: "交易量",
         tradeStatus: "交易状态",
+        statusGroups: {
+          created: "已创建",
+          inProgress: "进行中",
+          hold: "交易锁定",
+          paid: "已付款",
+          failed: "失败",
+          cancelled: "已取消",
+        },
       },
       payments: {
         title: "提现与转账",
