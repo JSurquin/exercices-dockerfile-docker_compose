@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { SupportedCurrency, SUPPORTED_CURRENCIES } from '@/lib/currency-converter';
+import { CurrencyChangeNotice } from '@/components/ui/currency-change-notice';
 
 interface CurrencyContextType {
   selectedCurrency: SupportedCurrency;
@@ -18,12 +19,15 @@ interface CurrencyProviderProps {
 
 export function CurrencyProvider({ children, defaultCurrency = 'EUR' }: CurrencyProviderProps) {
   const [selectedCurrency, setSelectedCurrencyState] = useState<SupportedCurrency>(defaultCurrency);
+  const [noticeOpen, setNoticeOpen] = useState(false);
+  const selectedCurrencyRef = useRef(selectedCurrency);
 
   // Charger la devise sauvegardée depuis localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedCurrency = localStorage.getItem('preferred-currency') as SupportedCurrency;
       if (savedCurrency && SUPPORTED_CURRENCIES[savedCurrency]) {
+        selectedCurrencyRef.current = savedCurrency;
         setSelectedCurrencyState(savedCurrency);
       }
     }
@@ -31,6 +35,10 @@ export function CurrencyProvider({ children, defaultCurrency = 'EUR' }: Currency
 
   // Sauvegarder la devise sélectionnée dans localStorage
   const setSelectedCurrency = (currency: SupportedCurrency) => {
+    if (selectedCurrencyRef.current !== currency) {
+      setNoticeOpen(true);
+    }
+    selectedCurrencyRef.current = currency;
     setSelectedCurrencyState(currency);
     if (typeof window !== 'undefined') {
       localStorage.setItem('preferred-currency', currency);
@@ -46,6 +54,7 @@ export function CurrencyProvider({ children, defaultCurrency = 'EUR' }: Currency
   return (
     <CurrencyContext.Provider value={value}>
       {children}
+      <CurrencyChangeNotice open={noticeOpen} onOpenChange={setNoticeOpen} />
     </CurrencyContext.Provider>
   );
 }

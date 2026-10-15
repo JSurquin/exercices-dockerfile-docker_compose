@@ -595,6 +595,17 @@ export interface Messages {
     eur: string;
     cny: string;
   };
+  currencyNotice: {
+    title: string;
+    intro: string;
+    result: string;
+    bulletBalance: string;
+    bulletPrices: string;
+    bulletRounding: string;
+    warning: string;
+    refresh: string;
+    gotIt: string;
+  };
   toast: {
     itemsLoadedSuccess: string;
     itemsLoadError: string;
