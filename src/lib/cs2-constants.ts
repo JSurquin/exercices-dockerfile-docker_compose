@@ -2,10 +2,10 @@
 export const CS2_RARITIES = {
   'Consumer Grade': { color: '#b0c3d9', label: 'Consumer Grade', apiValues: ['Consumer', 'Consumer Grade'] },
   'Industrial Grade': { color: '#5e98d9', label: 'Industrial Grade', apiValues: ['Industrial Grade'] },
-  'Mil-Spec Grade': { color: '#4b69ff', label: 'Mil-Spec Grade', apiValues: ['Mil-Spec Grade', 'Mil-Spec'] },
-  'Restricted': { color: '#8847ff', label: 'Restricted', apiValues: ['Restricted'] },
-  'Classified': { color: '#d32ce6', label: 'Classified', apiValues: ['Classified'] },
-  'Covert': { color: '#eb4b4b', label: 'Covert', apiValues: ['Covert'] },
+  'Mil-Spec Grade': { color: '#4b69ff', label: 'Mil-Spec Grade', apiValues: ['Mil-Spec Grade', 'Mil-Spec', 'Distinguished', 'Distinguished Agent'] },
+  'Restricted': { color: '#8847ff', label: 'Restricted', apiValues: ['Restricted', 'Exceptional', 'Exceptional Agent'] },
+  'Classified': { color: '#d32ce6', label: 'Classified', apiValues: ['Classified', 'Superior', 'Superior Agent'] },
+  'Covert': { color: '#eb4b4b', label: 'Covert', apiValues: ['Covert', 'Master', 'Master Agent'] },
   'Exceedingly Rare': { color: '#ffd700', label: 'Exceedingly Rare ★', apiValues: ['Contraband', 'Extraordinary', 'Exceedingly Rare'] },
 } as const;
 
@@ -23,8 +23,9 @@ export type CS2Exterior = keyof typeof CS2_EXTERIORS;
 
 // Fonction utilitaire pour normaliser la rareté venant de l'API
 export function normalizeRarity(apiRarity: string): CS2Rarity {
+  const needle = apiRarity.trim().toLowerCase();
   for (const [key, value] of Object.entries(CS2_RARITIES)) {
-    if ((value.apiValues as readonly string[]).includes(apiRarity)) {
+    if ((value.apiValues as readonly string[]).some((candidate) => candidate.toLowerCase() === needle)) {
       return key as CS2Rarity;
     }
   }

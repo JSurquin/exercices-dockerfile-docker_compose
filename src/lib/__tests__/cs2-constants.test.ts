@@ -86,6 +86,15 @@ describe('normalizeRarity()', () => {
     expect(normalizeRarity('SomeRandomValue')).toBe('Consumer Grade');
     expect(normalizeRarity('')).toBe('Consumer Grade');
   });
+
+  it('mappe les raretés d\'agents CS2 sur les grades armes équivalents', () => {
+    expect(normalizeRarity('Distinguished')).toBe('Mil-Spec Grade');
+    expect(normalizeRarity('Exceptional')).toBe('Restricted');
+    expect(normalizeRarity('Superior')).toBe('Classified');
+    expect(normalizeRarity('Master')).toBe('Covert');
+    expect(normalizeRarity('superior')).toBe('Classified');
+    expect(normalizeRarity('Distinguished Agent')).toBe('Mil-Spec Grade');
+  });
 });
 
 describe('getRarityHexColor()', () => {
@@ -103,6 +112,13 @@ describe('getRarityHexColor()', () => {
 
   it('retourne la couleur Consumer Grade pour valeur inconnue', () => {
     expect(getRarityHexColor('inconnu')).toBe('#b0c3d9');
+  });
+
+  it('colore les raretés d\'agents (Distinguished bleu, Superior rose)', () => {
+    expect(getRarityHexColor('Distinguished')).toBe('#4b69ff');
+    expect(getRarityHexColor('Exceptional')).toBe('#8847ff');
+    expect(getRarityHexColor('Superior')).toBe('#d32ce6');
+    expect(getRarityHexColor('Master')).toBe('#eb4b4b');
   });
 });
 
