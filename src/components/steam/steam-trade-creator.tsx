@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLocale } from '@/components/providers/locale-provider';
+import { localizeRateLimitMessage } from '@/lib/rate-limit-message';
 import { usePlatformSettings } from '@/hooks/use-platform-settings';
 import { useAuth } from '@/components/providers/auth-provider';
 
@@ -49,7 +50,7 @@ export function SteamTradeCreator({
   onTradeCreated 
 }: SteamTradeCreatorProps) {
   const { user } = useAuth();
-  const { messages } = useLocale();
+  const { locale, messages } = useLocale();
   const { data: platformSettings } = usePlatformSettings();
   const [tradeUrl, setTradeUrl] = useState('');
   const [isValidUrl, setIsValidUrl] = useState<boolean | null>(null);
@@ -140,7 +141,8 @@ export function SteamTradeCreator({
       toast.success(messages.tradeCreator.tradeCreatedSuccess);
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : messages.tradeCreator.errorUnknown;
+      const rawMessage = err instanceof Error ? err.message : messages.tradeCreator.errorUnknown;
+      const errorMessage = localizeRateLimitMessage(rawMessage, locale);
       setError(errorMessage);
       toast.error(errorMessage || messages.tradeCreator.tradeCreationError);
     } finally {

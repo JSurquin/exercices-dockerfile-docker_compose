@@ -7,6 +7,7 @@ import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutInitiatePostSchema } from '@/lib/validation/schemas/payout-security';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 
 const payoutRateLimiter = new RateLimiter('PAYOUT_INITIATE', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
 
@@ -31,10 +32,7 @@ export async function POST(request: NextRequest) {
 
     const rateCheck = await payoutRateLimiter.checkLimit(request, session.user.id);
     if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
-        { status: 429 }
-      );
+      return rateLimitedJson({ success: false });
     }
 
     const userId = session.user.id;

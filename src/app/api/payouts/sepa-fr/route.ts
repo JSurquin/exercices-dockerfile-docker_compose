@@ -14,6 +14,7 @@ import { validateAmountCents } from '@/lib/amount-validation';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { payoutsSepaFrBodySchema } from '@/lib/validation/schemas/integrations';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 
 const payoutRateLimiter = new RateLimiter('PAYOUT_SEPA_FR', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
 
@@ -121,10 +122,7 @@ export async function POST(request: NextRequest) {
 
     const rateCheck = await payoutRateLimiter.checkLimit(request, userId);
     if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
-        { status: 429 }
-      );
+      return rateLimitedJson({ success: false });
     }
 
     // Store beneficiary info encrypted for admin view

@@ -38,6 +38,7 @@ import { flexifyPayoutBodySchema } from '@/lib/validation/schemas/integrations';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hooks';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 import { jsonWithAskReview } from '@/lib/review-prompt';
 
 const payoutRateLimiter = new RateLimiter('PAYOUT_FLEXIFY', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
@@ -102,10 +103,7 @@ export async function POST(request: NextRequest) {
 
     const rateCheck = await payoutRateLimiter.checkLimit(request, userId);
     if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
-        { status: 429 }
-      );
+      return rateLimitedJson({ success: false });
     }
 
     LOG('SESSION_OK', { userId });

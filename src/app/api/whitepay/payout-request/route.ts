@@ -33,6 +33,7 @@ import crypto from 'crypto';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { whitepayPayoutRequestBodySchema } from '@/lib/validation/schemas/integrations';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 import { jsonWithAskReview } from '@/lib/review-prompt';
 
 const payoutRateLimiter = new RateLimiter('PAYOUT_WHITEPAY', RATE_LIMIT_CONFIGS.PAYOUT_REQUEST);
@@ -93,10 +94,7 @@ export async function POST(request: NextRequest) {
 
     const rateCheck = await payoutRateLimiter.checkLimit(request, userId);
     if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
-        { status: 429 }
-      );
+      return rateLimitedJson({ success: false });
     }
 
     const kycCheck = await canUserMakePayout(userId);

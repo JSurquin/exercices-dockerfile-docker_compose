@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/lib/auth';
 import { SteamInventoryItem, SteamInventoryResponse } from '@/hooks/use-steam-inventory';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 import { INVENTORY_ERROR_PRIVATE } from '@/lib/inventory-api-errors';
 
 const rateLimiter = new RateLimiter('INVENTORY_FETCH', RATE_LIMIT_CONFIGS.API_GENERAL);
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
 
     const rateCheck = await rateLimiter.checkLimit(request, session.user.id);
     if (!rateCheck.allowed) {
-      return NextResponse.json({ success: false, error: 'Trop de requêtes. Réessayez plus tard.' }, { status: 429 });
+      return rateLimitedJson({ success: false });
     }
 
     const { searchParams } = new URL(request.url);

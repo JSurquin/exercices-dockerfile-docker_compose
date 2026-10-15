@@ -3,6 +3,7 @@ import { INVENTORY_ERROR_PRIVATE } from '@/lib/inventory-api-errors';
 import { auth } from '~/lib/auth';
 import { generateSkinplaceSignature, validateSkinplaceParams } from '@/utils/skinplace-signature';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 
 const rateLimiter = new RateLimiter('INVENTORY_FETCH', RATE_LIMIT_CONFIGS.API_GENERAL);
 
@@ -133,7 +134,7 @@ export async function GET(request: NextRequest) {
 
     const rateCheck = await rateLimiter.checkLimit(request, session.user.id);
     if (!rateCheck.allowed) {
-      return NextResponse.json({ success: false, error: 'Trop de requêtes. Réessayez plus tard.' }, { status: 429 });
+      return rateLimitedJson({ success: false });
     }
 
     const { searchParams } = new URL(request.url);

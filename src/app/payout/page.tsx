@@ -25,6 +25,7 @@ import {
 import { CurrencyDollarIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { Snowflake } from 'lucide-react';
 import { toast } from 'sonner';
+import { localizeRateLimitMessage } from '@/lib/rate-limit-message';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
 import { sanitizePayoutAmountInput } from '@/lib/payout-amount-input';
 import { LoginRequiredBlock } from '@/components/auth/require-auth';
@@ -630,7 +631,10 @@ export default function PayoutPage() {
       const quotePayload = data.quote ? { ...data.quote, quoteId: data.quote.quoteId ?? `quote-${Date.now()}` } : data;
       setQuote(quotePayload);
     } catch (error) {
-      const message = error instanceof Error ? error.message : text.toast.payoutError;
+      const message = localizeRateLimitMessage(
+        error instanceof Error ? error.message : text.toast.payoutError,
+        locale,
+      );
       toast.error(message);
     } finally {
       setIsLoadingQuote(false);
@@ -818,7 +822,10 @@ export default function PayoutPage() {
         pollingRef.current = setTimeout(poll, 5000);
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : text.toast.payoutError;
+      const message = localizeRateLimitMessage(
+        error instanceof Error ? error.message : text.toast.payoutError,
+        locale,
+      );
       console.error('[PAYOUT] handleSubmit error', error);
       toast.error(message);
     } finally {
@@ -1404,7 +1411,12 @@ export default function PayoutPage() {
                                       queryClient.invalidateQueries({ queryKey: queryKeys.payoutHistory });
                                       queryClient.invalidateQueries({ queryKey: queryKeys.userBalance });
                                     } catch (err) {
-                                      toast.error(err instanceof Error ? err.message : text.toast.payoutError);
+                                      toast.error(
+                                        localizeRateLimitMessage(
+                                          err instanceof Error ? err.message : text.toast.payoutError,
+                                          locale,
+                                        ),
+                                      );
                                     } finally {
                                       setSepaFrLoading(false);
                                     }

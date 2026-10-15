@@ -8,6 +8,7 @@ import { validateAmountCents } from '@/lib/amount-validation';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { merchantWithdrawBodySchema } from '@/lib/validation/schemas/merchant-withdraw';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 import { verifyMutationOrigin } from '@/lib/csrf-mutation-guard';
 import { notifyAdminsPayoutPendingApproval } from '@/lib/admin-notification-hooks';
 import {
@@ -137,10 +138,7 @@ export async function POST(request: NextRequest) {
 
     const rateCheck = await payoutRateLimiter.checkLimit(request, userId);
     if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
-        { status: 429 },
-      );
+      return rateLimitedJson({ success: false });
     }
 
     const idempotencyKey = request.headers.get('idempotency-key') ?? undefined;

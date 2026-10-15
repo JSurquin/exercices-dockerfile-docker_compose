@@ -28,6 +28,7 @@ import {
 import { toast } from 'sonner';
 import { useAuth } from '@/components/providers/auth-provider';
 import { useLocale } from '@/components/providers/locale-provider';
+import { localizeRateLimitMessage } from '@/lib/rate-limit-message';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { usePlatformSettings } from '@/hooks/use-platform-settings';
 import {
@@ -70,7 +71,7 @@ export function SkinplaceTradeCreator({
   onTradeCreated 
 }: SkinplaceTradeCreatorProps) {
   const { user, updateUser, refreshUser } = useAuth();
-  const { messages } = useLocale();
+  const { locale, messages } = useLocale();
   const { data: platformSettings } = usePlatformSettings();
   const isMerchant = user?.userTag === 'MERCHANT';
   const [tradeUrl, setTradeUrl] = useState(user?.tradeLink || '');
@@ -398,7 +399,8 @@ export function SkinplaceTradeCreator({
       }
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : messages.tradeCreator.errorUnknown;
+      const rawMessage = err instanceof Error ? err.message : messages.tradeCreator.errorUnknown;
+      const errorMessage = localizeRateLimitMessage(rawMessage, locale);
       setError(errorMessage);
       toast.error(errorMessage || messages.tradeCreator.tradeCreationError);
     } finally {

@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useLocale } from '@/components/providers/locale-provider';
+import { localizeRateLimitMessage } from '@/lib/rate-limit-message';
 import { formatCentsToCurrency, toCents } from '@/lib/currency-converter';
 import { validateSepaIban } from '@/lib/iban-sepa';
 import {
@@ -83,6 +85,7 @@ export function MerchantWithdrawCard({
   onToggle,
   onSuccess,
 }: MerchantWithdrawCardProps) {
+  const { locale } = useLocale();
   const [subtype, setSubtype] = useState<'bank' | 'crypto'>('bank');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ reference: string; amountCents: number } | null>(null);
@@ -158,7 +161,8 @@ export function MerchantWithdrawCard({
       toast.success(text.successTitle);
       onSuccess?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erreur');
+      const rawMessage = err instanceof Error ? err.message : 'Erreur';
+      toast.error(localizeRateLimitMessage(rawMessage, locale));
     } finally {
       setLoading(false);
     }

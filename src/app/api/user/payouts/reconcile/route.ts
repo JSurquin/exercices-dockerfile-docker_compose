@@ -19,6 +19,7 @@ import {
 } from '@/lib/whitepay';
 import { PayoutLifecycle } from '@/lib/payout-lifecycle';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 
 const reconcileRateLimiter = new RateLimiter('USER_PAYOUT_RECONCILE', RATE_LIMIT_CONFIGS.PAYOUT_RECONCILE);
 
@@ -351,10 +352,7 @@ export async function GET(request: NextRequest) {
     const rateCheck = await reconcileRateLimiter.checkLimit(request, userId);
     if (!rateCheck.allowed) {
       console.warn(`[RECONCILE] Rate limit hit for user ${userId} — source: ${triggerSource}`);
-      return NextResponse.json(
-        { error: 'Trop de requêtes. Réessayez plus tard.', resetTime: rateCheck.resetTime },
-        { status: 429 },
-      );
+      return rateLimitedJson({ resetTime: rateCheck.resetTime });
     }
 
     // Flexify payouts bloqués (carte ou SEPA)

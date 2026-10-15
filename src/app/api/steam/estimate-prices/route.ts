@@ -3,6 +3,7 @@ import { auth } from '~/lib/auth';
 import { safeParseJson } from '@/lib/validation/helpers';
 import { steamEstimatePricesSchema } from '@/lib/validation/schemas/chat-api';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 
 const rateLimiter = new RateLimiter('ESTIMATE_PRICES', RATE_LIMIT_CONFIGS.API_GENERAL);
 
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     const rateCheck = await rateLimiter.checkLimit(request, session.user.id);
     if (!rateCheck.allowed) {
-      return NextResponse.json({ success: false, error: 'Trop de requêtes. Réessayez plus tard.' }, { status: 429 });
+      return rateLimitedJson({ success: false });
     }
 
     const raw = await request.json();

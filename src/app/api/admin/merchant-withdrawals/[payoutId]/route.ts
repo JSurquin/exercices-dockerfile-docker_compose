@@ -9,6 +9,7 @@ import { verifyMutationOrigin } from '@/lib/csrf-mutation-guard';
 import { isMerchantWithdrawReference, type MerchantWithdrawDetails } from '@/lib/merchant-withdraw';
 import { getClientIP } from '@/lib/security/audit-helpers';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 
 const adminRateLimiter = new RateLimiter('ADMIN_MERCHANT_WITHDRAW', RATE_LIMIT_CONFIGS.SENSITIVE_ACTIONS);
 
@@ -27,7 +28,7 @@ export async function PATCH(
 
     const rateCheck = await adminRateLimiter.checkLimit(request, session.user.id);
     if (!rateCheck.allowed) {
-      return NextResponse.json({ error: 'Trop de requêtes. Réessayez plus tard.' }, { status: 429 });
+      return rateLimitedJson();
     }
 
     const { payoutId } = await params;

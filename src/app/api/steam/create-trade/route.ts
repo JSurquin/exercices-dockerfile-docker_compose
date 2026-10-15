@@ -11,6 +11,7 @@ import { safeParseJson } from '@/lib/validation/helpers';
 import { steamCreateTradeBodySchema } from '@/lib/validation/schemas/integrations';
 import { verifyAndPriceItems } from '@/lib/skinplace-price-verifier';
 import { RateLimiter, RATE_LIMIT_CONFIGS } from '@/lib/security/rate-limiter';
+import { rateLimitedJson } from '@/lib/rate-limited-response';
 import { resolveUserContactEmail } from '@/lib/user-contact-email';
 
 interface CreateTradeBody {
@@ -37,9 +38,9 @@ export async function POST(request: NextRequest) {
     // Rate limiting
     const rateCheck = await tradeRateLimiter.checkLimit(request, session.user.id);
     if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: 'Trop de requêtes. Réessayez plus tard.' },
-        { status: 429, headers: { 'Retry-After': String(Math.ceil((rateCheck.resetTime - Date.now()) / 1000)) } }
+      return rateLimitedJson(
+        { success: false },
+        { headers: { 'Retry-After': String(Math.ceil((rateCheck.resetTime - Date.now()) / 1000)) } },
       );
     }
 

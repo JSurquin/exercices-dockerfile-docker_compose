@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useLocale } from '@/components/providers/locale-provider';
+import { localizeRateLimitMessage } from '@/lib/rate-limit-message';
 
 export interface SteamInventoryItem {
   id: string;
@@ -58,7 +59,7 @@ interface UseSteamInventoryOptions {
 export function useSteamInventory(options: UseSteamInventoryOptions = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { messages } = useLocale();
+  const { locale, messages } = useLocale();
   const t = messages.hooks.inventory;
 
   const handleRequest = useCallback(async <T>(
@@ -72,14 +73,15 @@ export function useSteamInventory(options: UseSteamInventoryOptions = {}) {
       options.onSuccess?.(result as SteamInventoryResponse);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : t.unknownError;
+      const rawMessage = err instanceof Error ? err.message : t.unknownError;
+      const errorMessage = localizeRateLimitMessage(rawMessage, locale);
       setError(errorMessage);
       options.onError?.(errorMessage);
       return null;
     } finally {
       setLoading(false);
     }
-  }, [options, t]);
+  }, [options, t, locale]);
 
   // Récupérer l'inventaire Steam d'un utilisateur
   const getSteamInventory = useCallback(async (steamId64: string) => {

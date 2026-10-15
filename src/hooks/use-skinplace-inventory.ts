@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { NormalizedInventoryResponse, NormalizedInventoryItem } from '@/app/api/skinplace/inventory-with-prices/route';
 import { currencyConverter } from '@/lib/currency-converter';
 import { useLocale } from '@/components/providers/locale-provider';
+import { localizeRateLimitMessage } from '@/lib/rate-limit-message';
 import { RARITY_ORDER, getRarityHexColor, normalizeRarity } from '@/lib/cs2-constants';
 
 interface UseSkinplaceInventoryOptions {
@@ -12,7 +13,7 @@ interface UseSkinplaceInventoryOptions {
 export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { messages } = useLocale();
+  const { locale, messages } = useLocale();
   const t = messages.hooks.inventory;
 
   const handleRequest = useCallback(async <T>(
@@ -26,14 +27,15 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
       options.onSuccess?.(result as NormalizedInventoryResponse);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : t.unknownError;
+      const rawMessage = err instanceof Error ? err.message : t.unknownError;
+      const errorMessage = localizeRateLimitMessage(rawMessage, locale);
       setError(errorMessage);
       options.onError?.(errorMessage);
       return null;
     } finally {
       setLoading(false);
     }
-  }, [options, t]);
+  }, [options, t, locale]);
 
   // Récupérer l'inventaire avec les prix depuis Skin.place
   const getSkinplaceInventory = useCallback(async (steamId64: string) => {
