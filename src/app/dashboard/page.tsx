@@ -182,6 +182,11 @@ const payoutStatusLabel = (
 const dateLocaleTag = (locale: string) =>
   locale === "en" ? "en-GB" : locale === "cn" ? "zh-CN" : "fr-FR";
 
+/** Trades clos : l’historique ne doit pas les présenter comme acceptés ni crédités. */
+function isClosedWithoutCredit(status: string) {
+  return status === "annulé" || status === "échoué" || status === "CANCELLED" || status === "FAILED";
+}
+
 /** Affiche une clé YYYY-MM-DD dans la langue de l’interface (sans décalage UTC). */
 function formatChartDay(isoDate: string, localeTag: string) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
@@ -913,7 +918,11 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {tradesData.trades.map((trade) => (
+                      {tradesData.trades.map((trade) => {
+                      const closedWithoutCredit = isClosedWithoutCredit(trade.status);
+                      const showAccepted = Boolean(trade.tradeAcceptéLe) && !closedWithoutCredit;
+                      const showAvailable = Boolean(trade.disponibleLe) && !closedWithoutCredit;
+                      return (
                       <div key={trade.id} className="border rounded-lg p-2.5 sm:p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-3">
@@ -942,18 +951,24 @@ export default function DashboardPage() {
                             )}
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-lg">
+                            <p className={closedWithoutCredit ? "text-lg text-muted-foreground" : "font-bold text-lg"}>
                               <ConvertedPrice
                                 usdCents={trade.brutCentimes + (trade.vipBonusCentimes ?? 0)}
                                 fromCurrency="USD"
                               />
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                              {(trade.status === 'en_trade_hold' && !trade.balanceCreditedAt)
-                                ? messages.dashboard.tradeHistory.pendingCredit
-                                : messages.dashboard.tradeHistory.netCredit}{" "}
-                              <ConvertedPrice usdCents={trade.netCentimes} fromCurrency="USD" className="text-green-600 font-medium" />
-                            </p>
+                            {closedWithoutCredit ? (
+                              <p className="text-xs text-muted-foreground">
+                                {messages.dashboard.tradeHistory.notCredited}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">
+                                {(trade.status === 'en_trade_hold' && !trade.balanceCreditedAt)
+                                  ? messages.dashboard.tradeHistory.pendingCredit
+                                  : messages.dashboard.tradeHistory.netCredit}{" "}
+                                <ConvertedPrice usdCents={trade.netCentimes} fromCurrency="USD" className="text-green-600 font-medium" />
+                              </p>
+                            )}
                             <p className="text-sm text-muted-foreground">
                               {new Date(trade.créédLe).toLocaleDateString()}
                             </p>
@@ -989,27 +1004,30 @@ export default function DashboardPage() {
                                 </div>
                               )}
                             </div>
+                            {(showAccepted || showAvailable) && (
                             <div>
                               <span className="text-muted-foreground text-xs block mb-1">
                                 {messages.dashboard.tradeHistory.timeline}
                               </span>
-                              {trade.tradeAcceptéLe && (
+                              {showAccepted && trade.tradeAcceptéLe && (
                                 <p>
                                   {messages.dashboard.tradeHistory.accepted}{" "}
                                   {new Date(trade.tradeAcceptéLe).toLocaleDateString()}
                                 </p>
                               )}
-                              {trade.disponibleLe && !['annulé', 'échoué'].includes(trade.status) && (
+                              {showAvailable && trade.disponibleLe && (
                                 <p>
                                   {messages.dashboard.tradeHistory.available}{" "}
                                   {new Date(trade.disponibleLe).toLocaleDateString()}
                                 </p>
                               )}
                             </div>
+                            )}
                           </div>
                         </div>
                       </div>
-                      ))}
+                      );
+                      })}
                     </div>
                   )}
                 </CardContent>

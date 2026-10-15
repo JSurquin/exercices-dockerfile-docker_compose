@@ -430,6 +430,8 @@ export interface Messages {
         /** Montant net crédité sur le solde (après frais cashout) */
         netCredit: string;
         pendingCredit: string;
+        /** Trade annulé ou échoué : rien n’a été ajouté au solde */
+        notCredited: string;
         accepted: string;
         available: string;
         others: string;
