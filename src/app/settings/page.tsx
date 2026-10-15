@@ -28,6 +28,7 @@ import {
   BellIcon,
   MoonIcon,
   SunIcon,
+  FireIcon,
   EnvelopeIcon,
   EyeIcon,
   EyeSlashIcon,
@@ -40,6 +41,22 @@ import SteamIdConfig from "@/components/settings/steam-id-config";
 import DeveloperApiKeyConfig from "@/components/settings/developer-api-key-config";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
+import { APP_THEMES, normalizeStoredTheme, type AppTheme } from "@/lib/themes";
+import type { ComponentType, SVGProps } from "react";
+
+type ThemeIcon = ComponentType<SVGProps<SVGSVGElement> & { className?: string }>;
+
+const THEME_ICON: Record<AppTheme, ThemeIcon> = {
+  moonskin: MoonIcon,
+  light: SunIcon,
+  cs2: FireIcon,
+};
+
+const THEME_LABEL_KEY: Record<AppTheme, "themeMoonskin" | "themeLight" | "themeCs2"> = {
+  moonskin: "themeMoonskin",
+  light: "themeLight",
+  cs2: "themeCs2",
+};
 
 export default function SettingsPage() {
   const { user, refreshUser, isLoading: authLoading } = useAuth();
@@ -59,7 +76,7 @@ export default function SettingsPage() {
     securityAlerts: true,
     systemAnnouncements: true,
     language: locale,
-    theme: theme || "dark",
+    theme: normalizeStoredTheme(theme),
   });
   const [emailInput, setEmailInput] = useState(user?.contactEmail ?? "");
   const [showEmail, setShowEmail] = useState(false);
@@ -625,29 +642,25 @@ export default function SettingsPage() {
                           {messages.settings.preferences.theme.description}
                         </p>
                       </div>
-                      <Select value={theme} onValueChange={setTheme}>
-                        <SelectTrigger className="w-40">
+                      <Select
+                        value={normalizeStoredTheme(theme)}
+                        onValueChange={(value) => setTheme(value as AppTheme)}
+                      >
+                        <SelectTrigger className="w-48">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="light">
-                            <div className="flex items-center space-x-2">
-                              <SunIcon className="w-4 h-4" />
-                              <span>{messages.settings.preferences.theme.light}</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="dark">
-                            <div className="flex items-center space-x-2">
-                              <MoonIcon className="w-4 h-4" />
-                              <span>{messages.settings.preferences.theme.dark}</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="system">
-                            <div className="flex items-center space-x-2">
-                              <CogIcon className="w-4 h-4" />
-                              <span>{messages.settings.preferences.theme.system}</span>
-                            </div>
-                          </SelectItem>
+                          {APP_THEMES.map((option) => {
+                            const Icon = THEME_ICON[option];
+                            return (
+                              <SelectItem key={option} value={option}>
+                                <div className="flex items-center space-x-2">
+                                  <Icon className="w-4 h-4" />
+                                  <span>{messages.nav[THEME_LABEL_KEY[option]]}</span>
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
                     </div>
