@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { SafeImg } from '@/components/ui/safe-image';
 import { ConvertedPrice } from '@/components/ui/converted-price';
 import { NormalizedInventoryItem } from '@/hooks/use-skinplace-inventory';
-import { extractCs2SkinDisplayName, extractCs2WeaponType } from '@/lib/cs2-constants';
+import { extractCs2SkinDisplayName, extractCs2WeaponType, getDisplayedRarityColor } from '@/lib/cs2-constants';
 import { AlertCircle, Package } from 'lucide-react';
 
 const EASTER_EGG_STAGE_1_MS = 3000;
@@ -63,7 +63,6 @@ interface SellInventoryItemCardProps {
   isSelected: boolean;
   selectable: boolean;
   bonusRatePercent: number;
-  getRarityColor: (rarity: string) => string;
   getSkipReasonCategory: (skipReason?: string | null) => SkipCategory | null;
   translateSkipReason: (skipReason?: string | null) => string;
   onItemClick: (item: NormalizedInventoryItem) => void;
@@ -145,7 +144,6 @@ export function SellInventoryItemCard({
   isSelected,
   selectable,
   bonusRatePercent,
-  getRarityColor,
   getSkipReasonCategory,
   translateSkipReason,
   onItemClick,
@@ -282,7 +280,7 @@ export function SellInventoryItemCard({
               variant="secondary"
               className="text-xs"
               style={{
-                backgroundColor: getRarityColor(item.rarity),
+                backgroundColor: getDisplayedRarityColor(item.rarity, marketHashName),
                 color: 'white',
               }}
             >

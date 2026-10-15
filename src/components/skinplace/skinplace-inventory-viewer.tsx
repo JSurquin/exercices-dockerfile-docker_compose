@@ -39,7 +39,7 @@ import {
 import { useAuth } from '@/components/providers/auth-provider';
 import Link from 'next/link';
 import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
-import { extractCs2SkinDisplayName, extractCs2WeaponType } from '@/lib/cs2-constants';
+import { extractCs2SkinDisplayName, extractCs2WeaponType, getDisplayedRarityColor } from '@/lib/cs2-constants';
 import { SellInventoryItemCard } from '@/components/sell/sell-inventory-item-card';
 import { MOONSKIN_DISCORD_URL } from '@/lib/moonskin-social';
 import { MAX_SKINPLACE_TRADE_ITEMS } from '@/lib/trade-limits';
@@ -1071,7 +1071,6 @@ export function SkinplaceInventoryViewer({
                         isSelected={selectedItems.includes(item.id)}
                         selectable={selectable}
                         bonusRatePercent={bonusRatePercent}
-                        getRarityColor={getRarityColor}
                         getSkipReasonCategory={getSkipReasonCategory}
                         translateSkipReason={translateSkipReason}
                         onItemClick={handleItemClick}
@@ -1176,7 +1175,7 @@ export function SkinplaceInventoryViewer({
                               variant="secondary" 
                               className="text-xs"
                               style={{ 
-                                backgroundColor: getRarityColor(item.rarity),
+                                backgroundColor: getDisplayedRarityColor(item.rarity, marketHashName),
                                 color: 'white'
                               }}
                             >

@@ -38,6 +38,25 @@ export function getRarityHexColor(rarity: string): string {
   return CS2_RARITIES[normalized].color;
 }
 
+/** Sport Gloves, Specialist Gloves, Hand Wraps, etc. Knives stay on their own rarity color. */
+export function isCs2GloveItem(marketName: string | null | undefined): boolean {
+  if (!marketName) return false;
+  const type = extractCs2WeaponType(marketName);
+  const source = type || marketName;
+  return /\bgloves\b/i.test(source) || /\bhand wraps\b/i.test(source);
+}
+
+/**
+ * Badge color for an inventory item.
+ * Gloves are labeled Extraordinary by Skinplace, but CS2 paints them Covert red, not gold.
+ */
+export function getDisplayedRarityColor(rarity: string, marketName?: string | null): string {
+  if (isCs2GloveItem(marketName)) {
+    return CS2_RARITIES.Covert.color;
+  }
+  return getRarityHexColor(rarity);
+}
+
 // Ordre de tri des raretés (du plus commun au plus rare)
 export const RARITY_ORDER: Record<CS2Rarity, number> = {
   'Consumer Grade': 1,

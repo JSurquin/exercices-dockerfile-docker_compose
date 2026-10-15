@@ -3,6 +3,8 @@ import {
   CS2_EXTERIORS,
   normalizeRarity,
   getRarityHexColor,
+  getDisplayedRarityColor,
+  isCs2GloveItem,
   RARITY_ORDER,
   extractCs2WeaponType,
   extractCs2SkinName,
@@ -119,6 +121,22 @@ describe('getRarityHexColor()', () => {
     expect(getRarityHexColor('Exceptional')).toBe('#8847ff');
     expect(getRarityHexColor('Superior')).toBe('#d32ce6');
     expect(getRarityHexColor('Master')).toBe('#eb4b4b');
+  });
+});
+
+describe('getDisplayedRarityColor()', () => {
+  it('peint les gants en rouge Covert, même si l\'API dit Extraordinary', () => {
+    expect(isCs2GloveItem('★ Sport Gloves | Occult (Well-Worn)')).toBe(true);
+    expect(isCs2GloveItem('★ Hand Wraps | Slaughter (Field-Tested)')).toBe(true);
+    expect(getDisplayedRarityColor('Extraordinary', '★ Sport Gloves | Occult (Well-Worn)')).toBe('#eb4b4b');
+    expect(getDisplayedRarityColor('Extraordinary', '★ Specialist Gloves | Crimson Kimono (Minimal Wear)')).toBe('#eb4b4b');
+  });
+
+  it('laisse les couteaux et les autres skins sur leur couleur de rareté', () => {
+    expect(isCs2GloveItem('★ M9 Bayonet | Slaughter (Factory New)')).toBe(false);
+    expect(getDisplayedRarityColor('Covert', '★ M9 Bayonet | Slaughter (Factory New)')).toBe('#eb4b4b');
+    expect(getDisplayedRarityColor('Extraordinary', '★ Karambit | Fade (Factory New)')).toBe('#ffd700');
+    expect(getDisplayedRarityColor('Classified', 'AK-47 | Redline (Field-Tested)')).toBe('#d32ce6');
   });
 });
 
