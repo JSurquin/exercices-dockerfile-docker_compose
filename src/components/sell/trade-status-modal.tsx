@@ -51,7 +51,8 @@ export function TradeStatusModal({
   return (
     <Dialog open={status !== null} onOpenChange={(open) => !open && (isPending ? null : onClose())}>
       <DialogContent
-        className="sm:max-w-md text-center overflow-hidden"
+        className="sm:max-w-md text-center overflow-hidden shadow-[0_32px_90px_rgba(0,0,0,0.85)]"
+        overlayClassName="bg-black/80"
         showCloseButton={!isPending}
       >
         {/* Particules confetti CSS pour trade accepté */}
@@ -155,6 +156,12 @@ export function TradeStatusModal({
               ? t.pendingDescription
               : t.cancelledDescription}
           </DialogDescription>
+
+          {isPending && (
+            <p className="text-base font-semibold text-center text-foreground">
+              {t.pendingWait}
+            </p>
+          )}
 
           {isAccepted && (
             <motion.div

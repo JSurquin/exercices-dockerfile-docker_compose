@@ -3753,6 +3753,7 @@ export interface Messages {
       acceptedDescription: string;
       pendingTitle: string;
       pendingDescription: string;
+      pendingWait: string;
       acceptOnSteam: string;
       cancelledTitle: string;
       cancelledDescription: string;
