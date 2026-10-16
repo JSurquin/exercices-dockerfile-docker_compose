@@ -289,7 +289,7 @@ export function Header() {
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
-      <div className="mx-auto min-w-0 w-full max-w-none pl-5 pr-4 sm:pl-6 sm:pr-5 lg:px-3 min-[1280px]:px-4 min-[1440px]:px-6 min-[1600px]:px-8">
+      <div className="mx-auto min-w-0 w-full max-w-none pl-7 pr-6 sm:pl-8 sm:pr-7 lg:px-4 min-[1280px]:px-6 min-[1440px]:px-12 min-[1600px]:px-14">
         <div
           data-slot="header-bar"
           className="flex h-[4.25rem] min-w-0 w-full flex-nowrap items-center justify-between gap-2 min-[1280px]:gap-4 min-[1600px]:gap-6"
