@@ -44,9 +44,9 @@ type UserBalanceResponse = {
 const FRAGMENTS_SLOT = "inline-flex min-w-[2.75rem] justify-end";
 const BALANCE_SLOT = "inline-flex min-w-[4.25rem] justify-end";
 const WALLET_CHIP_CLASS =
-  "nav-chrome flex h-9 w-max max-w-full shrink-0 items-center overflow-hidden whitespace-nowrap min-w-[10.25rem] min-[768px]:min-w-[13.75rem]";
+  "nav-chrome flex h-9 w-max max-w-full shrink-0 items-center overflow-hidden whitespace-nowrap min-w-[10.25rem] min-[1440px]:min-w-[13.75rem]";
 const WALLET_SEGMENT_CLASS =
-  "nav-hover-fill relative isolate m-0 flex h-9 min-w-0 cursor-pointer items-center gap-1.5 border-0 bg-transparent px-2.5 text-foreground focus-visible:outline-none min-[768px]:gap-2 min-[768px]:px-3";
+  "nav-hover-fill relative isolate m-0 flex h-9 min-w-0 cursor-pointer items-center gap-1 border-0 bg-transparent px-1.5 text-foreground focus-visible:outline-none min-[1440px]:gap-2 min-[1440px]:px-3";
 
 function useFlashOnChange(value: number | string) {
   const [flash, setFlash] = useState(false);
@@ -299,7 +299,7 @@ export function NavWallet() {
             <FragmentBadge
               size="xs"
               alt=""
-              className="relative z-[1] h-5 w-auto max-w-none min-[768px]:h-6"
+              className="relative z-[1] h-5 w-auto max-w-none min-[1440px]:h-6"
             />
             <WalletChipValue
               loading={false}
@@ -307,10 +307,10 @@ export function NavWallet() {
               exact={fragmentsValue.exact}
               abbreviated={fragmentsValue.abbreviated}
               slotClassName={FRAGMENTS_SLOT}
-              className="relative z-[1] font-display text-xs font-medium text-foreground min-[768px]:text-sm"
+              className="relative z-[1] font-display text-xs font-medium text-foreground min-[1440px]:text-sm"
             />
             <span
-              className="relative z-[1] hidden min-[768px]:inline-flex"
+              className="relative z-[1] hidden min-[1440px]:inline-flex"
               onPointerDown={(event) => event.stopPropagation()}
               onClick={(event) => event.preventDefault()}
             >
@@ -409,11 +409,11 @@ export function NavWalletSkeleton() {
       className={WALLET_CHIP_CLASS}
     >
       <div className={cn(WALLET_SEGMENT_CLASS, "min-w-0")}>
-        <Skeleton className="h-5 w-5 shrink-0 rounded-full min-[768px]:h-6 min-[768px]:w-6" />
+        <Skeleton className="h-5 w-5 shrink-0 rounded-full min-[1440px]:h-6 min-[1440px]:w-6" />
         <span className={FRAGMENTS_SLOT}>
           <Skeleton className="h-3 w-full rounded-sm" />
         </span>
-        <span className="hidden h-4 w-4 shrink-0 min-[768px]:inline-flex" />
+        <span className="hidden h-4 w-4 shrink-0 min-[1440px]:inline-flex" />
         <span className="h-4 w-px shrink-0 bg-border" />
       </div>
       <div className={cn(WALLET_SEGMENT_CLASS, "flex-1 justify-end")}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -43,11 +43,6 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { UserRoleBadge } from "@/components/ui/user-role-badge";
 import { cn } from "@/lib/utils";
-import {
-  clusterWidth,
-  desktopNavFits,
-  DESKTOP_NAV_MIN_GAP_PX,
-} from "@/lib/centered-nav-shift";
 import { SteamBrandIcon } from "@/components/ui/social-brand-icons";
 
 type NavItem = {
@@ -62,20 +57,12 @@ function isActivePath(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
+/** Desktop (>= 1024 px): every link stays inline. Spacing and icons relax only once the row has room. */
 const NAV_LINKS_ROW_CLASS =
-  "flex w-max shrink-0 items-center gap-2.5 min-[1440px]:gap-3.5 min-[1512px]:gap-5";
+  "flex w-max shrink-0 items-center gap-1.5 min-[1280px]:gap-2.5 min-[1440px]:gap-3.5 min-[1600px]:gap-5";
 
 const NAV_LINK_LAYOUT_CLASS =
-  "flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-0.5 pb-[10px] text-xs font-medium min-[1440px]:gap-2.5 min-[1440px]:px-1 min-[1440px]:text-[13px]";
-
-function measurePx(el: HTMLElement | null): number {
-  if (!el) return 0;
-  return Math.max(
-    Math.ceil(el.getBoundingClientRect().width),
-    el.scrollWidth,
-    el.offsetWidth
-  );
-}
+  "flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent px-0.5 pb-[10px] text-sm font-medium leading-none min-[1440px]:gap-2 min-[1600px]:gap-2.5 min-[1600px]:px-1 min-[1600px]:text-[15px]";
 
 function DesktopNavLink({ item, pathname }: { item: NavItem; pathname: string }) {
   const isActive = isActivePath(pathname, item.href);
@@ -150,14 +137,7 @@ export function Header() {
   const { locale, setLocale, messages } = useLocale();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
-  const [desktopNavFitsState, setDesktopNavFitsState] = useState(false);
   const lastScrollY = useRef(0);
-  const barRef = useRef<HTMLDivElement>(null);
-  const logoRef = useRef<HTMLAnchorElement>(null);
-  const navLinksRef = useRef<HTMLDivElement>(null);
-  const prefsMeasureRef = useRef<HTMLDivElement>(null);
-  const guestAuthMeasureRef = useRef<HTMLDivElement>(null);
-  const authRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -247,46 +227,14 @@ export function Header() {
 
   const desktopNavigation: NavItem[] = [...primaryNavigation, supportNavigation];
 
-  useLayoutEffect(() => {
-    const bar = barRef.current;
-    const logo = logoRef.current;
-    const links = navLinksRef.current;
-    const prefs = prefsMeasureRef.current;
-    const auth = user ? authRef.current : guestAuthMeasureRef.current;
-    if (!bar || !logo || !links) return;
-
-    const updateFit = () => {
-      const nextFits = desktopNavFits({
-        barWidth: Math.floor(bar.getBoundingClientRect().width),
-        logoWidth: measurePx(logo),
-        linksWidth: measurePx(links),
-        actionsWidth: clusterWidth([
-          measurePx(prefsMeasureRef.current),
-          measurePx(user ? authRef.current : guestAuthMeasureRef.current),
-        ]),
-      });
-      setDesktopNavFitsState((current) => (current === nextFits ? current : nextFits));
-    };
-
-    const observer = new ResizeObserver(updateFit);
-    observer.observe(bar);
-    observer.observe(logo);
-    observer.observe(links);
-    if (prefs) observer.observe(prefs);
-    if (auth) observer.observe(auth);
-    window.addEventListener("resize", updateFit);
-    void document.fonts?.ready.then(updateFit);
-    updateFit();
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateFit);
-    };
-  }, [desktopNavigation.length, locale, user]);
-
   useEffect(() => {
-    if (desktopNavFitsState && isMenuOpen) setIsMenuOpen(false);
-  }, [desktopNavFitsState, isMenuOpen]);
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const closeOnDesktop = () => {
+      if (mq.matches) setIsMenuOpen(false);
+    };
+    mq.addEventListener("change", closeOnDesktop);
+    return () => mq.removeEventListener("change", closeOnDesktop);
+  }, []);
 
   const sheetNavigation: NavItem[] = [
     ...primaryNavigation,
@@ -341,40 +289,12 @@ export function Header() {
         navVisible ? "translate-y-0 shadow-sm" : "-translate-y-full pointer-events-none"
       )}
     >
-      <div className="container mx-auto min-w-0 w-full pl-5 pr-4 sm:pl-7 sm:pr-6 lg:pl-9 lg:pr-8">
-        <div className="h-0 overflow-hidden" aria-hidden="true" inert>
-          <div ref={navLinksRef} className={NAV_LINKS_ROW_CLASS}>
-            {desktopNavigation.map((item) => (
-              <span key={item.id} className={NAV_LINK_LAYOUT_CLASS}>
-                <item.icon className="hidden h-4 w-4 shrink-0 min-[1440px]:block" />
-                <span className="whitespace-nowrap">{item.name}</span>
-              </span>
-            ))}
-          </div>
-          <div ref={prefsMeasureRef} className="h-9 w-9 shrink-0" />
-          {!user && (
-            <div
-              ref={guestAuthMeasureRef}
-              className="flex h-9 w-max shrink-0 items-center gap-2"
-            >
-              <GuestAuthButtons
-                isLoading={isLoading}
-                steamLabel={messages.common.steamLogin}
-                onSteam={handleSteamLogin}
-                onDiscord={handleDiscordLogin}
-              />
-            </div>
-          )}
-        </div>
+      <div className="mx-auto min-w-0 w-full max-w-none pl-5 pr-4 sm:pl-6 sm:pr-5 lg:px-3 min-[1280px]:px-4 min-[1440px]:px-6 min-[1600px]:px-8">
         <div
-          ref={barRef}
           data-slot="header-bar"
-          data-desktop-nav={desktopNavFitsState ? "inline" : "menu"}
-          className="flex h-[4.25rem] min-w-0 w-full items-center justify-between"
-          style={{ gap: DESKTOP_NAV_MIN_GAP_PX }}
+          className="flex h-[4.25rem] min-w-0 w-full flex-nowrap items-center justify-between gap-2 min-[1280px]:gap-4 min-[1600px]:gap-6"
         >
         <Link
-          ref={logoRef}
           href="/"
           data-slot="header-logo"
           className="flex min-w-0 shrink-0 items-center space-x-2 sm:space-x-3"
@@ -393,12 +313,7 @@ export function Header() {
 
         <nav
           data-slot="header-nav"
-          aria-hidden={!desktopNavFitsState}
-          {...(!desktopNavFitsState ? { inert: true } : {})}
-          className={cn(
-            "flex min-w-0 items-center",
-            desktopNavFitsState ? "shrink-0" : "hidden"
-          )}
+          className="hidden min-w-0 shrink-0 items-center lg:flex"
         >
           <div className={NAV_LINKS_ROW_CLASS}>
             {desktopNavigation.map((item) => (
@@ -411,15 +326,12 @@ export function Header() {
           data-slot="header-actions"
           className="flex min-w-0 shrink-0 items-center justify-end gap-1"
         >
-          {desktopNavFitsState ? (
-            <div data-slot="header-prefs" className="flex min-w-0 shrink-0 items-center">
-              <NavPreferencesMenu className="nav-chrome nav-hover-fill shadow-none transition-none hover:bg-transparent hover:text-foreground focus-visible:ring-0" />
-            </div>
-          ) : null}
+          <div data-slot="header-prefs" className="hidden min-w-0 shrink-0 items-center lg:flex">
+            <NavPreferencesMenu className="nav-chrome nav-hover-fill shadow-none transition-none hover:bg-transparent hover:text-foreground focus-visible:ring-0" />
+          </div>
 
           {user ? (
             <div
-              ref={authRef}
               className="flex h-9 min-w-0 shrink-0 items-center justify-end gap-1"
               data-slot="header-auth"
             >
@@ -503,10 +415,10 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          ) : desktopNavFitsState ? (
+          ) : (
             <div
               data-slot="header-auth"
-              className="flex h-9 min-w-0 shrink-0 items-center justify-end gap-2"
+              className="hidden h-9 min-w-0 shrink-0 items-center justify-end gap-2 lg:flex"
             >
               <GuestAuthButtons
                 isLoading={isLoading}
@@ -515,7 +427,7 @@ export function Header() {
                 onDiscord={handleDiscordLogin}
               />
             </div>
-          ) : null}
+          )}
 
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
@@ -523,7 +435,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 data-slot="header-burger"
-                className={cn("shrink-0", desktopNavFitsState && "hidden")}
+                className="shrink-0 lg:hidden"
                 aria-label={messages.nav.more}
               >
                 <Bars3Icon className="h-6 w-6" />
