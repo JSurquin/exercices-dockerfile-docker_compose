@@ -603,7 +603,6 @@ export interface Messages {
     bulletPrices: string;
     bulletRounding: string;
     warning: string;
-    refresh: string;
     gotIt: string;
   };
   toast: {

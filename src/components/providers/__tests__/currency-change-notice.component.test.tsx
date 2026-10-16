@@ -15,6 +15,20 @@ function Switcher({ next }: { next: SupportedCurrency }) {
   );
 }
 
+function CurrencyControls() {
+  const { selectedCurrency, setSelectedCurrency } = useCurrency();
+  return (
+    <div>
+      <span>current:{selectedCurrency}</span>
+      {(['EUR', 'USD', 'CNY'] as const).map((code) => (
+        <button key={code} type="button" onClick={() => setSelectedCurrency(code)}>
+          to-{code}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function renderSwitcher(next: SupportedCurrency) {
   return render(
     <LocaleProvider initialLocale="fr">
@@ -47,9 +61,11 @@ describe('currency change notice', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Les devises sur MoonSkin' })).toBeInTheDocument();
     expect(
-      screen.getByText("Cela ne change pas nos prix. C'est lié au taux de change.")
+      screen.getByText(
+        "Votre argent est adossé à l'euro. Cela ne change pas nos prix, c'est lié au taux de change."
+      )
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Actualiser' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Actualiser' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Compris !' })).toBeInTheDocument();
     expect(localStorage.getItem('preferred-currency')).toBe('USD');
   });
@@ -63,6 +79,48 @@ describe('currency change notice', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'current:USD' })).toBeInTheDocument();
     expect(localStorage.getItem('preferred-currency')).toBe('USD');
+  });
+
+  it('stays closed when switching to euros', async () => {
+    localStorage.setItem('preferred-currency', 'USD');
+    render(
+      <LocaleProvider initialLocale="fr">
+        <CurrencyProvider>
+          <CurrencyControls />
+        </CurrencyProvider>
+      </LocaleProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('current:USD')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'to-EUR' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByText('current:EUR')).toBeInTheDocument();
+    expect(localStorage.getItem('preferred-currency')).toBe('EUR');
+  });
+
+  it('explains the rate when switching between two non-euro currencies', async () => {
+    localStorage.setItem('preferred-currency', 'USD');
+    render(
+      <LocaleProvider initialLocale="fr">
+        <CurrencyProvider>
+          <CurrencyControls />
+        </CurrencyProvider>
+      </LocaleProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('current:USD')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'to-CNY' }));
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(localStorage.getItem('preferred-currency')).toBe('CNY');
   });
 
   it('stays closed when the same currency is selected again', () => {

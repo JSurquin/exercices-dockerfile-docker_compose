@@ -560,13 +560,12 @@ export const messages: Record<Locale, Messages> = {
     },
     currencyNotice: {
       title: "Les devises sur MoonSkin",
-      intro: "MoonSkin permet de consulter le site dans plusieurs devises. Les montants affichés sont convertis avec le taux de change du jour. Le prix de vos skins ne change pas : seule la devise à l'écran change.",
+      intro: "MoonSkin permet de consulter le site dans plusieurs devises. Votre argent est adossé à l'euro : les montants affichés sont convertis avec le taux de change du jour. Le prix de vos skins ne change pas : seule la devise à l'écran change.",
       result: "Vous pouvez donc voir ceci :",
       bulletBalance: "Le solde affiché peut varier d'un jour à l'autre si le taux de change évolue",
       bulletPrices: "Les prix des skins peuvent varier d'un jour à l'autre si le taux de change évolue",
       bulletRounding: "Un montant saisi peut être arrondi à l'unité la plus proche de la devise choisie",
-      warning: "Cela ne change pas nos prix. C'est lié au taux de change.",
-      refresh: "Actualiser",
+      warning: "Votre argent est adossé à l'euro. Cela ne change pas nos prix, c'est lié au taux de change.",
       gotIt: "Compris !",
     },
     toast: {
@@ -8998,13 +8997,12 @@ export const messages: Record<Locale, Messages> = {
     },
     currencyNotice: {
       title: "Currencies on MoonSkin",
-      intro: "MoonSkin lets you browse the site in multiple currencies. Displayed amounts are converted with the current exchange rate. The price of your skins does not change: only the currency on screen does.",
+      intro: "MoonSkin lets you browse the site in multiple currencies. Your money is backed in euros: displayed amounts are converted with the current exchange rate. The price of your skins does not change: only the currency on screen does.",
       result: "As a result, you may see the following happen:",
       bulletBalance: "The balance shown on your account may change from day to day if the exchange rate changes",
       bulletPrices: "Skin prices may change from day to day if the exchange rate changes",
       bulletRounding: "An amount you enter may be rounded to the nearest unit of the selected currency",
-      warning: "This is not changing our price. It is related to the currency rate.",
-      refresh: "Refresh",
+      warning: "Your money is backed in euros. This does not change our prices. It is related to the exchange rate.",
       gotIt: "Got it!",
     },
     toast: {
@@ -17430,13 +17428,12 @@ export const messages: Record<Locale, Messages> = {
     },
     currencyNotice: {
       title: "MoonSkin 上的货币",
-      intro: "MoonSkin 支持以多种货币浏览网站。显示的金额会按当天汇率换算。皮肤的价格本身不会改变，变的只是屏幕上的货币。",
+      intro: "MoonSkin 支持以多种货币浏览网站。您的资金以欧元为基准：显示的金额会按当天汇率换算。皮肤的价格本身不会改变，变的只是屏幕上的货币。",
       result: "因此，您可能会看到以下情况：",
       bulletBalance: "如果汇率变化，账户上显示的余额可能每天有所不同",
       bulletPrices: "如果汇率变化，皮肤价格的显示可能每天有所不同",
       bulletRounding: "您输入的金额可能会四舍五入到所选货币的最小单位",
-      warning: "这不会改变我们的价格，这与汇率有关。",
-      refresh: "刷新",
+      warning: "您的资金以欧元为基准。这不会改变我们的价格，这与汇率有关。",
       gotIt: "知道了！",
     },
     toast: {

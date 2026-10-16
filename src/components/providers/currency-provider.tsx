@@ -35,8 +35,11 @@ export function CurrencyProvider({ children, defaultCurrency = 'EUR' }: Currency
 
   // Sauvegarder la devise sélectionnée dans localStorage
   const setSelectedCurrency = (currency: SupportedCurrency) => {
-    if (selectedCurrencyRef.current !== currency) {
+    const previous = selectedCurrencyRef.current;
+    if (previous !== currency && currency !== 'EUR') {
       setNoticeOpen(true);
+    } else if (currency === 'EUR') {
+      setNoticeOpen(false);
     }
     selectedCurrencyRef.current = currency;
     setSelectedCurrencyState(currency);

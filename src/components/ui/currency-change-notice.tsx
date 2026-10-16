@@ -23,46 +23,40 @@ export function CurrencyChangeNotice({ open, onOpenChange }: CurrencyChangeNotic
       <DialogContent
         showCloseButton={false}
         overlayClassName="z-[400] bg-black/60"
-        className="z-[400] gap-0 border-white/10 bg-[#101816] p-0 text-zinc-100 shadow-2xl sm:max-w-[640px] sm:rounded-2xl"
+        className="z-[400] gap-0 overflow-hidden border-theme-accent/30 bg-card p-0 text-card-foreground shadow-[0_24px_70px_rgba(0,0,0,0.55)] sm:max-w-[640px] sm:rounded-2xl"
       >
         <div className="space-y-4 p-6 sm:p-7">
           <div className="flex items-center gap-3.5">
             <CurrencyRateIcon />
-            <DialogTitle className="text-[1.65rem] leading-none font-semibold tracking-tight text-white">
+            <DialogTitle className="text-xl leading-tight font-semibold tracking-tight text-foreground sm:text-[1.65rem]">
               {copy.title}
             </DialogTitle>
           </div>
 
-          <DialogDescription className="text-sm leading-relaxed text-zinc-300">
+          <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
             {copy.intro}
           </DialogDescription>
 
-          <div className="space-y-2 text-sm leading-relaxed text-zinc-300">
-            <p>{copy.result}</p>
-            <ul className="list-disc space-y-1.5 pl-5 marker:text-zinc-400">
+          <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
+            <p className="text-foreground">{copy.result}</p>
+            <ul className="list-disc space-y-1.5 pl-5 marker:text-theme-accent">
               <li>{copy.bulletBalance}</li>
               <li>{copy.bulletPrices}</li>
               <li>{copy.bulletRounding}</li>
             </ul>
           </div>
 
-          <div className="flex items-start gap-3 rounded-xl bg-[#6e2424] px-4 py-3.5 text-[#ffd6d6]">
+          <div className="flex items-start gap-3 rounded-xl border border-theme-accent/30 bg-theme-accent/10 px-4 py-3.5 text-foreground">
             <WarningIcon />
             <p className="text-sm leading-snug font-medium">{copy.warning}</p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="flex items-center justify-center pt-2">
             <Button
               type="button"
-              onClick={() => window.location.reload()}
-              className="h-10 min-w-[7.5rem] rounded-lg bg-[#2563eb] px-5 text-white shadow-none hover:bg-[#1d4ed8]"
-            >
-              {copy.refresh}
-            </Button>
-            <Button
-              type="button"
+              variant="cta"
               onClick={() => onOpenChange(false)}
-              className="h-10 min-w-[7.5rem] rounded-lg bg-[#2563eb] px-5 text-white shadow-none hover:bg-[#1d4ed8]"
+              className="h-10 min-w-[7.5rem] px-6"
             >
               {copy.gotIt}
             </Button>
@@ -76,7 +70,7 @@ export function CurrencyChangeNotice({ open, onOpenChange }: CurrencyChangeNotic
 function CurrencyRateIcon() {
   return (
     <div
-      className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[#163a66] text-[#7eb6ff] shadow-[inset_0_0_0_1px_rgba(126,182,255,0.28)]"
+      className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-cta-gradient-br text-primary-foreground shadow-[0_0_18px_var(--cta-shadow)]"
       aria-hidden
     >
       <svg viewBox="0 0 32 32" className="size-7" fill="none">
@@ -120,7 +114,7 @@ function CurrencyRateIcon() {
 
 function WarningIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="mt-0.5 size-5 shrink-0 text-[#7ec8ff]" aria-hidden>
+    <svg viewBox="0 0 24 24" className="mt-0.5 size-5 shrink-0 text-theme-accent" aria-hidden>
       <path
         fill="currentColor"
         d="M12 3.1 2.6 20.4h18.8L12 3.1zm0 5.3c.5 0 .9.4.9.9v4.5a.9.9 0 1 1-1.8 0V9.3c0-.5.4-.9.9-.9zm0 9.3a1.05 1.05 0 1 1 0-2.1 1.05 1.05 0 0 1 0 2.1z"
