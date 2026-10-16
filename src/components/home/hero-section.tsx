@@ -83,7 +83,7 @@ const MastercardIcon = () => (
 
 const SepaIcon = () => (
   <svg viewBox="0 0 48 32" className="w-10 h-7" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="48" height="32" rx="4" fill="#FFFFFF" />
+    <rect width="48" height="32" rx="4" fill="#FFFFFF" stroke="rgba(28,26,23,0.16)" strokeWidth="1" />
     <g transform="translate(12 4)">
       <path
         fill="#2350A9"
@@ -325,20 +325,20 @@ export function HeroSection({
               <p className="hero-payment-title mb-2">
                 {messages.hero.paymentMethods.title}
               </p>
-              <div className="flex flex-wrap items-center gap-3">
+              <ul className="hero-payment-rail">
                 {HERO_PAYMENT_METHOD_ORDER.map((key) => {
                   const Icon = HERO_PAYMENT_METHOD_ICONS[key];
                   const label = messages.hero.paymentMethods[key];
                   return (
-                  <div key={key} className="flex flex-col items-center gap-1">
-                    <div className="hero-payment-chip rounded-lg p-1.5">
-                      <Icon />
-                    </div>
-                    <span className="hero-payment-label">{label}</span>
-                  </div>
+                    <li key={key} className="hero-payment-mark">
+                      <span className="hero-payment-glyph" aria-hidden="true">
+                        <Icon />
+                      </span>
+                      <span className="hero-payment-label">{label}</span>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             </div>
 
             {/* Stats */}

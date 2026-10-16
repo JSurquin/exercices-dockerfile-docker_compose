@@ -57,6 +57,8 @@ describe('visual perf regression guards', () => {
     expect(css).not.toMatch(/\.hero-box:hover\s*,/);
     expect(css).not.toMatch(/\.payment-box:hover\s*,/);
     expect(css).not.toMatch(/\.hero-payment-chip:hover\s*\{/);
+    expect(css).not.toMatch(/\.hero-payment-mark:hover\s*\{/);
+    expect(blockAfter('.hero-payment-mark')).toMatch(/pointer-events:\s*none/);
     expect(css).not.toMatch(/\.hiw-cs2-step:hover\s/);
     expect(css).toMatch(/\.surface-interactive\.home-hover-scale:hover\s*\{/);
     expect(css).not.toMatch(/(?<!surface-interactive)\.home-hover-scale:hover\s*\{/);

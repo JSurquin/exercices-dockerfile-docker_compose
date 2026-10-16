@@ -2837,9 +2837,33 @@ body.next-dev-overlay-present #sentry-feedback {
     transition: none;
   }
 
-  .hero-payment-chip {
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.07);
+  /* Logo rail, not a control group: no tile, border, or fill per method. */
+  .hero-payment-rail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.85rem 1.2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero-payment-mark {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 2.75rem;
+    max-width: 5.25rem;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .hero-payment-glyph {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.75rem;
   }
 
   .hero-payment-title {
@@ -2851,10 +2875,12 @@ body.next-dev-overlay-present #sentry-feedback {
   }
 
   .hero-payment-label {
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.62);
   }
 
   .hero-stat-value {
@@ -2868,17 +2894,12 @@ body.next-dev-overlay-present #sentry-feedback {
     color: rgba(255, 255, 255, 0.88);
   }
 
-  .light .hero-payment-chip {
-    border-color: var(--border);
-    background: var(--bg-elevated);
-  }
-
   .light .hero-payment-title {
     color: rgba(0, 0, 0, 0.78);
   }
 
   .light .hero-payment-label {
-    color: rgba(0, 0, 0, 0.82);
+    color: var(--text-muted);
   }
 
   .light .hero-stat-value {
