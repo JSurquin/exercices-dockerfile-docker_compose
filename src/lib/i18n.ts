@@ -6654,6 +6654,10 @@ export const messages: Record<Locale, Messages> = {
         steamIdNotFoundDesc: "Le Steam ID spécifié ne correspond à aucun compte",
         inventoryPrivateTitle: "Inventaire privé",
         inventoryPrivateDesc: "Votre inventaire Steam doit être public pour être chargé",
+        serviceMaintenanceTitle: "Service de rachat en maintenance",
+        serviceMaintenanceDesc:
+          "Notre service d'achat est en maintenance pour analyser les taux de rachat. Nous nous excusons pour la gêne occasionnée et revenons très bientôt.",
+        serviceMaintenanceHint: "Merci de votre patience — réessayez dans quelques minutes.",
         makePublicStep: "Rendez votre inventaire public",
         makePublicDesc: "Allez dans les paramètres de confidentialité Steam et définissez votre inventaire comme \"Public\".",
         openSteamSettings: "Ouvrir les paramètres Steam",
@@ -15091,6 +15095,10 @@ export const messages: Record<Locale, Messages> = {
         steamIdNotFoundDesc: "The specified Steam ID does not match any account",
         inventoryPrivateTitle: "Private inventory",
         inventoryPrivateDesc: "Your Steam inventory must be public to be loaded",
+        serviceMaintenanceTitle: "Buyback service under maintenance",
+        serviceMaintenanceDesc:
+          "Our buyback service is temporarily down while we review purchase rates. We're sorry for the inconvenience and will be back soon.",
+        serviceMaintenanceHint: "Thank you for your patience — please try again in a few minutes.",
         makePublicStep: "Make your inventory public",
         makePublicDesc: "Go to your Steam privacy settings and set your inventory to \"Public\".",
         openSteamSettings: "Open Steam settings",
@@ -23204,6 +23212,10 @@ export const messages: Record<Locale, Messages> = {
         steamIdNotFoundDesc: "指定的 Steam ID 与任何账户均不匹配",
         inventoryPrivateTitle: "库存不公开",
         inventoryPrivateDesc: "您的 Steam 库存必须设为公开才能加载",
+        serviceMaintenanceTitle: "回购服务维护中",
+        serviceMaintenanceDesc:
+          "我们的收购服务正在维护中，以便分析回购费率。给您带来不便，敬请谅解，我们很快恢复服务。",
+        serviceMaintenanceHint: "感谢您的耐心——请稍后再试。",
         makePublicStep: "将库存设为公开",
         makePublicDesc: "前往 Steam 隐私设置，将库存设置为\"公开\"。",
         openSteamSettings: "打开 Steam 设置",

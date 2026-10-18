@@ -3,6 +3,10 @@ import { NormalizedInventoryResponse, NormalizedInventoryItem } from '@/app/api/
 import { currencyConverter } from '@/lib/currency-converter';
 import { useLocale } from '@/components/providers/locale-provider';
 import { localizeRateLimitMessage } from '@/lib/rate-limit-message';
+import {
+  INVENTORY_SERVICE_MAINTENANCE,
+  normalizeInventoryClientError,
+} from '@/lib/inventory-api-errors';
 import { RARITY_ORDER, getRarityHexColor, normalizeRarity } from '@/lib/cs2-constants';
 
 interface UseSkinplaceInventoryOptions {
@@ -28,7 +32,11 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
       return result;
     } catch (err) {
       const rawMessage = err instanceof Error ? err.message : t.unknownError;
-      const errorMessage = localizeRateLimitMessage(rawMessage, locale);
+      const normalized = normalizeInventoryClientError(rawMessage);
+      const errorMessage =
+        normalized === INVENTORY_SERVICE_MAINTENANCE
+          ? INVENTORY_SERVICE_MAINTENANCE
+          : localizeRateLimitMessage(normalized, locale);
       setError(errorMessage);
       options.onError?.(errorMessage);
       return null;
@@ -41,13 +49,24 @@ export function useSkinplaceInventory(options: UseSkinplaceInventoryOptions = {}
   const getSkinplaceInventory = useCallback(async (steamId64: string) => {
     return handleRequest<NormalizedInventoryResponse>(async () => {
       const response = await fetch(`/api/skinplace/inventory-with-prices?steam_id=${steamId64}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || t.fetchError);
+      const bodyText = await response.text();
+
+      let payload: unknown;
+      try {
+        payload = bodyText ? JSON.parse(bodyText) : null;
+      } catch {
+        throw new Error(INVENTORY_SERVICE_MAINTENANCE);
       }
-      
-      return response.json();
+
+      if (!response.ok) {
+        const apiError =
+          payload && typeof payload === 'object' && 'error' in payload
+            ? String((payload as { error?: unknown }).error ?? t.fetchError)
+            : t.fetchError;
+        throw new Error(apiError);
+      }
+
+      return payload as NormalizedInventoryResponse;
     });
   }, [handleRequest]);
 

@@ -5984,6 +5984,9 @@ export interface Messages {
       steamIdNotFoundDesc: string;
       inventoryPrivateTitle: string;
       inventoryPrivateDesc: string;
+      serviceMaintenanceTitle: string;
+      serviceMaintenanceDesc: string;
+      serviceMaintenanceHint: string;
       makePublicStep: string;
       makePublicDesc: string;
       openSteamSettings: string;

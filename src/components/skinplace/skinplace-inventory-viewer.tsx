@@ -38,7 +38,10 @@ import {
 } from '@/lib/steam-id';
 import { useAuth } from '@/components/providers/auth-provider';
 import Link from 'next/link';
-import { isInventoryPrivateError } from '@/lib/inventory-api-errors';
+import {
+  isInventoryPrivateError,
+  isInventoryServiceMaintenanceError,
+} from '@/lib/inventory-api-errors';
 import { extractCs2SkinDisplayName, extractCs2WeaponType, getDisplayedRarityColor } from '@/lib/cs2-constants';
 import { SellInventoryItemCard } from '@/components/sell/sell-inventory-item-card';
 import { MOONSKIN_DISCORD_URL } from '@/lib/moonskin-social';
@@ -140,9 +143,11 @@ export function SkinplaceInventoryViewer({
     onError: (err) => {
       console.error('Erreur Skinplace Inventory:', err);
       const sp = messages.components.skinplace;
-      const msg = isInventoryPrivateError(err)
-        ? `${sp.error} ${sp.inventoryPrivateTitle}`
-        : `${sp.error} ${err}`;
+      const msg = isInventoryServiceMaintenanceError(err)
+        ? sp.serviceMaintenanceDesc
+        : isInventoryPrivateError(err)
+          ? `${sp.error} ${sp.inventoryPrivateTitle}`
+          : `${sp.error} ${err}`;
       toast.error(msg);
     },
   });
@@ -515,25 +520,48 @@ export function SkinplaceInventoryViewer({
   if (error) {
     const isPrivateError = isInventoryPrivateError(error);
     const isNotFoundError = error.includes('introuvable') || error.includes('not found');
+    const isMaintenanceError = isInventoryServiceMaintenanceError(error);
     
     const sp = messages.components.skinplace;
     return (
-      <Card className="border-destructive/50 bg-destructive/5">
+      <Card
+        className={
+          isMaintenanceError
+            ? 'border-amber-500/40 bg-amber-500/5'
+            : 'border-destructive/50 bg-destructive/5'
+        }
+      >
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-destructive/10">
-              <AlertCircle className="h-6 w-6 text-destructive" />
+            <div
+              className={`p-3 rounded-full ${
+                isMaintenanceError ? 'bg-amber-500/10' : 'bg-destructive/10'
+              }`}
+            >
+              <AlertCircle
+                className={`h-6 w-6 ${isMaintenanceError ? 'text-amber-600 dark:text-amber-400' : 'text-destructive'}`}
+              />
             </div>
             <div>
-              <CardTitle className="text-lg text-destructive">
-                {isPrivateError 
+              <CardTitle
+                className={`text-lg ${isMaintenanceError ? 'text-amber-800 dark:text-amber-200' : 'text-destructive'}`}
+              >
+                {isMaintenanceError
+                  ? sp.serviceMaintenanceTitle
+                  : isPrivateError 
                   ? sp.inventoryPrivateTitle
                   : isNotFoundError 
                     ? sp.steamIdNotFound
                     : sp.error}
               </CardTitle>
-              <CardDescription className="text-destructive/80">
-                {isPrivateError 
+              <CardDescription
+                className={
+                  isMaintenanceError ? 'text-amber-800/80 dark:text-amber-200/80' : 'text-destructive/80'
+                }
+              >
+                {isMaintenanceError
+                  ? sp.serviceMaintenanceDesc
+                  : isPrivateError 
                   ? sp.inventoryPrivateDesc
                   : isNotFoundError
                     ? sp.steamIdNotFoundDesc
@@ -543,6 +571,9 @@ export function SkinplaceInventoryViewer({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isMaintenanceError ? (
+            <p className="text-sm text-muted-foreground">{sp.serviceMaintenanceHint}</p>
+          ) : (
           <div className="space-y-3">
             {isPrivateError && (
               <div className="bg-background rounded-lg p-4 border">
@@ -665,11 +696,14 @@ export function SkinplaceInventoryViewer({
               </Button>
             </div>
           </div>
+          )}
 
+          {!isMaintenanceError && (
           <div className="flex items-center gap-2 pt-2 border-t text-sm text-muted-foreground">
             <User className="h-4 w-4" />
             <span>{sp.steamIdUsed}: <code className="bg-muted px-1 rounded">{currentSteamId}</code></span>
           </div>
+          )}
         </CardContent>
       </Card>
     );
