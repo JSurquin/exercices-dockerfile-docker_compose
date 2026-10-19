@@ -1,28 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-test.describe.skip('Auth - Test session', () => {
-  test('user session redirects to dashboard', async ({ page }) => {
-    await page.goto('/api/test/auth?role=user');
-    await page.waitForURL('/dashboard*', { timeout: 10000 });
-    await expect(page).toHaveURL(/\/dashboard/);
-  });
-
-  test('admin session redirects to dashboard', async ({ page }) => {
-    await page.goto('/api/test/auth?role=admin');
-    await page.waitForURL('/dashboard*', { timeout: 10000 });
-    await expect(page).toHaveURL(/\/dashboard/);
-  });
-
-  test('session cookie is set after login', async ({ page, context }) => {
-    await page.goto('/api/test/auth?role=user');
-    await page.waitForURL('/dashboard*');
-    const cookies = await context.cookies();
-    const session = cookies.find(c => c.name.includes('session') || c.name.includes('better-auth'));
-    expect(session).toBeTruthy();
-    expect(session?.httpOnly).toBe(true);
-  });
-});
-
 test.describe('Auth - Protected routes (user)', () => {
   test.use({ storageState: '.auth/user.json' });
 
@@ -67,12 +44,5 @@ test.describe('Auth - Logout', () => {
     await context.clearCookies();
     await page.goto('/dashboard');
     await expect(page).not.toHaveURL(/\/dashboard/);
-  });
-});
-
-test.describe('Auth - Cleanup', () => {
-  test('DELETE /api/test/auth succeeds', async ({ request }) => {
-    const res = await request.delete('/api/test/auth');
-    expect(res.ok()).toBeTruthy();
   });
 });

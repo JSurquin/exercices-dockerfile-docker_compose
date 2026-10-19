@@ -64,4 +64,14 @@ test.describe('Smoke', () => {
     expect([200, 404]).toContain(res?.status());
     await expect(page.locator('body')).toBeVisible();
   });
+
+  test('GET /api/test/auth is removed', async ({ request }) => {
+    const res = await request.get('/api/test/auth?role=admin');
+    expect(res.status()).toBe(404);
+  });
+
+  test('DELETE /api/test/auth is removed', async ({ request }) => {
+    const res = await request.delete('/api/test/auth');
+    expect(res.status()).toBe(404);
+  });
 });
