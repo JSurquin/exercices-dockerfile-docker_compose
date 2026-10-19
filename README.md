@@ -81,7 +81,12 @@ cp env.example .env.local
 # Éditer .env.local avec vos clés API (voir env.example pour la liste complète)
 ```
 
-4. **Démarrer le serveur de développement**
+4. **Base PostgreSQL locale (Docker) + données de démo**
+```bash
+pnpm run dev:setup   # docker compose + migrations + seed
+```
+
+5. **Démarrer le serveur de développement**
 ```bash
 pnpm run dev
 ```
@@ -102,7 +107,7 @@ STEAM_API_KEY=your-steam-api-key
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-DATABASE_URL=postgresql://username:password@localhost:5432/cashtrade_dev
+DATABASE_URL=postgresql://moonskin:moonskin_dev@localhost:5432/moonskin_dev
 
 # Skinplace API v3
 SKINPLACE_API_KEY_PRIVATE=your-skinplace-private-key
@@ -154,6 +159,10 @@ pnpm run lint             # ESLint
 pnpm run check            # Prisma generate + ESLint + TypeScript
 
 # Base de données
+pnpm run dev:setup        # Docker Postgres + migrations + seed (premier setup)
+pnpm run docker:up        # Démarrer Postgres dev seul
+pnpm run docker:down      # Arrêter Postgres dev
+pnpm run db:migrate       # Appliquer les migrations (deploy)
 pnpm run db:seed          # Peupler la base (seed Prisma)
 npx prisma generate       # Générer le client Prisma
 npx prisma migrate dev    # Appliquer les migrations en dev

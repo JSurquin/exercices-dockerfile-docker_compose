@@ -1,6 +1,82 @@
-import { prisma } from "./prisma";
+import { config } from 'dotenv';
+import { prisma } from './prisma';
 import { auth } from '../lib/auth';
-import { KycStatus } from '@prisma/client';
+import { KycStatus, type User, type UserRole } from '@prisma/client';
+
+config({ path: '.env.local' });
+config();
+
+const SEED_GIVEAWAY_TITLES = [
+  'Giveaway AK-47 Redline StatTrak™',
+  'Giveaway AWP Dragon Lore',
+] as const;
+
+type SeedUserSpec = {
+  email: string;
+  password: string;
+  name: string;
+  steamId: string;
+  steamUsername: string;
+  steamAvatar: string;
+  level: number;
+  xp: number;
+  tickets: number;
+  type: 'ADMIN' | 'MODERATOR' | 'PRO_TRADER' | 'SKIN_MASTER' | 'COLLECTOR' | 'AFFILIATE' | 'USER';
+  totalVolumeCents: number;
+  kycStatus: string;
+  acceptedTermsAt: Date;
+};
+
+function roleFromSeedType(type: SeedUserSpec['type']): UserRole {
+  if (type === 'ADMIN') return 'ADMIN';
+  if (type === 'MODERATOR') return 'MODERATOR';
+  if (type === 'AFFILIATE' || type === 'PRO_TRADER' || type === 'SKIN_MASTER') return 'AFFILIATE';
+  return 'USER';
+}
+
+async function resetSeedData(emails: string[]) {
+  await prisma.giveaway.deleteMany({
+    where: { title: { in: [...SEED_GIVEAWAY_TITLES] } },
+  });
+  await prisma.user.deleteMany({
+    where: { email: { in: emails } },
+  });
+}
+
+async function ensureSeedUser(userData: SeedUserSpec): Promise<User> {
+  const role = roleFromSeedType(userData.type);
+
+  const signUp = await auth.api.signUpEmail({
+    body: {
+      email: userData.email,
+      password: userData.password,
+      name: userData.name,
+    },
+  });
+
+  if (!signUp.user?.id) {
+    throw new Error(`Impossible de créer le compte seed pour ${userData.email}`);
+  }
+
+  return prisma.user.update({
+    where: { id: signUp.user.id },
+    data: {
+      name: userData.name,
+      role,
+      steamId: userData.steamId,
+      steamUsername: userData.steamUsername,
+      steamAvatar: userData.steamAvatar,
+      level: userData.level,
+      xp: userData.xp,
+      tickets: userData.tickets,
+      totalVolumeCents: userData.totalVolumeCents,
+      kycStatus: userData.kycStatus as KycStatus,
+      acceptedTermsAt: userData.acceptedTermsAt,
+      emailVerified: true,
+    },
+  });
+}
+
 async function main() {
   console.log('🌱 Début du seeding de la base de données CashTrade...');
 
@@ -114,77 +190,46 @@ async function main() {
     },
   ];
 
-  const users = [];
-  
+  const seedEmails = testUsers.map((u) => u.email);
+  console.log('🧹 Réinitialisation des données seed précédentes...');
+  await resetSeedData(seedEmails);
+
+  const users: User[] = [];
   for (const userData of testUsers) {
     try {
-      // D'abord créer le compte avec Better Auth
-      const signUpResponse = await fetch('http://localhost:3000/api/auth/sign-up/email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: userData.email,
-          password: userData.password,
-          name: userData.name,
-        }),
-      });
-
-      if (!signUpResponse.ok) {
-        console.log(`⚠️ Utilisateur ${userData.email} existe peut-être déjà, tentative de mise à jour...`);
-      }
-
-      // Ensuite mettre à jour avec les données complètes via Prisma
-      const user = await prisma.user.upsert({
-        where: { email: userData.email },
-        update: {
-          name: userData.name,
-          role: userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'MODERATOR' ? 'MODERATOR' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER',
-          steamId: userData.steamId,
-          steamUsername: userData.steamUsername,
-          steamAvatar: userData.steamAvatar,
-          level: userData.level,
-          xp: userData.xp,
-          tickets: userData.tickets,
-          totalVolumeCents: userData.totalVolumeCents,
-          kycStatus: userData.kycStatus as KycStatus,
-          acceptedTermsAt: userData.acceptedTermsAt,
-          emailVerified: true, // Marquer comme vérifié pour les tests
-        },
-        create: {
-          email: userData.email,
-          name: userData.name,
-          role: userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'MODERATOR' ? 'MODERATOR' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER',
-          steamId: userData.steamId,
-          steamUsername: userData.steamUsername,
-          steamAvatar: userData.steamAvatar,
-          level: userData.level,
-          xp: userData.xp,
-          tickets: userData.tickets,
-          totalVolumeCents: userData.totalVolumeCents,
-          kycStatus: userData.kycStatus as KycStatus,
-          acceptedTermsAt: userData.acceptedTermsAt,
-          emailVerified: true, // Marquer comme vérifié pour les tests
-        },
-      });
-
+      const user = await ensureSeedUser(userData as SeedUserSpec);
       users.push(user);
-      const role = userData.type === 'ADMIN' ? 'ADMIN' : userData.type === 'MODERATOR' ? 'MODERATOR' : userData.type === 'AFFILIATE' ? 'AFFILIATE' : 'USER';
-      console.log(`✅ Utilisateur créé/mis à jour: ${userData.name} (${userData.email}) - Rôle: ${role}`);
+      console.log(
+        `✅ Utilisateur créé: ${userData.name} (${userData.email}) - Rôle: ${user.role}`,
+      );
     } catch (error) {
-      console.log(`❌ Erreur lors de la création/mise à jour de l'utilisateur ${userData.email}:`, error instanceof Error ? error.message : String(error));
+      console.error(
+        `❌ Erreur lors de la création de l'utilisateur ${userData.email}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
     }
   }
 
   console.log(`✅ ${users.length} utilisateurs traités`);
+
+  const userByEmail = new Map(users.map((u) => [u.email, u]));
+  const protrader = userByEmail.get('protrader@moonskin.com');
+  const skinmaster = userByEmail.get('skinmaster@moonskin.com');
+  const collector = userByEmail.get('collector@moonskin.com');
+  const topAffiliate = userByEmail.get('topaffiliate@moonskin.com');
+  const newAffiliate = userByEmail.get('newaffiliate@moonskin.com');
+
+  if (!protrader || !skinmaster || !collector || !topAffiliate || !newAffiliate) {
+    throw new Error('Comptes seed essentiels manquants après création');
+  }
 
   // Créer des méthodes de paiement (SEPA et Crypto selon les règles)
   const paymentMethods = await Promise.all([
     // Méthode SEPA pour ProTrader (vérifiée)
     prisma.paymentMethod.create({
       data: {
-        userId: users[1].id,
+        userId: protrader.id,
         type: 'SEPA',
         details: {
           iban: 'FR7630001007941234567890185',
@@ -202,7 +247,7 @@ async function main() {
     // Méthode Crypto pour SkinMaster (vérifiée)
     prisma.paymentMethod.create({
       data: {
-        userId: users[2].id,
+        userId: skinmaster.id,
         type: 'CRYPTO',
         details: {
           address: '0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4',
@@ -218,7 +263,7 @@ async function main() {
     // Méthode SEPA non vérifiée pour Collector (nécessite vérification)
     prisma.paymentMethod.create({
       data: {
-        userId: users[3].id,
+        userId: collector.id,
         type: 'SEPA',
         details: {
           iban: 'FR7630004000031234567890143',
@@ -241,8 +286,8 @@ async function main() {
     // Trade payé (ProTrader)
     prisma.trade.create({
       data: {
-        userId: users[1].id,
-        steamId: users[1].steamId as string,
+        userId: protrader.id,
+        steamId: protrader.steamId as string,
         status: 'PAID',
         grossCents: 15000, // 150€
         cashoutFees: 75, // 0.5% de 150€
@@ -269,8 +314,8 @@ async function main() {
     // Trade en cours de paiement (SkinMaster)
     prisma.trade.create({
       data: {
-        userId: users[2].id,
-        steamId: users[2].steamId as string,
+        userId: skinmaster.id,
+        steamId: skinmaster.steamId as string,
         status: 'PAYOUT_PENDING',
         grossCents: 45000, // 450€
         cashoutFees: 225, // 0.5% de 450€
@@ -297,8 +342,8 @@ async function main() {
     // Trade en trade hold (Collector - nécessite KYC)
     prisma.trade.create({
       data: {
-        userId: users[3].id,
-        steamId: users[3].steamId as string,
+        userId: collector.id,
+        steamId: collector.steamId as string,
         status: 'IN_TRADE_HOLD',
         grossCents: 8500, // 85€
         cashoutFees: 43, // 0.5% de 85€
@@ -331,7 +376,7 @@ async function main() {
     // Paiement effectué
     prisma.payout.create({
       data: {
-        userId: users[1].id,
+        userId: protrader.id,
         tradeId: trades[0].id,
         status: 'PAID',
         amountCents: 14725,
@@ -344,7 +389,7 @@ async function main() {
     // Paiement en cours (crypto)
     prisma.payout.create({
       data: {
-        userId: users[2].id,
+        userId: skinmaster.id,
         tradeId: trades[1].id,
         status: 'SCHEDULED',
         amountCents: 44475,
@@ -361,20 +406,20 @@ async function main() {
     // KYC approuvé pour ProTrader
     prisma.kycDocument.create({
       data: {
-        userId: users[1].id,
+        userId: protrader.id,
         type: 'ID_CARD',
         status: 'VERIFIED',
-        kycaidApplicantId: 'SEED_APPLICANT_' + users[1].id,
+        kycaidApplicantId: 'SEED_APPLICANT_' + protrader.id,
         kycaidDocumentId: 'SUMSUB_ID_123456',
         reviewedAt: new Date('2024-11-15T14:30:00Z'),
       },
     }),
     prisma.kycDocument.create({
       data: {
-        userId: users[1].id,
+        userId: protrader.id,
         type: 'SELFIE',
         status: 'VERIFIED',
-        kycaidApplicantId: 'SEED_APPLICANT_' + users[1].id,
+        kycaidApplicantId: 'SEED_APPLICANT_' + protrader.id,
         kycaidDocumentId: 'SUMSUB_SELFIE_123456',
         reviewedAt: new Date('2024-11-15T14:35:00Z'),
       },
@@ -382,10 +427,10 @@ async function main() {
     // KYC approuvé pour SkinMaster
     prisma.kycDocument.create({
       data: {
-        userId: users[2].id,
+        userId: skinmaster.id,
         type: 'PASSPORT',
         status: 'VERIFIED',
-        kycaidApplicantId: 'SEED_APPLICANT_' + users[2].id,
+        kycaidApplicantId: 'SEED_APPLICANT_' + skinmaster.id,
         kycaidDocumentId: 'SUMSUB_PASS_789012',
         reviewedAt: new Date('2024-11-20T16:20:00Z'),
       },
@@ -393,10 +438,10 @@ async function main() {
     // KYC en attente pour Collector
     prisma.kycDocument.create({
       data: {
-        userId: users[3].id,
+        userId: collector.id,
         type: 'ID_CARD',
         status: 'PENDING',
-        kycaidApplicantId: 'SEED_APPLICANT_' + users[3].id,
+        kycaidApplicantId: 'SEED_APPLICANT_' + collector.id,
         kycaidDocumentId: 'SUMSUB_ID_345678',
       },
     }),
@@ -422,7 +467,7 @@ async function main() {
     // ProTrader (users[1]) - Affilié expérimenté
     prisma.affiliateStats.create({
       data: {
-        userId: users[1].id,
+        userId: protrader.id,
         code: 'PROTRADER',
         totalReferrals: 15,
         totalVolumeCents: 750000, // 7,500€ de volume généré
@@ -434,7 +479,7 @@ async function main() {
     // SkinMaster (users[2]) - Affilié actif
     prisma.affiliateStats.create({
       data: {
-        userId: users[2].id,
+        userId: skinmaster.id,
         code: 'SKINMASTER',
         totalReferrals: 8,
         totalVolumeCents: 420000, // 4,200€ de volume généré
@@ -446,7 +491,7 @@ async function main() {
     // TopAffiliate (users[4]) - Top performer
     prisma.affiliateStats.create({
       data: {
-        userId: users[4].id,
+        userId: topAffiliate.id,
         code: 'TOPAFFILIATE',
         totalReferrals: 45,
         totalVolumeCents: 2250000, // 22,500€ de volume généré
@@ -458,7 +503,7 @@ async function main() {
     // NewAffiliate (users[5]) - Débutant
     prisma.affiliateStats.create({
       data: {
-        userId: users[5].id,
+        userId: newAffiliate.id,
         code: 'NEWAFFILIATE',
         totalReferrals: 2,
         totalVolumeCents: 85000, // 850€ de volume généré
@@ -479,7 +524,7 @@ async function main() {
     prisma.affiliateReferral.create({
       data: {
         affiliateId: affiliateStats[0].id, // ProTrader
-        referredUserId: users[3].id, // Collector référé par ProTrader
+        referredUserId: collector.id, // Collector référé par ProTrader
         tradeId: trades[2].id, // Le trade du collector
         volumeCents: 8500,
         commissionCents: 170, // 2% de 8500
@@ -489,7 +534,7 @@ async function main() {
     prisma.affiliateReferral.create({
       data: {
         affiliateId: affiliateStats[2].id, // TopAffiliate
-        referredUserId: users[5].id, // NewAffiliate référé par TopAffiliate (cross-referral)
+        referredUserId: newAffiliate.id, // NewAffiliate référé par TopAffiliate (cross-referral)
         volumeCents: 85000,
         commissionCents: 1700, // 2% de 85000
       },
@@ -570,14 +615,14 @@ async function main() {
     // Entrées pour le giveaway AK-47
     prisma.giveawayEntry.create({
       data: {
-        userId: users[1].id,
+        userId: protrader.id,
         giveawayId: giveaways[0].id,
         ticketsUsed: 15, // 3 entrées × 5 tickets
       },
     }),
     prisma.giveawayEntry.create({
       data: {
-        userId: users[2].id,
+        userId: skinmaster.id,
         giveawayId: giveaways[0].id,
         ticketsUsed: 10, // 2 entrées × 5 tickets
       },
@@ -585,7 +630,7 @@ async function main() {
     // Entrées pour le giveaway AWP
     prisma.giveawayEntry.create({
       data: {
-        userId: users[1].id,
+        userId: protrader.id,
         giveawayId: giveaways[1].id,
         ticketsUsed: 50, // 2 entrées × 25 tickets
       },
@@ -597,11 +642,11 @@ async function main() {
   // Mettre à jour les tickets utilisés des utilisateurs
   await Promise.all([
     prisma.user.update({
-      where: { id: users[1].id },
+      where: { id: protrader.id },
       data: { tickets: { decrement: 65 } }, // 15 + 50 tickets utilisés
     }),
     prisma.user.update({
-      where: { id: users[2].id },
+      where: { id: skinmaster.id },
       data: { tickets: { decrement: 10 } }, // 10 tickets utilisés
     }),
   ]);

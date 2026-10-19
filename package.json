@@ -3,8 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:wait": "docker compose up -d --wait",
     "docker:rag:up": "docker compose -f docker-compose.rag.yml up -d",
     "docker:rag:down": "docker compose -f docker-compose.rag.yml down",
+    "db:migrate": "prisma migrate deploy",
+    "dev:setup": "docker compose up -d --wait && prisma migrate deploy && tsx prisma/seed.ts",
     "cron:worker": "tsx scripts/cron-worker.ts",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
