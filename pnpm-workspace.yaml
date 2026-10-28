@@ -1,67 +1,15 @@
 packages:
-  - '.'
+  - 'apps/*'
+  - 'packages/*'
 
-supportedArchitectures:
-  os:
-    - current
-    - linux
-  cpu:
-    - current
-    - x64
-    - arm64
-  libc:
-    - current
-    - glibc
-
-overrides:
-  axios: '>=1.15.1'
-  handlebars: '>=4.7.9'
-  dompurify: '>=3.3.4'
-  kysely: '>=0.28.12'
-  defu: '>=6.1.5'
-  basic-ftp: '>=5.2.2'
-  follow-redirects: '>=1.15.12'
-  postcss: '>=8.5.10'
-  icu-minify: '>=4.9.2'
-  fast-uri: '>=3.1.1'
-  ip-address: '>=10.1.1'
-  ws: '>=8.20.1'
-  uuid: '>=11.1.1'
-  qs: '>=6.15.2'
-  flatted: '>=3.4.2'
-  brace-expansion: '>=5.0.6'
-  picomatch: '>=4.0.4'
-  lodash: '>=4.17.24'
-onlyBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
-  - '@tailwindcss/oxide'
-  - core-js
-  - esbuild
-  - prisma
-  - puppeteer
-  - puppetter
-  - sharp
-  - unrs-resolver
 allowBuilds:
   '@parcel/watcher': true
   '@prisma/client': true
   '@prisma/engines': true
   '@sentry/cli': true
   '@swc/core': true
-  core-js: true
-  esbuild: true
-  prisma: true
-  puppeteer: true
-  sharp: true
-  unrs-resolver: true
-minimumReleaseAgeExclude:
-  - '@better-auth/core@1.6.16'
-  - '@better-auth/drizzle-adapter@1.6.16'
-  - '@better-auth/kysely-adapter@1.6.16'
-  - '@better-auth/memory-adapter@1.6.16'
-  - '@better-auth/mongo-adapter@1.6.16'
-  - '@better-auth/prisma-adapter@1.6.16'
-  - '@better-auth/telemetry@1.6.16'
-  - '@better-fetch/fetch@1.2.2'
-  - better-auth@1.6.16
+  'core-js': true
+  'esbuild': true
+  'prisma': true
+  'puppeteer': true
+  'unrs-resolver': true

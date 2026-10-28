@@ -33,6 +33,7 @@ const showSentry = parseBooleanEnv(process.env.SHOW_SENTRY);
 const gitSha = resolveGitSha();
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   generateBuildId: async () => gitSha || `b${Date.now().toString(36)}`,
   env: {
     NEXT_PUBLIC_SHOW_SENTRY: showSentry ? 'true' : 'false',

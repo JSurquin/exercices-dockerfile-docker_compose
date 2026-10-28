@@ -1,1 +1,0 @@
-des que tu as finis une fonctionnalité, tu peux si je ne te dis rien pnpm run check & commit uniquement les fichiers que tu as modifier dans le chat courant & push directement sur main, si je te dis juste le mot clef "pr" alors tu créer une branche externe (a partir de main) et tu pousse sur cette branche et me fais une pr 
