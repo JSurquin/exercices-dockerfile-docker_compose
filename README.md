@@ -8,6 +8,8 @@ Le but de cet exercice, récupéré le projet :
 
 Exemple : DATABASE_URL="postgresql://**user**:**password**@localhost:5432/**votre_nom_de_base_de_données_préciser_dans_le_compose**?schema=public"
 
+(NE VOUS PRENEZ PAS LA TÊTE ET PRENEZ CET URL : postgresql://neondb_owner:npg_i1GKbVskPh5L@ep-flat-silence-bacacn0m-pooler.c-8.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require)
+
 Ce qui est en gras est à modifier en fonction de ce que vous avez mis vous même dans votre docker compose (dev)
 
 en suite fais la commande en local : npx prisma generate && npx prisma migrate deploy
