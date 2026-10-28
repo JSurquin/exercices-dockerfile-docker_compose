@@ -6,6 +6,6 @@ Le but de cet exercice, récupéré le projet :
 
 - En suite une fois le dockerfile créer, vous devez créer un docker compose qui sera ""l'orchestrateur"" de ce dockerfile, c'est LUI que vous allez lancer avec docker compose up pour démarrer la build au besoin et lancer votre container "moonskin_app"
 
-- Une fois ce dockerfile créer vous allez créer directement un docker-compose-dev pour simuler un nouveau arrivant dans le projet, on doit lui setup une base de données postgresql par défaut et une interface utilisateur pour acceder a sa base de données
+- Une fois ce dockerfile créer vous allez créer directement un docker-compose-dev pour simuler un nouveau arrivant dans le projet, on doit lui setup une base de données postgresql par défaut et une interface utilisateur pour acceder a sa base de données (adminer)
 
 - (Pas besoin de lancer le seed.tsx même si ça pourrait être cool)
