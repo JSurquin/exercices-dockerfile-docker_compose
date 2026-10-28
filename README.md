@@ -11,6 +11,7 @@ Exemple : DATABASE_URL="postgresql://user:password@**localhost**:5423/**votre_no
 en suite fais la commande en local : npx prisma generate && npx prisma migrate deploy
 
 - En suite , Préparer un dockerfile pour notre application = le dockerfile doit créer une image "moonskin" , le container doit tourner (attention je ne vous partage pas les variables d'environnements donc forcément , vous ne pourrez pas contre pas créer des de données)
+- ATTENTION : dans le dockerfile vous allez donc devoir , vous baser sur une image node, préparer la copie du package.json , préparer l'installation des dépendances et lancer aussi npx prisma generate OBLIGATOIREMENT avant de lancer la build (pnpm run build) et en suite de lancer le node server.js générer
 
 - En suite une fois le dockerfile créer, vous devez créer un docker compose qui sera ""l'orchestrateur"" de ce dockerfile, c'est LUI que vous allez lancer avec docker compose up pour démarrer la build au besoin et lancer votre container "moonskin_app"
 
