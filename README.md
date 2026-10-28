@@ -8,6 +8,8 @@ Le but de cet exercice, récupéré le projet :
 
 Exemple : DATABASE_URL="postgresql://user:password@**localhost**:5423/**votre_nom_de_base_de_données_préciser_dans_le_compose**?schema=public"
 
+en suite fais la commande en local : npx prisma generate && npx prisma migrate deploy
+
 - En suite , Préparer un dockerfile pour notre application = le dockerfile doit créer une image "moonskin" , le container doit tourner (attention je ne vous partage pas les variables d'environnements donc forcément , vous ne pourrez pas contre pas créer des de données)
 
 - En suite une fois le dockerfile créer, vous devez créer un docker compose qui sera ""l'orchestrateur"" de ce dockerfile, c'est LUI que vous allez lancer avec docker compose up pour démarrer la build au besoin et lancer votre container "moonskin_app"
