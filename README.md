@@ -2,7 +2,7 @@ Le but de cet exercice, récupéré le projet :
 
 - Ensuite , déjà le lancer en local pour le comprendre (installer node + npm install + npm run dev) - OPTIONNEL (mais juste pour comprendre)
 
-- Vous allez créer directement un docker-compose-dev pour simuler un nouveau arrivant dans le projet, on doit lui setup une base de données postgresql par défaut et une interface utilisateur pour acceder a sa base de données (adminer) , vous allez devoir binder les ports 5432 avec le port 5423 de votre pc
+- Vous allez créer directement un docker-compose-dev pour simuler un nouveau arrivant dans le projet, on doit lui setup une base de données postgresql par défaut et une interface utilisateur pour acceder a sa base de données (adminer) , vous allez devoir binder les ports 5432 avec le port 5432 de votre pc
 
 - Créer un .env en copiant le env.example et mettez à jour DATABASE_URL avec l'url de votre base de données postgre
 
