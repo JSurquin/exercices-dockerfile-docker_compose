@@ -6,7 +6,9 @@ Le but de cet exercice, récupéré le projet :
 
 - Créer un .env en copiant le env.example et mettez à jour DATABASE_URL avec l'url de votre base de données postgre
 
-Exemple : DATABASE_URL="postgresql://user:password@**localhost**:5423/**votre_nom_de_base_de_données_préciser_dans_le_compose**?schema=public"
+Exemple : DATABASE_URL="postgresql://**user**:**password**@localhost:5432/**votre_nom_de_base_de_données_préciser_dans_le_compose**?schema=public"
+
+Ce qui est en gras est à modifier en fonction de ce que vous avez mis vous même dans votre docker compose (dev)
 
 en suite fais la commande en local : npx prisma generate && npx prisma migrate deploy
 
